@@ -1,0 +1,3 @@
+[submodule "ISOF-React-modules"]
+	path = ISOF-React-modules
+	url = https://github.com/ISOF-ITD/ISOF-React-modules

@@ -1,0 +1,178 @@
+@import "../ISOF-React-modules/less/mixins.less";
+@import "../ISOF-React-modules/less/skeleton.less";
+@import "../ISOF-React-modules/less/leaflet.less";
+@import "../ISOF-React-modules/less/MarkerCluster.Default.less";
+
+@import "../ISOF-React-modules/less/ui-components/map.less";
+@import "../ISOF-React-modules/less/ui-components/map-ui.less";
+@import "../ISOF-React-modules/less/ui-components/popupwindow.less";
+
+@import "mapmenu.less";
+
+@import "../ISOF-React-modules/less/ui-components/map-menu-list.less";
+
+@import "../ISOF-React-modules/less/ui-components/dropdownmenu.less";
+@import "../ISOF-React-modules/less/ui-components/local-library.less";
+@import "../ISOF-React-modules/less/ui-components/overlay.less";
+@import "../ISOF-React-modules/less/ui-components/audio-player.less";
+@import "../ISOF-React-modules/less/ui-components/element-notification-message.less";
+@import "../ISOF-React-modules/less/ui-components/popup-notification-message.less";
+@import "../ISOF-React-modules/less/ui-components/share-buttons.less";
+@import "../ISOF-React-modules/less/ui-components/image-map.less";
+
+@import "../ISOF-React-modules/less/minimal-scrollbar.less";
+@import "../ISOF-React-modules/less/tables.less";
+
+@import "../ISOF-React-modules/less/sitevision.less";
+
+@color-red: #a6192e;
+@color-red-lighter: #d4454c;
+@color-red-divider: #b62837;
+@color-gray: #edeff1;
+@color-gray-border: #d1d1d1;
+@color-gray-background: #f5f5f5;
+@notification-background: #7d1b1f;
+
+@viewport {
+	zoom: 0.75;
+}
+
+// Sitevision hack, remove #Publiceringsdatum
+#Publiceringsdatum + span {
+	display: none;
+}
+.sv-column-6 {
+//    display: none !important;
+}
+
+html, body {
+	height: 100vh;
+	width: 100vw;
+
+	overflow: hidden;
+
+	@media print {
+		overflow: visible;
+	}
+}
+
+body {
+	padding: 0;
+	margin: 0;
+
+	font-size: 1rem;
+}
+
+.text-small {
+	font-size: 0.9rem;
+}
+
+.text-smaller {
+	font-size: 0.7rem;
+}
+
+h2 {
+	.lighter {
+		font-size: 1.4rem;
+		color: #8d8d8d;
+	}
+}
+
+.text-center {
+	text-align: center;
+}
+
+.font-weight-normal {
+	font-weight: normal;
+}
+
+.margin-top-0 { margin-top: 0 !important; }
+.margin-top-5 { margin-top: 5px !important; }
+.margin-top-10 { margin-top: 10px !important; }
+.margin-top-15 { margin-top: 15px !important; }
+.margin-top-20 { margin-top: 20px !important; }
+.margin-top-25 { margin-top: 25px !important; }
+.margin-top-30 { margin-top: 30px !important; }
+.margin-top-35 { margin-top: 35px !important; }
+
+.margin-bottom-0 { margin-bottom: 0 !important; }
+.margin-bottom-5 { margin-bottom: 5px !important; }
+.margin-bottom-10 { margin-bottom: 10px !important; }
+.margin-bottom-15 { margin-bottom: 15px !important; }
+.margin-bottom-20 { margin-bottom: 20px !important; }
+.margin-bottom-25 { margin-bottom: 25px !important; }
+.margin-bottom-30 { margin-bottom: 30px !important; }
+.margin-bottom-35 { margin-bottom: 35px !important; }
+
+.app-container {
+	position: absolute;
+	
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	
+	overflow: hidden;
+
+	.transition(top 300ms ease-in-out);
+
+	@media (max-width: 550px) {
+		top: 39px;
+	}
+
+	&.has-overlay {
+		overflow: hidden;
+
+		@media print {
+			position: initial;
+
+			overflow: visible;
+		}
+	}
+
+	.has-docked-control & {
+		top: 60px;
+	}
+}
+
+.container-wrapper {
+	position: absolute;
+
+	top: 100vh;
+	left: 0;
+	right: 0;
+
+	padding: 60px 0;
+
+	background: #fff;
+
+	box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.4);
+
+	z-index: 1300;
+}
+
+.list-pagination {
+	margin-top: 20px;
+	
+	button {
+		margin-right: 10px;
+
+		@media print {
+			display: none;
+		}
+	}
+}
+
+audio::-webkit-media-controls {
+    overflow: hidden !important
+}
+audio::-webkit-media-controls-enclosure {
+    width: calc(100% + 12px);
+    margin-left: auto;
+}
+
+@media print {
+	a {
+		text-decoration: none !important;
+	}
+}
