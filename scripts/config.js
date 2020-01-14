@@ -65,12 +65,12 @@ export default {
 	personImageUrl: 'https://frigg.isof.se/media/',
 	audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
 
-	appUrl: 'https://frigg.isof.se/static/js-apps/sagenkarta/',
-	siteUrl: 'https://www.isof.se/om-oss/kartor/sagenkartan.html',
+	appUrl: 'https://frigg.isof.se/static/js-apps/publikutforska/',
+	siteUrl: 'https://www.isof.se/om-oss/kartor/publikutforska.html',
 
 	// Url till Django/Elasticsearch API
-	apiUrl: 'https://frigg.isof.se/sagendatabas/api/es/',
+	apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
 
 	// Url till Django Rest API
-	restApiUrl: 'https://frigg.isof.se/sagendatabas/api/'
+	restApiUrl: 'https://frigg-test.isof.se/sagendatabas/api/'
 };
