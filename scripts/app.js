@@ -8,7 +8,7 @@ import RecordView from './../ISOF-React-modules/components/views/RecordView';
 import PlaceView from './../ISOF-React-modules/components/views/PlaceView';
 import PersonView from './../ISOF-React-modules/components/views/PersonView';
 
-console.log('Sägenkartan running React.js version '+React.version);
+console.log('PublikUtforska running React.js version '+React.version);
 
 /*
 Object.assign polyfill

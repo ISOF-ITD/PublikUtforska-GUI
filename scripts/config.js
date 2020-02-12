@@ -1,10 +1,11 @@
 export default {
 	// Namn på localStorage som lagrar sparade sägner
-	localLibraryName: 'sagenkarta_library',
+	localLibraryName: 'publikutforska_library',
 
 	// Parametrar som alltid skulle skickas till API:et, här passar vi på att sägenkartan alltid hämtar textar av typ arkiv eller tryckt och som finns i en kategori
 	requiredParams: {
-		type: 'arkiv,tryckt',
+		transcriptionstatus: 'readytotranscribe',
+		//type: 'arkiv,tryckt',
 		only_categories: 'true'
 	},
 
