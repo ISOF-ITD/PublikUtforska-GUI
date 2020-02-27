@@ -4,7 +4,7 @@ import _ from 'underscore';
 import { hashHistory } from 'react-router';
 
 import CategoryList from './CategoryList';
-import categories from './../../ISOF-React-modules/utils/sagenkartaCategories.js';
+import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
 
 export default class CategoryMenu extends React.Component {
 	constructor(props) {

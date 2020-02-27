@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'underscore';
 
-import categories from './../../ISOF-React-modules/utils/sagenkartaCategories.js';
+import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
 
 export default class CategoryMenu extends React.Component {
 	constructor(props) {
