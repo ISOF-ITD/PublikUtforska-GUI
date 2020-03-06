@@ -5,6 +5,7 @@ import { hashHistory } from 'react-router';
 
 import CategoryList from './CategoryList';
 import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
+//import categories from './../../ISOF-React-modules/utils/orLokaltypCategories.js';
 
 export default class CategoryMenu extends React.Component {
 	constructor(props) {

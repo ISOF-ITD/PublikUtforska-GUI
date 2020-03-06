@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import _ from 'underscore';
 
 import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
+//import categories from './../../ISOF-React-modules/utils/orLokaltypCategories.js';
 
 export default class CategoryMenu extends React.Component {
 	constructor(props) {
