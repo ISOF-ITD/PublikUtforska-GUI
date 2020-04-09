@@ -8,6 +8,10 @@ export default {
 		mark_metadata: 'transcriptionstatus',
 		//type: 'arkiv,tryckt',
 		categorytypes: 'tradark'
+		//For test with ortnamn data in index only use:
+		//Also add ISOF-React-modules/utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
+		//type: 'ortnamn',
+		////categorytypes: 'ortnamn'
 	},
 
 	// Speciella inställningar för projektet, används nu mest för Matkarta-GUI, siteOptions som property av config måste dock finnas
@@ -64,6 +68,8 @@ export default {
 	startPageUrl: 'https://www.isof.se/om-oss/kartor/sagenkartan/om-sagenkartan---kort.html',
 
 	imageUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/',
+	//For test with ortnamn data in index:
+	//imageUrl: 'https://www4.isof.se/NAU/bilder/',
 	personImageUrl: 'https://frigg.isof.se/media/',
 	audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
 
@@ -72,6 +78,8 @@ export default {
 
 	// Url till Django/Elasticsearch API
 	apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
+	//For test with ortnamn data in index:
+	//apiUrl: 'https://frigg-test.isof.se/TradarkSearchService/api/es/',
 
 	// Url till Django Rest API
 	restApiUrl: 'https://frigg-test.isof.se/sagendatabas/api/'

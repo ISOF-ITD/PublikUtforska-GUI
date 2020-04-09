@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import _ from 'underscore';
 
 import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
+//For test with ortnamn data in index:
 //import categories from './../../ISOF-React-modules/utils/orLokaltypCategories.js';
 
 export default class CategoryMenu extends React.Component {

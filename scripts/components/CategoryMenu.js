@@ -5,6 +5,7 @@ import { hashHistory } from 'react-router';
 
 import CategoryList from './CategoryList';
 import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
+//For test with ortnamn data in index:
 //import categories from './../../ISOF-React-modules/utils/orLokaltypCategories.js';
 
 export default class CategoryMenu extends React.Component {
