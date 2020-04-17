@@ -59,6 +59,9 @@ export default {
 		// Inaktivera länker till personer, visa bara namnet
 		disablePersonLinks: true
 	*/
+		feedbackText: 'Har du frågor eller synpunkter på hur applikationen fungerar? Har du hittat fel i informationen? Har du kompletterande information om berättelserna eller personerna som omnämns? Eller vill du hjälpa till med att skriva rent uppteckningar som vi kan lägga ut på vår kartor? Kontakta oss gärna!',
+		contributeInfoText: 'Har du kompletterande information om berättelserna eller personerna som omnämns? Eller vill du hjälpa till med att skriva rent uppteckningar som vi kan lägga ut på vår kartor? Kontakta oss gärna!',
+		helpText: 'Här kan du läsa mer om hur du använder applikationen: Här kan du läsa mer om hur du bidrar genom att t.ex. transkribera uppteckningar: ',
 	},
 
 	// Vilket land vi hämtar data från

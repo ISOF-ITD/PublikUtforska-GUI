@@ -7,6 +7,8 @@ import RoutePopupWindow from './../../ISOF-React-modules/components/controls/Rou
 import LocalLibraryView from './../../ISOF-React-modules/components/views/LocalLibraryView';
 import ImageOverlay from './../../ISOF-React-modules/components/views/ImageOverlay';
 import FeedbackOverlay from './../../ISOF-React-modules/components/views/FeedbackOverlay';
+import HelpOverlay from './../../ISOF-React-modules/components/views/HelpOverlay';
+import ContributeInfoOverlay from './../../ISOF-React-modules/components/views/ContributeInfoOverlay';
 import TranscriptionOverlay from './../../ISOF-React-modules/components/views/TranscriptionOverlay';
 import PopupNotificationMessage from './../../ISOF-React-modules/components/controls/PopupNotificationMessage';
 import OverlayWindow from './../../ISOF-React-modules/components/controls/OverlayWindow';
@@ -211,6 +213,8 @@ export default class Application extends React.Component {
 
 				<ImageOverlay />
 				<FeedbackOverlay />
+				<HelpOverlay />
+				<ContributeInfoOverlay />
 				<TranscriptionOverlay />
 				<PopupNotificationMessage />
 				{
