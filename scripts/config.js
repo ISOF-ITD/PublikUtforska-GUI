@@ -21,8 +21,11 @@ export default {
 			hideMaterialType: true,
 
 			/*
-			// Döljd kategorier kolumn i RecordList, används för folkmusiken
+			// Dölj kategorier kolumn i RecordList, används för folkmusiken
 			hideCategories: true
+
+			// Dölj TranscriptionStatus kolumn i RecordList, används bara för crowdsource?
+			hideTranscriptionStatus: true
 			*/
 
 			// Vilka kategorier vi vill visa i listan, här vill vi bara visa matkarta kategorier men dölja frågolista-kategorier
