@@ -1,43 +1,34 @@
 import React from 'react';
+import { Router } from 'react-router-dom';
+//import history from './../../ISOF-React-modules/components/History';
 
 import CategoryMenu from './CategoryMenu';
 import SearchBox from './SearchBox';
 import NordicSwitch from './NordicSwitch';
 
-export default class SearchMenu extends React.Component {
+export default class MapMenu extends React.Component {
 	constructor(props) {
 		super(props);
 
 		this.searchBoxSizeChangeHandler = this.searchBoxSizeChangeHandler.bind(this);
+		this.searchBoxSearchHandler = this.searchBoxSearchHandler.bind(this);
 
 		this.state = {
 			selectedCategory: null,
 			expanded: false,
-			advanced: false
+			advanced: false,
 		};
 	}
 
 	componentDidMount() {
 		this.setState({
-			selectedCategory: this.props.selectedCategory,
-			searchValue: this.props.searchValue,
-			searchField: this.props.searchField,
-			searchYearFrom: this.props.searchYearFrom,
-			searchYearTo: this.props.searchYearTo,
-			searchPersonRelation: this.props.searchPersonRelation,
-			searchGender: this.props.searchGender
+			// remove all, first prop: selectedCategory: this.props.selectedCategory,
 		});
 	}
 
-	componentWillReceiveProps(props) {
+	UNSAFE_componentWillReceiveProps(props) {
 		this.setState({
-			selectedCategory: props.selectedCategory,
-			searchValue: props.searchValue,
-			searchField: props.searchField,
-			searchYearFrom: props.searchYearFrom,
-			searchYearTo: props.searchYearTo,
-			searchPersonRelation: props.searchPersonRelation,
-			searchGender: props.searchGender
+			// remove all, first prop: selectedCategory: this.props.selectedCategory,
 		});
 	}
 
@@ -48,16 +39,36 @@ export default class SearchMenu extends React.Component {
 		});
 	}
 
+	searchBoxSearchHandler(event) {
+		this.setState({
+			searchValue: event.searchValue,
+			searchField: event.searchField,
+		}, function() {
+			this.updateRoute();
+		}.bind(this));
+	}
+
+	updateRoute(selectedCategory = this.props.selectedCategory, selectedSubcategory = this.props.selectedSubcategory) {
+		// this.props.history.push('/places'+(this.state.searchValue && this.state.searchValue != '' ? '/search/'+this.state.searchValue : '')+(selectedCategory ? '/category/'+selectedCategory+(selectedSubcategory ? ','+selectedSubcategory : '') : '')+(this.state.pointTypeOption == 2 ? '/has_metadata/sitevision_url' : ''));
+		this.props.history.push('/places'
+			+(this.state.searchValue != '' ? '/search/'+this.state.searchValue+'/search_field/'+this.state.searchField : '')
+			+(this.props.searchParams.nordic === "true" ? '/nordic/true' : ''));
+	}
+
 	render() {
+		let _props = this.props
 		return (
 			<div className={'menu-wrapper'+(this.state.expanded ? ' menu-expanded' : '')+(this.state.advanced ? ' advanced-menu-view' : '')}>
 
-				<NordicSwitch />
+				<NordicSwitch {..._props} />
 
 				<SearchBox ref="searchBox" 
-					onSizeChange={this.searchBoxSizeChangeHandler} />
+					onSizeChange={this.searchBoxSizeChangeHandler} 
+					onSearch={this.searchBoxSearchHandler} 
+					{..._props}	
+				/>
 
-				<CategoryMenu />
+				<CategoryMenu {..._props} />
 
 			</div>
 		);

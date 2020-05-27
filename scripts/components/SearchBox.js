@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { hashHistory } from 'react-router';
 
 import DropdownMenu from './../../ISOF-React-modules/components/controls/DropdownMenu';
 import CategoryList from './CategoryList';
@@ -47,14 +46,20 @@ export default class SearchBox extends React.Component {
 
 	executeSimpleSearch() {
 		// Lägg sökroute till url:et, kommer hanteras via router objected i app.js och skickas till MapView och RecordList
-		hashHistory.push('/places'
-			+(this.state.searchValue != '' ? '/search/'+this.state.searchValue+'/search_field/'+this.state.searchField : '')
-			+(this.state.includeNordic ? '/nordic/true' : ''));
+		// history.push('/places'
+		// 	+(this.state.searchValue != '' ? '/search/'+this.state.searchValue+'/search_field/'+this.state.searchField : '')
+		// 	+(this.state.includeNordic ? '/nordic/true' : ''));
+		if (this.props.onSearch) {
+			this.props.onSearch({
+				searchValue: this.state.searchValue,
+				searchField: this.state.searchField,
+			});
+		}
 	}
 
 	searchButtonClickHandler() {
 		// Lägg mer komplicerad sökroute till url:et, kommer hanteras via router objected i app.js och skickas till MapView och RecordList
-		hashHistory.push(
+		history.push(
 			'/places'+
 			(
 				this.state.searchValue != '' ?
@@ -179,7 +184,7 @@ export default class SearchBox extends React.Component {
 	windowClickHandler(event) {
 		var componentEl = ReactDOM.findDOMNode(this.refs.container);
 
-		if (!componentEl.contains(event.target) && !this.state.advanced) {
+		if (!!componentEl && !componentEl.contains(event.target) && !this.state.advanced) {
 			this.setState({
 				expanded: false
 			}, function() {

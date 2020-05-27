@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { hashHistory } from 'react-router';
 
 export default class NordicSwitch extends React.Component {
 	constructor(props) {
@@ -12,6 +11,7 @@ export default class NordicSwitch extends React.Component {
 			window.eventBus.addEventListener('application.searchParams', this.receivedSearchParams.bind(this))
 		}
 
+		//console.log('window.applicationSettings.includeNordic:' + window.applicationSettings.includeNordic)
 		this.state = {
 			includeNordic: false,
 			selectedCategory: null
@@ -33,14 +33,14 @@ export default class NordicSwitch extends React.Component {
 				window.eventBus.dispatch('nordicLegendsUpdate', null, {includeNordic: this.state.includeNordic});
 			}
 	
-			hashHistory.push('/places'+(this.state.selectedCategory ? '/category/'+this.state.selectedCategory : '')+(this.state.includeNordic ? '/nordic/true' : ''));
+			this.props.history.push('/places'+(this.state.selectedCategory ? '/category/'+this.state.selectedCategory : '')+(this.state.includeNordic ? '/nordic/true' : ''));
 		}.bind(this));
 	}
 
 	render() {
 		return <div className="nordic-switch-wrapper map-floating-control">
-			<a onClick={this.menuButtonClick} data-value="false" className={!this.state.includeNordic ? 'selected' : ''}>Svenska sägner</a>
-			<a onClick={this.menuButtonClick} data-value="true" className={this.state.includeNordic ? 'selected' : ''}>Nordiska sägner</a>
+			<a onClick={this.menuButtonClick} data-value="true" className={this.state.includeNordic ? 'selected' : ''}>{l('Nordiska sägner')}</a>
+			<a onClick={this.menuButtonClick} data-value="false" className={!this.state.includeNordic ? 'selected' : ''}>{l('Svenska sägner')}</a>
 		</div>;
 	}
 

@@ -1,8 +1,11 @@
 import React from 'react';
-import { hashHistory } from 'react-router';
+import { Route, Switch } from 'react-router-dom';
 
 import MapMenu from './MapMenu';
 import MapView from './../../ISOF-React-modules/components/views/MapView';
+import PlaceView from './../../ISOF-React-modules/components/views/PlaceView';
+import PersonView from './../../ISOF-React-modules/components/views/PersonView';
+import RecordView from './../../ISOF-React-modules/components/views/RecordView';
 import RoutePopupWindow from './../../ISOF-React-modules/components/controls/RoutePopupWindow';
 import LocalLibraryView from './../../ISOF-React-modules/components/views/LocalLibraryView';
 import ImageOverlay from './../../ISOF-React-modules/components/views/ImageOverlay';
@@ -33,7 +36,7 @@ export default class Application extends React.Component {
 			ISOF-React-modules/components/collections/RecordsCollection.js i Nordisk_sägenkarta branchen.
 		*/
 		window.applicationSettings = {
-			includeNordic: false
+			includeNordic: true
 		};
 
 		// Bind all event handlers to this (the actual component) to make component variables available inside the functions
@@ -53,27 +56,29 @@ export default class Application extends React.Component {
 			searchValue: '',
 			searchField: '',
 
-			params: this.props.params,
+			//params: this.props.match.params,
+			match: {},
 			popupVisible: false
 		};
 	}
 
 	mapMarkerClick(placeId) {
-		// När användaren klickar på en prick, lägger till #place/[id] till url:et,
+		// När användaren klickar på en prick, lägger till #places/[id] till url:et,
 		// detta kommer att hanteras av application router
-		hashHistory.push(routeHelper.createPlacePathFromPlaces(placeId, this.props.location.pathname));
+		this.props.history.push(routeHelper.createPlacePathFromPlaces(placeId, this.props.location.pathname));
 	}
 
 	popupCloseHandler() {
 		// Lägg till rätt route när användaren stänger popuprutan
-		if (hashHistory.getCurrentLocation().pathname.indexOf('record/') > -1) {
-			hashHistory.push(routeHelper.createPlacesPathFromRecord(hashHistory.getCurrentLocation().pathname));
+		if (this.props.location.pathname.indexOf('records/') > -1) {
+			this.props.history.push(routeHelper.createPlacesPathFromRecord(this.props.location.pathname));
 		}
-		else if (hashHistory.getCurrentLocation().pathname.indexOf('place/') > -1) {
-			hashHistory.push(routeHelper.createPlacesPathFromPlace(hashHistory.getCurrentLocation().pathname));
+		else if (this.props.location.pathname.indexOf('places/') > -1) {
+			this.props.history.push(routeHelper.createPlacesPathFromPlace(this.props.location.pathname));
 		}
 		else {
-			hashHistory.push('places');
+			var routeParams = routeHelper.createSearchRoute(this.props.match.params);
+			this.props.history.push('/places' +(routeParams ? routeParams : ''));
 		}
 	}
 
@@ -112,20 +117,21 @@ export default class Application extends React.Component {
 	}
 
 	componentDidMount() {
-		if (this.props.params.nordic) {
+		if (this.props.match.params.nordic) {
 			window.eventBus.dispatch('nordicLegendsUpdate', null, {includeNordic: true});			
 		}
 		// Skickar alla sök-parametrar via global eventBus
 		if (window.eventBus) {
 			window.eventBus.dispatch('application.searchParams', {
-				selectedCategory: this.props.params.category,
-				searchValue: this.props.params.search,
-				searchField: this.props.params.search_field,
-				searchYearFrom: this.props.params.year_from,
-				searchYearTo: this.props.params.year_to,
-				searchPersonRelation: this.props.params.person_relation,
-				searchGender: this.props.params.gender,
-				includeNordic: this.props.params.nordic
+				selectedCategory: this.props.match.params.category,
+				selectedSubcategory: this.props.match.params.subcategory,
+				searchValue: this.props.match.params.search,
+				searchField: this.props.match.params.search_field,
+				searchYearFrom: this.props.match.params.year_from,
+				searchYearTo: this.props.match.params.year_to,
+				searchPersonRelation: this.props.match.params.person_relation,
+				searchGender: this.props.match.params.gender,
+				includeNordic: this.props.match.params.nordic
 			});
 
 			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
@@ -140,14 +146,18 @@ export default class Application extends React.Component {
 
 		// Spara alla sök-parametrar till state
 		this.setState({
-			selectedCategory: this.props.params.category,
-			searchValue: this.props.params.search,
-			searchField: this.props.params.search_field,
-			searchYearFrom: this.props.params.year_from,
-			searchYearTo: this.props.params.year_to,
-			searchPersonRelation: this.props.params.person_relation,
-			searchGender: this.props.params.gender,
-			params: this.props.params
+			selectedCategory: this.props.match.params.category,
+			selectedSubcategory: this.props.match.params.subcategory,
+			searchValue: this.props.match.params.search,
+			searchField: this.props.match.params.search_field,
+			searchYearFrom: this.props.match.params.year_from,
+			searchYearTo: this.props.match.params.year_to,
+			searchPersonRelation: this.props.match.params.person_relation,
+			searchGender: this.props.match.params.gender,
+			searchMetadata: this.props.match.params.has_metadata,
+			//In Sägenkarta
+			match: this.props.match,
+			//params: this.props.match.params
 		}, function() {
 			setTimeout(function() {
 				// Väntar en sekund, lägger till app-initialized till body class,
@@ -157,31 +167,38 @@ export default class Application extends React.Component {
 		}.bind(this));
 	}
 
-	componentWillReceiveProps(props) {
+	UNSAFE_componentWillReceiveProps(props) {
 		// När application tar emot parametrar från url:et, skicka dem via eventBus
 		// MapView, RecordsList och sökfält tar emot dem och hämtar data
 		if (window.eventBus) {
 			eventBus.dispatch('application.searchParams', {
-				selectedCategory: props.params.category,
-				searchValue: props.params.search,
-				searchField: props.params.search_field,
-				searchYearFrom: props.params.year_from,
-				searchYearTo: props.params.year_to,
-				searchPersonRelation: props.params.person_relation,
-				searchGender: props.params.gender,
-				includeNordic: props.params.nordic
+				selectedCategory: props.match.params.category,
+				selectedSubategory: props.match.params.category,
+				searchValue: props.match.params.search,
+				searchField: props.match.params.search_field,
+				searchYearFrom: props.match.params.year_from,
+				searchYearTo: props.match.params.year_to,
+				searchPersonRelation: props.match.params.person_relation,
+				searchGender: props.match.params.gender,
+				searchMetadata: props.match.params.has_metadata,
+				includeNordic: props.match.params.nordic
 			});
 		}
 
 		this.setState({
-			selectedCategory: props.params.category,
-			searchValue: props.params.search,
-			searchField: props.params.search_field,
-			searchYearFrom: props.params.year_from,
-			searchYearTo: props.params.year_to,
-			searchPersonRelation: props.params.person_relation,
-			searchGender: props.params.gender,
-			params: props.params
+			selectedCategory: props.match.params.category,
+			selectedSubcategory: props.match.params.subcategory,
+			searchValue: props.match.params.search,
+			searchField: props.match.params.search_field,
+			searchYearFrom: props.match.params.year_from,
+			searchYearTo: props.match.params.year_to,
+			searchPersonRelation: props.match.params.person_relation,
+			searchGender: props.match.params.gender,
+			searchMetadata: props.match.params.has_metadata,
+			//In Sägenkarta
+			includeNordic: props.match.params.nordic,
+			//params: props.match.params
+			match: props.match,
 		});
 	}
 
@@ -191,44 +208,87 @@ export default class Application extends React.Component {
 	}
 
 	render() {
-		// Innehåll av RoutePopupWindow, kommer från application route i app.js
-		var popup = this.props.popup;
-
 		return (
-			<div className={'app-container'+(this.state.popupVisible ? ' has-overlay' : '')}>
+				<div className={'app-container'+(this.state.popupVisible ? ' has-overlay' : '')}>
+					<Switch>
+						<Route 
+							path={[
+								"/person/:person_id",
+							]}
+							render={() =>
+								<RoutePopupWindow
+									onShow={this.popupWindowShowHandler}
+									onHide={this.popupWindowHideHandler}
+									onClose={this.popupCloseHandler}
+									router={this.context.router}>
+										<PersonView match={this.props.match} />
+								</RoutePopupWindow>
+							}
+						/>
+						<Route 
+							path={[
+								"/places/:place_id([0-9]+)",
+							]}
+							>
+								<RoutePopupWindow
+									onShow={this.popupWindowShowHandler}
+									onHide={this.popupWindowHideHandler}
+									onClose={this.popupCloseHandler}
+									router={this.context.router}>
+										<PlaceView 
+											match={this.props.match}
+										/>
+								</RoutePopupWindow>
+						</Route>
 
-				<MapView searchParams={this.state.params} onMarkerClick={this.mapMarkerClick}>
+						<Route path = "/places" render={() =>
+							<RoutePopupWindow
+								onShow={this.popupWindowShowHandler}
+								onHide={this.popupWindowHideHandler}
+								onClose={this.popupCloseHandler}
+								router={this.context.router}>
+									{this.props.popup}
+							</RoutePopupWindow>
+						}/>
+						<Route path = "/records" render={() =>
+							<RoutePopupWindow
+								onShow={this.popupWindowShowHandler}
+								onHide={this.popupWindowHideHandler}
+								onClose={this.popupCloseHandler}
+								router={this.context.router}>
+									<RecordView {...this.props} />
+							</RoutePopupWindow>
+						}/>
+					</Switch>
 
-					<MapMenu />
+					<MapView
+						searchParams={this.props.match.params}
+						onMarkerClick={this.mapMarkerClick}
+						defaultMarkerIcon={this.defaultMarkerIcon}
+						hideMapmodeMenu={true}
+					>
 
-					<LocalLibraryView headerText={l('Mina sägner')} />
+						<MapMenu
+							searchParams={this.props.match.params}
+							//searchMetadata={this.state.searchMetadata}
+							//selectedCategory={this.state.selectedCategory}
+							//selectedSubcategory={this.state.selectedSubcategory}
+							{...this.props}
+						/>
 
-				</MapView>
+						<LocalLibraryView headerText={l('Mina sägner')} history={this.props.history} />
 
-				<RoutePopupWindow onShow={this.popupWindowShowHandler} onHide={this.popupWindowHideHandler} router={this.context.router} onClose={this.popupCloseHandler}>
-					{popup}
-				</RoutePopupWindow>
+					</MapView>
 
-				<div className="map-progress"><div className="indicator"></div></div>
+					
 
-				<ImageOverlay />
-				<FeedbackOverlay />
-				<HelpOverlay />
-				<ContributeInfoOverlay />
-				<TranscriptionOverlay />
-				<PopupNotificationMessage />
-				{
-					/*
-					<OverlayWindow title="Velkommen till sägenkartan">
-						<SitevisionContent url={config.startPageUrl} disableScriptExecution={true} />
-						<div>
-							<hr className="margin-bottom-35"/>
-							<button className="button-primary margin-bottom-0" onClick={this.introOverlayCloseButtonClickHandler}>Stäng</button>
-							<label className="margin-top-10 margin-bottom-0 font-weight-normal u-pull-right"><input className="margin-bottom-0" onChange={function(event) {this.setState({neverShowIntro: event.currentTarget.checked})}.bind(this)} type="checkbox" /> Klicka här för att inte visa den rutan igen.</label>
-						</div>
-					</OverlayWindow>
-					*/
-				}
+					<div className="map-progress"><div className="indicator"></div></div>
+
+					<ImageOverlay />
+					<FeedbackOverlay />
+					<ContributeInfoOverlay />
+					<TranscriptionOverlay />
+					<PopupNotificationMessage />
 
 			</div>
 		);

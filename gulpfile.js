@@ -3,13 +3,13 @@
 *	Author: Jean-Pierre Sierens
 *	===========================================================================
 */
-
+ 
 // declarations, dependencies
 // ----------------------------------------------------------------------------
 var gulp = require('gulp');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
-var gutil = require('gulp-util');
+var log = require('fancy-log');
 var babelify = require('babelify');
 var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
@@ -24,12 +24,10 @@ var production = true;
 if (production) {
 	process.env.NODE_ENV = 'production';
 }
-
+ 
 // Gulp tasks
 // ----------------------------------------------------------------------------
-gulp.task('scripts', function () {
-    bundleApp(production);
-});
+gulp.task('scripts', () => bundleApp(production) );
 
 gulp.task('less', function(){
     return gulp.src('./less/style-basic.less')
@@ -38,20 +36,19 @@ gulp.task('less', function(){
         .pipe(gulp.dest('www/css'));
 });
 
-gulp.task('deploy', function (){
-	bundleApp(true);
+gulp.task('deploy', () => bundleApp(true) );
+ 
+gulp.task('watch', function (done) {
+	gulp.watch(['./scripts/*.js', './scripts/*/*.js', './ISOF-React-modules/*.js', './ISOF-React-modules/*/*.js', './ISOF-React-modules/*/*/*.js'], gulp.series('scripts'));
+	gulp.watch(['./less/*.less', './less/*/*.less', './ISOF-React-modules/less/*.less', './ISOF-React-modules/less/*/*.less', './ISOF-React-modules/less/*/*/*.less'], gulp.series('less'));
+	done();
 });
-
-gulp.task('watch', function () {
-	gulp.watch(['./scripts/*.js', './scripts/*/*.js', './ISOF-React-modules/*.js', './ISOF-React-modules/*/*.js', './ISOF-React-modules/*/*/*.js'], ['scripts']);
-	gulp.watch(['./less/*.less', './less/*/*.less', './ISOF-React-modules/less/*.less', './ISOF-React-modules/less/*/*.less', './ISOF-React-modules/less/*/*/*.less'], ['less']);
-});
-
+ 
 // When running 'gulp' on the terminal this task will fire.
 // It will start watching for changes in every .js file.
 // If there's a change, the task 'scripts' defined above will fire.
-gulp.task('default', ['scripts', 'less', 'watch']);
-
+gulp.task('default', gulp.series('scripts', 'less', 'watch'));
+ 
 // Private Functions
 // ----------------------------------------------------------------------------
 function bundleApp(isProduction) {
@@ -61,12 +58,12 @@ function bundleApp(isProduction) {
     	entries: './scripts/app.js',
     	debug: !isProduction
   	})
-
-  	appBundler
+ 
+  	return appBundler
   		// transform ES6 and JSX to ES5 with babelify
-	  	.transform("babelify", {presets: ["es2015", "react"]})
+	  	.transform("babelify", {presets: ["@babel/preset-env", "@babel/preset-react"]})
 	    .bundle()
-	    .on('error', gutil.log)
+	    .on('error', log)
 	    .pipe(source('app.js'))
     	.pipe(buffer())
         .pipe(gulpif(production, uglify()))
