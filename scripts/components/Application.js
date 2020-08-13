@@ -12,6 +12,7 @@ import ImageOverlay from './../../ISOF-React-modules/components/views/ImageOverl
 import FeedbackOverlay from './../../ISOF-React-modules/components/views/FeedbackOverlay';
 import HelpOverlay from './../../ISOF-React-modules/components/views/HelpOverlay';
 import ContributeInfoOverlay from './../../ISOF-React-modules/components/views/ContributeInfoOverlay';
+import TranscriptionHelpOverlay from './../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './../../ISOF-React-modules/components/views/TranscriptionOverlay';
 import PopupNotificationMessage from './../../ISOF-React-modules/components/controls/PopupNotificationMessage';
 import OverlayWindow from './../../ISOF-React-modules/components/controls/OverlayWindow';
@@ -208,6 +209,8 @@ export default class Application extends React.Component {
 	}
 
 	render() {
+		let _props = this.props;
+
 		return (
 				<div className={'app-container'+(this.state.popupVisible ? ' has-overlay' : '')}>
 					<Switch>
@@ -287,7 +290,8 @@ export default class Application extends React.Component {
 					<ImageOverlay />
 					<FeedbackOverlay />
 					<ContributeInfoOverlay />
-					<TranscriptionOverlay />
+					<TranscriptionOverlay {..._props} />
+					<TranscriptionHelpOverlay />
 					<PopupNotificationMessage />
 
 			</div>
