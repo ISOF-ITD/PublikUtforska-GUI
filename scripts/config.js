@@ -69,6 +69,10 @@ export default {
 		helpText: 'Här kan du läsa mer om hur du använder applikationen: Här kan du läsa mer om hur du bidrar genom att t.ex. skriva av uppteckningar: ',
 	},
 
+	// Application specific filter parameter First value (0) is false
+	filterParameterName: 'transcriptionstatus',
+	filterParameterValues: ['readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
+
 	// Vilket land vi hämtar data från
 	country: 'sweden',
 
