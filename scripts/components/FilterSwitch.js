@@ -42,7 +42,7 @@ export default class FilterSwitch extends React.Component {
 	render() {
 		return <div className="nordic-switch-wrapper map-floating-control">
 			<a onClick={this.menuButtonClick} data-value="false" className={this.state.filter ? '' : 'selected'}>{l('Allt material')}</a>
-			<a onClick={this.menuButtonClick} data-value="true" className={this.state.filter ? 'selected' : ''}>{l('För transkribering')}</a>
+			<a onClick={this.menuButtonClick} data-value="true" className={this.state.filter ? 'selected' : ''}>{l('För avskrift')}</a>
 		</div>;
 	}
 
