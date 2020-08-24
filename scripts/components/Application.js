@@ -35,6 +35,7 @@ export default class Application extends React.Component {
 		/* Global applicationSettings, includeNordic = false betyder att vi inkluderar inte norskt material som standard
 			includeNordic används av ISOF-React-modules/components/collections/MapCollection.js och
 			ISOF-React-modules/components/collections/RecordsCollection.js i Nordisk_sägenkarta branchen.
+			TODO: Not needed for this app.
 		*/
 		window.applicationSettings = {
 			includeNordic: true
@@ -118,9 +119,10 @@ export default class Application extends React.Component {
 	}
 
 	componentDidMount() {
-		if (this.props.match.params.nordic) {
-			window.eventBus.dispatch('nordicLegendsUpdate', null, {includeNordic: true});			
-		}
+		// Not needed for this app?:
+		//if (this.props.match.params.nordic) {
+		//	window.eventBus.dispatch('nordicLegendsUpdate', null, {includeNordic: true});			
+		//}
 		// Skickar alla sök-parametrar via global eventBus
 		if (window.eventBus) {
 			window.eventBus.dispatch('application.searchParams', {
@@ -132,7 +134,7 @@ export default class Application extends React.Component {
 				searchYearTo: this.props.match.params.year_to,
 				searchPersonRelation: this.props.match.params.person_relation,
 				searchGender: this.props.match.params.gender,
-				includeNordic: this.props.match.params.nordic
+				filter: this.props.match.params.filter
 			});
 
 			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
@@ -182,7 +184,7 @@ export default class Application extends React.Component {
 				searchPersonRelation: props.match.params.person_relation,
 				searchGender: props.match.params.gender,
 				searchMetadata: props.match.params.has_metadata,
-				includeNordic: props.match.params.nordic
+				filter: props.match.params.filter
 			});
 		}
 
@@ -197,7 +199,7 @@ export default class Application extends React.Component {
 			searchGender: props.match.params.gender,
 			searchMetadata: props.match.params.has_metadata,
 			//In Sägenkarta
-			includeNordic: props.match.params.nordic,
+			filter: props.match.params.filter,
 			//params: props.match.params
 			match: props.match,
 		});
