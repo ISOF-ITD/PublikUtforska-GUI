@@ -4,13 +4,14 @@ export default {
 
 	// Parametrar som alltid skulle skickas till API:et, här passar vi på att sägenkartan alltid hämtar textar av typ arkiv eller tryckt och som finns i en kategori
 	requiredParams: {
-		transcriptionstatus: 'readytotranscribe,transcribed,reviewing,approved,published',
-		mark_metadata: 'transcriptionstatus',
+		//transcriptionstatus: 'readytotranscribe,transcribed,reviewing,approved,published',
+		//mark_metadata: 'transcriptionstatus',
 		//type: 'arkiv,tryckt',
-		categorytypes: 'tradark'
+		//categorytypes: 'tradark'
 		//For test with ortnamn data in index only use:
 		//Also add ISOF-React-modules/utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
-		//type: 'ortnamn',
+		type: 'ortnamn',
+		index: 'placenames',
 		////categorytypes: 'ortnamn'
 	},
 
@@ -70,8 +71,8 @@ export default {
 	},
 
 	// Application specific filter parameter First value (0) is false
-	filterParameterName: 'transcriptionstatus',
-	filterParameterValues: ['readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
+	//filterParameterName: 'transcriptionstatus',
+	//filterParameterValues: ['readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
 
 	// Vilket land vi hämtar data från
 	country: 'sweden',
@@ -79,9 +80,9 @@ export default {
 	// Webbsida som ska visas i OverlayWindow när användaren först kommer till kartan
 	startPageUrl: 'https://www.isof.se/om-oss/kartor/sagenkartan/om-sagenkartan---kort.html',
 
-	imageUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/',
+	//imageUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/',
 	//For test with ortnamn data in index:
-	//imageUrl: 'https://www4.isof.se/NAU/bilder/',
+	imageUrl: 'https://www4.isof.se/NAU/bilder/',
 	personImageUrl: 'https://frigg.isof.se/media/',
 	audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
 
@@ -89,10 +90,11 @@ export default {
 	siteUrl: 'https://www.isof.se/om-oss/kartor/publikutforska.html',
 
 	// Url till Django/Elasticsearch API
-	apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
+	//apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
 	//For test with ortnamn data in index:
-	//apiUrl: 'https://frigg-test.isof.se/TradarkSearchService/api/es/',
+	apiUrl: 'https://frigg-test.isof.se/TradarkSearchService/api/es/',
 
 	// Url till Django Rest API
 	restApiUrl: 'https://frigg-test.isof.se/sagendatabas/api/'
+
 };
