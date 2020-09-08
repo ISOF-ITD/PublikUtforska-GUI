@@ -2,6 +2,7 @@ import React from 'react';
 import _ from 'underscore';
 
 import CategoryList from './CategoryList';
+// TODO: Seems only for  categories.getCategoryName() - Move categories.getCategoryName() to better place!
 import categories from './../../ISOF-React-modules/utils/sagenkartaCategories.js';
 
 export default class CategoryMenu extends React.Component {
@@ -69,7 +70,7 @@ export default class CategoryMenu extends React.Component {
 					<button onClick={this.toggleMinimize} className="minimize-button"><span>Minimera</span></button>
 				</div>
 
-				<div className={'list-container minimal-scrollbar'}>
+				<div tabindex={-1} className={'list-container minimal-scrollbar'}>
 					<CategoryList onItemClick={this.categoryItemClickHandler} ref="categoryList" selectedCategory={this.state.selectedCategory} />
 				</div>
 			</div>

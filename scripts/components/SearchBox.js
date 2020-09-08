@@ -19,6 +19,8 @@ export default class SearchBox extends React.Component {
 		this.executeSimpleSearch = this.executeSimpleSearch.bind(this);
 		this.searchBoxClickHandler = this.searchBoxClickHandler.bind(this);
 		this.toggleAdvanced = this.toggleAdvanced.bind(this);
+		this.itemKeyUpHandler = this.itemKeyUpHandler.bind(this);
+
 		this.languageChangedHandler = this.languageChangedHandler.bind(this);
 
 		// Lyssna efter event från eventBus som kommer om url:et ändras med nya sökparams
@@ -139,6 +141,12 @@ export default class SearchBox extends React.Component {
 
 	}
 
+	itemKeyUpHandler(event){
+		if(event.keyCode == 13){
+			this.toggleAdvanced();
+		} 
+	}
+
 	toggleAdvanced() {
 		this.setState({
 			advanced: !this.state.advanced
@@ -245,7 +253,7 @@ export default class SearchBox extends React.Component {
 
 					</div>
 
-					<a className="advanced-button" onClick={this.toggleAdvanced}>Avancerad sökning</a>
+					<a  tabIndex={0} className="advanced-button" onClick={this.toggleAdvanced} onKeyUp={this.itemKeyUpHandler}>Avancerad sökning</a>
 
 					<div className="advanced-content">
 

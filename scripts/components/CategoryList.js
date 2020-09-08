@@ -11,6 +11,7 @@ export default class CategoryMenu extends React.Component {
 		super(props);
 
 		this.itemClickHandler = this.itemClickHandler.bind(this);
+		this.itemKeyUpHandler = this.itemKeyUpHandler.bind(this);
 		this.selectionChangeHandler = this.selectionChangeHandler.bind(this);
 
 		this.state = {
@@ -34,6 +35,12 @@ export default class CategoryMenu extends React.Component {
 				selectedCategoryName: categories.getCategoryName(props.selectedCategory)
 			});
 		}
+	}
+
+	itemKeyUpHandler(event){
+		if(event.keyCode == 13){
+			this.itemClickHandler(event);
+		} 
 	}
 
 	itemClickHandler(event) {
@@ -80,10 +87,10 @@ export default class CategoryMenu extends React.Component {
 			};
 
 			if (this.props.multipleSelect) {
-				return <label key={index} data-index={index} className="item"><input value={item.letter} onChange={this.selectionChangeHandler} type="checkbox"/>{item.label}</label>;
+				return <label tabIndex={0} key={index} data-index={index} className="item"><input value={item.letter} onChange={this.selectionChangeHandler} onClick={this.itemClickHandler} onKeyUp={this.itemKeyUpHandler} type="checkbox"/>{item.label}</label>;
 			}
 			else {
-				return <a key={index} data-index={index} className={'item'+(item.letter == this.state.selectedCategory ? ' selected' : '')} onClick={this.itemClickHandler}>{item.label}</a>;
+				return <a tabIndex={0} key={index} data-index={index} className={'item'+(item.letter == this.state.selectedCategory ? ' selected' : '')} onClick={this.itemClickHandler} onClick={this.itemClickHandler} onKeyUp={this.itemKeyUpHandler}>{item.label}</a>;
 			}
 		}.bind(this));
 
