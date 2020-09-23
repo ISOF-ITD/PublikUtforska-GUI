@@ -92,7 +92,7 @@ export default {
 	// Url till Django/Elasticsearch API
 	//apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
 	//For test with ortnamn data in index:
-	apiUrl: 'https://frigg-test.isof.se/TradarkSearchService/api/es/',
+	apiUrl: 'https://frigg-test.isof.se/TradarkService/api/es/',
 
 	// Url till Django Rest API
 	restApiUrl: 'https://frigg-test.isof.se/sagendatabas/api/'
