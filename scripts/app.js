@@ -75,8 +75,11 @@ ReactDOM.render(
 				//"/places/search/:search?/category/:category,:subcategory/(has_metadata)?/:has_metadata?",
 				//"/places/search/:search/category/:category/(has_metadata)?/:has_metadata?",
 				//"/places/search/:search/(has_metadata)?/:has_metadata?",
+				"/places/search/:search/category/:category/gender/:gender/(filter)?/:filter?",
 				"/places/search/:search/category/:category/(filter)?/:filter?",
+				"/places/search/:search/search_field/:search_field/category/:category/gender/:gender/(filter)?/:filter?",
 				"/places/search/:search/search_field/:search_field/category/:category/(filter)?/:filter?",
+				"/places/search/:search/search_field/:search_field/gender/:gender/(filter)?/:filter?",
 				"/places/search/:search/search_field/:search_field/(filter)?/:filter?",
 				"/places/search/:search/(filter)?/:filter?",
 				
@@ -91,11 +94,20 @@ ReactDOM.render(
 				//"/places/:place_id/search/:search/(has_metadata)?/:has_metadata?",
 				//"/places/:place_id/(has_metadata)?/:has_metadata?",
 
+
+				"/places/:place_id([0-9]+)/search/:search/search_field/:search_field/category/:category/(filter)?/:filter?",
+				"/places/:place_id([0-9]+)/search/:search/search_field/:search_field/(filter)?/:filter?",
+				"/places/:place_id([0-9]+)/category/:category/gender/:gender/(filter)?/:filter?",
 				"/places/:place_id([0-9]+)/category/:category/(filter)?/:filter?",
+				"/places/:place_id([0-9]+)/gender/:gender/(filter)?/:filter?",
+
+				"/places/category/:category/person_relation/:person_relation/gender/:gender/(filter)?/:filter?",
+				"/places/category/:category/person_relation/:person_relation/(filter)?/:filter?",
+				"/places/category/:category/gender/:gender/(filter)?/:filter?",
 				"/places/category/:category/(filter)?/:filter?",
+				"/places/gender/:gender/(filter)?/:filter?",
+				"/places/gender/:gender/(filter)?/:filter?",
 				"/places/:place_id([0-9]+)/(filter)?/:filter?",
-				"/places/:place_id([0-9]+)/search/:search/category/:category/(filter)?/:filter?",
-				"/places/:place_id([0-9]+)/search/:search/(filter)?/:filter?",
 
 				"/places/(filter)?/:filter?", // this has to be the last item in order to match the other routes, 
 				//"/places/(has_metadata)?/:has_metadata?", // this has to be the last item in order to match the other routes, 
@@ -103,8 +115,8 @@ ReactDOM.render(
 
 				"/records/:person_id/text_ids/:text_ids/(filter)?/:filter?",
 				//"/records/:record_id/search/:search/category/:category,:subcategory/(filter)?/:filter?",
-				"/records/:record_id/search/:search/category/:category/(filter)?/:filter?",
-				"/records/:record_id/search/:search/(filter)?/:filter?",
+				"/records/:record_id/search/:search/search_field/:search_field/category/:category/(filter)?/:filter?",
+				"/records/:record_id/search/:search/search_field/:search_field/(filter)?/:filter?",
 				"/records/:record_id/search_field/:search_field/(filter)?/:filter?",
 				//"/records/:record_id/category/:category,:subcategory/(filter)?/:filter?",
 				"/records/:record_id/category/:category/(filter)?/:filter?",

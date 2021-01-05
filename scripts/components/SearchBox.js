@@ -292,12 +292,12 @@ export default class SearchBox extends React.Component {
 						<div className="radio-group">
 						
 							<label>
-								<input type="radio" value="k" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchGender == 'k'} />
+								<input type="radio" value="female" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchGender == 'female'} />
 								Kvinna
 							</label>
 
 							<label>
-								<input type="radio" value="m" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchGender == 'm'} />
+								<input type="radio" value="male" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchGender == 'male'} />
 								Man
 							</label>
 
