@@ -61,7 +61,7 @@ export default class SearchBox extends React.Component {
 
 	searchButtonClickHandler() {
 		// Lägg mer komplicerad sökroute till url:et, kommer hanteras via router objected i app.js och skickas till MapView och RecordList
-		history.push(
+		this.props.history.push(
 			'/places'+
 			(
 				this.state.searchValue != '' ?
