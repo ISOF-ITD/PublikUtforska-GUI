@@ -19,6 +19,8 @@ export default {
 		recordList: {
 			// Döljd materialtyp i RecordList, används för matkartan
 			hideMaterialType: true,
+			// Döljd Accession:page i RecordList, används för vissa kartor
+			//hideAccessionpage: true,
 
 			/*
 			// Dölj kategorier kolumn i RecordList, används för folkmusiken
