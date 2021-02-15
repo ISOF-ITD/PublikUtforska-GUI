@@ -51,6 +51,14 @@ gulp.task('default', gulp.series('scripts', 'less', 'watch'));
  
 // Private Functions
 // ----------------------------------------------------------------------------
+
+// source: https://stackoverflow.com/a/23973536
+function swallowError(error) {
+	// If you want details of the error in the console
+	console.log(error.toString())
+	this.emit('end')
+  }
+
 function bundleApp(isProduction) {
 	// Browserify will bundle all our js files together in to one and will let
 	// us use modules in the front end.
@@ -63,7 +71,7 @@ function bundleApp(isProduction) {
   		// transform ES6 and JSX to ES5 with babelify
 	  	.transform("babelify", {presets: ["@babel/preset-env", "@babel/preset-react"]})
 	    .bundle()
-	    .on('error', log)
+	    .on('error', isProduction ? log : swallowError)
 	    .pipe(source('app.js'))
     	.pipe(buffer())
         .pipe(gulpif(production, uglify()))
