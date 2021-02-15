@@ -31,7 +31,14 @@ export default class FilterSwitch extends React.Component {
 		this.setState({
 			filter: value
 		}, function() {
-			this.props.history.push('/places'+(this.state.selectedCategory ? '/category/'+this.state.selectedCategory : '')+(this.state.filter ? '/filter/true' : ''));
+			this.props.history.push(
+					'/places'
+					+(this.props.searchParams.search ? '/search/'+this.props.searchParams.search : '')
+					+(this.props.searchParams.search_field ? '/search_field/'+this.props.searchParams.search_field : '')
+					+(this.state.selectedCategory ? '/category/'+this.state.selectedCategory : '')
+					+(this.state.filter ? '/filter/true' : '')
+
+				);
 			if (window.eventBus) {
 				window.eventBus.dispatch('nordicLegendsUpdate', null, {searchMetadata: this.state.searchMetadata});
 			}

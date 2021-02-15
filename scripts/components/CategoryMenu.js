@@ -3,7 +3,7 @@ import _ from 'underscore';
 
 import CategoryList from './CategoryList';
 // TODO: Seems only for  categories.getCategoryName() - Move categories.getCategoryName() to better place!
-import categories from './../../ISOF-React-modules/utils/sagenkartaCategories.js';
+import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
 
 export default class CategoryMenu extends React.Component {
 	constructor(props) {
@@ -27,10 +27,21 @@ export default class CategoryMenu extends React.Component {
 
 	categoryItemClickHandler(event) {
 		if (event.selectedCategory == this.state.selectedCategory) {
-			this.props.history.push('/places'+(this.state.includeNordic ? '/nordic/true' : ''));
+			this.props.history.push(
+				'/places'
+				+(this.props.searchParams.search ? '/search/'+this.props.searchParams.search : '')
+				+(this.props.searchParams.search_field ? '/search_field/'+this.props.searchParams.search_field : '')
+				+(this.props.searchParams.filter ? '/filter/true' : '')
+			);
 		}
 		else {
-			this.props.history.push('/places/category/'+event.selectedCategory+(this.state.includeNordic ? '/nordic/true' : ''));
+			this.props.history.push(
+				'/places'
+				+(this.props.searchParams.search ? '/search/'+this.props.searchParams.search : '')
+				+(this.props.searchParams.search_field ? '/search_field/'+this.props.searchParams.search_field : '')
+				+'/category/'+event.selectedCategory
+				+(this.props.searchParams.filter ? '/filter/true' : '')
+			);
 		}
 	}
 
