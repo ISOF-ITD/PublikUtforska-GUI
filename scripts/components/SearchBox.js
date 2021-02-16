@@ -56,7 +56,7 @@ export default class SearchBox extends React.Component {
 		// }
 		this.props.history.push('/places'
 				+(this.state.searchValue != '' ? '/search/'+this.state.searchValue+'/search_field/'+this.state.searchField : '')
-				+(this.state.includeNordic ? '/nordic/true' : '')
+				+(this.props.searchParams['category'] ? '/category/'+this.props.searchParams['category'] : '')
 				+(this.props.searchParams['filter'] == "true" ? '/filter/true' : '')
 			);
 	}
@@ -84,6 +84,11 @@ export default class SearchBox extends React.Component {
 			(
 				this.state.searchGender != '' ?
 					'/gender/'+this.state.searchGender
+				: ''
+			)+
+			(
+				this.props.searchParams['filter'] == "true" ?
+					'/filter/true'
 				: ''
 			)
 		);
