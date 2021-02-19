@@ -72,8 +72,9 @@ export default {
 	},
 
 	// Application specific filter parameter First value (0) is false
+	// Probably not needed anymore
 	filterParameterName: 'transcriptionstatus',
-	filterParameterValues: ['readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
+	filterParameterValues: ['untranscribed,readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
 
 	// Vilket land vi hämtar data från
 	country: 'sweden',
