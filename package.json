@@ -9,8 +9,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/preset-env": "^7.12.16",
+    "@babel/core": "^7.13.1",
+    "@babel/preset-env": "^7.13.0",
     "@babel/preset-react": "^7.12.13",
     "@turf/boolean-point-in-polygon": "^6.3.0",
     "babelify": "^10.0.0",
@@ -49,7 +49,7 @@
     "underscore": "^1.12.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
-    "whatwg-fetch": "^3.5.0"
+    "whatwg-fetch": "^3.6.1"
   },
   "dependencies": {}
 }
