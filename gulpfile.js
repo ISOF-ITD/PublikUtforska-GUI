@@ -48,6 +48,8 @@ gulp.task('watch', function (done) {
 // It will start watching for changes in every .js file.
 // If there's a change, the task 'scripts' defined above will fire.
 gulp.task('default', gulp.series('scripts', 'less', 'watch'));
+
+gulp.task('build', gulp.series('scripts', 'less'));
  
 // Private Functions
 // ----------------------------------------------------------------------------
