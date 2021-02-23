@@ -72,6 +72,7 @@ export default {
 	},
 
 	// Application specific filter parameter First value (0) is false
+	// Probably not needed anymore
 	filterParameterName: 'transcriptionstatus',
 	filterParameterValues: ['untranscribed,readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
 
