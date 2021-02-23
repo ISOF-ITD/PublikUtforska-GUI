@@ -1,6 +1,6 @@
 import React from 'react';
-import { Router } from 'react-router-dom';
-//import history from './../../ISOF-React-modules/components/History';
+import { Route } from 'react-router-dom';
+import routeHelper from './../utils/routeHelper'
 
 import CategoryMenu from './CategoryMenu';
 import SearchBox from './SearchBox';
@@ -22,9 +22,7 @@ export default class MapMenu extends React.Component {
 	}
 
 	componentDidMount() {
-		this.setState({
-			// remove all, first prop: selectedCategory: this.props.selectedCategory,
-		});
+	debugger;
 	}
 
 	UNSAFE_componentWillReceiveProps(props) {
@@ -57,21 +55,29 @@ export default class MapMenu extends React.Component {
 	}
 
 	render() {
-		let _props = this.props
 		return (
-			<div className={'menu-wrapper'+(this.state.expanded ? ' menu-expanded' : '')+(this.state.advanced ? ' advanced-menu-view' : '')}>
+			<Route
+			path={['/places/:place_id([0-9]+)?', '/records/:record_id']}
+				render= {(props) =>
+					<div className={'menu-wrapper'+(this.state.expanded ? ' menu-expanded' : '')+(this.state.advanced ? ' advanced-menu-view' : '')}>
 
-				<FilterSwitch {..._props} />
+						<FilterSwitch 
+							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
+							{...props} 
+						/>
 
-				<SearchBox ref="searchBox" 
-					onSizeChange={this.searchBoxSizeChangeHandler} 
-					onSearch={this.searchBoxSearchHandler} 
-					{..._props}	
-				/>
+						<SearchBox
+							onSizeChange={this.searchBoxSizeChangeHandler} 
+							onSearch={this.searchBoxSearchHandler} 
+							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
+							{...props}	
+						/>
 
-				<CategoryMenu {..._props} />
+						<CategoryMenu {...props} />
 
-			</div>
+					</div>
+				}
+			/>
 		);
 	}
 }

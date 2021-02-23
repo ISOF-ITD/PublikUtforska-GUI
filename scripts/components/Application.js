@@ -2,10 +2,10 @@ import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 
 import MapMenu from './MapMenu';
-import MapView from './../../ISOF-React-modules/components/views/MapView';
-import PlaceView from './../../ISOF-React-modules/components/views/PlaceView';
+import MapView from './views/MapView';
+import PlaceView from './views/PlaceView';
 import PersonView from './../../ISOF-React-modules/components/views/PersonView';
-import RecordView from './../../ISOF-React-modules/components/views/RecordView';
+import RecordView from './views/RecordView';
 import RoutePopupWindow from './../../ISOF-React-modules/components/controls/RoutePopupWindow';
 import LocalLibraryView from './../../ISOF-React-modules/components/views/LocalLibraryView';
 import ImageOverlay from './../../ISOF-React-modules/components/views/ImageOverlay';
@@ -126,15 +126,15 @@ export default class Application extends React.Component {
 		// Skickar alla sök-parametrar via global eventBus
 		if (window.eventBus) {
 			window.eventBus.dispatch('application.searchParams', {
-				selectedCategory: this.props.match.params.category,
-				selectedSubcategory: this.props.match.params.subcategory,
-				searchValue: this.props.match.params.search,
-				searchField: this.props.match.params.search_field,
-				searchYearFrom: this.props.match.params.year_from,
-				searchYearTo: this.props.match.params.year_to,
-				searchPersonRelation: this.props.match.params.person_relation,
-				searchGender: this.props.match.params.gender,
-				filter: this.props.match.params.filter
+				selectedCategory: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['category'],
+				selectedSubcategory: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['subcategory'],
+				searchValue: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['search'],
+				searchField: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['search_field'],
+				searchYearFrom: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['year_from'],
+				searchYearTo: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['year_to'],
+				searchPersonRelation: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['person_relation'],
+				searchGender: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['gender'],
+				filter: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['filter'],
 			});
 
 			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
@@ -147,62 +147,11 @@ export default class Application extends React.Component {
 			}, 2500);
 		}
 
-		// Spara alla sök-parametrar till state
-		this.setState({
-			selectedCategory: this.props.match.params.category,
-			selectedSubcategory: this.props.match.params.subcategory,
-			searchValue: this.props.match.params.search,
-			searchField: this.props.match.params.search_field,
-			searchYearFrom: this.props.match.params.year_from,
-			searchYearTo: this.props.match.params.year_to,
-			searchPersonRelation: this.props.match.params.person_relation,
-			searchGender: this.props.match.params.gender,
-			searchMetadata: this.props.match.params.has_metadata,
-			//In Sägenkarta
-			match: this.props.match,
-			//params: this.props.match.params
-		}, function() {
-			setTimeout(function() {
-				// Väntar en sekund, lägger till app-initialized till body class,
-				// detta kör css transition som animerar gränssnittet i början
-				document.body.classList.add('app-initialized');
-			}.bind(this), 1000);
-		}.bind(this));
-	}
-
-	UNSAFE_componentWillReceiveProps(props) {
-		// När application tar emot parametrar från url:et, skicka dem via eventBus
-		// MapView, RecordsList och sökfält tar emot dem och hämtar data
-		if (window.eventBus) {
-			eventBus.dispatch('application.searchParams', {
-				selectedCategory: props.match.params.category,
-				selectedSubategory: props.match.params.category,
-				searchValue: props.match.params.search,
-				searchField: props.match.params.search_field,
-				searchYearFrom: props.match.params.year_from,
-				searchYearTo: props.match.params.year_to,
-				searchPersonRelation: props.match.params.person_relation,
-				searchGender: props.match.params.gender,
-				searchMetadata: props.match.params.has_metadata,
-				filter: props.match.params.filter
-			});
-		}
-
-		this.setState({
-			selectedCategory: props.match.params.category,
-			selectedSubcategory: props.match.params.subcategory,
-			searchValue: props.match.params.search,
-			searchField: props.match.params.search_field,
-			searchYearFrom: props.match.params.year_from,
-			searchYearTo: props.match.params.year_to,
-			searchPersonRelation: props.match.params.person_relation,
-			searchGender: props.match.params.gender,
-			searchMetadata: props.match.params.has_metadata,
-			//In Sägenkarta
-			filter: props.match.params.filter,
-			//params: props.match.params
-			match: props.match,
-		});
+		setTimeout(function() {
+			// Väntar en sekund, lägger till app-initialized till body class,
+			// detta kör css transition som animerar gränssnittet i början
+			document.body.classList.add('app-initialized');
+		}.bind(this), 1000);
 	}
 
 	shouldComponentUpdate(nextProps, nextState) {
@@ -234,17 +183,20 @@ export default class Application extends React.Component {
 							path={[
 								"/places/:place_id([0-9]+)",
 							]}
-							>
+							render= {(props) =>
 								<RoutePopupWindow
 									onShow={this.popupWindowShowHandler}
 									onHide={this.popupWindowHideHandler}
 									onClose={this.popupCloseHandler}
 									router={this.context.router}>
 										<PlaceView 
-											match={this.props.match}
+											{...props}
+											searchParams={routeHelper.createParamsFromPlacesRoute(props.location.pathname)}
+											showOnlyResults={Object.values(routeHelper.createParamsFromPlacesRoute(props.location.pathname)).filter(_ => _).length == 1}
 										/>
 								</RoutePopupWindow>
-						</Route>
+							}
+						/>
 
 						<Route path = "/places" render={() =>
 							<RoutePopupWindow
@@ -255,36 +207,39 @@ export default class Application extends React.Component {
 									{this.props.popup}
 							</RoutePopupWindow>
 						}/>
-						<Route path = "/records" render={() =>
+						<Route path = "/records" render={(props) =>
 							<RoutePopupWindow
 								onShow={this.popupWindowShowHandler}
 								onHide={this.popupWindowHideHandler}
 								onClose={this.popupCloseHandler}
 								router={this.context.router}>
-									<RecordView {...this.props} />
+									<RecordView {...props} />
 							</RoutePopupWindow>
 						}/>
 					</Switch>
 
-					<MapView
-						searchParams={this.props.match.params}
-						onMarkerClick={this.mapMarkerClick}
-						defaultMarkerIcon={this.defaultMarkerIcon}
-						hideMapmodeMenu={true}
-					>
+					<Route path={['/places/:place_id([0-9]+)?', '/records/:record_id']} render={(props) =>
+						<MapView
+							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
+							onMarkerClick={this.mapMarkerClick}
+							defaultMarkerIcon={this.defaultMarkerIcon}
+							hideMapmodeMenu={true}
+							{...props}
+						>
 
-						<MapMenu
-							searchParams={this.props.match.params}
-							//searchMetadata={this.state.searchMetadata}
-							//selectedCategory={this.state.selectedCategory}
-							//selectedSubcategory={this.state.selectedSubcategory}
-							{...this.props}
-						/>
+							<MapMenu
+								searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
+								//searchMetadata={this.state.searchMetadata}
+								//selectedCategory={this.state.selectedCategory}
+								//selectedSubcategory={this.state.selectedSubcategory}
+								// routeHelper={routeHelper}
+								{...props}
+							/>
 
-						<LocalLibraryView headerText={l('Mina sägner')} history={this.props.history} />
+							<LocalLibraryView headerText={l('Mina sägner')} history={this.props.history} />
 
-					</MapView>
-
+						</MapView>
+					}/>
 					
 
 					<div className="map-progress"><div className="indicator"></div></div>

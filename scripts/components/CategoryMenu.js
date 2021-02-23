@@ -3,7 +3,9 @@ import _ from 'underscore';
 
 import CategoryList from './CategoryList';
 // TODO: Seems only for  categories.getCategoryName() - Move categories.getCategoryName() to better place!
-import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
+import categories from './../../ISOF-React-modules/utils/utforskaCategories';
+import { Route } from 'react-router-dom';
+import routeHelper from './../utils/routeHelper'
 
 export default class CategoryMenu extends React.Component {
 	constructor(props) {
@@ -11,38 +13,14 @@ export default class CategoryMenu extends React.Component {
 
 		this.menuButtonClick = this.menuButtonClick.bind(this);
 		this.toggleMinimize = this.toggleMinimize.bind(this);
-		this.categoryItemClickHandler = this.categoryItemClickHandler.bind(this);
-
-		if (window.eventBus) {
-			window.eventBus.addEventListener('application.searchParams', this.receivedSearchParams.bind(this))
-		}
+		// this.categoryItemClickHandler = this.categoryItemClickHandler.bind(this);
 
 		this.state = {
 			menuOpen: false,
-			selectedCategory: null,
+			selectedCategories: [],
 			includeNordic: false,
 			minimized: document.documentElement.clientWidth < 500 || false
 		};
-	}
-
-	categoryItemClickHandler(event) {
-		if (event.selectedCategory == this.state.selectedCategory) {
-			this.props.history.push(
-				'/places'
-				+(this.props.searchParams.search ? '/search/'+this.props.searchParams.search : '')
-				+(this.props.searchParams.search_field ? '/search_field/'+this.props.searchParams.search_field : '')
-				+(this.props.searchParams.filter ? '/filter/true' : '')
-			);
-		}
-		else {
-			this.props.history.push(
-				'/places'
-				+(this.props.searchParams.search ? '/search/'+this.props.searchParams.search : '')
-				+(this.props.searchParams.search_field ? '/search_field/'+this.props.searchParams.search_field : '')
-				+'/category/'+event.selectedCategory
-				+(this.props.searchParams.filter ? '/filter/true' : '')
-			);
-		}
 	}
 
 	menuButtonClick() {
@@ -57,32 +35,49 @@ export default class CategoryMenu extends React.Component {
 		});
 	}
 
-	receivedSearchParams(event) {
+	componentDidMount() {
+		const category_param = routeHelper.createParamsFromPlacesRoute(this.props.location.pathname).category
 		this.setState({
-			selectedCategory: event.target.selectedCategory,
-			includeNordic: event.target.includeNordic
+			selectedCategories: category_param ? category_param.split(',') : [],
 		});
 	}
 
+	UNSAFE_componentWillReceiveProps(props) {
+		if (this.props.location.pathname !== props.location.pathname) {
+			const category_param = routeHelper.createParamsFromPlacesRoute(props.location.pathname).category
+			this.setState({
+				selectedCategories: category_param ? category_param.split(',') : [],
+			});
+		}
+	}
+
 	shouldComponentUpdate(nextProps, nextState) {
-		return this.state.selectedCategory != nextState.selectedCategory || this.state.minimized != nextState.minimized;
+		return this.state.selectedCategories.join(',') !== nextState.selectedCategories.join(',') || this.state.minimized !== nextState.minimized;
 	}
 
 	render() {
+		let selectedCategoriesString = this.state.selectedCategories.map(category => categories.getCategoryName(category)).join(" ")
+		selectedCategoriesString = selectedCategoriesString === '' ? '' : `: ${selectedCategoriesString}`
 		return (
 			<div ref="container" className={'heading-list-wrapper'+(this.state.minimized ? ' minimized' : '')}>
 				<div className="list-heading panel-heading">
-					<span className="heading-label">{l('Kategorier')}<span className="selected-category">
-						{
-							this.state.selectedCategory ? ': '+categories.getCategoryName(this.state.selectedCategory) : ''
-						}
-					</span></span>
+					<span className="heading-label">{l('Kategorier')}</span><span className="selected-categories">
+						{ selectedCategoriesString }
+					</span>
 
 					<button onClick={this.toggleMinimize} className="minimize-button"><span>Minimera</span></button>
 				</div>
 
 				<div tabIndex={-1} className={'list-container minimal-scrollbar'}>
-					<CategoryList onItemClick={this.categoryItemClickHandler} ref="categoryList" selectedCategory={this.state.selectedCategory} />
+					<Route
+						path={'/'}
+						render= {(props) =>
+							<CategoryList 
+								multipleSelect="true"
+								{...props}
+							/>
+						}
+					/>
 				</div>
 			</div>
 		);

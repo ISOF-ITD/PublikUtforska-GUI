@@ -3,8 +3,7 @@ import ReactDOM from 'react-dom';
 import { HashRouter, Route, Redirect } from 'react-router-dom'
 
 import Application from './components/Application';
-import RecordListWrapper from './../ISOF-React-modules/components/views/RecordListWrapper';
-import PersonView from './../ISOF-React-modules/components/views/PersonView';
+import RecordListWrapper from './components/views/RecordListWrapper';
 
 console.log(`PublikUtforska running React.js version ${React.version} and ReactDOM version ${ReactDOM.version}`);
 
@@ -65,86 +64,22 @@ ReactDOM.render(
 		<Route exact path="/">
 			<Redirect to="/places" />
 		</Route>
-		<Route 
-			path={[
-
-				// Saved records by user
-				"/places/record_ids/:record_ids/(filter)?/:filter?",
-
-				"/places/search/:search/category/:category/person_relation/:person_relation/gender/:gender/(filter)?/:filter?",
-				"/places/search/:search/category/:category/person_relation/:person_relation/(filter)?/:filter?",
-				"/places/search/:search/person_relation/:person_relation/gender/:gender/(filter)?/:filter?",
-				"/places/search/:search/person_relation/:person_relation/(filter)?/:filter?",
-				"/places/search/:search/category/:category/gender/:gender/(filter)?/:filter?",
-				"/places/search/:search/category/:category/(filter)?/:filter?",
-				"/places/search/:search/search_field/:search_field/category/:category/person_relation/:person_relation/gender/:gender/(filter)?/:filter?",
-				"/places/search/:search/search_field/:search_field/category/:category/gender/:gender/(filter)?/:filter?",
-				"/places/search/:search/search_field/:search_field/category/:category/(filter)?/:filter?",
-				"/places/search/:search/search_field/:search_field/person_relation/:person_relation/gender/:gender/(filter)?/:filter?",
-				"/places/search/:search/search_field/:search_field/gender/:gender/(filter)?/:filter?",
-				"/places/search/:search/search_field/:search_field/(filter)?/:filter?",
-				"/places/search/:search/(filter)?/:filter?",
-				
-				"/places/search_field/:search_field",
-
-				"/places/:place_id([0-9]+)/search/:search/search_field/:search_field/category/:category/(filter)?/:filter?",
-				"/places/:place_id([0-9]+)/search/:search/search_field/:search_field/(filter)?/:filter?",
-				"/places/:place_id([0-9]+)/category/:category/gender/:gender/(filter)?/:filter?",
-				"/places/:place_id([0-9]+)/category/:category/(filter)?/:filter?",
-				"/places/:place_id([0-9]+)/gender/:gender/(filter)?/:filter?",
-
-				"/places/category/:category/person_relation/:person_relation/gender/:gender/(filter)?/:filter?",
-				"/places/category/:category/person_relation/:person_relation/(filter)?/:filter?",
-				"/places/category/:category/gender/:gender/(filter)?/:filter?",
-				"/places/category/:category/(filter)?/:filter?",
-				"/places/gender/:gender/(filter)?/:filter?",
-				"/places/gender/:gender/(filter)?/:filter?",
-				"/places/:place_id([0-9]+)/(filter)?/:filter?",
-
-				"/places/(filter)?/:filter?", // this has to be the last item in order to match the other routes, 
-				//"/places/(has_metadata)?/:has_metadata?", // this has to be the last item in order to match the other routes, 
-				// otherwise it will match longer paths as well
-
-				"/records/:person_id/text_ids/:text_ids/(filter)?/:filter?",
-				"/records/:record_id/search/:search/search_field/:search_field/category/:category/(filter)?/:filter?",
-				"/records/:record_id/search/:search/search_field/:search_field/(filter)?/:filter?",
-				"/records/:record_id/search_field/:search_field/(filter)?/:filter?",
-				"/records/:record_id/category/:category/(filter)?/:filter?",
-				"/records/:record_id/(filter)?/:filter?",
-
-				"/person/:person_id/(filter)?/:filter?",
-
-			]}
+		<Route
+			path={['/places/:place_id([0-9]+)?', '/records/:record_id']}
 			render={(props) =>
 				<Application
-					popup={<RecordListWrapper 
-						{...props} 
+					popup={<RecordListWrapper
+						{...props}
 						manuallyOpenPopup={true}
-						//highlightRecordsWithMetadataField="sitevision_url" 
 						openButtonLabel="Visa sökträffar som lista"
 						disableRouterPagination={true}
 						/>}
-					{...props}	
+					{...props}
 				/>
 			}
 		/>
 
 	</HashRouter>,
 	document.getElementById('app')
-
-
-// Old:
-//			<Route path="/places(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)(/page/:page)" 
-//				manuallyOpenPopup="true" openButtonLabel="Visa sökträffar som lista" components={{popup: RecordListWrapper}}/>
-
-//			<Route path="/place/:place_id(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)" 
-//				components={{popup: PlaceView}}/>
-
-//			<Route path="/person/:person_id" 
-//				components={{popup: PersonView}}/>
-
-//			<Route path="/records/:record_id(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)" 
-//				components={{popup: RecordView}}/>
-
 
 );
