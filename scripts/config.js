@@ -4,7 +4,7 @@ export default {
 
 	// Parametrar som alltid skulle skickas till API:et, här passar vi på att sägenkartan alltid hämtar textar av typ arkiv eller tryckt och som finns i en kategori
 	requiredParams: {
-		transcriptionstatus: 'readytotranscribe,transcribed,reviewing,approved,published',
+		// transcriptionstatus: 'readytotranscribe,transcribed,reviewing,approved,published',
 		mark_metadata: 'transcriptionstatus',
 		//type: 'arkiv,tryckt',
 		categorytypes: 'tradark'
@@ -73,7 +73,7 @@ export default {
 
 	// Application specific filter parameter First value (0) is false
 	filterParameterName: 'transcriptionstatus',
-	filterParameterValues: ['readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
+	filterParameterValues: ['untranscribed,readytotranscribe,transcribed,reviewing,approved,published', 'readytotranscribe'],
 
 	// Vilket land vi hämtar data från
 	country: 'sweden',
