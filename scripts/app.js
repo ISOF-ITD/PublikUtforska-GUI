@@ -65,7 +65,7 @@ ReactDOM.render(
 			<Redirect to="/places" />
 		</Route>
 		<Route
-			path={['/places/:place_id([0-9]+)?', '/records/:record_id']}
+			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
 			render={(props) =>
 				<Application
 					popup={<RecordListWrapper

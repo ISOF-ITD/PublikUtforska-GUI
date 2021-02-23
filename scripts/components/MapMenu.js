@@ -21,16 +21,6 @@ export default class MapMenu extends React.Component {
 		};
 	}
 
-	componentDidMount() {
-	debugger;
-	}
-
-	UNSAFE_componentWillReceiveProps(props) {
-		this.setState({
-			// remove all, first prop: selectedCategory: this.props.selectedCategory,
-		});
-	}
-
 	searchBoxSizeChangeHandler(event) {
 		this.setState({
 			expanded: event.expanded,
@@ -57,7 +47,7 @@ export default class MapMenu extends React.Component {
 	render() {
 		return (
 			<Route
-			path={['/places/:place_id([0-9]+)?', '/records/:record_id']}
+			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
 				render= {(props) =>
 					<div className={'menu-wrapper'+(this.state.expanded ? ' menu-expanded' : '')+(this.state.advanced ? ' advanced-menu-view' : '')}>
 

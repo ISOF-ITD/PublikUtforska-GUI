@@ -73,14 +73,28 @@ export default class Application extends React.Component {
 	popupCloseHandler() {
 		// Lägg till rätt route när användaren stänger popuprutan
 		if (this.props.location.pathname.indexOf('records/') > -1) {
-			this.props.history.push(routeHelper.createPlacesPathFromRecord(this.props.location.pathname));
+			this.props.history.push(
+				'/places'
+				+ routeHelper.createSearchRoute(
+					routeHelper.createParamsFromRecordRoute(this.props.location.pathname)
+				)
+			);
 		}
 		else if (this.props.location.pathname.indexOf('places/') > -1) {
-			this.props.history.push(routeHelper.createPlacesPathFromPlace(this.props.location.pathname));
+			this.props.history.push(
+				'/places'
+				+ routeHelper.createSearchRoute(
+					routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)
+				)
+			);
 		}
 		else {
-			var routeParams = routeHelper.createSearchRoute(this.props.match.params);
-			this.props.history.push('/places' +(routeParams ? routeParams : ''));
+			this.props.history.push(
+				'/places'
+				+ routeHelper.createSearchRoute(
+					routeHelper.createParamsFromSearchRoute(this.props.location.pathname.split(this.props.match.url)[1])
+				)
+			);
 		}
 	}
 
@@ -218,7 +232,7 @@ export default class Application extends React.Component {
 						}/>
 					</Switch>
 
-					<Route path={['/places/:place_id([0-9]+)?', '/records/:record_id']} render={(props) =>
+					<Route path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']} render={(props) =>
 						<MapView
 							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
 							onMarkerClick={this.mapMarkerClick}

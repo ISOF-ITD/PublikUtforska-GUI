@@ -97,7 +97,6 @@ export default class PlaceView extends React.Component {
 		const params = routeHelper.createParamsFromPlacesRoute(
 			this.props.location.pathname
 		)
-		console.log(this.props.location.pathname)
 		this.handleParams(params);
 	}
 
