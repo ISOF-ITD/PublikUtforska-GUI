@@ -28,7 +28,7 @@ export default class PlaceView extends React.Component {
 	}
 
 	handleParams(params) {
-		var fetchParams = params;
+		const fetchParams = {...params};
 
 		// TODO: Is 'nordic' needed in this component? Is it for filter on country in placeview or to hand over to subcomponent as RecordList? (or inconsistency if placeid not in current country of map?)
 		// country is also set in RecordList! 

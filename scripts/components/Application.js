@@ -174,7 +174,6 @@ export default class Application extends React.Component {
 	}
 
 	render() {
-		let _props = this.props;
 
 		return (
 				<div className={'app-container'+(this.state.popupVisible ? ' has-overlay' : '')}>
@@ -261,7 +260,7 @@ export default class Application extends React.Component {
 					<ImageOverlay />
 					<FeedbackOverlay />
 					<ContributeInfoOverlay />
-					<TranscriptionOverlay {..._props} />
+					<TranscriptionOverlay {...this.props} />
 					<TranscriptionHelpOverlay />
 					<PopupNotificationMessage />
 

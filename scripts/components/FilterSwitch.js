@@ -45,7 +45,7 @@ export default class FilterSwitch extends React.Component {
 		this.setState({
 			filter: value
 		}, function() {
-			const params = this.props.searchParams
+			const params = {...this.props.searchParams}
 			params['filter'] = value
 			this.props.history.push(
 				'/places'

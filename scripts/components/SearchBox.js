@@ -47,7 +47,7 @@ export default class SearchBox extends React.Component {
 	}
 
 	executeSearch() {
-		const params = this.props.searchParams
+		const params = {...this.props.searchParams}
 		params['search'] = this.state.searchParams.search
 		params['search_field'] = this.state.searchParams.search_field
 		params['category'] = this.state.searchParams.category
@@ -67,7 +67,7 @@ export default class SearchBox extends React.Component {
 	// Lägg nytt värde till state om valt värde ändras i sökfält, kategorilisten eller andra sökfält
 	searchValueChangeHandler(event) {
 		if (event.target.value != this.state.searchParams.search) {
-			const searchParams = this.state.searchParams
+			const searchParams = {...this.state.searchParams}
 			searchParams.search = event.target.value
 			this.setState({
 				searchParams: searchParams,
@@ -77,7 +77,7 @@ export default class SearchBox extends React.Component {
 
 	searchFieldChangeHandler(event) {
 		if (event.target.value != this.state.searchParams.search_field) {
-			const searchParams = this.state.searchParams
+			const searchParams = {...this.state.searchParams}
 			searchParams.search_field = event.target.value
 			this.setState({
 				searchParams: searchParams,
@@ -87,7 +87,7 @@ export default class SearchBox extends React.Component {
 
 	searchPersonRelationChangeHandler(event) {
 		if (event.target.value != this.state.searchParams.person_relation) {
-			const searchParams = this.state.searchParams
+			const searchParams = {...this.state.searchParams}
 			searchParams.person_relation = event.target.value == 'both' ? '' : event.target.value
 			this.setState({
 				searchParams: searchParams,
@@ -97,8 +97,8 @@ export default class SearchBox extends React.Component {
 
 	searchRecordtypeChangeHandler(event) {
 		if (event.target.value != this.state.searchParams.recordtype) {
-			const searchParams = this.state.searchParams
-			searchParams.recordtype = event.target.value == 'both' ? '' : event.target.value
+			const searchParams = {...this.state.searchParams}
+			searchParams.recordtype = event.target.value == 'both' ? '' : event.target.value;
 			this.setState({
 				searchParams: searchParams,
 			});
@@ -107,7 +107,7 @@ export default class SearchBox extends React.Component {
 
 	searchGenderChangeHandler(event) {
 		if (event.target.value != this.state.searchParams.gender) {
-			const searchParams = this.state.searchParams
+			const searchParams = {...this.state.searchParams}
 			searchParams.gender = event.target.value == 'both' ? '' : event.target.value
 			this.setState({
 				searchParams: searchParams,
@@ -152,7 +152,7 @@ export default class SearchBox extends React.Component {
 
 		if (JSON.stringify(currentParams) !== JSON.stringify(params)) {
 
-			const searchParams = props.searchParams
+			const searchParams = {...props.searchParams}
 			searchParams['search_field'] = searchParams['search_field'] || 'record'
 	
 			this.setState({
@@ -173,7 +173,7 @@ export default class SearchBox extends React.Component {
 			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler)
 		}
 
-		let searchParams = this.props.searchParams;
+		const searchParams = {...this.props.searchParams};
 		searchParams['search_field'] = searchParams['search_field'] || 'record';
 
 		this.setState({
