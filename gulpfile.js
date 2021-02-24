@@ -39,8 +39,8 @@ gulp.task('less', function(){
 gulp.task('deploy', () => bundleApp(true) );
  
 gulp.task('watch', function (done) {
-	gulp.watch(['./scripts/*.js', './scripts/*/*.js', './ISOF-React-modules/*.js', './ISOF-React-modules/*/*.js', './ISOF-React-modules/*/*/*.js'], gulp.series('scripts'));
-	gulp.watch(['./less/*.less', './less/*/*.less', './ISOF-React-modules/less/*.less', './ISOF-React-modules/less/*/*.less', './ISOF-React-modules/less/*/*/*.less'], gulp.series('less'));
+	gulp.watch(['./scripts/*.js', './scripts/**/*.js', './ISOF-React-modules/*.js', './ISOF-React-modules/**/*.js'], gulp.series('scripts'));
+	gulp.watch(['./less/*.less', './less/**/*.less', './ISOF-React-modules/less/*.less', './ISOF-React-modules/less/**/*.less'], gulp.series('less'));
 	done();
 });
  
