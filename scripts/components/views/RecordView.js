@@ -229,7 +229,7 @@ export default class RecordView extends React.Component {
 				</tr>;
 			}) : [];
 
-			var textElement;
+			let textElement;
 
 			var forceFullWidth  = false;
 
@@ -270,7 +270,16 @@ export default class RecordView extends React.Component {
 			}
 			// Annars visar vi texten som vanligt
 			else {
-				textElement = <div className="record-text" dangerouslySetInnerHTML={{__html: this.state.data.text}} />;
+				let text = this.state.data.text
+				// create a button/label to hide and show text below "Uppslagsord"
+				if (text && text.includes('<p>Uppslagsord:</p>')) {
+					let uppslagsordLink = '<p><label for="toggle">Uppslagsord</label></p>'
+					let parts = text.split('<p>Uppslagsord:</p>')
+					text = parts[0] 
+						+ uppslagsordLink
+						+ '<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">' + parts[1] + '</div>'
+				}
+				textElement = <div className="record-text" dangerouslySetInnerHTML={{__html: text}} />;
 			}
 
 			// Förbereder kategori länk

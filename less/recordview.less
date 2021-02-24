@@ -1,0 +1,25 @@
+// https://css-tricks.com/the-checkbox-hack/
+
+.realkatalog-content {
+    display: none;
+}
+#toggle:checked ~ .realkatalog-content {
+    display: block;
+}
+
+label {
+    color: #a6192e;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.visually-hidden {
+    position: absolute;
+    left: -100vw;
+
+    /* Note, you may want to position the
+    checkbox over top the label and set the
+    opacity to zero instead. It can be
+    better for accessibilty on some touch
+    devices for discoverability. */
+}
