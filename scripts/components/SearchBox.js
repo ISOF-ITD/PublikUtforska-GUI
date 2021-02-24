@@ -146,18 +146,21 @@ export default class SearchBox extends React.Component {
 		}.bind(this));
 	}
 
-	UNSAFE_componentWillReceiveProps(props) {
-		const currentParams = JSON.parse(JSON.stringify(this.props.searchParams));
+	getDerivedStateFromProps(props, currentState) {
+		const currentParams = JSON.parse(JSON.stringify(currentState.searchParams));
 		const params = JSON.parse(JSON.stringify(props.searchParams));
+		const nextState = {...currentState}
 
 		if (JSON.stringify(currentParams) !== JSON.stringify(params)) {
 
 			const searchParams = {...props.searchParams}
 			searchParams['search_field'] = searchParams['search_field'] || 'record'
 	
-			this.setState({
-				searchParams: searchParams
-			})
+			nextState['searchParams'] = searchParams;
+			
+			return nextState;
+		} else {
+			return null;
 		}
 	}
 
@@ -258,12 +261,6 @@ export default class SearchBox extends React.Component {
 
 						<hr/>
 
-						{/* <h4>Kategorier</h4>
-						<DropdownMenu label="Avgränsa till kategorier">
-							<CategoryList multipleSelect="true" onChange={this.searchCategoriesChangeHandler} />
-						</DropdownMenu>
-
-						<hr/> */}
 						<h4>Record Type</h4>
 						<div className="radio-group">
 						

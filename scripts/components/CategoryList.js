@@ -14,33 +14,11 @@ export default class CategoryList extends React.Component {
 
 		this.itemClickHandler = this.itemClickHandler.bind(this);
 		this.itemKeyUpHandler = this.itemKeyUpHandler.bind(this);
-		this.selectionChangeHandler = this.selectionChangeHandler.bind(this);
-
-		this.state = {
-			selectedCategoryName: null,
-			selectedCategories: []
-		};
 	}
 
-	componentDidMount() {
-		const category_param = routeHelper.createParamsFromPlacesRoute(this.props.location.pathname).category
-		this.setState({
-			selectedCategories: category_param ? category_param.split(',') : [],
-		});
-	}
-
-	UNSAFE_componentWillReceiveProps(props) {
-		if (this.props.location.pathname !== props.location.pathname) {
-			const category_param = routeHelper.createParamsFromPlacesRoute(props.location.pathname).category
-			this.setState({
-				selectedCategories: category_param ? category_param.split(',') : [],
-			});
-		}
-	}
-
-	categoryItemClickHandler(event) {
+	categoryItemClickHandler(selectedCategories) {
 		const params = routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)
-		params['category'] = this.state.selectedCategories.join(',')
+		params['category'] = selectedCategories.join(',')
 		const path = "/places" + routeHelper.createSearchRoute(params)
 		this.props.history.push(path);
 	}
@@ -53,39 +31,18 @@ export default class CategoryList extends React.Component {
 
 	itemClickHandler(event) {
 		const selectedCategory = categories.categories[event.target.dataset.index].letter
-
-		var selectedCategories = []
-		if (this.state.selectedCategories.includes(selectedCategory)) {
-			selectedCategories = this.state.selectedCategories.filter(c => c !== selectedCategory)
-		} else {
-			selectedCategories = this.state.selectedCategories
+		let currentSelectedCategories = this.props.searchParams.category && this.props.searchParams.category.split(',')
+		let selectedCategories = []
+		if (currentSelectedCategories && currentSelectedCategories.includes(selectedCategory)) {
+			selectedCategories = currentSelectedCategories.filter(c => c !== selectedCategory)
+		} else if (currentSelectedCategories) {
+			selectedCategories = currentSelectedCategories
 			selectedCategories.push(selectedCategory)
+		} else {
+			selectedCategories = [selectedCategory]
 		}
 
-		this.setState({
-			selectedCategories: selectedCategories
-		},
-		() => this.categoryItemClickHandler(selectedCategory));
-	}
-
-	selectionChangeHandler(event) {
-		var value = event.target.value;
-		var selectedCategories = this.state.selectedCategories;
-
-		if (selectedCategories.indexOf(value) == -1) {
-			selectedCategories.push(value);
-		}
-		else {
-			selectedCategories.splice(selectedCategories.indexOf(value), 1);
-		}
-
-		this.setState({
-			selectedCategories: selectedCategories
-		}, function() {
-			if (this.props.onChange) {
-				this.props.onChange(this.state.selectedCategories);
-			}
-		}.bind(this));
+		this.categoryItemClickHandler(selectedCategories);
 	}
 
 	render() {
@@ -102,13 +59,14 @@ export default class CategoryList extends React.Component {
 					tabIndex={0}
 					key={index}
 					data-index={index}
-					className={'item'+(this.state.selectedCategories.includes(item.letter) ? ' selected' : '')}
+					className={'item'+((this.props.searchParams.category && this.props.searchParams.category.split(',').includes(item.letter)) ? ' selected' : '')}
 					onClick={this.itemClickHandler}
 					onKeyUp={this.itemKeyUpHandler}>
 						{item.label}
 				</a>;
 			}
 			else {
+				// todo: adjust for multiple select = false
 				return <a 
 					tabIndex={0}
 					key={index}

@@ -17,7 +17,6 @@ export default class CategoryMenu extends React.Component {
 
 		this.state = {
 			menuOpen: false,
-			selectedCategories: [],
 			includeNordic: false,
 			minimized: document.documentElement.clientWidth < 500 || false
 		};
@@ -35,28 +34,8 @@ export default class CategoryMenu extends React.Component {
 		});
 	}
 
-	componentDidMount() {
-		const category_param = routeHelper.createParamsFromPlacesRoute(this.props.location.pathname).category
-		this.setState({
-			selectedCategories: category_param ? category_param.split(',') : [],
-		});
-	}
-
-	UNSAFE_componentWillReceiveProps(props) {
-		if (this.props.location.pathname !== props.location.pathname) {
-			const category_param = routeHelper.createParamsFromPlacesRoute(props.location.pathname).category
-			this.setState({
-				selectedCategories: category_param ? category_param.split(',') : [],
-			});
-		}
-	}
-
-	shouldComponentUpdate(nextProps, nextState) {
-		return this.state.selectedCategories.join(',') !== nextState.selectedCategories.join(',') || this.state.minimized !== nextState.minimized;
-	}
-
 	render() {
-		let selectedCategoriesString = this.state.selectedCategories.map(category => categories.getCategoryName(category)).join(" ")
+		let selectedCategoriesString = this.props.searchParams.category ? this.props.searchParams.category.split(',').map(category => categories.getCategoryName(category)).join(', ') : ''
 		selectedCategoriesString = selectedCategoriesString === '' ? '' : `: ${selectedCategoriesString}`
 		return (
 			<div ref="container" className={'heading-list-wrapper'+(this.state.minimized ? ' minimized' : '')}>
@@ -70,10 +49,11 @@ export default class CategoryMenu extends React.Component {
 
 				<div tabIndex={-1} className={'list-container minimal-scrollbar'}>
 					<Route
-						path={'/'}
+						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
 						render= {(props) =>
 							<CategoryList 
 								multipleSelect="true"
+								searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
 								{...props}
 							/>
 						}
