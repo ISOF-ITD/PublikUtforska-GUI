@@ -2,7 +2,6 @@ import React from 'react';
 import _ from 'underscore';
 
 import CategoryList from './CategoryList';
-// TODO: Seems only for  categories.getCategoryName() - Move categories.getCategoryName() to better place!
 import categories from './../../ISOF-React-modules/utils/utforskaCategories';
 import { Route } from 'react-router-dom';
 import routeHelper from './../utils/routeHelper'
