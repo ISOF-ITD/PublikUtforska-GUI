@@ -204,6 +204,7 @@ export default class Application extends React.Component {
 									router={this.context.router}>
 										<PlaceView 
 											{...props}
+											key={`Application-Place-View-${routeHelper.createParamsFromPlacesRoute(props.location.pathname).place_id}`}
 											searchParams={routeHelper.createParamsFromPlacesRoute(props.location.pathname)}
 											showOnlyResults={Object.values(routeHelper.createParamsFromPlacesRoute(props.location.pathname)).filter(_ => _).length == 1}
 										/>
@@ -226,7 +227,10 @@ export default class Application extends React.Component {
 								onHide={this.popupWindowHideHandler}
 								onClose={this.popupCloseHandler}
 								router={this.context.router}>
-									<RecordView {...props} />
+									<RecordView 
+										key={`Application-RecordView-${routeHelper.createParamsFromRecordRoute(this.props.location.pathname).record_id}`}
+										{...props} 
+									/>
 							</RoutePopupWindow>
 						}/>
 					</Switch>

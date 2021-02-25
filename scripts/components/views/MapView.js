@@ -52,14 +52,14 @@ export default class MapView extends React.Component {
 		this.mapBase = this.refs.mapView;
 	}
 
-	UNSAFE_componentWillReceiveProps(props) {
-		var currentSearchParams = JSON.parse(JSON.stringify(this.props.searchParams));
+	componentDidUpdate(prevProps) {
+		const currentSearchParams = {...prevProps.searchParams};
 
 		if (currentSearchParams.place_id) {
 			delete currentSearchParams.place_id;
 		}
 
-		var searchParams = JSON.parse(JSON.stringify(props.searchParams));
+		const searchParams = {...this.props.searchParams};
 		if (searchParams.place_id) {
 			delete searchParams.place_id;
 		}
@@ -355,10 +355,6 @@ export default class MapView extends React.Component {
 		if (this.props.onMapUpdate) {
 			this.props.onMapUpdate();
 		}
-	}
-
-	shouldComponentUpdate(nextProps, nextState) {
-		return this.state.loading != nextState.loading || this.state.viewMode != nextState.viewMode;
 	}
 
 	render() {

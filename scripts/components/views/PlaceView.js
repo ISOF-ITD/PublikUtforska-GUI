@@ -100,13 +100,6 @@ export default class PlaceView extends React.Component {
 		this.handleParams(params);
 	}
 
-	UNSAFE_componentWillReceiveProps(props) {
-		if (props.searchParams.place_id !== this.props.searchParams.place_id) {
-			const params = routeHelper.createParamsFromPlacesRoute(props.location.pathname)
-			this.handleParams(params)
-		}
-	}
-
 	fetchData(params) {
 		if (params.place_id) {
 			fetch(this.url+params.place_id+'/')
@@ -216,6 +209,7 @@ export default class PlaceView extends React.Component {
 								path={"/places/:place_id([0-9]+)"}
 								render= {(props) =>
 									<RecordList 
+										key={`PlaceView-RecordList-${props.location.pathname}`}
 										disableRouterPagination={true}
 										highlightRecordsWithMetadataField={props.highlightRecordsWithMetadataField} 
 										searchParams={routeHelper.createParamsFromPlacesRoute(props.location.pathname)}

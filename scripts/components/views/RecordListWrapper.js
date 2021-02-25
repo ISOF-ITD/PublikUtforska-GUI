@@ -42,6 +42,7 @@ export default class RecordListWrapper extends React.Component {
 				<div className="row">
 					<div className="records-list-wrapper">
 						<RecordList 
+							key={`RecordListWrapper-RecordList-${this.props.location.pathname}`}
 							searchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
 							highlightRecordsWithMetadataField={this.props.highlightRecordsWithMetadataField}
 							{..._props}

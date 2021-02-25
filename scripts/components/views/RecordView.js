@@ -43,15 +43,6 @@ export default class RecordView extends React.Component {
 		);
 	}
 
-	UNSAFE_componentWillReceiveProps(props) {
-		if (props.match.params.record_id != this.props.match.params.record_id) {
-			this.fetchData(props.match.params);
-			if (window.eventBus) {
-				window.eventBus.dispatch('overlay.hide');
-			}
-		}
-	}
-
 	componentWillUnmount() {
 		if (window.eventBus) {
 			window.eventBus.dispatch('overlay.hide');
@@ -141,10 +132,8 @@ export default class RecordView extends React.Component {
 		var imageItems = [];
 		var pdfItems = [];
 		var audioItems = [];
-		let _props = this.props;
 
-		//var routeParams = routeHelper.createSearchRoute(_props);
-		var routeParams = routeHelper.createSearchRoute(routeHelper.createParamsFromRecordRoute(_props.location.pathname));
+		var routeParams = routeHelper.createSearchRoute(routeHelper.createParamsFromRecordRoute(this.props.location.pathname));
 
 		if (this.state.data) {
 			// Förberedar visuella media objekt
@@ -390,11 +379,11 @@ export default class RecordView extends React.Component {
 
 						{
 							!config.siteOptions.hideContactButton &&
-							<FeedbackButton title={this.state.data.title} type="Uppteckning" country={country} {..._props}/>
+							<FeedbackButton title={this.state.data.title} type="Uppteckning" country={country} {...this.props}/>
 						}
 						{
 							!config.siteOptions.hideContactButton &&
-							<ContributeInfoButton title={this.state.data.title} type="Uppteckning" country={country} id={this.state.data.id} {..._props}/>
+							<ContributeInfoButton title={this.state.data.title} type="Uppteckning" country={country} id={this.state.data.id} {...this.props}/>
 						}
 					</div>
 

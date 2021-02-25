@@ -36,6 +36,7 @@ export default class RecordList extends React.Component {
 	}
 
 	componentDidMount() {
+		// TODO: does the following still apply without UNSAFE_componentWillReceiveProps?
 		/*
 			Om RecordList läggs till PersonView (för att hämta postar relaterad till speciell person), då
 			använder vi disableAutoFetch={true}
@@ -46,37 +47,6 @@ export default class RecordList extends React.Component {
 				currentPage: this.props.page || 1
 			}, function() {
 				this.fetchData(this.props.searchParams);
-			}.bind(this));
-		}
-	}
-
-	UNSAFE_componentWillReceiveProps(props) {
-		var currentParams = JSON.parse(JSON.stringify(this.props.searchParams));
-		if (currentParams.place_id) {
-			delete currentParams.place_id;
-		}
-
-		var params = JSON.parse(JSON.stringify(props.searchParams));
-		if (params.place_id) {
-			delete params.place_id;
-		}
-		
-		if (JSON.stringify(currentParams) !== JSON.stringify(params)) {
-			/*
-			if (currentParams.search != params.search || 
-					currentParams.type != params.type || 
-					currentParams.category != params.category || 
-					currentParams.person != params.person || 
-					currentParams.recordPlace != params.recordPlace) {
-				this.setState({
-					currentPage: 1
-				});
-			}
-			*/
-			this.setState({
-				currentPage: params.page || 1
-			}, function() {
-				this.fetchData(props.searchParams);
 			}.bind(this));
 		}
 	}

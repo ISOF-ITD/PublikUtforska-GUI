@@ -146,24 +146,6 @@ export default class SearchBox extends React.Component {
 		}.bind(this));
 	}
 
-	getDerivedStateFromProps(props, currentState) {
-		const currentParams = JSON.parse(JSON.stringify(currentState.searchParams));
-		const params = JSON.parse(JSON.stringify(props.searchParams));
-		const nextState = {...currentState}
-
-		if (JSON.stringify(currentParams) !== JSON.stringify(params)) {
-
-			const searchParams = {...props.searchParams}
-			searchParams['search_field'] = searchParams['search_field'] || 'record'
-	
-			nextState['searchParams'] = searchParams;
-			
-			return nextState;
-		} else {
-			return null;
-		}
-	}
-
 	languageChangedHandler() {
 		// Gränssnitt tvingas uppdateras om språk ändras
 		this.forceUpdate();
