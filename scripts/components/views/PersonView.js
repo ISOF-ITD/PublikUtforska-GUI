@@ -71,37 +71,6 @@ export default class PersonView extends React.Component {
 					nordic = '/nordic/true';
 			}
 		}
-		
-		// TODO: Check if RecordList component below has replaced this part so: it is not used anymore and can be removed?
-		var recordItems = this.state.data.records && this.state.data.records.length > 0 ? this.state.data.records.map(function(record, index) {
-
-			//Prepare county/region:
-			let county = '';
-			if (!!record.places[0]) {
-				county = record.places[0].name;
-				if (!!record.places[0].landskap) {
-					county = county + ', ' + record.places[0].landskap;
-				} 
-				// TODO: set landskap = fylke in database and remove this?
-				if (!!record.places[0].fylke) {
-					county = county + ', ' + record.places[0].fylke;
-				}
-			}
-
-			return <tr key={index}>
-				<td data-title=""><a href={'#records/'+record.id}>{record.title ? record.title : l('(Utan titel)')}</a></td>
-				<td data-title={l('Kategori')+':'}>{record.taxonomy.name}</td>
-				<td data-title={l('Socken, Landskap')+':'}>
-					{
-						record.places &&
-						<a href={'#places/'+record.places[0].id+nordic}>{county}</a>
-					}
-				</td>
-				<td data-title={l('Roll')+':'}>{record.relation == 'c' ? l('Upptecknare') : record.relation == 'i' ? l('Informant') : ''}</td>
-				<td data-title={l('Insamlingsår')+':'}>{record.year > 0 ? record.year : ''}</td>
-				<td data-title={l('Materialtyp')+':'}>{record.type}</td>
-			</tr>
-		}) : [];
 
 		return (
 			<div className={'container'+(this.state.data.id ? '' : ' loading')}>
