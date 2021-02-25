@@ -36,19 +36,11 @@ export default class RecordList extends React.Component {
 	}
 
 	componentDidMount() {
-		// TODO: does the following still apply without UNSAFE_componentWillReceiveProps?
-		/*
-			Om RecordList läggs till PersonView (för att hämta postar relaterad till speciell person), då
-			använder vi disableAutoFetch={true}
-			Då hämtar den modulen inte lista över huvudpostar utan att ta emot parametrar (UNSAFE_componentWillReceiveProps)
-		*/
-		if (!this.props.disableAutoFetch) {
-			this.setState({
-				currentPage: this.props.page || 1
-			}, function() {
-				this.fetchData(this.props.searchParams);
-			}.bind(this));
-		}
+		this.setState({
+			currentPage: this.props.searchParams.page || 1
+		}, function() {
+			this.fetchData(this.props.searchParams);
+		}.bind(this));
 	}
 
 	nextPage() {
@@ -66,7 +58,7 @@ export default class RecordList extends React.Component {
 		}
 		else {
 			// Skapar ny router adress via routeHelper, den är baserad på nuvarande params och lägger till ny siffra i 'page'
-			this.props.history.push('/places'+routeHelper.createSearchRoute(this.props)+'/page/'+(Number(this.state.currentPage)+1));
+			this.props.history.push('/places'+routeHelper.createSearchRoute(this.props.searchParams)+'/page/'+(Number(this.state.currentPage)+1));
 		}
 	}
 	
@@ -80,12 +72,12 @@ export default class RecordList extends React.Component {
 			this.setState({
 				currentPage: this.state.currentPage-1
 			}, function() {
-				this.fetchData(this.props);
+				this.fetchData(this.props.searchParams);
 			}.bind(this));
 		}
 		else {
 			// Skapar ny router adress via routeHelper, den är baserad på nuvarande params och lägger till ny siffra i 'page'
-			this.props.history.push('/places'+routeHelper.createSearchRoute(this.props)+'/page/'+(Number(this.state.currentPage)-1));
+			this.props.history.push('/places'+routeHelper.createSearchRoute(this.props.searchParams)+'/page/'+(Number(this.state.currentPage)-1));
 		}
 	}
 	
@@ -94,30 +86,14 @@ export default class RecordList extends React.Component {
 			fetchingPage: true
 		});
 
-		var fetchParams = {
-			from: (this.state.currentPage-1)*50,
-			size: 50,
-			search: params.search || undefined,
-			search_field: params.search_field || undefined,
-			type: params.type || undefined,
-			category: params.category || undefined,
-			person_id: params.person || undefined,
-			socken_id: params.place_id || undefined,
-			gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : params.gender ? params.gender : undefined,
-			birth_years: params.birth_years ? (params.person_relation ? params.person_relation+':'+(params.gender ? params.gender+':' : '')+params.birth_years : params.birth_years) : undefined,
-			record_ids: params.record_ids || undefined,
-			has_metadata: params.has_metadata || undefined,
-			recordtype: params.recordtype || undefined,
-			person_relation: params.person_relation || undefined,
-		};
-
-		// TODO Replace with "Application defined filter parameter" where it is used (Sägenkartan)
-		if (!params.nordic) {
-			fetchParams.country = config.country;
-		}
+		const fetchParams = {...params}
+		delete fetchParams.place_id
+		fetchParams['socken_id'] = params.place_id
+		fetchParams['from'] = (this.state.currentPage-1)*50
+		fetchParams['size'] = 50
+		fetchParams['birth_years'] = params.birth_years ? (params.person_relation ? params.person_relation+':'+(params.gender ? params.gender+':' : '')+params.birth_years : params.birth_years) : undefined
 
 		// Add Application defined filter parameter
-		// TODO: MapView uses params.['filter'] instead - should it be the same here?
 		if (config.filterParameterName && config.filterParameterValues) {
 			if (params && 'filter' in params) {
 				if (params['filter'] == 'true' || params['filter'] == true) {

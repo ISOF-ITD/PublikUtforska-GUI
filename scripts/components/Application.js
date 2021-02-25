@@ -4,7 +4,7 @@ import { Route, Switch } from 'react-router-dom';
 import MapMenu from './MapMenu';
 import MapView from './views/MapView';
 import PlaceView from './views/PlaceView';
-import PersonView from './../../ISOF-React-modules/components/views/PersonView';
+import PersonView from './views/PersonView';
 import RecordView from './views/RecordView';
 import RoutePopupWindow from './../../ISOF-React-modules/components/controls/RoutePopupWindow';
 import LocalLibraryView from './../../ISOF-React-modules/components/views/LocalLibraryView';
@@ -182,13 +182,16 @@ export default class Application extends React.Component {
 							path={[
 								"/person/:person_id",
 							]}
-							render={() =>
+							render={(props) =>
 								<RoutePopupWindow
 									onShow={this.popupWindowShowHandler}
 									onHide={this.popupWindowHideHandler}
 									onClose={this.popupCloseHandler}
 									router={this.context.router}>
-										<PersonView match={this.props.match} />
+										<PersonView 
+											key={`Application-PersonView-${props.match.params.person_id}`}
+											{...props}
+										/>
 								</RoutePopupWindow>
 							}
 						/>

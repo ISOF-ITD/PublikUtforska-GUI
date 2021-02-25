@@ -1,9 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import DropdownMenu from './../../ISOF-React-modules/components/controls/DropdownMenu';
-import CategoryList from './CategoryList';
-
 import routeHelper from './../utils/routeHelper'
 
 export default class SearchBox extends React.Component {
@@ -162,7 +159,9 @@ export default class SearchBox extends React.Component {
 		searchParams['search_field'] = searchParams['search_field'] || 'record';
 
 		this.setState({
-			searchParams: searchParams
+			searchParams: searchParams,
+			advanced: !!(searchParams.recordtype || searchParams.gender || searchParams.person_relation),
+			expanded: !!(searchParams.recordtype || searchParams.gender || searchParams.person_relation),
 		})
 	}
 
