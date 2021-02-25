@@ -47,8 +47,6 @@ export default class MapMenu extends React.Component {
 	render() {
 		// used for the unique key in searchBox
 		const searchParamsInSearchBox = {
-			search: this.props.searchParams.search,
-			search_field: this.props.searchParams.search_field,
 			recordtype: this.props.searchParams.recordtype,
 			person_relation: this.props.searchParams.person_relation,
 			gender: this.props.searchParams.gender,

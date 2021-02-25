@@ -9,15 +9,12 @@ export default class FilterSwitch extends React.Component {
 
 	menuButtonClick(event) {
 		const value = event.currentTarget.dataset.value == 'true';
-		const params = {...this.props.searchParams}
-		params['filter'] = value
+		const params = {...this.props.searchParams};
+		params['filter'] = value;
 		this.props.history.push(
 			'/places'
 			+ routeHelper.createSearchRoute(params)
 			);
-		if (window.eventBus) {
-			window.eventBus.dispatch('nordicLegendsUpdate', null, {searchMetadata: this.state.searchMetadata});
-		}
 	}
 
 	render() {
