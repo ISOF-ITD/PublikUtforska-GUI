@@ -46,11 +46,6 @@ export default class MapMenu extends React.Component {
 
 	render() {
 		// used for the unique key in searchBox
-		const searchParamsInSearchBox = {
-			recordtype: this.props.searchParams.recordtype,
-			person_relation: this.props.searchParams.person_relation,
-			gender: this.props.searchParams.gender,
-		};
 		return (
 			<Route
 			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
@@ -64,7 +59,6 @@ export default class MapMenu extends React.Component {
 
 						<SearchBox
 							// https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#recommendation-fully-uncontrolled-component-with-a-key
-							key={`MapMenu-SearchBox-${JSON.stringify(searchParamsInSearchBox)}`}
 							onSizeChange={this.searchBoxSizeChangeHandler} 
 							onSearch={this.searchBoxSearchHandler} 
 							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
