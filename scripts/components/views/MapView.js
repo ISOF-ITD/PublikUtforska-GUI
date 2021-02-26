@@ -93,7 +93,6 @@ export default class MapView extends React.Component {
 				record_ids: params.record_ids || undefined,
 				has_metadata: params.has_metadata || undefined,
 				recordtype: params.recordtype || undefined,
-				person_relation: params.person_relation || undefined,
 			};
 
 			//TODO Replace with "Application defined filter parameter" where it is used (Sägenkartan)

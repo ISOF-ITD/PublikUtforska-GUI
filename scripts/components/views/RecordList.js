@@ -86,12 +86,23 @@ export default class RecordList extends React.Component {
 			fetchingPage: true
 		});
 
-		const fetchParams = {...params}
-		delete fetchParams.place_id
-		fetchParams['socken_id'] = params.place_id
-		fetchParams['from'] = (this.state.currentPage-1)*50
-		fetchParams['size'] = 50
-		fetchParams['birth_years'] = params.birth_years ? (params.person_relation ? params.person_relation+':'+(params.gender ? params.gender+':' : '')+params.birth_years : params.birth_years) : undefined
+		const fetchParams = {
+			from: (this.state.currentPage-1)*50,
+			size: 50,
+			search: params.search || undefined,
+			search_field: params.search_field || undefined,
+			type: params.type,
+			category: params.category && params.category + `${params.subcategory ? ',' + params.subcategory : ''}`, // subcategory for matkartan
+			year_from: params.year_from || undefined,
+			year_to: params.year_to || undefined,
+			gender: params.gender ? (params.person_relation ? params.person_relation+':'+params.gender : params.gender) : undefined,
+			// gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : undefined,
+			birth_years: params.birth_years ? (params.person_relation ? params.person_relation+':'+(params.gender ? params.gender+':' : '')+params.birth_years : params.birth_years) : undefined,
+			record_ids: params.record_ids || undefined,
+			has_metadata: params.has_metadata || undefined,
+			recordtype: params.recordtype || undefined,
+			socken_id: params.place_id || undefined,
+		};
 
 		// Add Application defined filter parameter
 		if (config.filterParameterName && config.filterParameterValues) {
