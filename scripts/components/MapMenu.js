@@ -58,7 +58,6 @@ export default class MapMenu extends React.Component {
 						/>
 
 						<SearchBox
-							// https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#recommendation-fully-uncontrolled-component-with-a-key
 							onSizeChange={this.searchBoxSizeChangeHandler} 
 							onSearch={this.searchBoxSearchHandler} 
 							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}

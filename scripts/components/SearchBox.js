@@ -1,10 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Route } from 'react-router-dom';
-
-import AdvancedSearchBox from './AdvancedSearchBox'
-
 import routeHelper from './../utils/routeHelper'
 
 export default class SearchBox extends React.Component {
@@ -68,8 +64,8 @@ export default class SearchBox extends React.Component {
 	// Lägg nytt värde till state om valt värde ändras i sökfält, kategorilisten eller andra sökfält
 	searchValueChangeHandler(event) {
 		if (event.target.value != this.state.searchParams.search) {
-			const searchParams = {...this.state.searchParams}
-			searchParams.search = event.target.value
+			const searchParams = {...this.state.searchParams};
+			searchParams.search = event.target.value;
 			this.setState({
 				searchParams: searchParams,
 			});
@@ -78,8 +74,8 @@ export default class SearchBox extends React.Component {
 
 	searchFieldChangeHandler(event) {
 		if (event.target.value != this.state.searchParams.search_field) {
-			const searchParams = {...this.state.searchParams}
-			searchParams.search_field = event.target.value
+			const searchParams = {...this.state.searchParams};
+			searchParams.search_field = event.target.value;
 			this.setState({
 				searchParams: searchParams,
 			});
@@ -169,6 +165,14 @@ export default class SearchBox extends React.Component {
 		})
 	}
 
+	componentDidUpdate(prevProps) {
+		if(JSON.stringify(prevProps.searchParams) !== JSON.stringify(this.props.searchParams)) {
+			this.setState({
+				searchParams: this.props.searchParams,
+			});
+		}
+	}
+
 	componentWillUnmount() {
 		if (window.eventBus) {
 			window.eventBus.removeEventListener('Lang.setCurrentLang', this.languageChangedHandler)
@@ -190,34 +194,29 @@ export default class SearchBox extends React.Component {
 	}
 
 	render() {
-		const searchParamsInAdvancedSearchBox = {
-			recordtype: this.props.searchParams.recordtype,
-			person_relation: this.props.searchParams.person_relation,
-			gender: this.props.searchParams.gender,
-		};
 		return (
-			<div ref="container" 
-				onClick={this.searchBoxClickHandler} 
-				className={'search-box map-floating-control'+(this.state.expanded ? ' expanded' : '')+(this.state.advanced ? ' advanced' : '')} >
+			<div ref="container"
+				onClick={this.searchBoxClickHandler}
+				className={'search-box map-floating-control' + (this.state.expanded ? ' expanded' : '') + (this.state.advanced ? ' advanced' : '')} >
 				<input ref="searchInput" type="text"
-					defaultValue={this.props.searchParams.search}
+					value={this.state.searchParams.search}
 					onChange={this.searchValueChangeHandler}
 					onKeyPress={this.inputKeyPressHandler}
 				/>
-				
+
 				<div className="search-label">
 					{
 						!!this.state.searchParams.search ?
-						(
-							this.state.searchParams.search_field == 'record' ? 'Innehåll: ' :
-							this.state.searchParams.search_field == 'person' ? 'Person: ' :
-							this.state.searchParams.search_field == 'place' ? 'Ort: ' : ''
-						) : l('Sök')
+							(
+								this.state.searchParams.search_field == 'record' ? 'Innehåll: ' :
+									this.state.searchParams.search_field == 'person' ? 'Person: ' :
+										this.state.searchParams.search_field == 'place' ? 'Ort: ' : ''
+							) : l('Sök')
 					}
 					<strong>
 						{
 							this.state.searchParams.search != '' ?
-							this.state.searchParams.search : ''
+								this.state.searchParams.search : ''
 						}
 					</strong>
 				</div>
@@ -226,46 +225,100 @@ export default class SearchBox extends React.Component {
 
 				<div className="expanded-content">
 
-				<div className="radio-group">
+					<div className="radio-group">
 
-					<label>
-						<input type="radio" value="record" onChange={this.searchFieldChangeHandler} name="search-field" checked={this.state.searchParams.search_field == 'record'} />
+						<label>
+							<input type="radio" value="record" onChange={this.searchFieldChangeHandler} name="search-field" checked={this.state.searchParams.search_field == 'record'} />
 						Innehåll
 					</label>
 
-					<label>
-						<input type="radio" value="person" onChange={this.searchFieldChangeHandler} name="search-field" checked={this.state.searchParams.search_field == 'person'} />
+						<label>
+							<input type="radio" value="person" onChange={this.searchFieldChangeHandler} name="search-field" checked={this.state.searchParams.search_field == 'person'} />
 						Person
 					</label>
 
-					<label>
-						<input type="radio" value="place" onChange={this.searchFieldChangeHandler} name="search-field" checked={this.state.searchParams.search_field == 'place'} />
+						<label>
+							<input type="radio" value="place" onChange={this.searchFieldChangeHandler} name="search-field" checked={this.state.searchParams.search_field == 'place'} />
 						Ort
 					</label>
 
+					</div>
+
+					<a tabIndex={0} className="advanced-button" onClick={this.toggleAdvanced} onKeyUp={this.itemKeyUpHandler}>Avancerad sökning</a>
+
+					<div className="advanced-content">
+
+						<hr />
+
+						<h4>Record Type</h4>
+						<div className="radio-group">
+
+							<label>
+								<input type="radio" value="one_accession_row" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={this.state.searchParams.recordtype == 'one_accession_row'} />
+							one_accession_row
+						</label>
+
+							<label>
+								<input type="radio" value="one_record" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={this.state.searchParams.recordtype == 'one_record'} />
+							one_record
+						</label>
+
+							<label>
+								<input type="radio" value="both" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={!this.state.searchParams.recordtype} />
+							Båda
+						</label>
+
+						</div>
+
+						<h4>Roll</h4>
+						<div className="radio-group">
+
+							<label>
+								<input type="radio" value="c" onChange={this.searchPersonRelationChangeHandler} name="search-person-relation" checked={this.state.searchParams.person_relation == 'c'} />
+							Upptecknare
+						</label>
+
+							<label>
+								<input type="radio" value="i" onChange={this.searchPersonRelationChangeHandler} name="search-person-relation" checked={this.state.searchParams.person_relation == 'i'} />
+							Meddelare
+						</label>
+
+							<label>
+								<input type="radio" value="both" onChange={this.searchPersonRelationChangeHandler} name="search-person-relation" checked={!this.state.searchParams.person_relation} />
+							Båda
+						</label>
+
+						</div>
+
+						<hr />
+
+						<h4>Kön</h4>
+						<div className="radio-group">
+
+							<label>
+								<input type="radio" value="female" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchParams.gender == 'female'} />
+							Kvinna
+						</label>
+
+							<label>
+								<input type="radio" value="male" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchParams.gender == 'male'} />
+							Man
+						</label>
+
+							<label>
+								<input type="radio" value="both" onChange={this.searchGenderChangeHandler} name="search-gender" checked={!this.state.searchParams.gender} />
+							Båda
+						</label>
+
+						</div>
+
+						<hr />
+
+						<button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button>
+					</div>
 				</div>
-
-				<a tabIndex={0} className="advanced-button" onClick={this.toggleAdvanced} onKeyUp={this.itemKeyUpHandler}>Avancerad sökning</a>
-
-				<Route
-				path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
-				render= {(props) =>
-					<AdvancedSearchBox
-						// https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#recommendation-fully-uncontrolled-component-with-a-key
-						key={`MapMenu-AdvancedSearchBox-${JSON.stringify(searchParamsInAdvancedSearchBox)}`}
-						searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
-						searchRecordtypeChangeHandler={this.searchRecordtypeChangeHandler}
-						searchPersonRelationChangeHandler={this.searchPersonRelationChangeHandler}
-						searchGenderChangeHandler={this.searchGenderChangeHandler}
-						executeSearch={this.executeSearch}
-					/>
-				}
-				/>
 			</div>
-			</div>
-			
 
-				
 		);
 	}
 }
