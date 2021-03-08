@@ -83,6 +83,7 @@ export default {
 	startPageUrl: 'https://www.isof.se/om-oss/kartor/sagenkartan/om-sagenkartan---kort.html',
 
 	imageUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/',
+	pdfUrl: 'https://frigg-test.isof.se/sagendatabas/api/filemaker_proxy/publik/',
 	//For test with ortnamn data in index:
 	//imageUrl: 'https://www4.isof.se/NAU/bilder/',
 	personImageUrl: 'https://frigg.isof.se/media/',
