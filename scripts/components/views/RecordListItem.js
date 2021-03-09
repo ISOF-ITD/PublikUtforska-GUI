@@ -85,6 +85,10 @@ export default class RecordListItem extends React.Component {
 						<ListPlayButton disablePlayback={true} media={audioItem} recordId={this.props.item._source.id} recordTitle={this.props.item._source.title && this.props.item._source.title != '' ? this.props.item._source.title : l('(Utan titel)')} />
 					}
 					{titleText && titleText != '' ? titleText : l('(Utan titel)')}
+					{
+						this.props.item._source.media.length > 0 && 
+						<sub><img src='../img/pdf.gif' style={{'marginLeft': 5}} /></sub>
+					}
 				</a>
 				{
 					displayTextSummary &&
