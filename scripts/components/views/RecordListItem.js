@@ -7,6 +7,17 @@ import config from './../../../scripts/config.js';
 import routeHelper from './../../../scripts/utils/routeHelper'
 
 export default class RecordListItem extends React.Component {
+
+	archiveIdClickHref() {
+		const archive_id = this.props.item._source.archive.archive_id
+		const recordtype = this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'
+		const params = {
+			search: archive_id,
+			recordtype: recordtype,
+		}
+		return '#places' + routeHelper.createSearchRoute(params);
+	}
+
 	render() {
 		if (config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton) {
 			var audioItem = _.find(this.props.item._source.media, function(item) {
@@ -98,8 +109,9 @@ export default class RecordListItem extends React.Component {
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
 					<td className="table-buttons" data-title={l('Accession:Sida')+':'}>
+					<a href={this.archiveIdClickHref()}>{this.props.item._source.archive.archive_id}</a>
 					{
-						this.props.item._source.archive.archive_id + (this.props.item._source.archive.page && ":" || "") + (this.props.item._source.archive.page || "")
+						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
 					}
 				</td>
 			}
