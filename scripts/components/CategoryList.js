@@ -12,37 +12,14 @@ export default class CategoryList extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.itemClickHandler = this.itemClickHandler.bind(this);
 		this.itemKeyUpHandler = this.itemKeyUpHandler.bind(this);
 	}
 
-	categoryItemClickHandler(selectedCategories) {
-		const params = routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)
-		params['category'] = selectedCategories.join(',')
-		const path = "/places" + routeHelper.createSearchRoute(params)
-		this.props.history.push(path);
-	}
 
 	itemKeyUpHandler(event){
 		if(event.keyCode == 13){
 			this.itemClickHandler(event);
 		} 
-	}
-
-	itemClickHandler(event) {
-		const selectedCategory = categories.categories[event.target.dataset.index].letter
-		let currentSelectedCategories = this.props.searchParams.category && this.props.searchParams.category.split(',')
-		let selectedCategories = []
-		if (currentSelectedCategories && currentSelectedCategories.includes(selectedCategory)) {
-			selectedCategories = currentSelectedCategories.filter(c => c !== selectedCategory)
-		} else if (currentSelectedCategories) {
-			selectedCategories = currentSelectedCategories
-			selectedCategories.push(selectedCategory)
-		} else {
-			selectedCategories = [selectedCategory]
-		}
-
-		this.categoryItemClickHandler(selectedCategories);
 	}
 
 	render() {
@@ -60,7 +37,7 @@ export default class CategoryList extends React.Component {
 					key={index}
 					data-index={index}
 					className={'item'+((this.props.searchParams.category && this.props.searchParams.category.split(',').includes(item.letter)) ? ' selected' : '')}
-					onClick={this.itemClickHandler}
+					onClick={this.props.itemClickHandler}
 					onKeyUp={this.itemKeyUpHandler}>
 						{item.label}
 				</a>;
@@ -72,7 +49,7 @@ export default class CategoryList extends React.Component {
 					key={index}
 					data-index={index}
 					className={'item'+(item.letter == this.state.selectedCategory ? ' selected' : '')}
-					onClick={this.itemClickHandler}
+					onClick={this.props.itemClickHandler}
 					onKeyUp={this.itemKeyUpHandler}>
 						{item.label}
 					</a>;

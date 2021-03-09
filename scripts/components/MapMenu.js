@@ -2,7 +2,6 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 import routeHelper from './../utils/routeHelper'
 
-import CategoryMenu from './CategoryMenu';
 import SearchBox from './SearchBox';
 //import NordicSwitch from './NordicSwitch';
 import FilterSwitch from './FilterSwitch';
@@ -63,11 +62,6 @@ export default class MapMenu extends React.Component {
 							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
 							{...props}	
 						/>
-
-						<CategoryMenu 
-							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
-							{...props}
-							/>
 
 					</div>
 				}

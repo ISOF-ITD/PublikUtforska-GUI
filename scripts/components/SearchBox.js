@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import routeHelper from './../utils/routeHelper'
+import CategoryList from './CategoryList';
+import { Route } from 'react-router-dom';
+import routeHelper from './../utils/routeHelper';
+import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
 
 export default class SearchBox extends React.Component {
 	constructor(props) {
@@ -20,6 +23,7 @@ export default class SearchBox extends React.Component {
 		this.searchBoxClickHandler = this.searchBoxClickHandler.bind(this);
 		this.toggleAdvanced = this.toggleAdvanced.bind(this);
 		this.itemKeyUpHandler = this.itemKeyUpHandler.bind(this);
+		this.categoryItemClickHandler = this.categoryItemClickHandler.bind(this);
 
 		this.languageChangedHandler = this.languageChangedHandler.bind(this);
 
@@ -41,6 +45,26 @@ export default class SearchBox extends React.Component {
 		if (event.key == 'Enter') {
 			this.executeSearch();
 		}
+	}
+
+	categoryItemClickHandler(event) {
+		debugger;
+		const selectedCategory = categories.categories[event.target.dataset.index].letter
+		let currentSelectedCategories = this.props.searchParams.category && this.props.searchParams.category.split(',')
+		let selectedCategories = []
+		if (currentSelectedCategories && currentSelectedCategories.includes(selectedCategory)) {
+			selectedCategories = currentSelectedCategories.filter(c => c !== selectedCategory)
+		} else if (currentSelectedCategories) {
+			selectedCategories = currentSelectedCategories
+			selectedCategories.push(selectedCategory)
+		} else {
+			selectedCategories = [selectedCategory]
+		}
+
+		const params = {...this.state.searchParams}
+		params['category'] = selectedCategories.join(',')
+		const path = "/places" + routeHelper.createSearchRoute(params)
+		this.props.history.push(path);
 	}
 
 	executeSearch() {
@@ -96,6 +120,7 @@ export default class SearchBox extends React.Component {
 		if (event.target.value != this.state.searchParams.recordtype) {
 			const searchParams = {...this.state.searchParams}
 			searchParams.recordtype = event.target.value == 'both' ? '' : event.target.value;
+			searchParams.category = event.target.value === 'one_record' ? searchParams.category : undefined;
 			this.setState({
 				searchParams: searchParams,
 			});
@@ -160,8 +185,8 @@ export default class SearchBox extends React.Component {
 
 		this.setState({
 			searchParams: searchParams,
-			advanced: !!(searchParams.recordtype || searchParams.gender || searchParams.person_relation),
-			expanded: !!(searchParams.recordtype || searchParams.gender || searchParams.person_relation),
+			advanced: !!(searchParams.recordtype === 'one_record'),
+
 		})
 	}
 
@@ -197,7 +222,7 @@ export default class SearchBox extends React.Component {
 		return (
 			<div ref="container"
 				onClick={this.searchBoxClickHandler}
-				className={'search-box map-floating-control' + (this.state.expanded ? ' expanded' : '') + (this.state.advanced ? ' advanced' : '')} >
+				className={'search-box map-floating-control' + (this.state.expanded ? ' expanded' : '') + (this.state.searchParams.recordtype === 'one_record' ? ' advanced' : '')} >
 				<input ref="searchInput" type="text"
 					value={this.state.searchParams.search}
 					onChange={this.searchValueChangeHandler}
@@ -219,6 +244,30 @@ export default class SearchBox extends React.Component {
 								this.state.searchParams.search : ''
 						}
 					</strong>
+					{
+						!!this.state.searchParams.recordtype ?
+							(
+								this.state.searchParams.recordtype == 'one_accession_row' ? ' (Accessioner)' :
+									this.state.searchParams.recordtype == 'one_record' ? ' (Uppteckningar)' : ''
+							) : ''
+					}
+					<br/>
+					<small style={
+						{
+							'textOverflow': 'ellipsis',
+							'overflow': 'hidden',
+							'whiteSpace': 'nowrap',
+							'maxWidth': 275,
+							'display': 'block',
+						}
+					}>
+					{
+						this.state.searchParams.category ? 
+						this.state.searchParams.category.split(',').map(
+							(c) => categories.getCategoryName(c)
+						).join(', ') : ''
+					}
+					</small>
 				</div>
 
 				<button className="search-button" onClick={this.executeSearch}></button>
@@ -244,78 +293,48 @@ export default class SearchBox extends React.Component {
 
 					</div>
 
-					<a tabIndex={0} className="advanced-button" onClick={this.toggleAdvanced} onKeyUp={this.itemKeyUpHandler}>Avancerad sökning</a>
+					<div className="radio-group">
+
+						<label>
+							<input type="radio" value="both" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={!this.state.searchParams.recordtype} />
+							Allt
+						</label>
+
+						<label>
+							<input type="radio" value="one_accession_row" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={this.state.searchParams.recordtype == 'one_accession_row'} />
+							Accessioner
+						</label>
+
+						<label>
+							<input type="radio" value="one_record" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={this.state.searchParams.recordtype == 'one_record'} />
+							Uppteckningar
+						</label>
+
+					</div>
+
+					<hr />
+
+					{/* <button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button> */}
+
+					{/* <a tabIndex={0} className="advanced-button" onClick={this.toggleAdvanced} onKeyUp={this.itemKeyUpHandler}>Avancerad sökning</a> */}
 
 					<div className="advanced-content">
-
-						<hr />
-
-						<h4>Record Type</h4>
-						<div className="radio-group">
-
-							<label>
-								<input type="radio" value="one_accession_row" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={this.state.searchParams.recordtype == 'one_accession_row'} />
-							one_accession_row
-						</label>
-
-							<label>
-								<input type="radio" value="one_record" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={this.state.searchParams.recordtype == 'one_record'} />
-							one_record
-						</label>
-
-							<label>
-								<input type="radio" value="both" onChange={this.searchRecordtypeChangeHandler} name="search-recordtype" checked={!this.state.searchParams.recordtype} />
-							Båda
-						</label>
-
+						<h4>Kategorier</h4>
+						<div tabIndex={-1} className={'list-container minimal-scrollbar'}>
+						<Route
+							path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
+							render= {(props) =>
+								<CategoryList 
+									multipleSelect="true"
+									searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
+									itemClickHandler={this.categoryItemClickHandler}
+									{...props}
+								/>
+							}
+						/>
 						</div>
-
-						<h4>Roll</h4>
-						<div className="radio-group">
-
-							<label>
-								<input type="radio" value="c" onChange={this.searchPersonRelationChangeHandler} name="search-person-relation" checked={this.state.searchParams.person_relation == 'c'} />
-							Upptecknare
-						</label>
-
-							<label>
-								<input type="radio" value="i" onChange={this.searchPersonRelationChangeHandler} name="search-person-relation" checked={this.state.searchParams.person_relation == 'i'} />
-							Meddelare
-						</label>
-
-							<label>
-								<input type="radio" value="both" onChange={this.searchPersonRelationChangeHandler} name="search-person-relation" checked={!this.state.searchParams.person_relation} />
-							Båda
-						</label>
-
-						</div>
-
-						<hr />
-
-						<h4>Kön</h4>
-						<div className="radio-group">
-
-							<label>
-								<input type="radio" value="female" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchParams.gender == 'female'} />
-							Kvinna
-						</label>
-
-							<label>
-								<input type="radio" value="male" onChange={this.searchGenderChangeHandler} name="search-gender" checked={this.state.searchParams.gender == 'male'} />
-							Man
-						</label>
-
-							<label>
-								<input type="radio" value="both" onChange={this.searchGenderChangeHandler} name="search-gender" checked={!this.state.searchParams.gender} />
-							Båda
-						</label>
-
-						</div>
-
-						<hr />
-
-						<button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button>
 					</div>
+					<button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button>
 				</div>
 			</div>
 
