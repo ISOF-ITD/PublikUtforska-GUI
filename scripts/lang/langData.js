@@ -19,7 +19,7 @@ export default {
 		'Sökträffar': 'Treff',
 		'Sök': 'Søk',
 		'Stäng': 'Lukk',
-		'Socken, Landskap': 'Kommune, fylke',
+		'Ort': 'Kommune, fylke',
 		'Klicka här för att inte visa den rutan igen.': 'Klikk her for ikke å vise dette vinduet igjen',
 		'Norska sägner': 'Norske sagn',
 		'Nordiska sägner': 'Nordiske sagn',
@@ -83,7 +83,7 @@ export default {
 		'Tjuvmjölkande väsen': 'Tyvmelkende vesen',
 		'Övernaturliga djur': 'Overnaturlige dyr',
 		//Nya att översätta:
-		'Insamlingsår': 'Opptegnelsesår',
+		'År': 'Opptegnelsesår',
 		'Kommentarer': 'Ordforklaringer og lignende i opptegnelsene/utgavene',
 		'Tryckt källa': 'Tryckt källa',
 		'Avskriven': 'Avskriven',

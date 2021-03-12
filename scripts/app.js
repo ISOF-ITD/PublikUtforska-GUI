@@ -5,6 +5,8 @@ import { HashRouter, Route, Redirect } from 'react-router-dom'
 import Application from './components/Application';
 import RecordListWrapper from './components/views/RecordListWrapper';
 
+import routeHelper from './utils/routeHelper'
+
 console.log(`PublikUtforska running React.js version ${React.version} and ReactDOM version ${ReactDOM.version}`);
 
 /*
@@ -62,17 +64,21 @@ ReactDOM.render(
 
 	<HashRouter>
 		<Route exact path="/">
-			<Redirect to="/places" />
+			<Redirect to="/places/recordtype/one_accession_row" />
+		</Route>
+		<Route exact path="/places">
+			<Redirect to="/places/recordtype/one_accession_row" />
 		</Route>
 		<Route
 			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
 			render={(props) =>
 				<Application
 					popup={<RecordListWrapper
-						{...props}
 						manuallyOpenPopup={true}
 						openButtonLabel="Visa sökträffar som lista"
 						disableRouterPagination={true}
+						searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
+						{...props}
 						/>}
 					{...props}
 				/>
@@ -82,4 +88,4 @@ ReactDOM.render(
 	</HashRouter>,
 	document.getElementById('app')
 
-);
+);2

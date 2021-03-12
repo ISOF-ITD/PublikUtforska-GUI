@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
+import ReactDOM from 'react-dom';
 
 import MapMenu from './MapMenu';
 import MapView from './views/MapView';
@@ -15,19 +16,17 @@ import ContributeInfoOverlay from './../../ISOF-React-modules/components/views/C
 import TranscriptionHelpOverlay from './../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './../../ISOF-React-modules/components/views/TranscriptionOverlay';
 import PopupNotificationMessage from './../../ISOF-React-modules/components/controls/PopupNotificationMessage';
-import OverlayWindow from './../../ISOF-React-modules/components/controls/OverlayWindow';
-import SitevisionContent from './../../ISOF-React-modules/components/controls/SitevisionContent';
 
 import routeHelper from './../utils/routeHelper';
-import WindowScroll from './../../ISOF-React-modules/utils/windowScroll';
 
-import config from './../config.js';
 
 import EventBus from 'eventbusjs';
 
 export default class Application extends React.Component {
 	constructor(props) {
 		super(props);
+
+		this.mapMenu = React.createRef();
 
 		// Lägg till globalt eventBus variable för att skicka data mellan moduler
 		window.eventBus = EventBus;
@@ -60,7 +59,9 @@ export default class Application extends React.Component {
 
 			//params: this.props.match.params,
 			match: {},
-			popupVisible: false
+			popupVisible: false,
+
+			menuExpanded: false,
 		};
 	}
 
@@ -133,32 +134,33 @@ export default class Application extends React.Component {
 	}
 
 	componentDidMount() {
+		document.getElementById('app').addEventListener('click', this.windowClickHandler.bind(this));
 		// Not needed for this app?:
 		//if (this.props.match.params.nordic) {
 		//	window.eventBus.dispatch('nordicLegendsUpdate', null, {includeNordic: true});			
 		//}
 		// Skickar alla sök-parametrar via global eventBus
 		if (window.eventBus) {
-			window.eventBus.dispatch('application.searchParams', {
-				selectedCategory: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['category'],
-				selectedSubcategory: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['subcategory'],
-				searchValue: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['search'],
-				searchField: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['search_field'],
-				searchYearFrom: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['year_from'],
-				searchYearTo: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['year_to'],
-				searchPersonRelation: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['person_relation'],
-				searchGender: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['gender'],
-				filter: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['filter'],
-			});
+			// window.eventBus.dispatch('application.searchParams', {
+			// 	selectedCategory: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['category'],
+			// 	selectedSubcategory: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['subcategory'],
+			// 	searchValue: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['search'],
+			// 	searchField: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['search_field'],
+			// 	searchYearFrom: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['year_from'],
+			// 	searchYearTo: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['year_to'],
+			// 	searchPersonRelation: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['person_relation'],
+			// 	searchGender: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['gender'],
+			// 	filter: routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)['filter'],
+			// });
 
-			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
+			// window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
 
-			// Väntar två och halv sekund för att visa intro, om användaren inte har valt att visa den inte igen
-			setTimeout(function() {
-				if (!localStorage.getItem('neverShowIntro')) {
-					eventBus.dispatch('overlay.intro');
-				}
-			}, 2500);
+			// // Väntar två och halv sekund för att visa intro, om användaren inte har valt att visa den inte igen
+			// setTimeout(function() {
+			// 	if (!localStorage.getItem('neverShowIntro')) {
+			// 		eventBus.dispatch('overlay.intro');
+			// 	}
+			// }, 2500);
 		}
 
 		setTimeout(function() {
@@ -171,6 +173,20 @@ export default class Application extends React.Component {
 	shouldComponentUpdate(nextProps, nextState) {
 		// Checkar om gränssnittet skulle uppdateras med att jämföra nya parametrar med förre parametrar
 		return (JSON.stringify(nextState) != JSON.stringify(this.state));
+	}
+
+	windowClickHandler(event) {
+		const componentEl = ReactDOM.findDOMNode(this.mapMenu.current);
+
+		if (!!componentEl && !componentEl.contains(event.target)) {
+			this.setState({
+				menuExpanded: false
+			});
+		} else {
+			this.setState({
+				menuExpanded: true
+			});
+		}
 	}
 
 	render() {
@@ -209,7 +225,9 @@ export default class Application extends React.Component {
 											{...props}
 											key={`Application-Place-View-${routeHelper.createParamsFromPlacesRoute(props.location.pathname).place_id}`}
 											searchParams={routeHelper.createParamsFromPlacesRoute(props.location.pathname)}
-											showOnlyResults={Object.values(routeHelper.createParamsFromPlacesRoute(props.location.pathname)).filter(_ => _).length == 1}
+											// Om det bara finns två searchParams (vilka måste vara place_id och recordtype), visa inte
+											// listan med "samtliga träffar från orten", eftersom det skulle vara samma lista
+											showOnlyResults={Object.values(routeHelper.createParamsFromPlacesRoute(props.location.pathname)).filter(_ => _).length <= 2}
 										/>
 								</RoutePopupWindow>
 							}
@@ -238,28 +256,27 @@ export default class Application extends React.Component {
 						}/>
 					</Switch>
 
-					<Route path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']} render={(props) =>
-						<MapView
-							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
-							onMarkerClick={this.mapMarkerClick}
-							defaultMarkerIcon={this.defaultMarkerIcon}
-							hideMapmodeMenu={true}
-							{...props}
-						>
-
-							<MapMenu
+					<Route
+						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']} 
+						render={(props) =>
+							<MapView
 								searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
-								//searchMetadata={this.state.searchMetadata}
-								//selectedCategory={this.state.selectedCategory}
-								//selectedSubcategory={this.state.selectedSubcategory}
-								// routeHelper={routeHelper}
+								onMarkerClick={this.mapMarkerClick}
+								defaultMarkerIcon={this.defaultMarkerIcon}
+								hideMapmodeMenu={true}
 								{...props}
-							/>
+							>
+								<MapMenu
+									ref={this.mapMenu}
+									searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
+									{...props}
+									expanded={this.state.menuExpanded}
+								/>
+								<LocalLibraryView headerText={l('Mina sägner')} history={this.props.history} />
 
-							<LocalLibraryView headerText={l('Mina sägner')} history={this.props.history} />
-
-						</MapView>
-					}/>
+							</MapView>
+						}
+					/>
 					
 
 					<div className="map-progress"><div className="indicator"></div></div>

@@ -34,7 +34,7 @@ export default class RecordListWrapper extends React.Component {
 				<div className="container-header">
 					<div className="row">
 						<div className="twelve columns">
-							<h2>{l('Sökträffar som lista')}</h2>
+							<h2>{l('Sökträffar som lista')} – {this.props.searchParams.recordtype === 'one_accession_row' ? 'Accessioner' : 'Uppteckningar'}</h2>
 						</div>
 					</div>
 				</div>

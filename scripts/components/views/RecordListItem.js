@@ -49,11 +49,13 @@ export default class RecordListItem extends React.Component {
 				}
 			}
 			else if (this.props.item._source.taxonomy.length > 0 && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true)) {
-				let _props = this.props;
+				const _props = this.props;
 				taxonomyElement = _.compact(_.map(_props.item._source.taxonomy, function(taxonomyItem, i) {
 					if (taxonomyItem.category) {
-						// when clicking on category, reset all routeParams, except for has_metadata
-						let href = '#/places/category/'+taxonomyItem.category.toLowerCase()+(_props.routeParams ? _props.routeParams.replace(/(text_ids\/?|search_field\/?|category\/?|recordtype\/?|search\/?)[^/]+\/?/g, '') : '')
+						const href = '#/places' + routeHelper.createSearchRoute({
+							category: taxonomyItem.category.toLowerCase(),
+							recordtype: _props.searchParams.recordtype,
+							})
 						if (visibleCategories) {
 							if (visibleCategories.indexOf(taxonomyItem.type.toLowerCase()) > -1) {
 							return <a href={href} key={`record-list-item-${_props.id}-${i}`}>{l(taxonomyItem.name)}</a>;
@@ -69,12 +71,19 @@ export default class RecordListItem extends React.Component {
 
 		// Prepare transcriptionStatus
 		//var transcriptionStatusArr = {'untranscribed':'Ej transkribera', 'readytotranscribe':'<span style="color:red"> Ej avskriven <span style="color:red">', 'transcribed':'Under granskning', 'reviewing':'Under granskning', 'approved':'Avskriven','published':'Avskriven'};
-		var transcriptionStatusArr = {'untranscribed':'Ej transkribera', 'readytotranscribe':'Nej', 'transcribed':'Granskas', 'reviewing':'Granskas', 'approved':'Granskas','published':'Ja'};
+		const transcriptionStatuses = {
+			'untranscribed':'Ej transkriberad',
+			'readytotranscribe':'Nej',
+			'transcribed':'Granskas',
+			'reviewing':'Granskas',
+			'approved':'Granskas',
+			'published':'Ja'
+		};
 		var transcriptionStatusElement = '';
 		if (this.props.item._source.transcriptionstatus) {
 			var transcriptionstatus;
 			transcriptionstatus = this.props.item._source.transcriptionstatus;
-			transcriptionStatusElement = transcriptionstatus.replace(transcriptionstatus, transcriptionStatusArr[transcriptionstatus]);
+			transcriptionStatusElement = transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus]);
 		}
 
 		// Prepare title
@@ -97,8 +106,8 @@ export default class RecordListItem extends React.Component {
 					}
 					{titleText && titleText != '' ? titleText : l('(Utan titel)')}
 					{
-						this.props.item._source.media.length > 0 && 
-						<sub><img src='../img/pdf.gif' style={{'marginLeft': 5}} /></sub>
+						this.props.item._source.media.filter(m => m.source.includes('.pdf'))[0] && 
+						<sub><img src='img/pdf.gif' style={{'marginLeft': 5}} /></sub>
 					}
 				</a>
 				{
@@ -108,28 +117,37 @@ export default class RecordListItem extends React.Component {
 			</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
-					<td className="table-buttons" data-title={l('Accession:Sida')+':'}>
-					<a href={this.archiveIdClickHref()}>{this.props.item._source.archive.archive_id}</a>
+				<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
+					<a
+						href={this.archiveIdClickHref()}
+						title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'upteckningarna' : 'accessionerna'}`}
+					>
+						{this.props.item._source.archive.archive_id}
+					</a>
 					{
 						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
 					}
 				</td>
 			}
 			{
-				!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true &&
+				!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row' &&
 				<td className="table-buttons" data-title={l('Kategori')+':'}>
 					{
 						taxonomyElement
 					}
 				</td>
 			}
-			<td className="table-buttons" data-title={l('Socken, Landskap')+':'}>
+			<td className="table-buttons" data-title={l('Ort')+':'}>
 			{
 				this.props.item._source.places && this.props.item._source.places.length > 0 &&
-				<a target={config.embeddedApp ? '_parent' : '_self'} href={(config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')+'#places/'+this.props.item._source.places[0].id+(this.props.routeParams ? this.props.routeParams : '')}>{this.props.item._source.places[0].name+(this.props.item._source.places[0].landskap || this.props.item._source.places[0].fylke ? (this.props.item._source.places[0].landskap ? ', '+this.props.item._source.places[0].landskap : this.props.item._source.places[0].fylke ? ', '+this.props.item._source.places[0].fylke : '') : '')}</a>
+				<a
+					target={config.embeddedApp ? '_parent' : '_self'}
+					href={(config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')+'#places/'+this.props.item._source.places[0].id+(routeHelper.createSearchRoute({recordtype: this.props.searchParams.recordtype}))}>
+						{this.props.item._source.places[0].name+(this.props.item._source.places[0].landskap || this.props.item._source.places[0].fylke ? (this.props.item._source.places[0].landskap ? ', '+this.props.item._source.places[0].landskap : this.props.item._source.places[0].fylke ? ', '+this.props.item._source.places[0].fylke : '') : '')}
+				</a>
 			}
 			</td>
-			<td data-title={l('Insamlingsår')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
+			<td data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&
 				<td data-title={l('Materialtyp')+':'}>{this.props.item._source.materialtype}</td>

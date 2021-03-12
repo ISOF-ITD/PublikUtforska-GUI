@@ -89,7 +89,13 @@ export default class PlaceView extends React.Component {
 		} 
 		if (params.recordtype) {
 			state['recordtype'] = params.recordtype;
-		}	
+		} 
+		if (params.has_media) {
+			state['has_media'] = params.has_media;
+		}
+		if (params.transcriptionstatus) {
+			state['transcriptionstatus'] = params.transcriptionstatus;
+		}
 		this.setState(state);
 	}
 
@@ -154,12 +160,12 @@ export default class PlaceView extends React.Component {
 					</a>
 				</td>
 				<td data-title={l('Kategori')}>{record.taxonomy.name}</td>
-				<td data-title={l('Socken, Landskap')}>
+				<td data-title={l('Ort')}>
 					{record.places &&
 						<span>{record.places[0].name+', '+record.places[0].landskap}</span>
 					}
 				</td>
-				<td data-title={l('Insamlingsår')}>{record.year > 0 ? record.year : ''}</td>
+				<td data-title={l('År')}>{record.year > 0 ? record.year : ''}</td>
 				<td data-title={l('Materialtyp')}>{record.materialtype}</td>
 			</tr>;
 		}.bind(this)) : [];
@@ -233,14 +239,17 @@ export default class PlaceView extends React.Component {
 						{
 							<div className="row">
 								<div className="twelve columns">
-									<h3>{l('Samtliga uppteckningar från orten')}</h3>
+									<h3>Samtliga {this.props.searchParams.recordtype === 'one_accession_row' ? 'accessioner' : 'uppteckningar'} från orten</h3>
 									<Route 
 										path={"/places/:place_id([0-9]+)"}
 										render= {(props) =>
 											<RecordList 
 												disableRouterPagination={true}
 												highlightRecordsWithMetadataField={props.highlightRecordsWithMetadataField} 
-												searchParams={{'place_id': routeHelper.createParamsFromPlacesRoute(props.location.pathname)['place_id']}}
+												searchParams={{
+													'place_id': routeHelper.createParamsFromPlacesRoute(props.location.pathname)['place_id'],
+													'recordtype':  routeHelper.createParamsFromPlacesRoute(props.location.pathname)['recordtype'],
+												}}
 											/>
 										}
 									/>

@@ -241,24 +241,23 @@ export default class RecordView extends React.Component {
 					recordId={this.state.data.id}
 					images={this.state.data.media} /></div>;
 			}
-			// Om posten inte innehåller bara en pdf fil (ingen text, inte ljudfiler och inte bilder), då visar vi pdf filen direkt
-			else if ((!this.state.data.text || this.state.data.text.length == 0) && _.filter(this.state.data.media, function(item) {
-				return item.type == 'pdf';
-			}).length == 1 && _.filter(this.state.data.media, function(item) {
-				return item.type == 'image';
-			}).length == 0 && _.filter(this.state.data.media, function(item) {
-				return item.type == 'audio';
-			}).length == 0) {
-				var pdfObject = _.find(this.state.data.media, function(item) {
-					return item.type == 'pdf';
-				});
-
-				textElement = <PdfViewer height="800" url={config.imageUrl+pdfObject.source}/>;
-
-				forceFullWidth = true;
-			}
-			// Annars visar vi texten som vanligt
+			// Om posten innehåller bara en pdf fil (ingen text, inte ljudfiler och inte bilder), då visar vi pdf filen direkt
+			// else if ((!this.state.data.text || this.state.data.text.length == 0) && _.filter(this.state.data.media, function(item) {
 			else {
+				let pdfElement = '';
+				let pdfObject = undefined;
+				if (_.filter(this.state.data.media, function(item) {
+					return item.type == 'pdf';
+				}).length == 1 && _.filter(this.state.data.media, function(item) {
+					return item.type == 'image';
+				}).length == 0 && _.filter(this.state.data.media, function(item) {
+					return item.type == 'audio';
+				}).length == 0) {
+					pdfObject = _.find(this.state.data.media, function(item) {
+						return item.type == 'pdf';
+					});
+					forceFullWidth = true;
+				}
 				let text = this.state.data.text
 				// create a button/label to hide and show text below "Uppslagsord"
 				if (text && text.includes('<p>Uppslagsord:</p>')) {
@@ -268,8 +267,28 @@ export default class RecordView extends React.Component {
 						+ uppslagsordLink
 						+ '<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">' + parts[1] + '</div>'
 				}
-				textElement = <div className="record-text" dangerouslySetInnerHTML={{__html: text}} />;
+
+				pdfElement = pdfObject ? <PdfViewer height="800" url={(config.pdfUrl || config.imageUrl)+pdfObject.source}/> : <div/>;
+				textElement = (
+					<div>
+						<div className="record-text" dangerouslySetInnerHTML={{__html: text}} />
+						{pdfElement}
+					</div>
+				)
 			}
+			// Annars visar vi texten som vanligt
+			// else {
+			// 	let text = this.state.data.text
+			// 	// create a button/label to hide and show text below "Uppslagsord"
+			// 	if (text && text.includes('<p>Uppslagsord:</p>')) {
+			// 		let uppslagsordLink = '<p><label for="toggle">Uppslagsord</label></p>'
+			// 		let parts = text.split('<p>Uppslagsord:</p>')
+			// 		text = parts[0] 
+			// 			+ uppslagsordLink
+			// 			+ '<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">' + parts[1] + '</div>'
+			// 	}
+			// 	textElement = <div className="record-text" dangerouslySetInnerHTML={{__html: text}} />;
+			// }
 
 			// Förbereder kategori länk
 			var taxonomyElement;
@@ -482,9 +501,9 @@ export default class RecordView extends React.Component {
 						</div>
 
 						{
-							config.siteOptions && config.siteOptions.copyrightContent &&
+							config.siteOptions && config.siteOptions.copyrightContent && this.state.data.copyrightlicense &&
 							<div className="six columns">
-								<div className="copyright" dangerouslySetInnerHTML={{__html: config.siteOptions.copyrightContent}}></div>
+								<div className="copyright" dangerouslySetInnerHTML={{__html: config.siteOptions.copyrightContent[this.state.data.copyrightlicense]}}></div>
 							</div>
 						}
 
@@ -594,7 +613,7 @@ export default class RecordView extends React.Component {
 						<div className="four columns">
 							{
 								this.state.data.year &&
-								<p><strong>{l('Insamlingsår')}</strong><br/>{this.state.data.year.substring(0,4)}</p>
+								<p><strong>{l('År')}</strong><br/>{this.state.data.year.substring(0,4)}</p>
 							}
 
 							{
