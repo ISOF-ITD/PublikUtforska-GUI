@@ -40,6 +40,7 @@ export default class MapMenu extends React.Component {
 						/>
 
 						<SearchBox
+							key={props.location.pathname.split(props.match.url)[1]}
 							searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
 							expanded={this.props.expanded}
 							{...props}	
