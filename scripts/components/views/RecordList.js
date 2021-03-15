@@ -21,6 +21,7 @@ export default class RecordList extends React.Component {
 		this.nextPage = this.nextPage.bind(this);
 		this.prevPage = this.prevPage.bind(this);
 		this.sort = this.sort.bind(this);
+		this.archiveIdClick = this.archiveIdClick.bind(this);
 
 		this.collections = new RecordsCollection(function(json) {
 			if (!json.data || json.data.length == 0) {
@@ -36,6 +37,7 @@ export default class RecordList extends React.Component {
 				fetchingPage: false
 			});
 		}.bind(this));
+	
 	}
 
 	componentDidMount() {
@@ -44,6 +46,17 @@ export default class RecordList extends React.Component {
 		}, function() {
 			this.fetchData(this.props.searchParams);
 		}.bind(this));
+	}
+
+	archiveIdClick(event) {
+		const archive_id = event.target.dataset.archiveid
+		const recordtype = event.target.dataset.recordtype
+		const params = {
+			search: archive_id,
+			recordtype: recordtype,
+		}
+		this.props.history.push( '/places' + routeHelper.createSearchRoute(params))
+		window.eventBus.dispatch('routePopup.show')
 	}
 
 	nextPage() {
@@ -147,6 +160,7 @@ export default class RecordList extends React.Component {
 					item={item} routeParams={searchRouteParams} 
 					highlightRecordsWithMetadataField={this.props.highlightRecordsWithMetadataField}
 					searchParams={this.props.searchParams}
+					archiveIdClick={this.archiveIdClick}
 				/>;
 
 		}.bind(this)) : [];

@@ -219,6 +219,7 @@ export default class PlaceView extends React.Component {
 										disableRouterPagination={true}
 										highlightRecordsWithMetadataField={props.highlightRecordsWithMetadataField} 
 										searchParams={routeHelper.createParamsFromPlacesRoute(props.location.pathname)}
+										{...props}
 									/>
 								}
 							/>
