@@ -135,7 +135,7 @@ export default class RecordListItem extends React.Component {
 		// Prepare transcriptionStatus
 		//var transcriptionStatusArr = {'untranscribed':'Ej transkribera', 'readytotranscribe':'<span style="color:red"> Ej avskriven <span style="color:red">', 'transcribed':'Under granskning', 'reviewing':'Under granskning', 'approved':'Avskriven','published':'Avskriven'};
 		const transcriptionStatuses = {
-			'untranscribed':'Ej tillgänglig',
+			'untranscribed':'',
 			'readytotranscribe':'Nej',
 			'transcribed':'Granskas',
 			'reviewing':'Granskas',
