@@ -8,6 +8,79 @@ import routeHelper from './../../../scripts/utils/routeHelper'
 
 export default class RecordListItem extends React.Component {
 
+	renderFieldArchiveId() {
+		// If one_accession_row 
+		if (this.props.item._source.recordtype == 'one_accession_row') {
+			if (this.props.item._source.recordtype == 'one_accession_row' && this.props.item._source.numberofonerecord && this.props.item._source.numberofonerecord > 0) {
+				// If one_accession_row and has one_records
+				return (
+					<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
+					<a
+						data-archiveid={this.props.item._source.archive.archive_id}
+						data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
+						onClick={this.props.archiveIdClick}
+						title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'} (${this.props.item._source.numberofonerecord} stycken)`}
+						style={{cursor: 'pointer'}}
+					>
+						{this.props.item._source.archive.archive_id}
+					</a>
+					{
+						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+					}
+					</td>
+					); 
+			} else {
+				// If one_accession_row and has NOT one_records
+				// No event, no button style, no link
+				return (
+					<td data-title={l('Arkivnummer')+':'}>
+						{this.props.item._source.archive.archive_id}
+					{
+						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+					}
+					</td>
+					); 
+				}
+			}
+		// If one_record
+		if (this.props.item._source.recordtype == 'one_record') {
+			return (
+			<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
+			<a
+				data-archiveid={this.props.item._source.archive.archive_id}
+				data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
+				onClick={this.props.archiveIdClick}
+				title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
+				style={{cursor: 'pointer'}}
+			>
+				{this.props.item._source.archive.archive_id}
+			</a>
+			{
+				this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+			}
+			</td>
+			); 
+	 	} else {
+			// If EVERYTHING ELSE
+			return (
+				<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
+				<a
+					data-archiveid={this.props.item._source.archive.archive_id}
+					data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
+					onClick={this.props.archiveIdClick}
+					title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
+					style={{cursor: 'pointer'}}
+				>
+					{this.props.item._source.archive.archive_id}
+				</a>
+				{
+					this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+				}
+				</td>
+				); 
+			}
+	}
+
 	render() {
 		if (config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton) {
 			var audioItem = _.find(this.props.item._source.media, function(item) {
@@ -62,7 +135,7 @@ export default class RecordListItem extends React.Component {
 		// Prepare transcriptionStatus
 		//var transcriptionStatusArr = {'untranscribed':'Ej transkribera', 'readytotranscribe':'<span style="color:red"> Ej avskriven <span style="color:red">', 'transcribed':'Under granskning', 'reviewing':'Under granskning', 'approved':'Avskriven','published':'Avskriven'};
 		const transcriptionStatuses = {
-			'untranscribed':'Ej transkriberad',
+			'untranscribed':'Ej tillgänglig',
 			'readytotranscribe':'Nej',
 			'transcribed':'Granskas',
 			'reviewing':'Granskas',
@@ -107,20 +180,7 @@ export default class RecordListItem extends React.Component {
 			</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
-				<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
-					<a
-						data-archiveid={this.props.item._source.archive.archive_id}
-						data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
-						onClick={this.props.archiveIdClick}
-						title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'upteckningarna' : 'accessionerna'}`}
-						style={{cursor: 'pointer'}}
-					>
-						{this.props.item._source.archive.archive_id}
-					</a>
-					{
-						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
-					}
-				</td>
+				 this.renderFieldArchiveId() 			
 			}
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row' &&
