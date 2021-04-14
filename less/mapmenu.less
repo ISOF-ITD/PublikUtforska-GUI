@@ -7,7 +7,7 @@
 	right: 20px;
 
 	width: 350px;
-
+	
 	pointer-events: none;
 
 	@media print {
@@ -72,14 +72,16 @@
 			text-decoration: none;
 			text-align: center;
 
+			background: @color-darkgray;
+
 			cursor: pointer;
 
 			.transition(all 200ms ease-in-out);
 
 			&.selected {
-				color: #fff;
+				color: #000;
 				
-				background: @color-red;
+				background: @color-gray;
 			}
 
 			&:hover {
@@ -382,7 +384,7 @@
 
 		border: 1px solid #ccc;
 		border-radius: 2px;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+		//box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 
 		overflow-y: auto;
 
