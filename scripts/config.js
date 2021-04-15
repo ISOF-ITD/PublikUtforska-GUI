@@ -31,7 +31,10 @@ export default {
 			*/
 
 			// Vilka kategorier vi vill visa i listan, här vill vi bara visa matkarta kategorier men dölja frågolista-kategorier
-			visibleCategories: ['tradark']
+			visibleCategories: ['tradark'],
+
+			// Visa insamlare:
+			visibleCollecorPersons: true,
 		},
 
 		/*

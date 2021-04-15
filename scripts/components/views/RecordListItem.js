@@ -132,6 +132,27 @@ export default class RecordListItem extends React.Component {
 			}
 		}
 
+		var collectorPersonElement;
+		if (this.props.item._source.persons) {
+			if (config.siteOptions.recordList && config.siteOptions.recordList.visibleCollecorPersons == true) {
+				if (this.props.item._source.persons.length > 0) {
+					const _props = this.props;
+					collectorPersonElement = _.compact(_.map(_props.item._source.persons, function(collectorPersonItem, i) {
+						if (collectorPersonItem.relation == 'c') {
+							var routeParams = '';
+							if (_props.routeParams) {
+								routeParams = _props.routeParams;
+							}
+							const href = '#/person/' + collectorPersonItem.id.toLowerCase() + routeParams;
+							return <a href={href} key={`record-list-item-${_props.id}-${i}`}>{l(collectorPersonItem.name)}</a>;
+						} else {
+							return '';
+						}
+					}));
+				}
+			}
+		}
+
 		// Prepare transcriptionStatus
 		//var transcriptionStatusArr = {'untranscribed':'Ej transkribera', 'readytotranscribe':'<span style="color:red"> Ej avskriven <span style="color:red">', 'transcribed':'Under granskning', 'reviewing':'Under granskning', 'approved':'Avskriven','published':'Avskriven'};
 		const transcriptionStatuses = {
@@ -187,6 +208,14 @@ export default class RecordListItem extends React.Component {
 				<td className="table-buttons" data-title={l('Kategori')+':'}>
 					{
 						taxonomyElement
+					}
+				</td>
+			}
+			{
+				!config.siteOptions.recordList || config.siteOptions.recordList.visibleCollecorPersons == true &&
+				<td className="table-buttons" data-title={l('Insamlare')+':'}>
+					{
+						collectorPersonElement
 					}
 				</td>
 			}
