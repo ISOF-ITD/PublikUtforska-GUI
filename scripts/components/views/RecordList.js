@@ -130,6 +130,7 @@ export default class RecordList extends React.Component {
 			has_metadata: params.has_metadata || undefined,
 			has_media: params.has_media || undefined,
 			recordtype: params.recordtype || undefined,
+			person_id: params.person_id || undefined,
 			socken_id: params.place_id || undefined,
 			transcriptionstatus: params.transcriptionstatus || undefined,
 			sort: this.state.sort || undefined,
