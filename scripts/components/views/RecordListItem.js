@@ -211,14 +211,6 @@ export default class RecordListItem extends React.Component {
 					}
 				</td>
 			}
-			{
-				!config.siteOptions.recordList || config.siteOptions.recordList.visibleCollecorPersons == true &&
-				<td className="table-buttons" data-title={l('Insamlare')+':'}>
-					{
-						collectorPersonElement
-					}
-				</td>
-			}
 			<td className="table-buttons" data-title={l('Ort')+':'}>
 			{
 				this.props.item._source.places && this.props.item._source.places.length > 0 &&
@@ -229,6 +221,14 @@ export default class RecordListItem extends React.Component {
 				</a>
 			}
 			</td>
+			{
+				!config.siteOptions.recordList || config.siteOptions.recordList.visibleCollecorPersons == true &&
+				<td className="table-buttons" data-title={l('Insamlare')+':'}>
+					{
+						collectorPersonElement
+					}
+				</td>
+			}
 			<td data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&

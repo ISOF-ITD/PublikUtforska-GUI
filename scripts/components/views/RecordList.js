@@ -210,6 +210,7 @@ export default class RecordList extends React.Component {
 										</a>
 									</th>
 								}
+								<th scope="col">{l('Ort')}</th>
 								{
 									!config.siteOptions.recordList || !config.siteOptions.recordList.visibleCollecorPersons || config.siteOptions.recordList.visibleCollecorPersons == true &&
 									<th scope="col">
@@ -221,7 +222,6 @@ export default class RecordList extends React.Component {
 										{/*</a>*/}
 									</th>
 								}
-								<th scope="col">{l('Ort')}</th>
 								<th scope="col">
 									<a className='sort' onClick={this.sort} name='year'>
 										{	
