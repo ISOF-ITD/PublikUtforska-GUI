@@ -263,7 +263,7 @@ export default class PlaceView extends React.Component {
 				}
 
 				{
-					!this.props.hidePersons &&
+					!config.siteOptions.placeView || !config.siteOptions.placeView.hideInformantPersonList == true &&
 					<div className="row">
 						<div className="twelve columns">
 							<PersonList personType="informants" title={l('Intervjuade personer')} 
