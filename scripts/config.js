@@ -1,5 +1,5 @@
 export default {
-	// Namn på localStorage som lagrar sparade sägner
+	// Namn på localStorage som lagrar sparade accessioner/uppteckningar
 	localLibraryName: 'publikutforska_library',
 
 	// Parametrar som alltid skulle skickas till API:et, här passar vi på att sägenkartan alltid hämtar textar av typ arkiv eller tryckt och som finns i en kategori
@@ -16,6 +16,12 @@ export default {
 
 	// Speciella inställningar för projektet, används nu mest för Matkarta-GUI, siteOptions som property av config måste dock finnas
 	siteOptions: {
+		//placeView: false,
+		placeView: {
+			// TODO: Visa strukturerade informanter från kvalitetskälla, men inte ostrukturerade informanter (som informanter från crowdsource) i personlista
+			// Dölj personlista med informanter:
+			hideInformantPersonList: true,
+		},
 		recordList: {
 			// Döljd materialtyp i RecordList, används för matkartan
 			hideMaterialType: true,
