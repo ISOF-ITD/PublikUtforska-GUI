@@ -33,7 +33,7 @@ export default class RecordListItem extends React.Component {
 				// If one_accession_row and has NOT one_records
 				// No event, no button style, no link
 				return (
-					<td data-title={l('Arkivnummer')+':'}>
+					<td className="table-text" data-title={l('Arkivnummer')+':'}>
 						{this.props.item._source.archive.archive_id}
 					{
 						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
