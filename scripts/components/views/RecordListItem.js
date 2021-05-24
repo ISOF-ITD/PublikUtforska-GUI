@@ -229,7 +229,7 @@ export default class RecordListItem extends React.Component {
 					}
 				</td>
 			}
-			<td data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
+			<td className="table-text" data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&
 				<td data-title={l('Materialtyp')+':'}>{this.props.item._source.materialtype}</td>
