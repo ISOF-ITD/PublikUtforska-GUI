@@ -34,8 +34,19 @@ export default class RecordList extends React.Component {
 			this.setState({
 				records: json.data,
 				total: json.metadata.total.value || json.metadata.total, // ES7 vs ES5
+				totalRelation: json.metadata.total.relation || 'eq', // ES7 vs ES5
 				fetchingPage: false
 			});
+			// Handle new ES7 total value definition with total.relation parameter
+			// Needed sometimes if 'track_total_hits' not set in ES-request:
+			// total.relation: "eq": output only value
+			// total.relation: "gte": output '"more than "+value+" hits"' (value = 10000 for values > 10000)
+			let totalPrefixValue = '';
+			if (this.state.totalRelation != 'eq') {
+				totalPrefixValue = 'mer än ';
+			}
+			this.setState({totalPrefix: totalPrefixValue});
+
 		}.bind(this));
 	
 	}
@@ -173,7 +184,7 @@ export default class RecordList extends React.Component {
 					{
 						this.state.total > 50 &&
 						<div className="">
-							<strong>{l('Visar')+' '+((this.state.currentPage*50)-49)+'-'+(this.state.currentPage*50 > this.state.total ? this.state.total : this.state.currentPage*50)+' '+l('av')+' '+this.state.total}</strong>
+							<strong>{l('Visar')+' '+((this.state.currentPage*50)-49)+'-'+(this.state.currentPage*50 > this.state.total ? this.state.total : this.state.currentPage*50)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong>
 						</div>
 					}
 
@@ -256,7 +267,7 @@ export default class RecordList extends React.Component {
 						this.state.total > 50 &&
 						<div className="list-pagination">
 							<hr/>
-							<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*50)-49)+'-'+(this.state.currentPage*50 > this.state.total ? this.state.total : this.state.currentPage*50)+' '+l('av')+' '+this.state.total}</strong></p><br/>
+							<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*50)-49)+'-'+(this.state.currentPage*50 > this.state.total ? this.state.total : this.state.currentPage*50)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong></p><br/>
 							<button disabled={this.state.currentPage == 1} className="button prev-button" onClick={this.prevPage}>{l('Föregående')}</button>
 							<span> </span>
 							<button disabled={this.state.total <= this.state.currentPage*50} className="button next-button" onClick={this.nextPage}>{l('Nästa')}</button>
