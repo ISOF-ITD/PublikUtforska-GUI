@@ -33,7 +33,7 @@ export default class RecordListItem extends React.Component {
 				// If one_accession_row and has NOT one_records
 				// No event, no button style, no link
 				return (
-					<td data-title={l('Arkivnummer')+':'}>
+					<td className="table-text" data-title={l('Arkivnummer')+':'}>
 						{this.props.item._source.archive.archive_id}
 					{
 						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
@@ -229,7 +229,7 @@ export default class RecordListItem extends React.Component {
 					}
 				</td>
 			}
-			<td data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
+			<td className="table-text" data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&
 				<td data-title={l('Materialtyp')+':'}>{this.props.item._source.materialtype}</td>
