@@ -30,14 +30,56 @@
 
 @import "../ISOF-React-modules/less/sitevision.less";
 
+//TODO: @color parameters in less files based basic less parameters named on either:
+// 1) color intensity perspective or 
+// 2) color function perspective
+
+//isof profile colors until june 2021:
 @color-red: #a6192e;
 @color-red-lighter: #d4454c;
 @color-red-divider: #b62837;
-@color-darkgray: #dddddd;
-@color-gray: #f5f5f5;
+@notification-background: #7d1b1f;
+
+//map applications standard colors:
+@color-gray: #edeff1;
 @color-gray-border: #d1d1d1;
 @color-gray-background: #f5f5f5;
-@notification-background: #7d1b1f;
+
+//This application:
+@color-darkgray: #dddddd;
+@color-gray: #f5f5f5;
+
+// Colors defined in color intensity perspective
+//isof profile colors from june 2021:
+//Used?:
+//@color-black: #000000;
+
+//Ljusare färg för knapp för icke-aktiv
+//Mörkare färg för knapp för aktiv + hover
+
+//Icke aktiv knapp: (om fungerar alternativt Text alternativfärg)
+@color-lightest-isof: #3FD695;
+//Icke aktiv knapp: (HELST om fungerar)
+//Text alternativfärg (ej standard dvs vanligtvis svart):
+@color-text-contrast-isof: #097C44;
+//Profilfärg
+@color-lighter-isof: #005462;
+//Aktiv knapp + knapp-hover-over: 
+@color-darker-isof: #1c3f49;
+
+// Colors defined in color function perspective
+//Step 1: Defined less values for usage directly in rules from function perspective in adjusted rules (new from june 2021):
+//@color-background-lighter-isof: @color-lighter-isof;
+//@color-hover-active-button-isof: @color-lightest-isof;
+@color-hover-active-button-isof: @color-text-contrast-isof;
+
+//Step 2: Handle less for rules using color-values directly not adjusted (yet?)
+//Map to new isof-profile colors:
+@color-red: @color-text-contrast-isof;
+@color-red-lighter: @color-lightest-isof;
+@color-red-divider: @color-darker-isof;
+@notification-background: @color-darker-isof;
+
 
 @viewport {
 	zoom: 0.75;
@@ -78,6 +120,7 @@ body {
 }
 
 h2 {
+	font-size: 2rem;
 	.lighter {
 		font-size: 1.4rem;
 		color: #8d8d8d;

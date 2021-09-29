@@ -623,7 +623,7 @@ export default class RecordView extends React.Component {
 
 							{
 								this.state.data.archive && this.state.data.archive.archive &&
-								<p><img src={this.getArchiveLogo(this.state.data.archive.archive)} /></p>
+								<p><img src={this.getArchiveLogo(this.state.data.archive.archive)} style={{width: '100%'}} /></p>
 							}
 						</div>
 
