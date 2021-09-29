@@ -5,6 +5,7 @@ export default {
 		// Transcription status to user:
 		'untranscribed':'Ej transkribera', 
 		'readytotranscribe':'Nej', 
+		'undertranscription':'Skrivs av',
 		'transcribed':'Granskas', 
 		'reviewing':'Granskas', 
 		'approved':'Granskas',
