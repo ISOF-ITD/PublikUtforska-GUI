@@ -191,7 +191,7 @@ export default class RecordListItem extends React.Component {
 					}
 					{titleText && titleText != '' ? titleText : l('(Utan titel)')}
 					{
-						this.props.item._source.media.filter(m => m.source.includes('.pdf'))[0] && 
+						this.props.item._source.media && this.props.item._source.media.filter(m => m.source && m.source.includes('.pdf'))[0] && 
 						<sub><img src='img/pdf.gif' style={{'marginLeft': 5}} /></sub>
 					}
 				</a>
