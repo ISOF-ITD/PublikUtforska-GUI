@@ -176,9 +176,12 @@ export default class PlaceView extends React.Component {
 				<div className="container-header">
 					<div className="row">
 						<div className="twelve columns">
-							<h2>{this.state.data.name}</h2>
+							<h2>{this.state.data.name && this.state.data.name.replace(/ sn$/," socken")}</h2>
 							<p>
 								{
+									// Comment on replace above:
+									// Replace last ' sn' characters
+									// 
 									// Test: Each country handled different (Not yet working)
 									//this.state.data.archive ? this.state.data.archive.country == 'Finland' &&
 									//this.state.data.fylke ?
