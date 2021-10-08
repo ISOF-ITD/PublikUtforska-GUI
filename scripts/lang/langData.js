@@ -1,5 +1,13 @@
 export default {
 	'sv': {
+		// LocalLibraryView Local storage my "records":
+		'Mina sägner': 'Mina sparade dokument',
+		'Inga sparade sägner': 'Inga sparade dokument',
+		'Klicka på stjärnan för att spara sägner till din egen lista.': 'Klicka på stjärnan för att spara dokument till din egen lista.',
+		'har sparats till dina sägner': 'har sparats till dina dokument',
+		'Klicka här för att visa lista över dina sparade uppteckningar.': 'Klicka här för att visa lista över dina sparade dokument.',
+		'Samtliga uppteckningar från orten': 'Samtliga dokument från orten',
+		'Länk till dina sägner har kopierats.': 'Länk till ditt dokument har kopierats.',
 		//Temporary solution to remove text "Fylke" for Finland (and this solution also Norway)
 		'Fylke': ' ',
 		// Transcription status to user:
