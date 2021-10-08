@@ -34,6 +34,9 @@
 // 1) color intensity perspective or 
 // 2) color function perspective
 
+// Font via Google API. Obs: TODO: Ladda från ISOF
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 //isof profile colors until june 2021:
 @color-red: #a6192e;
 @color-red-lighter: #d4454c;
@@ -109,6 +112,8 @@ body {
 	margin: 0;
 
 	font-size: 1rem;
+
+	font-family: "PT Sans",sans-serif;
 }
 
 .text-small {
@@ -125,6 +130,10 @@ h2 {
 		font-size: 1.4rem;
 		color: #8d8d8d;
 	}
+}
+
+h3 {
+	font-size: 1.8rem;
 }
 
 .text-center {
@@ -258,4 +267,8 @@ audio::-webkit-media-controls-enclosure {
 
 .sort {
 	cursor: pointer;
+}
+
+.table-responsive th:not(:first-child) {
+	padding-left: 0;
 }
