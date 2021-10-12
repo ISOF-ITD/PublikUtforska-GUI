@@ -7,7 +7,8 @@ export default {
 		// transcriptionstatus: 'readytotranscribe,transcribed,reviewing,approved,published',
 		mark_metadata: 'transcriptionstatus',
 		//type: 'arkiv,tryckt',
-		categorytypes: 'tradark'
+		categorytypes: 'tradark',
+		publishstatus: 'published',
 		//For test with ortnamn data in index only use:
 		//Also add ISOF-React-modules/utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
 		//type: 'ortnamn',
