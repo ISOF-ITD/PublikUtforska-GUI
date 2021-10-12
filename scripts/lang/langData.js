@@ -7,7 +7,7 @@ export default {
 		'har sparats till dina sägner': 'har sparats till dina favoriter',
 		'Klicka här för att visa lista över dina sparade uppteckningar.': 'Klicka här för att visa lista över dina sparade favoriter.',
 		'Samtliga uppteckningar från orten': 'Samtliga favoriter från orten',
-		'Länk till dina sägner har kopierats.': 'Länk till ditt favorit har kopierats.',
+		'Länk till dina sägner har kopierats.': 'Länk till din favorit har kopierats.',
 		//Temporary solution to remove text "Fylke" for Finland (and this solution also Norway)
 		'Fylke': ' ',
 		// Transcription status to user:
