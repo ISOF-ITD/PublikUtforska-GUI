@@ -26,6 +26,7 @@ export default class RecordView extends React.Component {
 
 		this.toggleSaveRecord = this.toggleSaveRecord.bind(this);
 		this.mediaImageClickHandler = this.mediaImageClickHandler.bind(this);
+		this.archiveIdClick = this.archiveIdClick.bind(this);
 
 		this.state = {
 			data: {},
@@ -84,6 +85,15 @@ export default class RecordView extends React.Component {
 				type: event.currentTarget.dataset.type
 			});
 		}
+	}
+
+	archiveIdClick() {
+		const params = {
+			search: this.state.data.archive.archive_id,
+			recordtype: 'one_record',
+		}
+		this.props.history.push( '/places' + routeHelper.createSearchRoute(params))
+		window.eventBus.dispatch('routePopup.show')
 	}
 
 	fetchData(params) {
@@ -388,11 +398,34 @@ export default class RecordView extends React.Component {
 																closeTrigger="click"
 																autoHide={true}
 																message={l('Klicka på stjärnan för att spara sägner till din egen lista.')}>
-									<button className={'save-button'+(this.state.saved ? ' saved' : '')} onClick={this.toggleSaveRecord}><span>{l('Spara')}</span></button></ElementNotificationMessage></h2>
-								{
-									(!config.siteOptions.recordView || !config.siteOptions.recordView.hideMaterialType) &&
-									<p><strong>Materialtyp</strong>: {this.state.data.materialtype}</p>
-								}
+									<button className={'save-button'+(this.state.saved ? ' saved' : '')} onClick={this.toggleSaveRecord}><span>{l('Spara')}</span></button></ElementNotificationMessage>
+								</h2>
+								<p>
+									{	
+										this.state.data.archive && this.state.data.archive.archive &&
+										<span>
+											<strong>{l('Acc. nr')}</strong>: {
+												<a
+												onClick={this.archiveIdClick}
+												title='Se alla uppteckningar'
+												style={{cursor: 'pointer'}}
+												>
+													{this.state.data.archive.archive_id}
+												</a>
+											}
+										</span>
+									}
+									{	
+										this.state.data.archive && this.state.data.archive.archive && pages &&
+										<span style={{marginLeft: 10}}>
+											<strong>{l('Sid. nr')}</strong>: {pages}
+										</span>
+									}
+									{
+										(!config.siteOptions.recordView || !config.siteOptions.recordView.hideMaterialType) &&
+										<span style={{marginLeft: 10}}><strong>Materialtyp</strong>: {this.state.data.materialtype}</span>
+									}
+								</p>
 							</div>
 						</div>
 
