@@ -14,7 +14,7 @@ export default class RecordListItem extends React.Component {
 			if (this.props.item._source.recordtype == 'one_accession_row' && this.props.item._source.numberofonerecord && this.props.item._source.numberofonerecord > 0) {
 				// If one_accession_row and has one_records
 				return (
-					<td data-title={l('Arkivnummer')+':'}>
+					<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
 					<a
 						data-archiveid={this.props.item._source.archive.archive_id}
 						data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
@@ -45,7 +45,7 @@ export default class RecordListItem extends React.Component {
 		// If one_record
 		if (this.props.item._source.recordtype == 'one_record') {
 			return (
-			<td data-title={l('Arkivnummer')+':'}>
+			<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
 			<a
 				data-archiveid={this.props.item._source.archive.archive_id}
 				data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
@@ -63,7 +63,7 @@ export default class RecordListItem extends React.Component {
 	 	} else {
 			// If EVERYTHING ELSE
 			return (
-				<td data-title={l('Arkivnummer')+':'}>
+				<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
 				<a
 					data-archiveid={this.props.item._source.archive.archive_id}
 					data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
@@ -206,13 +206,13 @@ export default class RecordListItem extends React.Component {
 			}
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row' &&
-				<td data-title={l('Kategori')+':'}>
+				<td className="table-buttons" data-title={l('Kategori')+':'}>
 					{
 						taxonomyElement
 					}
 				</td>
 			}
-			<td data-title={l('Ort')+':'}>
+			<td className="table-buttons" data-title={l('Ort')+':'}>
 			{
 				this.props.item._source.places && this.props.item._source.places.length > 0 &&
 				<a
@@ -224,7 +224,7 @@ export default class RecordListItem extends React.Component {
 			</td>
 			{
 				!config.siteOptions.recordList || config.siteOptions.recordList.visibleCollecorPersons == true &&
-				<td data-title={l('Insamlare')+':'}>
+				<td className="table-buttons" data-title={l('Insamlare')+':'}>
 					{
 						collectorPersonElement
 					}
