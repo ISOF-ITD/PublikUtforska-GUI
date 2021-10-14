@@ -206,7 +206,12 @@ export default class RecordList extends React.Component {
 												{	
 													(this.state.sort === 'archive.archive_id') && (this.state.order === 'asc' ? '▼' : '▲')
 												} */}
-												{l('Arkivnummer')}
+												{
+													l('Arkivnummer')
+												}
+												{
+													this.props.searchParams.recordtype === 'one_record' ? ':Sida' : ''
+												}
 											{/* </a> */}
 									</th>
 								}

@@ -15,18 +15,20 @@ export default class RecordListItem extends React.Component {
 				// If one_accession_row and has one_records
 				return (
 					<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
-					<a
-						data-archiveid={this.props.item._source.archive.archive_id}
-						data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
-						onClick={this.props.archiveIdClick}
-						title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'} (${this.props.item._source.numberofonerecord} stycken)`}
-						style={{cursor: 'pointer'}}
-					>
-						{this.props.item._source.archive.archive_id}
-					</a>
-					{
-						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
-					}
+						<span style={{whiteSpace: 'nowrap'}}>
+							<a
+								data-archiveid={this.props.item._source.archive.archive_id}
+								data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
+								onClick={this.props.archiveIdClick}
+								title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'} (${this.props.item._source.numberofonerecord} stycken)`}
+								style={{cursor: 'pointer'}}
+							>
+								{this.props.item._source.archive.archive_id}
+							</a>
+							{
+								this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+							}
+						</span>
 					</td>
 					); 
 			} else {
@@ -46,36 +48,40 @@ export default class RecordListItem extends React.Component {
 		if (this.props.item._source.recordtype == 'one_record') {
 			return (
 			<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
-			<a
-				data-archiveid={this.props.item._source.archive.archive_id}
-				data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
-				onClick={this.props.archiveIdClick}
-				title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
-				style={{cursor: 'pointer'}}
-			>
-				{this.props.item._source.archive.archive_id}
-			</a>
-			{
-				this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
-			}
+				<span style={{whiteSpace: 'nowrap'}}>
+					<a
+						data-archiveid={this.props.item._source.archive.archive_id}
+						data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
+						onClick={this.props.archiveIdClick}
+						title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
+						style={{cursor: 'pointer'}}
+						>
+						{this.props.item._source.archive.archive_id}
+					</a>
+					{
+						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+					}
+				</span>
 			</td>
 			); 
 	 	} else {
 			// If EVERYTHING ELSE
 			return (
 				<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
-				<a
-					data-archiveid={this.props.item._source.archive.archive_id}
-					data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
-					onClick={this.props.archiveIdClick}
-					title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
-					style={{cursor: 'pointer'}}
-				>
-					{this.props.item._source.archive.archive_id}
-				</a>
-				{
-					this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
-				}
+					<span style={{whiteSpace: 'nowrap'}}>
+						<a
+							data-archiveid={this.props.item._source.archive.archive_id}
+							data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
+							onClick={this.props.archiveIdClick}
+							title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
+							style={{cursor: 'pointer'}}
+							>
+							{this.props.item._source.archive.archive_id}
+						</a>
+						{
+							this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+						}
+					</span>
 				</td>
 				); 
 			}
