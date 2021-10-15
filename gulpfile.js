@@ -19,7 +19,7 @@ var path = require('path');
 var gulpif = require('gulp-if');
 
 
-var production = true;
+var production = false;
 
 if (production) {
 	process.env.NODE_ENV = 'production';
@@ -36,6 +36,11 @@ gulp.task('less', function(){
         .pipe(gulp.dest('www/css'));
 });
 
+gulp.task('fonts', function(){
+	return gulp.src('./fonts/**.*')
+		.pipe(gulp.dest('./www/fonts'));
+});
+
 gulp.task('deploy', () => bundleApp(true) );
  
 gulp.task('watch', function (done) {
@@ -47,9 +52,9 @@ gulp.task('watch', function (done) {
 // When running 'gulp' on the terminal this task will fire.
 // It will start watching for changes in every .js file.
 // If there's a change, the task 'scripts' defined above will fire.
-gulp.task('default', gulp.series('scripts', 'less', 'watch'));
+gulp.task('default', gulp.series('scripts', 'less', 'fonts', 'watch'));
 
-gulp.task('build', gulp.series('scripts', 'less'));
+gulp.task('build', gulp.series('scripts', 'less', 'fonts'));
  
 // Private Functions
 // ----------------------------------------------------------------------------
