@@ -98,7 +98,7 @@ export default {
 	country: 'sweden',
 
 	// Webbsida som ska visas i OverlayWindow när användaren först kommer till kartan
-	startPageUrl: 'https://www.isof.se/om-oss/kartor/sagenkartan/om-sagenkartan---kort.html',
+	startPageUrl: 'https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke',
 
 	imageUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/',
 	pdfUrl: 'https://frigg-test.isof.se/sagendatabas/api/filemaker_proxy/publik/',
@@ -108,7 +108,7 @@ export default {
 	audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
 
 	appUrl: 'https://frigg.isof.se/static/js-apps/publikutforska/',
-	siteUrl: 'https://www.isof.se/om-oss/kartor/publikutforska.html',
+	siteUrl: 'https://frigg-test.isof.se/static/js-apps/publikutforska',
 
 	// Url till Django/Elasticsearch API
 	apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
