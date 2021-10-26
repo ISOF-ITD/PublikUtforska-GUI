@@ -381,7 +381,7 @@ export default class RecordView extends React.Component {
 			// Prepare title
 			let titleText = this.state.data.title;
 			let transcriptionStatusElement = this.state.data.transcriptionstatus;
-			if (transcriptionStatusElement == 'transcribed' || transcriptionStatusElement == 'reviewing' || transcriptionStatusElement == 'approved') {
+			if (transcriptionStatusElement == 'undertranscription' || transcriptionStatusElement == 'transcribed' || transcriptionStatusElement == 'reviewing' || transcriptionStatusElement == 'approved') {
 				titleText = 'Titel granskas';
 			}
 
@@ -451,6 +451,11 @@ export default class RecordView extends React.Component {
 								{
 									this.state.data.comment && this.state.data.comment != '' &&
 									<p className="text-small"><strong>{l('Kommentarer')+':'}</strong><br/><span dangerouslySetInnerHTML={{__html: this.state.data.comment}} /></p>
+								}
+
+								{
+									this.state.data.transcribedby && this.state.data.transcribedby != '' &&
+									<p className="text-small"><strong>{l('Transkriberad av')+': '}</strong><span dangerouslySetInnerHTML={{__html: this.state.data.transcribedby}} /></p>
 								}
 
 								{
