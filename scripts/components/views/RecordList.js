@@ -27,7 +27,7 @@ export default class RecordList extends React.Component {
 			if (!json.data || json.data.length == 0) {
 				// Om vi hittade inga postar skickar vi visuell meddelande till användaren
 				if (window.eventBus) {
-					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar'));
+					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar<br><br>Kanske informationen inte har skannats? Du kan pröva att söka i den andra av de två flikarna "Accessioner" och "Uppteckningar" utifall informationen finns där.<br><br>Klicka för att stänga meddelandet.'));
 				}
 			}
 
@@ -284,7 +284,7 @@ export default class RecordList extends React.Component {
 		else {
 			return (
 				<div className="table-wrapper list-container">
-					<h3>{l('Inga sökträffar')}</h3>
+					<h3>{l('Inga sökträffar.')}</h3>
 				</div>
 			);
 		}

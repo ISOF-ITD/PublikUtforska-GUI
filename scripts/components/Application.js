@@ -178,6 +178,8 @@ export default class Application extends React.Component {
 	windowClickHandler(event) {
 		const componentEl = ReactDOM.findDOMNode(this.mapMenu.current);
 
+		eventBus.dispatch('screen-clicked');
+
 		if (!!componentEl && !componentEl.contains(event.target)) {
 			this.setState({
 				menuExpanded: false
