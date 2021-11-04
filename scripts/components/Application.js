@@ -16,6 +16,7 @@ import ContributeInfoOverlay from './../../ISOF-React-modules/components/views/C
 import TranscriptionHelpOverlay from './../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './../../ISOF-React-modules/components/views/TranscriptionOverlay';
 import PopupNotificationMessage from './../../ISOF-React-modules/components/controls/PopupNotificationMessage';
+import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 
 import routeHelper from './../utils/routeHelper';
 
@@ -288,6 +289,7 @@ export default class Application extends React.Component {
 					<ContributeInfoOverlay />
 					<TranscriptionOverlay {...this.props} />
 					<TranscriptionHelpOverlay />
+					<SwitcherHelpTextOverlay />
 					<PopupNotificationMessage />
 
 			</div>

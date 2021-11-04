@@ -5,6 +5,14 @@ export default class FilterSwitch extends React.Component {
 	constructor(props) {
 		super(props);
 		this.menuButtonClick = this.menuButtonClick.bind(this);
+		this.openSwitcherHelptext = this.openSwitcherHelptext.bind(this);
+	}
+
+	openSwitcherHelptext() {
+		if (window.eventBus) {
+			window.eventBus.dispatch('overlay.switcherHelpText', {
+			});
+		}
 	}
 
 	menuButtonClick(event) {
@@ -28,6 +36,7 @@ export default class FilterSwitch extends React.Component {
 		return <div className="nordic-switch-wrapper map-floating-control">
 			<a onClick={this.menuButtonClick} data-value="one_accession_row" className={this.props.searchParams.recordtype == 'one_accession_row' ? 'selected' : ''}>{l('Accession')}</a>
 			<a onClick={this.menuButtonClick} data-value="one_record" className={this.props.searchParams.recordtype == 'one_record' ? 'selected' : ''}>{l('Uppteckning')}</a>
+			<span className='switcher-help-button' onClick={this.openSwitcherHelptext} title='Om accessioner och uppteckningar'>?</span>
 		</div>;
 	}
 
