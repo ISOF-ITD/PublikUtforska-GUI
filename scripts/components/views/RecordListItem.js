@@ -167,6 +167,7 @@ export default class RecordListItem extends React.Component {
 			'undertranscription':'Skrivs av',
 			'transcribed':'Granskas',
 			'reviewing':'Granskas',
+			'needsimprovement': 'Granskas',
 			'approved':'Granskas',
 			'published':'Ja'
 		};
