@@ -36,11 +36,11 @@ export default class SwitcherHelpTextOverlay extends React.Component {
 
 	render() {
 			var overlayContent = <div>
-                <p>Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero. Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut.</p>
-				<p><strong>Accessioner:</strong> Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.</p>
-				<p><strong>Uppteckningar:</strong> Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, </p>
+                <p>Ord som förekommer ofta i Folke utforska är accession och uppteckning. Här förklarar vi tydligare vad orden innebär.</p>
+				<p><strong>Vad är en accession?</strong><br></br>En accession är en del av en arkivserie, och varje accession har ett unikt accessionsnummer. En accession rör oftast en särskild geografisk plats, till exempel en socken, men kan innehålla flera uppteckningar med olika ämnen och olika berättare. Accessionerna är sökbara på alla sina uppteckningars titlar, berättare och insamlare. <br></br>Om du vill ha ett helhetsgrepp över ett insamlat material på en viss ort, ett visst ämne eller en särskild person är det accessionerna du ska söka i.</p>
+				<p><strong>Vad är en uppteckning?</strong><br></br>En uppteckning kan beskrivas som ett samlingsbegrepp för olika sorters material. Här är en uppteckning ofta en unik berättelse i en accession, där accessionen i sig består av ett flertal uppteckningar. En uppteckning handlar oftast om ett specifikt ämne. <br></br> Det är på uppteckningsnivån i kartan som du kan söka efter berättelser att transkribera/skriva av och på så sätt göra mer tillgängliga för andra.</p>
 				<p>
-                    <a href="https://www.isof.se/folkminnen/beratta-for-oss.html"><strong>{l('Läs mer.')}</strong></a>
+                    <a href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke/instruktioner-och-sokhjalp"><strong>{l('Läs mer.')}</strong></a>
 				</p>
 			</div>;
 
