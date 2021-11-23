@@ -107,8 +107,8 @@ export default {
 	personImageUrl: 'https://frigg.isof.se/media/',
 	audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
 
-	appUrl: 'https://frigg.isof.se/static/js-apps/publikutforska/',
-	siteUrl: 'https://frigg.isof.se/static/js-apps/publikutforska',
+	appUrl: 'https://sok.folke.isof.se/',
+	siteUrl: 'https://sok.folke.isof.se',
 
 	// Url till Django/Elasticsearch API
 	apiUrl: 'https://frigg.isof.se/sagendatabas/api/es/',
