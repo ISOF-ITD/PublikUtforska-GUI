@@ -101,7 +101,7 @@ export default {
 	startPageUrl: 'https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke',
 
 	imageUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/',
-	pdfUrl: 'https://frigg.isof.se/sagendatabas/api/filemaker_proxy/publik/',
+	pdfUrl: 'https://sok.folke.isof.se/arkivfiler/publik/',
 	//For test with ortnamn data in index:
 	//imageUrl: 'https://www4.isof.se/NAU/bilder/',
 	personImageUrl: 'https://frigg.isof.se/media/',
