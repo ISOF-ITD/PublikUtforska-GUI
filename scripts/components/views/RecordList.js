@@ -202,17 +202,17 @@ export default class RecordList extends React.Component {
 								{
 									!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
 									<th scope="col">
-											{/* <a className='sort' onClick={this.sort} name='archive.archive_id'>
+											<a className='sort' onClick={this.sort} name='archive.archive_id.keyword'>
 												{	
-													(this.state.sort === 'archive.archive_id') && (this.state.order === 'asc' ? '▼' : '▲')
-												} */}
+													(this.state.sort === 'archive.archive_id.keyword') && (this.state.order === 'asc' ? '▼' : '▲')
+												}
 												{
 													l('Arkivnummer')
 												}
 												{
 													this.props.searchParams.recordtype === 'one_record' ? ':Sida' : ''
 												}
-											{/* </a> */}
+											</a>
 									</th>
 								}
 								{
