@@ -1,4 +1,6 @@
 export default {
+	hitsPerPage: 100,
+
 	// Namn på localStorage som lagrar sparade accessioner/uppteckningar
 	localLibraryName: 'publikutforska_library',
 

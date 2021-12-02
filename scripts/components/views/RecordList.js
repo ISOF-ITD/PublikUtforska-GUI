@@ -128,8 +128,8 @@ export default class RecordList extends React.Component {
 		});
 
 		const fetchParams = {
-			from: (this.state.currentPage-1)*50,
-			size: 50,
+			from: (this.state.currentPage-1)*config.hitsPerPage,
+			size: config.hitsPerPage,
 			search: params.search || undefined,
 			search_field: params.search_field || undefined,
 			type: params.type,
@@ -184,9 +184,9 @@ export default class RecordList extends React.Component {
 				<div className={'table-wrapper records-list list-container'+(this.state.records.length == 0 ? ' loading' : this.state.fetchingPage ? ' loading-page' : '')}>
 
 					{
-						this.state.total > 50 &&
+						this.state.total > config.hitsPerPage &&
 						<div className="">
-							<strong>{l('Visar')+' '+((this.state.currentPage*50)-49)+'-'+(this.state.currentPage*50 > this.state.total ? this.state.total : this.state.currentPage*50)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong>
+							<strong>{l('Visar')+' '+((this.state.currentPage*config.hitsPerPage)-(config.hitsPerPage-1))+'-'+(this.state.currentPage*config.hitsPerPage > this.state.total ? this.state.total : this.state.currentPage*config.hitsPerPage)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong>
 						</div>
 					}
 
@@ -271,13 +271,13 @@ export default class RecordList extends React.Component {
 					</table>
 
 					{
-						this.state.total > 50 &&
+						this.state.total > config.hitsPerPage &&
 						<div className="list-pagination">
 							<hr/>
-							<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*50)-49)+'-'+(this.state.currentPage*50 > this.state.total ? this.state.total : this.state.currentPage*50)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong></p><br/>
+							<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*config.hitsPerPage)-(config.hitsPerPage-1))+'-'+(this.state.currentPage*config.hitsPerPage > this.state.total ? this.state.total : this.state.currentPage*config.hitsPerPage)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong></p><br/>
 							<button disabled={this.state.currentPage == 1} className="button prev-button" onClick={this.prevPage}>{l('Föregående')}</button>
 							<span> </span>
-							<button disabled={this.state.total <= this.state.currentPage*50} className="button next-button" onClick={this.nextPage}>{l('Nästa')}</button>
+							<button disabled={this.state.total <= this.state.currentPage*config.hitsPerPage} className="button next-button" onClick={this.nextPage}>{l('Nästa')}</button>
 						</div>
 					}
 				</div>
