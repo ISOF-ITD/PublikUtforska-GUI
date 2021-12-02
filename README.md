@@ -18,7 +18,9 @@ sed -i 's/production = false/production = true/' gulpfile.js && gulp build && gi
 Deploy code on server:
 
 ```bash
-cd /var/www/django/static/js-apps/publikutforska && ./svn_www_update.sh && exit
+cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh 
+# i testmiljön:
+sh switch-prod-2-test.sh
 ```
 
 ## Upgrade node modules
