@@ -194,12 +194,12 @@ export default class RecordList extends React.Component {
 						<thead>
 							<tr>
 								<th scope="col">
-									<a className='sort' onClick={this.sort} name='title.raw'>
+									{/*<a className='sort' onClick={this.sort} name='title.raw'>
 										{	
 											(this.state.sort === 'title.raw') && (this.state.order === 'asc' ? '▼' : '▲')
-										}
+										*/}
 										{l('Titel')}
-									</a>
+									{/*</a>*/}
 								</th>
 								{
 									!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
