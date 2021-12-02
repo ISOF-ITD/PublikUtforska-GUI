@@ -216,6 +216,7 @@ export default class RecordView extends React.Component {
 							person.home && person.home.length > 0 &&
 							<a href={'#places/'+person.home[0].id+(routeParams ? routeParams : '')}>{person.home[0].name+', '+person.home[0].harad}</a>
 						}
+						{person.birthplace ? ` ${person.birthplace}` : ''}
 					</td>
 					<td data-title="Roll">{person.relation == 'c' ? l('Upptecknare') : person.relation == 'i' ? l('Informant') : ''}</td>
 				</tr>;
