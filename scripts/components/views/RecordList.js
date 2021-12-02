@@ -14,8 +14,10 @@ export default class RecordList extends React.Component {
 			records: [],
 			fetchingPage: false,
 			currentPage: 1,
-			sort: undefined,
-			order: undefined,
+			sort: 'archive.archive_id.keyword',
+			order: 'asc',
+			//sort: undefined,
+			//order: undefined,
 		};
 
 		this.nextPage = this.nextPage.bind(this);
