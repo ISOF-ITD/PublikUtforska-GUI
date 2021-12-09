@@ -25,6 +25,8 @@ export default class MapView extends React.Component {
 
 		window.mapView = this;
 
+		this.mapView = React.createRef();
+
 		this.state = {
 			viewMode: 'clusters',
 			loading: false
@@ -49,7 +51,7 @@ export default class MapView extends React.Component {
 	componentDidMount() {
 		this.fetchData(this.props.searchParams);
 
-		this.mapBase = this.refs.mapView;
+		this.mapBase = this.mapView.current;
 	}
 
 	componentDidUpdate(prevProps) {
@@ -154,17 +156,17 @@ export default class MapView extends React.Component {
 				this.markers.clearLayers();
 			}
 
-			this.refs.mapView.map.removeLayer(this.markers);
+			this.mapView.current.map.removeLayer(this.markers);
 		}
 
 		switch (this.state.viewMode) {
 			case 'markers':
 				this.markers = L.featureGroup();
-				this.refs.mapView.map.addLayer(this.markers);
+				this.mapView.current.map.addLayer(this.markers);
 				break;
 			case 'circles':
 				this.markers = L.featureGroup();
-				this.refs.mapView.map.addLayer(this.markers);
+				this.mapView.current.map.addLayer(this.markers);
 				break;
 			case 'clusters':
 				this.markers = new L.MarkerClusterGroup({
@@ -189,7 +191,7 @@ export default class MapView extends React.Component {
 						});
 					}
 				});
-				this.refs.mapView.map.addLayer(this.markers);
+				this.mapView.current.map.addLayer(this.markers);
 				break;
 			case 'heatmap':
 				this.markers = L.heatLayer([], {
@@ -197,7 +199,7 @@ export default class MapView extends React.Component {
 					radius: 18,
 					blur: 15
 				});
-				this.markers.addTo(this.refs.mapView.map);
+				this.markers.addTo(this.mapView.current.map);
 			case 'heatmap-count':
 				this.markers = L.heatLayer([], {
 					minOpacity: 0.35,
@@ -205,7 +207,7 @@ export default class MapView extends React.Component {
 					blur: 15,
 					maxZoom: 4
 				});
-				this.markers.addTo(this.refs.mapView.map);
+				this.markers.addTo(this.mapView.current.map);
 		}
 	}
 
@@ -229,7 +231,7 @@ export default class MapView extends React.Component {
 			// Lägger till alla prickar på kartan
 			if (mapData.length > 0) {
 				// Hämtar current bounds (minus 20%) av synliga kartan
-				var currentBounds = this.refs.mapView.map.getBounds().pad(-0.2);
+				var currentBounds = this.mapView.current.map.getBounds().pad(-0.2);
 
 				// Samlar ihop latLng av alla prickar för att kunna senare zooma inn till dem
 				var bounds = [];
@@ -268,7 +270,7 @@ export default class MapView extends React.Component {
 
 				// Zooma in till alla nya punkena om ingen av dem finns inom synliga kartan
 				if (!markerWithinBounds || (config.siteOptions.mapView && config.siteOptions.mapView.alwaysUpdateViewport == true)) {
-					this.refs.mapView.map.fitBounds(bounds, {
+					this.mapView.current.map.fitBounds(bounds, {
 						maxZoom: 10,
 						padding: [50, 50]
 					});
@@ -332,7 +334,7 @@ export default class MapView extends React.Component {
 			this.markers.setLatLngs(latLngs);
 		}
 		if (this.state.viewMode == 'heatmap-count') {
-			this.refs.mapView.map.removeLayer(this.markers);
+			this.mapView.current.map.removeLayer(this.markers);
 
 			var maxCount = _.max(mapData, function(mapItem) {
 				return Number(mapItem.doc_count);
@@ -345,7 +347,7 @@ export default class MapView extends React.Component {
 				max: maxCount,
 				maxZoom: 0
 			});
-			this.markers.addTo(this.refs.mapView.map);
+			this.markers.addTo(this.mapView.current.map);
 
 			var latLngs = _.map(mapData, function(mapItem) {
 				return [mapItem.location[0], mapItem.location[1], mapItem.doc_count];
@@ -394,7 +396,7 @@ export default class MapView extends React.Component {
 					<div className="indicator"></div>
 				</div>
 
-				<MapBase ref="mapView"
+				<MapBase ref={this.mapView}
 					className="map-view"
 					layersControlPosition={this.props.layersControlPosition || 'topleft'}
 					zoomControlPosition={this.props.zoomControlPosition || 'topleft'} 
