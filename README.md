@@ -7,7 +7,7 @@ Public crowdsource map based interface
 sed -i 's/production = true/production = false/' gulpfile.js && gulp
 ```
 
-## Bundle code for deployment with gulp, commit and push (be careful to know what you are doing here)
+## Bundle code for deployment with gulp, commit and push (make sure you know what you are doing)
 
 Enter the correct path to the ES-API in config.js (frigg-test or frigg). Otherwise it must be done on the server afterwards. Then run:
 
@@ -82,4 +82,4 @@ Since, in the above example, the searchParams are a part of the component's **pr
 
 ### What is not controlled by the routes?
 
-Some states of the application are not in the scope of the routing. This affects all events that are triggered by eventBus, especially popups and overlays.
+Some states of the application are not in the scope of the routing. This affects all events that are triggered by eventBus, especially popups, overlays and `resize` events.
