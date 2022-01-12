@@ -64,10 +64,10 @@ ReactDOM.render(
 
 	<HashRouter>
 		<Route exact path="/">
-			<Redirect to="/places/recordtype/one_accession_row" />
+			<Redirect to="/places/recordtype/one_accession_row/has_media/true" />
 		</Route>
 		<Route exact path="/places">
-			<Redirect to="/places/recordtype/one_accession_row" />
+			<Redirect to="/places/recordtype/one_accession_row/has_media/true" />
 		</Route>
 		<Route
 			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
@@ -88,4 +88,4 @@ ReactDOM.render(
 	</HashRouter>,
 	document.getElementById('app')
 
-);2
+);

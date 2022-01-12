@@ -170,7 +170,7 @@ export default class SearchBox extends React.Component {
 						}
 					</strong>
 					{
-						!!this.state.searchParams.has_media ? ' (Med material)' : ''
+						!!this.state.searchParams.has_media ? ' (Digitaliserat)' : ''
 					}
 					{
 						!!this.state.searchParams.transcriptionstatus ?
@@ -217,13 +217,13 @@ export default class SearchBox extends React.Component {
 						<div className="radio-group">
 
 							<label>
-								<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="has_media" checked={this.state.searchParams.has_media !== 'true'} />
-								Allt
+								<input type="radio" value="true" onChange={this.checkboxChangeHandler} name="has_media" checked={this.state.searchParams.has_media === 'true'} />
+								Digitaliserat
 							</label>
 
 							<label>
-								<input type="radio" value="true" onChange={this.checkboxChangeHandler} name="has_media" checked={this.state.searchParams.has_media === 'true'} />
-								Med material
+								<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="has_media" checked={this.state.searchParams.has_media !== 'true'} />
+								Visa även ej digitaliserat
 							</label>
 
 						</div>
