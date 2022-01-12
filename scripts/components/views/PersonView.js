@@ -113,16 +113,16 @@ export default class PersonView extends React.Component {
 
 				<div className="row">
 
-					<div className={(this.state.data.image ? 'eight' : 'twelve')+' columns'}>
+					<div className={(this.state.data.imagepath ? 'eight' : 'twelve')+' columns'}>
 						{
 							this.state.data.biography &&
 							<p dangerouslySetInnerHTML={{__html: this.state.data.biography.replace(/(?:\r\n|\r|\n)/g, '<br />')}} />
 						}
 					</div>
 					{
-						this.state.data.image &&
+						this.state.data.imagepath &&
 						<div className="four columns">
-							<img className="archive-image" src={(config.personImageUrl || config.imageUrl)+this.state.data.image} alt="" />
+							<img className="archive-image" src={(config.personImageUrl || config.imageUrl)+this.state.data.imagepath} alt="" />
 						</div>
 					}
 
