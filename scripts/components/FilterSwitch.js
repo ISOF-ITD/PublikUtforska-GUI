@@ -23,9 +23,10 @@ export default class FilterSwitch extends React.Component {
 		if (value === 'one_accession_row') {
 			params['category'] = undefined;
 			params['transcriptionstatus'] = undefined;
-		} else if (value === 'one_record') {
-			// default is all material including not digitized/no media 
+			// default is digitized material 
 			params['has_media'] = true;
+		} else if (value === 'one_record') {
+			params['has_media'] = undefined;
 		}
 		this.props.history.push(
 			'/places'

@@ -13,6 +13,7 @@ console.log(`PublikUtforska running React.js version ${React.version} and ReactD
 Object.assign polyfill
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 */
+// For older browsers that has no Object.assign defined:
 if (typeof Object.assign != 'function') {
 	// Must be writable: true, enumerable: false, configurable: true
 	Object.defineProperty(Object, "assign", {
