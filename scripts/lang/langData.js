@@ -70,7 +70,7 @@ export default {
 		'Platser': 'Steder',
 		'Arkiv': 'Arkiv',
 		'Acc. nr': 'Acc.nr',
-		'Sid. nr': 'Sidenr.',
+		'Sidnummer': 'Sidenr.',
 		'Materialtyp': 'Materialtype',
 		'Uppteckningar': 'Opptegnelser',
 		'Föddes': 'Født',

@@ -15,7 +15,11 @@ import TranscribeButton from './../../../ISOF-React-modules/components/views/Tra
 import ElementNotificationMessage from './../../../ISOF-React-modules/components/controls/ElementNotificationMessage';
 import SitevisionContent from './../../../ISOF-React-modules/components/controls/SitevisionContent';
 import PdfViewer from './../../../ISOF-React-modules/components/controls/PdfViewer';
+
 import routeHelper from './../../../scripts/utils/routeHelper';
+import { pageFromTo } from './../../../scripts/utils/helpers';
+
+import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 
 export default class RecordView extends React.Component {
 	constructor(props) {
@@ -30,10 +34,25 @@ export default class RecordView extends React.Component {
 
 		this.state = {
 			data: {},
-			saved: false
+			saved: false,
+			subrecords: [],
 		};
 
 		this.url = config.apiUrl+'document/';
+
+		this.collections = new RecordsCollection(function(json) {
+			if (!json.data || json.data.length == 0) {
+				// Om vi hittade inga postar skickar vi visuell meddelande till användaren
+				if (window.eventBus) {
+					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar'));
+				}
+			}
+
+			this.setState({
+				subrecords: json.data,
+				// total: json.metadata.total.value || json.metadata.total, // ES7 vs ES5
+			});
+		}.bind(this));
 	}
 
 	componentDidMount() {
@@ -42,6 +61,15 @@ export default class RecordView extends React.Component {
 				this.props.location.pathname
 			)
 		);
+		this.state.data.archive && this.fetchSubrecords();
+	}
+
+	componentDidUpdate(prevProps, prevState) {
+		if (this.state.data.archive && 
+			this.state.data.archive.archive_id_row && 
+			(!prevState.data.archive || prevState.data.archive.archive_id_row !== this.state.data.archive.archive_id_row)) {
+			this.fetchSubrecords();
+		}
 	}
 
 	componentWillUnmount() {
@@ -118,6 +146,15 @@ export default class RecordView extends React.Component {
 				})
 			;
 		}
+	}
+
+	fetchSubrecords() {
+		var fetchParams = {
+			search: this.state.data.archive.archive_id_row,
+			recordtype: 'one_record',
+		};
+
+		this.collections.fetch(fetchParams);
 	}
 
 	getArchiveLogo(archive) {
@@ -389,6 +426,7 @@ export default class RecordView extends React.Component {
 			if (transcriptionStatusElement == 'undertranscription' || transcriptionStatusElement == 'transcribed' || transcriptionStatusElement == 'reviewing' || transcriptionStatusElement == 'needsimprovement' || transcriptionStatusElement == 'approved') {
 				titleText = 'Titel granskas';
 			}
+			const _this = this;
 
 			return <div className={'container'+(this.state.data.id ? '' : ' loading')}>
 
@@ -406,24 +444,40 @@ export default class RecordView extends React.Component {
 									<button className={'save-button'+(this.state.saved ? ' saved' : '')} onClick={this.toggleSaveRecord}><span>{l('Spara')}</span></button></ElementNotificationMessage>
 								</h2>
 								<p>
+									{
+										this.state.data.recordtype === 'one_accession_row' && l('Accession')
+									}
+									{
+										this.state.data.recordtype === 'one_record' && l('Uppteckning')
+									}
+								</p>
+								<p>
 									{	
 										this.state.data.archive && this.state.data.archive.archive &&
 										<span>
-											<strong>{l('Acc. nr')}</strong>: {
-												<a
-												onClick={this.archiveIdClick}
-												title='Se alla uppteckningar'
-												style={{cursor: 'pointer'}}
-												>
-													{this.state.data.archive.archive_id}
-												</a>
-											}
+											<strong>{l('Accessionsnummer')}</strong>:&nbsp;
+											{this.state.data.archive.archive_id}
+											
+										</span>
+									}
+									{	
+										this.state.data.archive && this.state.data.archive.archive &&
+										<span style={{marginLeft: 10}}>
+											<strong>{l('Accessionsradnummer')}</strong>:&nbsp;
+											{this.state.data.archive.archive_row}
+											
+										</span>
+									}
+									{	
+										this.state.data.recordtype === 'one_accession_row' && this.state.data.numberofonerecord &&
+										<span style={{marginLeft: 10}}>
+											<strong>{l('Antal uppteckningar')}</strong>: {this.state.data.numberofonerecord}
 										</span>
 									}
 									{	
 										this.state.data.archive && this.state.data.archive.archive && pages &&
 										<span style={{marginLeft: 10}}>
-											<strong>{l('Sid. nr')}</strong>: {pages}
+											<strong>{l('Sidnummer')}</strong>: {pages}
 										</span>
 									}
 									{
@@ -555,6 +609,32 @@ export default class RecordView extends React.Component {
 					<hr/>
 
 					{
+						this.state.data.recordtype == "one_accession_row" &&
+						<div className="row">
+
+							<div className="twelve columns">
+								<h3>{l('Uppteckningar')}</h3>
+								{ this.state.subrecords.length === 0 &&
+
+									<span>Inga resultat</span>
+								}
+								<ul>
+									{this.state.subrecords.sort((a, b) => (parseInt(a._source.archive.page) > parseInt(b._source.archive.page)) ? 1 : -1).map(function(item, index) {
+										return (
+											<li key={`subitem${item._source.id}`}><small>
+												<a href={`#/records/${item._source.id}${routeHelper.createSearchRoute(routeHelper.createParamsFromRecordRoute(_this.props.location.pathname))}`}>Sida {pageFromTo(item)}</a>
+											</small></li>
+										)
+									})
+									}
+								</ul>
+							</div>
+						</div>
+					}
+
+					<hr />
+
+					{
 						personItems.length > 0 &&
 						<div className="row">
 
@@ -636,7 +716,7 @@ export default class RecordView extends React.Component {
 
 							{
 								this.state.data.archive && this.state.data.archive.archive &&
-								<p><strong>{l('Sid. nr')}</strong><br/>{pages}</p>
+								<p><strong>{l('Sidnummer')}</strong><br/>{pages}</p>
 							}
 						</div>
 

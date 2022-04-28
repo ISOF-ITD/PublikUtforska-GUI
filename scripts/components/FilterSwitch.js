@@ -27,6 +27,7 @@ export default class FilterSwitch extends React.Component {
 			params['has_media'] = true;
 		} else if (value === 'one_record') {
 			params['has_media'] = undefined;
+			params['transcriptionstatus'] = 'readytotranscribe';
 		}
 		this.props.history.push(
 			'/places'
@@ -36,8 +37,8 @@ export default class FilterSwitch extends React.Component {
 
 	render() {
 		return <div className="nordic-switch-wrapper map-floating-control">
-			<a onClick={this.menuButtonClick} data-value="one_accession_row" className={this.props.searchParams.recordtype == 'one_accession_row' ? 'selected' : ''}>{l('Accession')}</a>
-			<a onClick={this.menuButtonClick} data-value="one_record" className={this.props.searchParams.recordtype == 'one_record' ? 'selected' : ''}>{l('Uppteckning')}</a>
+			<a onClick={this.menuButtonClick} data-value="one_accession_row" className={this.props.searchParams.recordtype == 'one_accession_row' ? 'selected' : ''}>{l('Arkivmaterial')}</a>
+			<a onClick={this.menuButtonClick} data-value="one_record" className={this.props.searchParams.recordtype == 'one_record' ? 'selected' : ''}>{l('Skriva av')}</a>
 			<span className='switcher-help-button' onClick={this.openSwitcherHelptext} title='Om accessioner och uppteckningar'>?</span>
 		</div>;
 	}

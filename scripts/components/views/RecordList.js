@@ -14,7 +14,7 @@ export default class RecordList extends React.Component {
 			records: [],
 			fetchingPage: false,
 			currentPage: 1,
-			sort: 'archive.archive_id.keyword',
+			sort: 'archive.archive_id_row.keyword',
 			order: 'asc',
 			//sort: undefined,
 			//order: undefined,
@@ -62,14 +62,15 @@ export default class RecordList extends React.Component {
 	}
 
 	archiveIdClick(event) {
-		const archive_id = event.target.dataset.archiveid
+		const archive_id_row = event.target.dataset.archiveidrow
 		const recordtype = event.target.dataset.recordtype
+		const search = event.target.dataset.search
 		const params = {
-			search: archive_id,
+			search: search,
 			recordtype: recordtype,
 		}
-		this.props.history.push( '/places' + routeHelper.createSearchRoute(params))
-		window.eventBus.dispatch('routePopup.show')
+		archive_id_row && this.props.history.push( '/records/' + archive_id_row + routeHelper.createSearchRoute(params))
+		// window.eventBus.dispatch('routePopup.show')
 	}
 
 	nextPage() {
@@ -171,7 +172,8 @@ export default class RecordList extends React.Component {
 			return <RecordListItem 
 					key={item._source.id}
 					id={item._source.id}
-					item={item} routeParams={searchRouteParams} 
+					item={item}
+					routeParams={searchRouteParams} 
 					highlightRecordsWithMetadataField={this.props.highlightRecordsWithMetadataField}
 					searchParams={this.props.searchParams}
 					archiveIdClick={this.archiveIdClick}
@@ -204,9 +206,9 @@ export default class RecordList extends React.Component {
 								{
 									!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
 									<th scope="col">
-											<a className='sort' onClick={this.sort} name='archive.archive_id.keyword'>
+											<a className='sort' onClick={this.sort} name='archive.archive_id_row.keyword'>
 												{	
-													(this.state.sort === 'archive.archive_id.keyword') && (this.state.order === 'asc' ? '▼' : '▲')
+													(this.state.sort === 'archive.archive_id_row.keyword') && (this.state.order === 'asc' ? '▼' : '▲')
 												}
 												{
 													l('Arkivnummer')

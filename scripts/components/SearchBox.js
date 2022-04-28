@@ -38,21 +38,31 @@ export default class SearchBox extends React.Component {
 	}
 
 	categoryItemClickHandler(event) {
+		// get the clicked category
 		const selectedCategory = categories.categories[event.target.dataset.index].letter
+		// derive already selected categories from the current searchParams
 		let currentSelectedCategories = this.props.searchParams.category && this.props.searchParams.category.split(',')
 		let selectedCategories = []
+		// if the clicked category is part of the current search params, remove it from the current search params
 		if (currentSelectedCategories && currentSelectedCategories.includes(selectedCategory)) {
 			selectedCategories = currentSelectedCategories.filter(c => c !== selectedCategory)
+		// else, check if list of current selected categories is not empty, then add the clicked category
 		} else if (currentSelectedCategories) {
 			selectedCategories = currentSelectedCategories
 			selectedCategories.push(selectedCategory)
+		// otherwise (no categories are in the search params), the new list of selected categories will a list with a single item, i.e. the clicked category
 		} else {
 			selectedCategories = [selectedCategory]
 		}
 
+		// create a new params object and change its category to the newly created list
 		const params = {...this.state.searchParams}
 		params['category'] = selectedCategories.join(',')
+	
+		//create a search route from the params object
 		const path = "/places" + routeHelper.createSearchRoute(params)
+	
+		// set the route. All components that read from the route will change their state accordingly
 		this.props.history.push(path);
 	}
 
@@ -64,9 +74,8 @@ export default class SearchBox extends React.Component {
 			);
 	}
 
-	// Lägg nytt värde till state om valt värde ändras i sökfält, kategorilisten eller andra sökfält
+	// Lägg nytt värde till state om valt värde ändras i sökfält, kategorilistan eller andra sökfält
 	searchValueChangeHandler(event) {
-		console.log(event.target)
 		if (event.target.value != this.state.searchParams.search) {
 			const searchParams = {...this.state.searchParams};
 			searchParams.search = event.target.value;
@@ -138,7 +147,7 @@ export default class SearchBox extends React.Component {
 				onClick={this.searchBoxClickHandler}
 				className={'search-box map-floating-control' + (this.props.expanded ? ' expanded' : '') + (this.state.searchParams.recordtype === 'one_record' ? ' advanced' : '')} >
 				<input ref="searchInput" type="text"
-					defaultValue={this.state.searchParams.search}
+					defaultValue={this.state.searchParams.search ? this.state.searchParams.search: ''}
 					// onChange={this.searchValueChangeHandler}
 					onInput={this.searchValueChangeHandler}
 					onKeyPress={this.inputKeyPressHandler}
@@ -165,7 +174,7 @@ export default class SearchBox extends React.Component {
 					}
 					<strong>
 						{
-							this.state.searchParams.search != '' ?
+							this.state.searchParams.search ?
 								this.state.searchParams.search : ''
 						}
 					</strong>
@@ -211,7 +220,7 @@ export default class SearchBox extends React.Component {
 					</label>
 
 					</div>
-
+					<hr/>
 					{
 						this.state.searchParams.recordtype == 'one_accession_row' &&
 						<div className="radio-group">
@@ -221,9 +230,14 @@ export default class SearchBox extends React.Component {
 								Digitaliserat
 							</label>
 
+							<label style={{display: 'none'}}>
+								<input disabled={true} type="radio" value="false" onChange={this.checkboxChangeHandler} name="published" checked={this.state.searchParams.has_media === 'false' && true === true} />
+								<span style={{color: "grey"}}>Avskrivet</span>
+							</label>
+
 							<label>
 								<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="has_media" checked={this.state.searchParams.has_media !== 'true'} />
-								Visa även ej digitaliserat
+								Allt
 							</label>
 
 						</div>
@@ -234,18 +248,18 @@ export default class SearchBox extends React.Component {
 						<div className="radio-group">
 
 							<label>
-								<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={!this.state.searchParams.transcriptionstatus} />
-								Allt
+								<input type="radio" value="readytotranscribe" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'readytotranscribe'} />
+								För avskrift
 							</label>
 
 							<label>
 								<input type="radio" value="published" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'published'} />
-								Avskrivna
+								Avskrivet
 							</label>
 
 							<label>
-								<input type="radio" value="readytotranscribe" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'readytotranscribe'} />
-								För avskrift
+								<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={!this.state.searchParams.transcriptionstatus} />
+								Allt
 							</label>
 
 						</div>
@@ -255,7 +269,7 @@ export default class SearchBox extends React.Component {
 
 					{/* <button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button> */}
 
-					<div className="advanced-content">
+					<div className="advanced-content" style={{display: 'none'}}>
 						<h4>Kategorier</h4>
 						<div tabIndex={-1} className={'list-container minimal-scrollbar'}>
 						<Route

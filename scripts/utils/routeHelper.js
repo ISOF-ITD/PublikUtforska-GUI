@@ -45,8 +45,12 @@ export default {
 
 	createSearchRoute(params) {
 		var router = new RouteParser(searchRoute);
-
-		return router.reverse(params) || '';
+		const newParams = {};
+		Object.keys(params).forEach(function(key) {
+			newParams[key] = params[key] ? params[key] : params[key];
+			}
+		)
+		return router.reverse(newParams) || '';
 	},
 
 	createParamsFromPlacesRoute(path) {

@@ -5,61 +5,85 @@ import _ from 'underscore';
 import config from './../../../scripts/config.js';
 
 import routeHelper from './../../../scripts/utils/routeHelper'
+import { pageFromTo } from './../../../scripts/utils/helpers'
+
+import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 
 export default class RecordListItem extends React.Component {
+
+	constructor(props) {
+		super(props);
+
+		this.state = {
+			subrecords: [],
+			total: undefined,
+			fetchedSubrecords : false,
+		}
+
+		this.fetchData = this.fetchData.bind(this);
+
+		this.collections = new RecordsCollection(function(json) {
+			if (!json.data || json.data.length == 0) {
+				// Om vi hittade inga postar skickar vi visuell meddelande till användaren
+				if (window.eventBus) {
+					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar'));
+				}
+			}
+
+			this.setState({
+				subrecords: json.data,
+				total: json.metadata.total.value || json.metadata.total, // ES7 vs ES5
+				fetchingPage: false
+			});
+		}.bind(this));
+	}
+
+	fetchData() {
+		this.setState({
+			fetchedSubrecords: true,
+		});
+
+		var fetchParams = {
+			search: this.props.id,
+			recordtype: 'one_record',
+		};
+
+		this.collections.fetch(fetchParams);
+	}
 
 	renderFieldArchiveId() {
 		// If one_accession_row 
 		if (this.props.item._source.recordtype == 'one_accession_row') {
-			if (this.props.item._source.recordtype == 'one_accession_row' && this.props.item._source.numberofonerecord && this.props.item._source.numberofonerecord > 0) {
-				// If one_accession_row and has one_records
-				return (
-					<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
-						<span style={{whiteSpace: 'nowrap'}}>
-							<a
-								data-archiveid={this.props.item._source.archive.archive_id}
-								data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
-								onClick={this.props.archiveIdClick}
-								title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'} (${this.props.item._source.numberofonerecord} stycken)`}
-								style={{cursor: 'pointer'}}
-							>
-								{this.props.item._source.archive.archive_id}
-							</a>
-							{
-								this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
-							}
-						</span>
-					</td>
-					); 
-			} else {
-				// If one_accession_row and has NOT one_records
-				// No event, no button style, no link
-				return (
-					<td className="table-text" data-title={l('Arkivnummer')+':'}>
-						{this.props.item._source.archive.archive_id}
+			return (
+				<td className="table-text" data-title={l('Arkivnummer')+':'}>
+					{this.props.item._source.archive.archive_id}
 					{
 						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
 					}
-					</td>
-					); 
-				}
-			}
+				</td>
+			); 
+		}
 		// If one_record
-		if (this.props.item._source.recordtype == 'one_record') {
+		else if (this.props.item._source.recordtype == 'one_record') {
 			return (
 			<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
 				<span style={{whiteSpace: 'nowrap'}}>
 					<a
-						data-archiveid={this.props.item._source.archive.archive_id}
-						data-recordtype={this.props.searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
+						data-archiveidrow={this.props.item._source.archive.archive_id_row}
+						data-search={this.props.searchParams.search ? this.props.searchParams.search : ''}
+						data-recordtype={this.props.searchParams.recordtype} // === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
 						onClick={this.props.archiveIdClick}
-						title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
-						style={{cursor: 'pointer'}}
+						title={`Gå till accessionen ${this.props.item._source.archive.archive_id_row}`}
+						style={{cursor: this.props.item._source.archive.archive_id_row ? 'pointer':'inherit'}}
 						>
 						{this.props.item._source.archive.archive_id}
 					</a>
 					{
-						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+						this.props.item._source.archive.page && (":" + pageFromTo(this.props.item))
 					}
 				</span>
 			</td>
@@ -88,11 +112,33 @@ export default class RecordListItem extends React.Component {
 	}
 
 	render() {
+		const _this = this;
 		if (config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton) {
 			var audioItem = _.find(this.props.item._source.media, function(item) {
 				return item.type == 'audio';
 			});
 		}
+
+		const subrecords = (
+			<div className="subrecords">
+				{ this.state.fetchedSubrecords === false ?
+
+					<small><a onClick={this.fetchData}><FontAwesomeIcon icon={faFolder} /> Visa uppteckningar ({this.props.item._source.numberofonerecord })</a></small>
+					:
+					<small><FontAwesomeIcon icon={faFolderOpen} /> Uppteckningar i den här accessionen ({this.props.item._source.numberofonerecord }):</small>
+				}
+				<ul>
+					{this.state.subrecords.sort((a, b) => (parseInt(a._source.archive.page) > parseInt(b._source.archive.page)) ? 1 : -1).map(function(item, index) {
+						return (
+							<li key={`subitem${item._source.id}`}><small>
+								<a href={`#/records/${item._source.id}${routeHelper.createSearchRoute(_this.props.searchParams)}`}>Sida {pageFromTo(item)}{item._source.transcriptionstatus === 'published' && `: ${item._source.title}`}</a>
+							</small></li>
+						)
+					})
+					}
+				</ul>
+			</div>
+		)
 
 		var displayTextSummary = false;
 		if (this.props.highlightRecordsWithMetadataField) {
@@ -207,6 +253,7 @@ export default class RecordListItem extends React.Component {
 					displayTextSummary &&
 					<div className="item-summary">{textSummary}</div>
 				}
+				{ this.props.item._source.recordtype === "one_accession_row" && this.props.item._source.numberofonerecord !== 0 && subrecords }
 			</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
