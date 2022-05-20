@@ -131,7 +131,7 @@ export default class RecordList extends React.Component {
 		const fetchParams = {
 			from: (this.state.currentPage-1)*config.hitsPerPage,
 			size: config.hitsPerPage,
-			search: params.search || undefined,
+			search: params.search ? encodeURIComponent(params.search) : undefined,
 			search_field: params.search_field || undefined,
 			type: params.type,
 			category: params.category && params.category + `${params.subcategory ? ',' + params.subcategory : ''}`, // subcategory for matkartan

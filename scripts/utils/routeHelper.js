@@ -48,8 +48,10 @@ export default {
 		const newParams = {};
 		Object.keys(params).forEach(function(key) {
 			newParams[key] = params[key] ? params[key] : params[key];
+			if(key === 'search') {
+				newParams[key] = encodeURIComponent(newParams[key]); // '###' => '%23%23%23'
 			}
-		)
+		})
 		return router.reverse(newParams) || '';
 	},
 

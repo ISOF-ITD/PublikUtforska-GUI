@@ -83,7 +83,7 @@ export default class MapView extends React.Component {
 
 		if (params) {
 			var fetchParams = {
-				search: params.search || undefined,
+				search: params.search ? encodeURIComponent(params.search) : undefined,
 				search_field: params.search_field || undefined,
 				type: params.type,
 				category: params.category && params.category + `${params.subcategory ? ',' + params.subcategory : ''}`, // subcategory for matkartan
