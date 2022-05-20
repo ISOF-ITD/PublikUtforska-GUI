@@ -41,12 +41,6 @@ export default class RecordView extends React.Component {
 		this.url = config.apiUrl+'document/';
 
 		this.collections = new RecordsCollection(function(json) {
-			if (!json.data || json.data.length == 0) {
-				// Om vi hittade inga postar skickar vi visuell meddelande till användaren
-				if (window.eventBus) {
-					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar'));
-				}
-			}
 
 			this.setState({
 				subrecords: json.data,
