@@ -48,7 +48,7 @@ export default {
 		const newParams = {};
 		Object.keys(params).forEach(function(key) {
 			newParams[key] = params[key] ? params[key] : params[key];
-			if(key === 'search') {
+			if(key === 'search' && newParams[key]) {
 				newParams[key] = encodeURIComponent(newParams[key]); // '###' => '%23%23%23'
 			}
 		})
