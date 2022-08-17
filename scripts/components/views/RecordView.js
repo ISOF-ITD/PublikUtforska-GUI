@@ -309,15 +309,11 @@ export default class RecordView extends React.Component {
 						+ uppslagsordLink
 						+ '<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">' + parts[1] + '</div>';
 				}
-				// Simple solution to replace newline/carriage-return with <br>:
-				if (text) {
-					text = text.replace(new RegExp('\\r\\n', 'g'), '<br>');
-				}
 
 				pdfElement = pdfObject ? <PdfViewer height="800" url={(config.pdfUrl || config.imageUrl)+pdfObject.source}/> : <div/>;
 				textElement = (
 					<div>
-						<div className="record-text" dangerouslySetInnerHTML={{__html: text}} />
+						<div className="record-text display-line-breaks" dangerouslySetInnerHTML={{__html: text}} />
 						{pdfElement}
 					</div>
 				)
