@@ -6,3 +6,21 @@ export function pageFromTo(item) {
     }
     return text;
 }
+
+export function getTitle(title, contents) {
+    switch (!!title) {
+        case true:
+            return title;
+            break;
+        default:
+            if(contents) {
+                if(contents.length > 300) {
+                    return `[${contents.substring(0,284)} ${'(FÖRKORTAD TITEL)'}]`;
+                } else {
+                    return `[${contents}]`;
+                }
+            } else {
+                return null;
+            }
+    }
+}

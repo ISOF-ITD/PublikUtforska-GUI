@@ -5,7 +5,7 @@ import _ from 'underscore';
 import config from './../../../scripts/config.js';
 
 import routeHelper from './../../../scripts/utils/routeHelper'
-import { pageFromTo } from './../../../scripts/utils/helpers'
+import { pageFromTo, getTitle } from './../../../scripts/utils/helpers'
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 
@@ -226,9 +226,13 @@ export default class RecordListItem extends React.Component {
 		}
 
 		// Prepare title
-		let titleText = this.props.item._source.title;
+		let titleText;
 		if (transcriptionStatusElement == 'Granskas') {
 			titleText = 'Titel granskas';
+		} else if (this.props.item._source.transcriptionstatus == 'readytotranscribe') {
+			titleText = 'Ej avskriven';
+		} else {
+			titleText = getTitle(this.props.item._source.title, this.props.item._source.contents);
 		}
 
 		const record_href = (
@@ -243,7 +247,7 @@ export default class RecordListItem extends React.Component {
 						config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined &&
 						<ListPlayButton disablePlayback={true} media={audioItem} recordId={this.props.item._source.id} recordTitle={this.props.item._source.title && this.props.item._source.title != '' ? this.props.item._source.title : l('(Utan titel)')} />
 					}
-					{titleText && titleText != '' ? titleText : l('(Utan titel)')}
+					{titleText && titleText != '' && titleText != '[]' ? titleText : l('(Utan titel)')}
 					{
 						this.props.item._source.media && this.props.item._source.media.filter(m => m.source && m.source.includes('.pdf'))[0] && 
 						<sub><img src='img/pdf.gif' style={{'marginLeft': 5}} /></sub>

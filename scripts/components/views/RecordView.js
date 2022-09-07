@@ -17,7 +17,7 @@ import SitevisionContent from './../../../ISOF-React-modules/components/controls
 import PdfViewer from './../../../ISOF-React-modules/components/controls/PdfViewer';
 
 import routeHelper from './../../../scripts/utils/routeHelper';
-import { pageFromTo } from './../../../scripts/utils/helpers';
+import { pageFromTo, getTitle } from './../../../scripts/utils/helpers';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 
@@ -411,10 +411,14 @@ export default class RecordView extends React.Component {
 			}
 
 			// Prepare title
-			let titleText = this.state.data.title;
+			let titleText;
 			let transcriptionStatusElement = this.state.data.transcriptionstatus;
 			if (transcriptionStatusElement == 'undertranscription' || transcriptionStatusElement == 'transcribed' || transcriptionStatusElement == 'reviewing' || transcriptionStatusElement == 'needsimprovement' || transcriptionStatusElement == 'approved') {
 				titleText = 'Titel granskas';
+			} else if (this.state.data.transcriptionstatus == 'readytotranscribe') {
+				titleText = 'Ej avskriven';
+			} else {
+				titleText = getTitle(this.state.data.title, this.state.data.contents);
 			}
 			const _this = this;
 
@@ -423,7 +427,7 @@ export default class RecordView extends React.Component {
 					<div className="container-header">
 						<div className="row">
 							<div className="twelve columns">
-								<h2>{titleText && titleText != '' ? titleText : l('(Utan titel)')} <ElementNotificationMessage
+								<h2>{titleText && titleText != '' && titleText != '[]' ? titleText : l('(Utan titel)')} <ElementNotificationMessage
 																placement="under"
 																placementOffsetX="-1"
 																messageId="saveLegendsNotification"
