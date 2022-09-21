@@ -1,3 +1,41 @@
+const hostname = window.location.hostname
+const is_dev = ['127.0.0.1', 'localhost', '0.0.0.0'].some(element => hostname.includes(element))
+const is_test = ['-test.'].some(element => hostname.includes(element))
+const ENV =  is_dev ? 'dev' : (is_test ? 'test' : 'prod')
+
+console.log(`ENV=${ENV}`)
+
+const api_url = {
+	'dev': 'http://localhost:5000/api/es/', //feel free to change according to your local environment
+	'test': 'https://frigg-test.isof.se/sagendatabas/api/es/',
+	'prod': 'https://frigg.isof.se/sagendatabas/api/es/',
+}
+
+const rest_api_url = {
+	'dev': 'http://localhost:5000/api/', //feel free to change according to your local environment
+	'test': 'https://frigg-test.isof.se/sagendatabas/api/',
+	'prod': 'https://frigg.isof.se/sagendatabas/api/',
+}
+
+const app_url = {
+	'dev': window.location.origin + '/',
+	'test': 'https://sok.folke-test.isof.se/',
+	'prod': 'https://sok.folke.isof.se/',
+}
+
+const site_url = {
+	'dev': window.location.origin,
+	'test': 'https://sok.folke-test.isof.se',
+	'prod': 'https://sok.folke.isof.se',
+}
+
+const pdf_url = {
+	'dev': 'https://sok.folke.isof.se/arkivfiler/publik/',
+	'test': 'https://sok.folke-test.isof.se/arkivfiler/publik/',
+	'prod': 'https://sok.folke.isof.se/arkivfiler/publik/',
+}
+
+
 export default {
 	hitsPerPage: 100,
 
@@ -103,20 +141,21 @@ export default {
 	startPageUrl: 'https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke',
 
 	imageUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/',
-	pdfUrl: 'https://sok.folke.isof.se/arkivfiler/publik/',
+	pdfUrl: pdf_url[ENV],
 	//For test with ortnamn data in index:
 	//imageUrl: 'https://www4.isof.se/NAU/bilder/',
 	personImageUrl: 'https://frigg.isof.se/media/',
 	audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
 
-	appUrl: 'https://sok.folke.isof.se/',
-	siteUrl: 'https://sok.folke.isof.se',
+	appUrl: app_url[ENV],
+	siteUrl: site_url[ENV],
 
 	// Url till Django/Elasticsearch API
-	apiUrl: 'https://frigg.isof.se/sagendatabas/api/es/',
+	apiUrl: api_url[ENV],
+	// apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
 	//For test with ortnamn data in index:
 	//apiUrl: 'https://frigg-test.isof.se/TradarkSearchService/api/es/',
 
 	// Url till Django Rest API
-	restApiUrl: 'https://frigg.isof.se/sagendatabas/api/'
+	restApiUrl: rest_api_url[ENV],
 };
