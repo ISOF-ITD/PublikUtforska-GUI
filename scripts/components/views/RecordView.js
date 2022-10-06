@@ -109,13 +109,16 @@ export default class RecordView extends React.Component {
 		}
 	}
 
-	archiveIdClick() {
+	archiveIdClick(event) {
+		const archive_id_row = event.target.dataset.archiveidrow
+		const recordtype = event.target.dataset.recordtype
+		const search = event.target.dataset.search
 		const params = {
-			search: this.state.data.archive.archive_id,
-			recordtype: 'one_record',
+			search: search,
+			recordtype: recordtype,
 		}
-		this.props.history.push( '/places' + routeHelper.createSearchRoute(params))
-		window.eventBus.dispatch('routePopup.show')
+		archive_id_row && this.props.history.push( '/records/' + archive_id_row + routeHelper.createSearchRoute(params))
+		// window.eventBus.dispatch('routePopup.show')
 	}
 
 	fetchData(params) {
@@ -450,7 +453,24 @@ export default class RecordView extends React.Component {
 										this.state.data.archive && this.state.data.archive.archive &&
 										<span>
 											<strong>{l('Accessionsnummer')}</strong>:&nbsp;
-											{this.state.data.archive.archive_id}
+											{
+												this.state.data.recordtype === 'one_record' ?
+												(
+													<a
+														data-archiveidrow={this.state.data.archive.archive_id_row}
+														data-search={this.props.searchParams.search ? this.props.searchParams.search : ''}
+														data-recordtype={this.props.searchParams.recordtype}
+														onClick={this.archiveIdClick}
+														title={`Gå till accessionen ${this.state.data.archive.archive_id_row}`}
+														style={{cursor: this.state.data.archive.archive_id_row ? 'pointer':'inherit', textDecoration: 'underline'}}
+													>
+														{this.state.data.archive.archive_id}
+													</a>
+												) : this.state.data.archive.archive_id
+											}
+											
+
+
 											
 										</span>
 									}

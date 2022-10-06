@@ -254,6 +254,7 @@ export default class Application extends React.Component {
 									<RecordView 
 										key={`Application-RecordView-${routeHelper.createParamsFromRecordRoute(this.props.location.pathname).record_id}`}
 										{...props} 
+										searchParams={routeHelper.createParamsFromRecordRoute(props.location.pathname)}
 									/>
 							</RoutePopupWindow>
 						}/>
