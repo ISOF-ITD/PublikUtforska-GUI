@@ -86,16 +86,32 @@ export default class SearchBox extends React.Component {
 	}
 
 	checkboxChangeHandler(event) {
-		if (event.target.value != this.state.searchParams[event.target.name]) {
-			const searchParams = {...this.state.searchParams};
-			if(event.target.value === 'false') {
-				searchParams[event.target.name] = undefined;
-			} else {
-				searchParams[event.target.name] = event.target.value;
+		if(event.target.name === 'filter') {
+			// for "Digitaliserat", "Avskrivet", "Allt"
+			if (!this.state.searchParams[event.target.value]) {
+				const searchParams = {...this.state.searchParams};
+				searchParams['has_media'] = undefined;
+				searchParams['has_transcribed_records'] = undefined;
+				if(event.target.value !== 'all') {
+					searchParams[event.target.value] = 'true';
+				}
+				this.setState({
+					searchParams: searchParams,
+				}, () => this.executeSearch());
 			}
-			this.setState({
-				searchParams: searchParams,
-			}, () => this.executeSearch());
+		} else {
+			// for "Innehåll", "Person", "Ort"
+			if (event.target.value != this.state.searchParams[event.target.name]) {
+				const searchParams = {...this.state.searchParams};
+				if(event.target.value === 'false') {
+					searchParams[event.target.name] = undefined;
+				} else {
+					searchParams[event.target.name] = event.target.value;
+				}
+				this.setState({
+					searchParams: searchParams,
+				}, () => this.executeSearch());
+			}
 		}
 	}
 
@@ -182,6 +198,9 @@ export default class SearchBox extends React.Component {
 						!!this.state.searchParams.has_media ? ' (Digitaliserat)' : ''
 					}
 					{
+						!!this.state.searchParams.has_transcribed_records ? ' (Transkriberat)' : ''
+					}
+					{
 						!!this.state.searchParams.transcriptionstatus ?
 							(
 								this.state.searchParams.transcriptionstatus == 'published' ? ' (Avskrivna)' : ' (För avskrift)'
@@ -226,17 +245,17 @@ export default class SearchBox extends React.Component {
 						<div className="radio-group">
 
 							<label>
-								<input type="radio" value="true" onChange={this.checkboxChangeHandler} name="has_media" checked={this.state.searchParams.has_media === 'true'} />
+								<input type="radio" value="has_media" onChange={this.checkboxChangeHandler} name="filter" checked={this.state.searchParams.has_media === 'true'} />
 								Digitaliserat
 							</label>
 
-							<label style={{display: 'none'}}>
-								<input disabled={true} type="radio" value="false" onChange={this.checkboxChangeHandler} name="published" checked={this.state.searchParams.has_media === 'false' && true === true} />
-								<span style={{color: "grey"}}>Avskrivet</span>
+							<label>
+								<input type="radio" value="has_transcribed_records" onChange={this.checkboxChangeHandler} name="filter" checked={this.state.searchParams.has_transcribed_records === 'true'} />
+								<span>Avskrivet</span>
 							</label>
 
 							<label>
-								<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="has_media" checked={this.state.searchParams.has_media !== 'true'} />
+								<input type="radio" value="all" onChange={this.checkboxChangeHandler} name="filter" checked={this.state.searchParams.has_media !== 'true' && this.state.searchParams.has_transcribed_records !== 'true'} />
 								Allt
 							</label>
 

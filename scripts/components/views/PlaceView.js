@@ -93,6 +93,9 @@ export default class PlaceView extends React.Component {
 		if (params.has_media) {
 			state['has_media'] = params.has_media;
 		}
+		if (params.has_transcribed_records) {
+			state['has_transcribed_records'] = params.has_transcribed_records;
+		}
 		if (params.transcriptionstatus) {
 			state['transcriptionstatus'] = params.transcriptionstatus;
 		}

@@ -25,8 +25,10 @@ export default class FilterSwitch extends React.Component {
 			params['transcriptionstatus'] = undefined;
 			// default is digitized material 
 			params['has_media'] = true;
+			params['has_transcribed_records'] = undefined;
 		} else if (value === 'one_record') {
 			params['has_media'] = undefined;
+			params['has_transcribed_records'] = undefined;
 			params['transcriptionstatus'] = 'readytotranscribe';
 		}
 		this.props.history.push(
