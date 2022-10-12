@@ -218,11 +218,31 @@ export default class RecordListItem extends React.Component {
 			'approved':'Granskas',
 			'published':'Ja'
 		};
-		var transcriptionStatusElement = '';
-		if (this.props.item._source.transcriptionstatus) {
-			var transcriptionstatus;
-			transcriptionstatus = this.props.item._source.transcriptionstatus;
-			transcriptionStatusElement = transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus]);
+		let transcriptionStatusElement = <span />;
+		if (this.props.item._source.transcriptionstatus && this.props.item._source.transcriptionstatus !== 'accession') {
+			const transcriptionstatus = this.props.item._source.transcriptionstatus;
+			transcriptionStatusElement = <span>{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
+		} else if (this.props.item._source.transcriptionstatus === 'accession' && this.props.item._source.numberoftranscribedonerecord) {
+			const transcribedPercent = this.props.item._source.numberofonerecord === 0 ? 0 : Math.round(this.props.item._source.numberoftranscribedonerecord / this.props.item._source.numberofonerecord * 100);
+			transcriptionStatusElement = <div style={{'marginRight': 10}}>
+				{`${this.props.item._source.numberoftranscribedonerecord} av ${this.props.item._source.numberofonerecord}`}<br/>
+				<div title={`${transcribedPercent}%`} style={{
+					display: this.props.item._source.numberofonerecord === 0 ? 'none' : 'inline-block',
+					width: '100%',
+					maxWidth: 200,
+					backgroundColor: '#fff',
+					height: 10,
+					border: '1px solid #01535d',
+					borderRadius: 3,
+				}}>
+					<span style={{
+						width: `${transcribedPercent}%`,
+						display: 'block',
+						background: '#01535d',
+						height: 10
+					}} />
+				</div>
+			</div>;
 		}
 
 		// Prepare title

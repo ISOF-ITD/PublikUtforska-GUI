@@ -198,7 +198,7 @@ export default class SearchBox extends React.Component {
 						!!this.state.searchParams.has_media ? ' (Digitaliserat)' : ''
 					}
 					{
-						!!this.state.searchParams.has_transcribed_records ? ' (Transkriberat)' : ''
+						!!this.state.searchParams.has_transcribed_records ? ' (Avskrivet)' : ''
 					}
 					{
 						!!this.state.searchParams.transcriptionstatus ?
