@@ -16,6 +16,7 @@ export default class SearchBox extends React.Component {
 		this.searchBoxClickHandler = this.searchBoxClickHandler.bind(this);
 		this.checkboxChangeHandler = this.checkboxChangeHandler.bind(this);
 		this.categoryItemClickHandler = this.categoryItemClickHandler.bind(this);
+		// this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
 
 		this.languageChangedHandler = this.languageChangedHandler.bind(this);
 
@@ -26,10 +27,22 @@ export default class SearchBox extends React.Component {
 				search: '',
 				search_field: 'record',
 			},
+			// searchSuggestions: [
+			// 	'djävulen', 'Eskilsäter', 'Allahelgon'
+			// ],
 		};
 
 		window.searchBox = this;
 	}
+
+	// suggestionClickHandler(event) {
+	// 	this.setState({
+	// 		searchParams: {
+	// 			search: event.target.innerHTML,	
+	// 		}
+	// 	}, () => this.executeSearch());
+	// }
+	
 
 	inputKeyPressHandler(event) {
 		if (event.key == 'Enter') {
@@ -220,6 +233,20 @@ export default class SearchBox extends React.Component {
 				<button className="search-button" onClick={this.executeSearch}></button>
 
 				<div className="expanded-content">
+
+					{/* <div className="search-suggestions">
+						{
+							this.state.searchSuggestions.map((suggestion, index) => {
+								return (
+									<div key={index} className="search-suggestion" onClick={this.suggestionClickHandler.bind(this, suggestion)}>
+										{suggestion}
+										</div>
+								)
+							})
+						}
+
+
+					</div> */}
 
 					<div className="radio-group">
 
