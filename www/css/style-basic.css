@@ -1422,6 +1422,7 @@ there.
   left: 0;
   right: 0;
   max-width: 1200px;
+  min-height: calc(100vh - 20px);
   margin: 20px auto;
   padding: 20px;
   background-color: #fff;
@@ -1443,7 +1444,6 @@ there.
 @media (max-width: 1300px) {
   .popup-wrapper .popup-content-wrapper .page-content {
     max-width: 1000px;
-    min-height: calc(100vh - 20px);
   }
 }
 @media (max-width: 750px) {
