@@ -1372,7 +1372,7 @@ there.
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
+  overflow-y: scroll;
   z-index: 1600;
   display: none;
   opacity: 0;
@@ -1443,6 +1443,7 @@ there.
 @media (max-width: 1300px) {
   .popup-wrapper .popup-content-wrapper .page-content {
     max-width: 1000px;
+    min-height: calc(100vh - 20px);
   }
 }
 @media (max-width: 750px) {
