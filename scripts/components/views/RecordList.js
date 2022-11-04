@@ -20,8 +20,7 @@ export default class RecordList extends React.Component {
 			//order: undefined,
 		};
 
-		this.nextPage = this.nextPage.bind(this);
-		this.prevPage = this.prevPage.bind(this);
+		this.stepPage = this.stepPage.bind(this);
 		this.sort = this.sort.bind(this);
 		this.archiveIdClick = this.archiveIdClick.bind(this);
 
@@ -73,7 +72,8 @@ export default class RecordList extends React.Component {
 		// window.eventBus.dispatch('routePopup.show')
 	}
 
-	nextPage() {
+	stepPage(event) {
+		const pageStep = Number(event.target.dataset.pageStep);
 		/*
 			På vanliga sättet använder vi routern för att säga till vilken sida vi hämtar,
 			i moduler som innehåller RecordList (PlaceView, PersonView) lägger vi till disableRouterPagination={true}
@@ -81,33 +81,15 @@ export default class RecordList extends React.Component {
 		*/
 		if (this.props.disableRouterPagination) {
 			this.setState({
-				currentPage: this.state.currentPage+1
+				currentPage: this.state.currentPage+pageStep
 			}, function() {
 				this.fetchData(this.props.searchParams);
 			}.bind(this));
 		}
 		else {
 			// Skapar ny router adress via routeHelper, den är baserad på nuvarande params och lägger till ny siffra i 'page'
-			this.props.history.push('/places'+routeHelper.createSearchRoute(this.props.searchParams)+'/page/'+(Number(this.state.currentPage)+1));
-		}
-	}
-	
-	prevPage() {
-		/*
-			På vanliga sättet använder vi routern för att säga till vilken sida vi hämtar,
-			i moduler som innehåller RecordList (PlaceView, PersonView) lägger vi till disableRouterPagination={true}
-			till RecordList, då hämtar vi ny sida direkt utan att använda routern
-		*/
-		if (this.props.disableRouterPagination) {
-			this.setState({
-				currentPage: this.state.currentPage-1
-			}, function() {
-				this.fetchData(this.props.searchParams);
-			}.bind(this));
-		}
-		else {
-			// Skapar ny router adress via routeHelper, den är baserad på nuvarande params och lägger till ny siffra i 'page'
-			this.props.history.push('/places'+routeHelper.createSearchRoute(this.props.searchParams)+'/page/'+(Number(this.state.currentPage)-1));
+			const searchParams = Object.assign({}, this.props.searchParams, {page: Number(this.state.currentPage)+pageStep});
+			this.props.history.push('/places'+routeHelper.createSearchRoute(searchParams));
 		}
 	}
 
@@ -129,7 +111,7 @@ export default class RecordList extends React.Component {
 		});
 
 		const fetchParams = {
-			from: (this.state.currentPage-1)*config.hitsPerPage,
+			from: params.page ? (params.page-1) * config.hitsPerPage : (this.state.currentPage-1)*config.hitsPerPage,
 			size: config.hitsPerPage,
 			search: params.search ? encodeURIComponent(params.search) : undefined,
 			search_field: params.search_field || undefined,
@@ -166,6 +148,19 @@ export default class RecordList extends React.Component {
 		this.collections.fetch(fetchParams);
 	}
 
+	renderListPagination() {
+		return 					(
+			// this.state.total > config.hitsPerPage &&
+			<div className="list-pagination">
+				<hr/>
+				<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*config.hitsPerPage)-(config.hitsPerPage-1))+'-'+(this.state.currentPage*config.hitsPerPage > this.state.total ? this.state.total : this.state.currentPage*config.hitsPerPage)+' '+l(this.state.total ? 'av' : '')+l(this.state.totalPrefix || '')+' '+(this.state.total || '')}</strong></p><br/>
+				<button disabled={this.state.currentPage === 1} className="button prev-button" onClick={this.stepPage} data-page-step={-1}>{l('Föregående')}</button>
+				<span> </span>
+				<button disabled={this.state.total <= this.state.currentPage*config.hitsPerPage} className="button next-button" onClick={this.stepPage} data-page-step={1}>{l('Nästa')}</button>
+			</div>
+		)
+	}
+
 	render() {
 		var searchRouteParams = routeHelper.createSearchRoute(this.props.searchParams);
 
@@ -187,10 +182,7 @@ export default class RecordList extends React.Component {
 				<div className={'table-wrapper records-list list-container'+(this.state.records.length == 0 ? ' loading' : this.state.fetchingPage ? ' loading-page' : '')}>
 
 					{
-						this.state.total > config.hitsPerPage &&
-						<div className="">
-							<strong>{l('Visar')+' '+((this.state.currentPage*config.hitsPerPage)-(config.hitsPerPage-1))+'-'+(this.state.currentPage*config.hitsPerPage > this.state.total ? this.state.total : this.state.currentPage*config.hitsPerPage)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong>
-						</div>
+						this.renderListPagination() 
 					}
 
 					<table width="100%" className="table-responsive">
@@ -274,14 +266,7 @@ export default class RecordList extends React.Component {
 					</table>
 
 					{
-						this.state.total > config.hitsPerPage &&
-						<div className="list-pagination">
-							<hr/>
-							<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*config.hitsPerPage)-(config.hitsPerPage-1))+'-'+(this.state.currentPage*config.hitsPerPage > this.state.total ? this.state.total : this.state.currentPage*config.hitsPerPage)+' '+l('av')+l(this.state.totalPrefix)+' '+this.state.total}</strong></p><br/>
-							<button disabled={this.state.currentPage == 1} className="button prev-button" onClick={this.prevPage}>{l('Föregående')}</button>
-							<span> </span>
-							<button disabled={this.state.total <= this.state.currentPage*config.hitsPerPage} className="button next-button" onClick={this.nextPage}>{l('Nästa')}</button>
-						</div>
+					this.renderListPagination()
 					}
 				</div>
 			);			

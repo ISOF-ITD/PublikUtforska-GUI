@@ -77,7 +77,7 @@ ReactDOM.render(
 					popup={<RecordListWrapper
 						manuallyOpenPopup={true}
 						openButtonLabel="Visa sökträffar som lista"
-						disableRouterPagination={true}
+						disableRouterPagination={false}
 						searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
 						{...props}
 						/>}

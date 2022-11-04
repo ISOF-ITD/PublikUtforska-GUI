@@ -193,7 +193,8 @@ export default class RecordListItem extends React.Component {
 						if (collectorPersonItem.relation == 'c') {
 							var routeParams = '';
 							if (_props.routeParams) {
-								routeParams = _props.routeParams;
+								const _params = routeHelper.createParamsFromSearchRoute(_props.routeParams);
+								routeParams = routeHelper.createSearchRoute(_.omit(_params, 'page'));
 							}
 							const href = '#/person/' + collectorPersonItem.id.toLowerCase() + routeParams;
 							return <a href={href} key={`record-list-item-${_props.id}-${i}`}>{l(collectorPersonItem.name)}</a>;
