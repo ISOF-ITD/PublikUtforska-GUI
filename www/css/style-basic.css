@@ -3113,7 +3113,7 @@ table th {
 .table-wrapper.loading > table {
   opacity: 0;
 }
-.table-wrapper.loading > .list-pagination {
+.table-wrapper.loading > .list-pagination:last-child {
   opacity: 0;
 }
 .table-wrapper.loading-page {
