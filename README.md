@@ -1,4 +1,4 @@
-# PublikUtforska-GUI
+# Folke sök GUI (Formerly PublikUtforska-GUI)
 Public crowdsource map based interface
 
 ## Start watching code with gulp
