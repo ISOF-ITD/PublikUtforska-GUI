@@ -17,10 +17,16 @@ sed -i 's/production = false/production = true/' gulpfile.js && gulp build && gi
 
 Deploy code on server:
 
+frigg-test:
+
 ```bash
-cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh 
-# i testmiljön:
-sh switch-prod-2-test.sh
+cd /var/www/react/PublikUtforska-GUI/ && ./gitupdate.sh
+```
+
+frigg:
+
+```bash
+cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
 ```
 
 ## Upgrade node modules
