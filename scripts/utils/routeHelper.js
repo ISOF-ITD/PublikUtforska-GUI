@@ -7,6 +7,7 @@ const recordRoute = '/records/:record_id(/record_ids/:record_ids)(/search/:searc
 
 export default {
 	createPlacePathFromPlaces(placeId, placesPath) {
+		placesPath = placesPath.split('?')[0];
 		var router = new RouteParser(placesRoute);
 		var routeParams = router.match(placesPath) || {};
 
@@ -16,6 +17,7 @@ export default {
 	},
 
 	createPlacesPathFromPlace(placePath) {
+		placePath = placePath.split('?')[0];
 		var router = new RouteParser(placeRoute);
 		var routeParams = router.match(placePath) || {
 		};
@@ -56,16 +58,19 @@ export default {
 	},
 
 	createParamsFromPlacesRoute(path) {
+		path = path.split('?')[0];
 		const router = new RouteParser(placesRoute);
 		return router.match(path.replace(/\/$/, ""))
 	},
 
 	createParamsFromRecordRoute(path) {
+		path = path.split('?')[0];
 		const router = new RouteParser(recordRoute);
 		return router.match(path.replace(/\/$/, ""))
 	},
 
 	createParamsFromSearchRoute(path) {
+		path = path.split('?')[0];
 		const router = new RouteParser(searchRoute);
 		return router.match(path.replace(/\/$/, ""))
 	},
