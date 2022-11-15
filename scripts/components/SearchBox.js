@@ -83,7 +83,8 @@ export default class SearchBox extends React.Component {
 		const params = {...this.props.searchParams}
 		Object.assign(params, this.state.searchParams);
 		this.props.history.push(
-			'/places' + routeHelper.createSearchRoute(params) + '?s=' + this.state.searchParams.search
+			`/places${routeHelper.createSearchRoute(params)}
+			${this.state.searchParams.search ? '?s='+this.state.searchParams.search : ''}`
 			);
 	}
 
