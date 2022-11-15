@@ -129,9 +129,10 @@ export default class RecordListItem extends React.Component {
 				}
 				<ul>
 					{this.state.subrecords.sort((a, b) => (parseInt(a._source.archive.page) > parseInt(b._source.archive.page)) ? 1 : -1).map(function(item, index) {
+						const published = item._source.transcriptionstatus === 'published';
 						return (
 							<li key={`subitem${item._source.id}`}><small>
-								<a href={`#/records/${item._source.id}${routeHelper.createSearchRoute(_this.props.searchParams)}`}>Sida {pageFromTo(item)}{item._source.transcriptionstatus === 'published' && `: ${item._source.title}`}</a>
+								<a style={{fontWeight: published ? 'bold' : ''}} href={`#/records/${item._source.id}${routeHelper.createSearchRoute(_this.props.searchParams)}`}>Sida {pageFromTo(item)}{published && `: ${item._source.title}`}</a>
 							</small></li>
 						)
 					})
@@ -223,7 +224,7 @@ export default class RecordListItem extends React.Component {
 		if (this.props.item._source.transcriptionstatus && this.props.item._source.transcriptionstatus !== 'accession') {
 			const transcriptionstatus = this.props.item._source.transcriptionstatus;
 			transcriptionStatusElement = <span>{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
-		} else if (this.props.item._source.transcriptionstatus === 'accession' && this.props.item._source.numberoftranscribedonerecord) {
+		} else if (this.props.item._source.transcriptionstatus === 'accession' && this.props.item._source.numberofonerecord && Number.isInteger(this.props.item._source.numberoftranscribedonerecord)) {
 			const transcribedPercent = this.props.item._source.numberofonerecord === 0 ? 0 : Math.round(this.props.item._source.numberoftranscribedonerecord / this.props.item._source.numberofonerecord * 100);
 			transcriptionStatusElement = <div style={{'marginRight': 10}}>
 				{`${this.props.item._source.numberoftranscribedonerecord} av ${this.props.item._source.numberofonerecord}`}<br/>
