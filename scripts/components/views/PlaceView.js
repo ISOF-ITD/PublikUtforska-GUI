@@ -118,6 +118,7 @@ export default class PlaceView extends React.Component {
 					this.setState({
 						data: json
 					});
+					document.title = json.name.replace(/ sn$/," socken") + ' - ' + config.siteTitle;
 				}.bind(this)).catch(function(ex) {
 					console.log('parsing failed', ex)
 				})

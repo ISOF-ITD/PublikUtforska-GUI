@@ -423,6 +423,9 @@ export default class RecordView extends React.Component {
 			} else {
 				titleText = getTitle(this.state.data.title, this.state.data.contents);
 			}
+			if(titleText) {
+				document.title = titleText + ' - ' + config.siteTitle;
+			}
 			const _this = this;
 
 			return <div className={'container'+(this.state.data.id ? '' : ' loading')}>

@@ -36,6 +36,9 @@ export default class PersonView extends React.Component {
 					this.setState({
 						data: json
 					});
+					if(json.name) {
+						document.title = json.name;
+					}
 				}.bind(this)).catch(function(ex) {
 					console.log('parsing failed', ex)
 				})

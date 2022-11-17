@@ -37,6 +37,8 @@ const pdf_url = {
 
 
 export default {
+	siteTitle: 'Folke sök - Institutet för språk och folkminnen',
+
 	hitsPerPage: 100,
 
 	// Namn på localStorage som lagrar sparade accessioner/uppteckningar
