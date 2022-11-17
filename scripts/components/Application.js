@@ -20,7 +20,7 @@ import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 
 import routeHelper from './../utils/routeHelper';
 
-
+import config from '../config';
 import EventBus from 'eventbusjs';
 
 export default class Application extends React.Component {
@@ -136,6 +136,7 @@ export default class Application extends React.Component {
 
 	componentDidMount() {
 		document.getElementById('app').addEventListener('click', this.windowClickHandler.bind(this));
+		document.title = config.siteTitle;
 		// Not needed for this app?:
 		//if (this.props.match.params.nordic) {
 		//	window.eventBus.dispatch('nordicLegendsUpdate', null, {includeNordic: true});			
@@ -174,6 +175,11 @@ export default class Application extends React.Component {
 	shouldComponentUpdate(nextProps, nextState) {
 		// Checkar om gränssnittet skulle uppdateras med att jämföra nya parametrar med förre parametrar
 		return (JSON.stringify(nextState) != JSON.stringify(this.state));
+	}
+
+	componentDidUpdate(prevProps, prevState) {
+		// återställ title vid varje uppdatering
+		document.title = config.siteTitle;
 	}
 
 	windowClickHandler(event) {
