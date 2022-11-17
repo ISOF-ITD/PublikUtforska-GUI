@@ -44,15 +44,21 @@
 
     var _paq = window._paq = window._paq || [];
     /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    (function() {
-        var u="https://matomo.isof.se/";
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', siteId]);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-    })();
+    currentUrl = '/' + window.location.hash.substr(1);
+    //wait for new title before sending data to matomo
+    setTimeout(function() {
+        _paq.push(['setCustomUrl', currentUrl]);
+        _paq.push(['setDocumentTitle', document.title]);
+        _paq.push(['enableLinkTracking']);
+        _paq.push(['trackPageView']);
+        (function() {
+            var u="https://matomo.isof.se/";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', siteId]);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        })();
+    }, 1000);
 
     var currentUrl = location.href;
     window.addEventListener('hashchange', function() {
