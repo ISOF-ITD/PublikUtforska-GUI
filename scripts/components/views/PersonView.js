@@ -89,7 +89,7 @@ export default class PersonView extends React.Component {
 							}
 							{
 								this.state.data.places && this.state.data.places.length > 0 &&
-								<a href={'#places/'+this.state.data.places[0].id+nordic}>{person_county}</a>
+								<a href={'#/places/'+this.state.data.places[0].id+nordic}>{person_county}</a>
 							}
 							</p>
 						</div>

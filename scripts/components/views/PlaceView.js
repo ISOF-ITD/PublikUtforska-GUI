@@ -130,7 +130,7 @@ export default class PlaceView extends React.Component {
 		let _props = this.props;
 		var informantsItems = this.state.data.informants && this.state.data.informants.length > 0 ? this.state.data.informants.map(function(informant, index) {
 			return <tr key={index}>
-				<td><a href={'#person/'+informant.id}>{informant.name}</a></td>
+				<td><a href={'#/person/'+informant.id}>{informant.name}</a></td>
 				<td>{informant.birth_year > 0 ? informant.birth_year : ''}</td>
 			</tr>;
 		}.bind(this)) : [];
@@ -143,7 +143,7 @@ export default class PlaceView extends React.Component {
 						(
 							config.siteOptions.disableInformantLinks == true && person.relation == 'i' ?
 							person.name :
-							<a href={'#person/'+person.id}>{person.name ? person.name : ''}</a>
+							<a href={'#/person/'+person.id}>{person.name ? person.name : ''}</a>
 						) :
 						person.name
 					}
@@ -155,7 +155,7 @@ export default class PlaceView extends React.Component {
 		var recordsItems = this.state.data.records && this.state.data.records.length > 0 ? this.state.data.records.map(function(record, index) {
 			return <tr key={index}>
 				<td data-title="">
-					<a href={'#records/'+record.id}>
+					<a href={'#/records/'+record.id}>
 						{
 							record.type == 'inspelning' &&
 							<ListPlayButton />

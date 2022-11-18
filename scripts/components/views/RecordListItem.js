@@ -259,7 +259,7 @@ export default class RecordListItem extends React.Component {
 
 		const record_href = (
 			config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')
-			+'#records/'+this.props.id
+			+'#/records/'+this.props.id
 			+ routeHelper.createSearchRoute(this.props.searchParams)
 
 		return <tr className={'list-item'+(displayTextSummary ? ' highlighted' : '')}>
@@ -298,7 +298,7 @@ export default class RecordListItem extends React.Component {
 				this.props.item._source.places && this.props.item._source.places.length > 0 &&
 				<a
 					target={config.embeddedApp ? '_parent' : '_self'}
-					href={(config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')+'#places/'+this.props.item._source.places[0].id+(routeHelper.createSearchRoute({recordtype: this.props.searchParams.recordtype}))}>
+					href={(config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')+'#/places/'+this.props.item._source.places[0].id+(routeHelper.createSearchRoute({recordtype: this.props.searchParams.recordtype}))}>
 						{this.props.item._source.places[0].name+(this.props.item._source.places[0].landskap || this.props.item._source.places[0].fylke ? (this.props.item._source.places[0].landskap ? ', '+this.props.item._source.places[0].landskap : this.props.item._source.places[0].fylke ? ', '+this.props.item._source.places[0].fylke : '') : '')}
 				</a>
 			}
