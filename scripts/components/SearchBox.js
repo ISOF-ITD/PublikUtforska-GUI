@@ -82,6 +82,10 @@ export default class SearchBox extends React.Component {
 	executeSearch() {
 		const params = {...this.props.searchParams}
 		Object.assign(params, this.state.searchParams);
+		// delete key "page" from params if it exists
+		if (params.page) {
+			delete params.page;
+		}
 		this.props.history.push(
 			`/places${routeHelper.createSearchRoute(params)}
 			${this.state.searchParams.search ? '?s='+this.state.searchParams.search : ''}`
