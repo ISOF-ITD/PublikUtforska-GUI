@@ -3254,6 +3254,12 @@ td .play-button {
   position: relative;
   top: 2px;
 }
+*:focus {
+  background-color: #ffff07 !important;
+  color: #000 !important;
+  opacity: 1 !important;
+  outline: dotted red 1px !important;
+}
 body {
   background-color: #f5f5f5;
   background-image: url('../img/loader.gif');
