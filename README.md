@@ -1,6 +1,8 @@
 # Folke sök GUI (aka PublikUtforska-GUI)
 Public crowdsource map based interface
 
+[Accessibility](Accessibility.md)
+
 ## Start watching code with gulp
 
 ```bash
