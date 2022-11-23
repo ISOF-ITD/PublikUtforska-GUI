@@ -3255,10 +3255,8 @@ td .play-button {
   top: 2px;
 }
 *:focus {
-  background-color: #ffff07 !important;
-  color: #000 !important;
   opacity: 1 !important;
-  outline: dotted red 1px !important;
+  outline: 2px solid #01535d !important;
 }
 body {
   background-color: #f5f5f5;
