@@ -48,7 +48,7 @@ export default {
 	requiredParams: {
 		// transcriptionstatus: 'readytotranscribe,undertranscription,transcribed,reviewing,needsimprovement,approved,published',
 		mark_metadata: 'transcriptionstatus',
-		//type: 'arkiv,tryckt',
+		type: 'arkiv',
 		categorytypes: 'tradark',
 		publishstatus: 'published',
 		//For test with ortnamn data in index only use:
