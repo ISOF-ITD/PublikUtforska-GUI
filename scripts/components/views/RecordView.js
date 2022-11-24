@@ -284,7 +284,9 @@ export default class RecordView extends React.Component {
 					label={l('Skriv av')}
 					title={this.state.data.title}
 					recordId={this.state.data.id}
-					images={this.state.data.media} /></div>;
+					images={this.state.data.media}
+					transcriptionType={this.state.data.transcriptiontype}
+					 /></div>;
 			}
 			// Om posten innehåller bara en pdf fil (ingen text, inte ljudfiler och inte bilder), då visar vi pdf filen direkt
 			// else if ((!this.state.data.text || this.state.data.text.length == 0) && _.filter(this.state.data.media, function(item) {
