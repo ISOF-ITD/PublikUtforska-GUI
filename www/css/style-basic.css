@@ -3144,6 +3144,9 @@ table th {
 .table-wrapper table a:hover {
   text-decoration: underline;
 }
+.table-wrapper table button {
+  margin-left: 1rem;
+}
 .table-wrapper hr {
   margin: 20px -15px !important;
 }
