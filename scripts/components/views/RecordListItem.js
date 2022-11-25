@@ -1,5 +1,6 @@
 import React from 'react';
 import ListPlayButton from './../../../ISOF-React-modules/components/views/ListPlayButton';
+import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
 import _ from 'underscore';
 
 import config from './../../../scripts/config.js';
@@ -280,6 +281,16 @@ export default class RecordListItem extends React.Component {
 					<div className="item-summary">{textSummary}</div>
 				}
 				{ this.props.item._source.recordtype === "one_accession_row" && this.props.item._source.numberofonerecord !== 0 && subrecords }
+				{ this.props.item._source.transcriptionstatus === "readytotranscribe" && this.props.item._source.media.length > 0 && 
+					<TranscribeButton
+						className="button-primary"
+						label={l('Skriv av')}
+						title={this.props.item._source.title}
+						recordId={this.props.item._source.id}
+						images={this.props.item._source.media}
+						transcriptionType={this.props.item._source.transcriptiontype}
+					 />
+				}
 			</td>
 			{
 				!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
