@@ -24,6 +24,7 @@ export default class SearchBox extends React.Component {
 		this.openButtonKeyUpHandler = this.openButtonKeyUpHandler.bind(this);
 
 		this.languageChangedHandler = this.languageChangedHandler.bind(this);
+		this.totalRecordsHandler = this.totalRecordsHandler.bind(this);
 
 		// Lyssna efter event från eventBus som kommer om url:et ändras med nya sökparams
 
@@ -32,6 +33,10 @@ export default class SearchBox extends React.Component {
 				search: '',
 				search_field: 'record',
 			},
+			totalRecords: {
+				value: 0,
+				relation: 'eq',
+			}
 			// searchSuggestions: [
 			// 	'djävulen', 'Eskilsäter', 'Allahelgon'
 			// ],
@@ -143,11 +148,18 @@ export default class SearchBox extends React.Component {
 		this.forceUpdate();
 	}
 
+	totalRecordsHandler(event) {
+		this.setState({
+			totalRecords: event.target
+		});
+	}
+
 	componentDidMount() {
 		// document.getElementById('app').addEventListener('click', this.windowClickHandler.bind(this));
 
 		if (window.eventBus) {
-			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler)
+			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
+			window.eventBus.addEventListener('recordList.totalRecords', this.totalRecordsHandler.bind(this));
 		}
 
 		const searchParams = {...this.props.searchParams};
@@ -354,10 +366,12 @@ export default class SearchBox extends React.Component {
 					</div>
 					{/* <button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button> */}
 				</div>
-				
-				<div className="popup-wrapper">
-					<a className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong className="ignore-expand-menu"><FontAwesomeIcon icon={faList} /> {l('Visa sökträffar som lista')}</strong></a>
-				</div>
+				{
+					this.state.totalRecords.value !== 0 &&
+					<div className="popup-wrapper">
+						<a className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong className="ignore-expand-menu"><FontAwesomeIcon icon={faList} /> Visa {this.state.totalRecords.value}{this.state.totalRecords.relation === 'gte' ? '+': ''} sökträffar som lista</strong></a>
+					</div>
+				}
 			</div>
 
 		);

@@ -25,9 +25,11 @@ export default class RecordList extends React.Component {
 		this.archiveIdClick = this.archiveIdClick.bind(this);
 
 		this.collections = new RecordsCollection(function(json) {
-			if (!json.data || json.data.length == 0) {
-				// Om vi hittade inga postar skickar vi visuell meddelande till användaren
-				if (window.eventBus) {
+			if(window.eventBus) {
+				window.eventBus.dispatch('recordList.totalRecords', json.metadata.total, json.metadata.total);
+				console.log(json.metadata.total)
+				if (!json.data || json.data.length == 0) {
+					// Om vi hittade inga postar skickar vi visuell meddelande till användaren
 					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar<br><br>Kanske informationen inte har skannats? Du kan pröva att söka i den andra av de två flikarna "Accessioner" och "Uppteckningar" utifall informationen finns där.<br><br>Klicka för att stänga meddelandet.'));
 				}
 			}
@@ -150,7 +152,7 @@ export default class RecordList extends React.Component {
 
 	renderListPagination() {
 		return 					(
-			// this.state.total > config.hitsPerPage &&
+			(this.state.total > 0 || this.state.fetchingPage) &&
 			<div className="list-pagination">
 				<hr/>
 				<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*config.hitsPerPage)-(config.hitsPerPage-1))+'-'+(this.state.currentPage*config.hitsPerPage > this.state.total ? this.state.total : this.state.currentPage*config.hitsPerPage)+' '+l(this.state.total ? 'av' : '')+l(this.state.totalPrefix || '')+' '+(this.state.total || '')}</strong></p><br/>
