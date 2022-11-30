@@ -7,7 +7,7 @@ import MapView from './views/MapView';
 import PlaceView from './views/PlaceView';
 import PersonView from './views/PersonView';
 import RecordView from './views/RecordView';
-import RoutePopupWindow from './../../ISOF-React-modules/components/controls/RoutePopupWindow';
+import RoutePopupWindow from './RoutePopupWindow';
 import LocalLibraryView from './../../ISOF-React-modules/components/views/LocalLibraryView';
 import ImageOverlay from './../../ISOF-React-modules/components/views/ImageOverlay';
 import FeedbackOverlay from './../../ISOF-React-modules/components/views/FeedbackOverlay';
@@ -15,8 +15,10 @@ import HelpOverlay from './../../ISOF-React-modules/components/views/HelpOverlay
 import ContributeInfoOverlay from './../../ISOF-React-modules/components/views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './../../ISOF-React-modules/components/views/TranscriptionOverlay';
+import StatisticsOverlay from './../../ISOF-React-modules/components/views/StatisticsOverlay';
 import PopupNotificationMessage from './../../ISOF-React-modules/components/controls/PopupNotificationMessage';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
+import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
 
 import routeHelper from './../utils/routeHelper';
 
@@ -191,7 +193,7 @@ export default class Application extends React.Component {
 			this.setState({
 				menuExpanded: false
 			});
-		} else {
+		} else if(!event.target.classList.contains('ignore-expand-menu')){
 			this.setState({
 				menuExpanded: true
 			});
@@ -203,6 +205,20 @@ export default class Application extends React.Component {
 		return (
 				<div className={'app-container'+(this.state.popupVisible ? ' has-overlay' : '')}>
 					<Switch>
+						<Route 
+							path={[
+								"/statistics",
+							]}
+							render={() =>
+								<RoutePopupWindow
+									onShow={this.popupWindowShowHandler}
+									onHide={this.popupWindowHideHandler}
+									onClose={this.popupCloseHandler}
+									router={this.context.router}>
+									<StatisticsOverlay />
+								</RoutePopupWindow>
+							}
+						/>
 						<Route 
 							path={[
 								"/person/:person_id",
@@ -267,7 +283,7 @@ export default class Application extends React.Component {
 					</Switch>
 
 					<Route
-						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']} 
+						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id', '/statistics']} 
 						render={(props) =>
 							<MapView
 								searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
@@ -282,7 +298,42 @@ export default class Application extends React.Component {
 									{...props}
 									expanded={this.state.menuExpanded}
 								/>
-								<LocalLibraryView headerText={l('Mina sägner')} history={this.props.history} />
+								<div className="map-bottom-wrapper">
+
+									<div className='popup-wrapper'>
+										<TranscribeButton className="popup-open-button map-bottom-control map-floating-control visible"
+												label={l('Skriv av slumpmässig uppteckning')}
+												random={true}
+												// label={this.state.randomDocument._source.id}
+												// title={this.state.randomDocument._source.title}
+												// recordId={this.state.randomDocument._source.id}
+												// images={this.state.randomDocument._source.media}
+												// transcriptionType={this.state.randomDocument._source.transcriptiontype}
+										/>
+									</div>
+
+									{/* <div className='popup-wrapper'>
+										<a className="popup-open-button map-floating-control map-bottom-control visible" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}>
+											<strong>{l('Visa statistik')}</strong>
+										</a>
+									</div> */}
+
+									<div className='popup-wrapper'>
+										<LocalLibraryView headerText={l('Mina sägner')} history={this.props.history} />
+									</div>
+								</div>
+
+								{/* <div className="local-library-wrapper map-bottom-control">
+									<TranscribeButton className="button-primary foobar"
+										label={l('Skriv av slumpmässig uppteckning')}
+										random={true}
+										// label={this.state.randomDocument._source.id}
+										// title={this.state.randomDocument._source.title}
+										// recordId={this.state.randomDocument._source.id}
+										// images={this.state.randomDocument._source.media}
+										// transcriptionType={this.state.randomDocument._source.transcriptiontype}
+									/>
+								</div> */}
 
 							</MapView>
 						}

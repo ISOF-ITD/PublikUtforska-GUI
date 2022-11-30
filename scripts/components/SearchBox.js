@@ -5,6 +5,9 @@ import { Route } from 'react-router-dom';
 import routeHelper from './../utils/routeHelper';
 import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faList } from '@fortawesome/free-solid-svg-icons';
+
 export default class SearchBox extends React.Component {
 	constructor(props) {
 		super(props);
@@ -13,10 +16,12 @@ export default class SearchBox extends React.Component {
 		this.inputKeyPressHandler = this.inputKeyPressHandler.bind(this);
 		this.searchValueChangeHandler = this.searchValueChangeHandler.bind(this);
 		this.executeSearch = this.executeSearch.bind(this);
-		this.searchBoxClickHandler = this.searchBoxClickHandler.bind(this);
 		this.checkboxChangeHandler = this.checkboxChangeHandler.bind(this);
 		this.categoryItemClickHandler = this.categoryItemClickHandler.bind(this);
 		// this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
+
+		this.openButtonClickHandler = this.openButtonClickHandler.bind(this);
+		this.openButtonKeyUpHandler = this.openButtonKeyUpHandler.bind(this);
 
 		this.languageChangedHandler = this.languageChangedHandler.bind(this);
 
@@ -133,12 +138,6 @@ export default class SearchBox extends React.Component {
 		}
 	}
 
-
-
-	searchBoxClickHandler() {	
-		this.refs.searchInput.focus();
-	}
-
 	languageChangedHandler() {
 		// Gränssnitt tvingas uppdateras om språk ändras
 		this.forceUpdate();
@@ -175,10 +174,25 @@ export default class SearchBox extends React.Component {
 		}
 	}
 
+	openButtonKeyUpHandler(event){
+		if(event.keyCode == 13){
+			this.openButtonClickHandler(event);
+		} 
+	}
+
+	openButtonClickHandler() {
+		if(window.eventBus) {
+			window.eventBus.dispatch('routePopup.show');
+		}
+		// this.setState({
+		// 	windowOpen: true,
+		// 	manualOpen: true
+		// });
+	}
+
 	render() {
 		return (
 			<div
-				onClick={this.searchBoxClickHandler}
 				className={'search-box map-floating-control' + (this.props.expanded ? ' expanded' : '') + (this.state.searchParams.recordtype === 'one_record' ? ' advanced' : '')} >
 				<input ref="searchInput" type="text"
 					defaultValue={this.state.searchParams.search ? this.state.searchParams.search: ''}
@@ -296,23 +310,25 @@ export default class SearchBox extends React.Component {
 
 					{	
 						this.state.searchParams.recordtype == 'one_record' &&
-						<div className="radio-group">
+						<div>
+							<div className="radio-group">
 
-							<label>
-								<input type="radio" value="readytotranscribe" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'readytotranscribe'} />
-								För avskrift
-							</label>
+								<label>
+									<input type="radio" value="readytotranscribe" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'readytotranscribe'} />
+									För avskrift
+								</label>
 
-							<label>
-								<input type="radio" value="published" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'published'} />
-								Avskrivet
-							</label>
+								<label>
+									<input type="radio" value="published" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'published'} />
+									Avskrivet
+								</label>
 
-							<label>
-								<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={!this.state.searchParams.transcriptionstatus} />
-								Allt
-							</label>
+								<label>
+									<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={!this.state.searchParams.transcriptionstatus} />
+									Allt
+								</label>
 
+							</div>
 						</div>
 					}
 
@@ -337,6 +353,10 @@ export default class SearchBox extends React.Component {
 						</div>
 					</div>
 					{/* <button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button> */}
+				</div>
+				
+				<div className="popup-wrapper">
+					<a className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong className="ignore-expand-menu"><FontAwesomeIcon icon={faList} /> {l('Visa sökträffar som lista')}</strong></a>
 				</div>
 			</div>
 
