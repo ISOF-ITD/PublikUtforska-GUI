@@ -1335,9 +1335,18 @@ there.
 .map-bottom-control {
   bottom: 20px;
 }
+.map-right-control {
+  position: absolute;
+  margin-top: 23px;
+  right: 0;
+}
 .popup-wrapper .popup-open-button {
   position: fixed;
+  border-width: 0;
+  height: 60px;
   left: 20px;
+  letter-spacing: normal;
+  line-height: normal;
   padding: 20px;
   margin-bottom: 0;
   text-decoration: none;
@@ -1710,6 +1719,19 @@ there.
 .close-button.white:before,
 .close-button.white:after {
   background: #fff;
+}
+.popup-wrapper .popup-open-button.map-right-control {
+  left: unset;
+  right: 0;
+  margin-top: 20px;
+}
+.map-bottom-wrapper .popup-wrapper {
+  float: left;
+}
+.map-bottom-wrapper .popup-wrapper .popup-open-button {
+  position: static;
+  display: inline-block;
+  margin-right: 20px;
 }
 .menu-wrapper {
   position: absolute;
@@ -2414,6 +2436,14 @@ label {
     bottom: 60px !important;
     width: auto;
   }
+}
+.local-library-wrapper {
+  position: relative;
+  left: 0;
+  bottom: 0;
+}
+.local-library-wrapper .dropdown-direction-up.dropdown-wrapper .dropdown-link {
+  position: static;
 }
 .overlay-container {
   position: fixed;
@@ -3677,4 +3707,13 @@ audio::-webkit-media-controls-enclosure {
 div.display-line-breaks {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+.map-bottom-wrapper {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1100;
+}
+.map-bottom-control {
+  font-family: "Source Sans Pro", sans-serif !important;
 }
