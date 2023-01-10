@@ -211,7 +211,7 @@ export default class SearchBox extends React.Component {
 					// onChange={this.searchValueChangeHandler}
 					onInput={this.searchValueChangeHandler}
 					onKeyPress={this.inputKeyPressHandler}
-					placeholder='Sök'
+					placeholder='Sök i Folke'
 				/>
 
 				<div 
@@ -230,7 +230,7 @@ export default class SearchBox extends React.Component {
 								this.state.searchParams.search_field == 'record' ? 'Innehåll: ' :
 									this.state.searchParams.search_field == 'person' ? 'Person: ' :
 										this.state.searchParams.search_field == 'place' ? 'Ort: ' : ''
-							) : l('Sök')
+							) : l('Sök i Folke')
 					}
 					<strong>
 						{

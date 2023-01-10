@@ -399,8 +399,8 @@ export default class MapView extends React.Component {
 
 				<MapBase ref={this.mapView}
 					className="map-view"
-					layersControlPosition={this.props.layersControlPosition || 'topleft'}
-					zoomControlPosition={this.props.zoomControlPosition || 'topleft'} 
+					layersControlPosition={this.props.layersControlPosition || 'bottomright'}
+					zoomControlPosition={this.props.zoomControlPosition || 'bottomright'} 
 					disableLocateControl={true} // Inte visa locateControl knappen (som kan visa på kartan var användaren är)
 					scrollWheelZoom={true}
 					zoom={this.props.zoom}
