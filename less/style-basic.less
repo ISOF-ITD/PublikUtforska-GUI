@@ -343,3 +343,16 @@ div.display-line-breaks {
 .map-bottom-control {
 	font-family: "Source Sans Pro", sans-serif !important;
 }
+
+header .logo, footer .logo {
+	@media (max-width: 550px) {
+		// display: none;
+		top: unset;
+		.isof-app-header {
+			padding: 0 !important;
+			#portal {
+				display: none;
+			}
+		}
+	}
+}
