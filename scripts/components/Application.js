@@ -64,7 +64,9 @@ export default class Application extends React.Component {
 			match: {},
 			popupVisible: false,
 
-			menuExpanded: false,
+			// deactivated expanded menu for now
+			// menuExpanded: false,
+			menuExpanded: true,
 		};
 	}
 
@@ -189,15 +191,20 @@ export default class Application extends React.Component {
 
 		eventBus.dispatch('screen-clicked');
 
-		if (!!componentEl && !componentEl.contains(event.target)) {
-			this.setState({
-				menuExpanded: false
-			});
-		} else if(!event.target.classList.contains('ignore-expand-menu')){
-			this.setState({
-				menuExpanded: true
-			});
-		}
+		// following lines are not needed right now
+		// because expanded/collapsed menu is deactivated for now:
+		// ----START----
+		// if (!!componentEl && !componentEl.contains(event.target)) {
+		// 	this.setState({
+		// 		menuExpanded: false
+		// 	});
+		// } else if(!event.target.classList.contains('ignore-expand-menu')){
+		// 	this.setState({
+		// 		menuExpanded: true
+		// 	});
+		// 	document.getElementById('searchInputMapMenu').focus();
+		// }
+		// ----END----
 	}
 
 	render() {

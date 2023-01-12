@@ -12,10 +12,13 @@ export default class SearchBox extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this.searchInput = React.createRef();
+
 		// Bind all event handlers to this (the actual component) to make component variables available inside the functions
 		this.inputKeyPressHandler = this.inputKeyPressHandler.bind(this);
 		this.searchValueChangeHandler = this.searchValueChangeHandler.bind(this);
 		this.executeSearch = this.executeSearch.bind(this);
+		this.clearSearch = this.clearSearch.bind(this);
 		this.checkboxChangeHandler = this.checkboxChangeHandler.bind(this);
 		this.categoryItemClickHandler = this.categoryItemClickHandler.bind(this);
 		// this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
@@ -113,6 +116,16 @@ export default class SearchBox extends React.Component {
 		}
 	}
 
+	clearSearch() {
+		const searchParams = {...this.state.searchParams};
+		searchParams.search = '';
+		this.setState({
+			searchParams: searchParams,
+		});
+		document.getElementById('searchInputMapMenu').value = '';
+		document.getElementById('searchInputMapMenu').focus();
+	}
+
 	checkboxChangeHandler(event) {
 		if(event.target.name === 'filter') {
 			// for "Digitaliserat", "Avskrivet", "Allt"
@@ -206,11 +219,11 @@ export default class SearchBox extends React.Component {
 		return (
 			<div
 				className={'search-box map-floating-control' + (this.props.expanded ? ' expanded' : '') + (this.state.searchParams.recordtype === 'one_record' ? ' advanced' : '')} >
-				<input ref="searchInput" type="text"
-					defaultValue={this.state.searchParams.search ? this.state.searchParams.search: ''}
+				<input id="searchInputMapMenu" ref="searchInput" type="text"
+					defaultValue={this.state.searchParams.search ? this.state.searchParams.search : ''}
 					// onChange={this.searchValueChangeHandler}
 					onInput={this.searchValueChangeHandler}
-					onKeyPress={this.inputKeyPressHandler}
+					onKeyDown={this.inputKeyPressHandler}
 					placeholder='Sök i Folke'
 				/>
 
@@ -260,8 +273,13 @@ export default class SearchBox extends React.Component {
 					}
 					</small>
 				</div>
-
-				<button className="search-button" onClick={this.executeSearch}></button>
+				<div className='search-field-buttons'>
+					{/* only show clear button when there is text to clear */}
+					{
+						this.state.searchParams.search && <button className="clear-button" onClick={this.clearSearch}></button>
+					}
+					<button className="search-button" onClick={this.executeSearch}></button>
+				</div>
 
 				<div className="expanded-content">
 
