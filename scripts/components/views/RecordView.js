@@ -479,14 +479,14 @@ export default class RecordView extends React.Component {
 											
 										</span>
 									}
-									{	
+									{/* {	
 										this.state.data.archive && this.state.data.archive.archive &&
 										<span style={{marginLeft: 10}}>
 											<strong>{l('Accessionsradnummer')}</strong>:&nbsp;
 											{this.state.data.archive.archive_row}
 											
 										</span>
-									}
+									} */}
 									{	
 										this.state.data.recordtype === 'one_accession_row' && this.state.data.numberofonerecord &&
 										<span style={{marginLeft: 10}}>
