@@ -22,15 +22,29 @@
     <meta property="og:image:height" content="200" />
     <meta property="og:url" content="https://sok.folke.isof.se/" />
     <script type="text/javascript">
-    </script>
-    <!-- Matomo -->
-    <script>
         const hostname = window.location.hostname;
         const is_dev = ["127.0.0.1", "localhost", "0.0.0.0"].some((element) =>
             hostname.includes(element)
         );
         const is_test = ["-test."].some((element) => hostname.includes(element));
         const ENV = is_dev ? "dev" : is_test ? "test" : "prod";
+
+        const matomo_api_paths = {
+            'dev': 'http://127.0.0.1:5000/api/matomo_api_proxy',
+            // 'dev': 'http://127.0.0.1:5000/api/records',
+            'test':'https://frigg-test.isof.se/sagendatabas/api/matomo_api_proxy',
+            'prod': 'https://frigg.isof.se/sagendatabas/api/matomo_api_proxy',
+        }
+        window.matomo_site_search_keywords = [];
+        // read data from json api and store to window object
+        fetch(matomo_api_paths[ENV], {mode: 'cors'}).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            window.matomo_site_search_keywords = data;
+        });
+
+
+        // Matomo 
 
         const matomo_site_ids = {
             'dev': 62,
