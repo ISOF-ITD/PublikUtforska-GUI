@@ -27,7 +27,6 @@ export default class RecordList extends React.Component {
 		this.collections = new RecordsCollection(function(json) {
 			if(window.eventBus) {
 				window.eventBus.dispatch('recordList.totalRecords', json.metadata.total, json.metadata.total);
-				console.log(json.metadata.total)
 				if (!json.data || json.data.length == 0) {
 					// Om vi hittade inga postar skickar vi visuell meddelande till användaren
 					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar<br><br>Kanske informationen inte har skannats? Du kan pröva att söka i den andra av de två flikarna "Accessioner" och "Uppteckningar" utifall informationen finns där.<br><br>Klicka för att stänga meddelandet.'));

@@ -1,18 +1,20 @@
 const hostname = window.location.hostname
 const is_dev = ['127.0.0.1', 'localhost', '0.0.0.0'].some(element => hostname.includes(element))
 const is_test = ['-test.'].some(element => hostname.includes(element))
-const ENV =  is_dev ? 'dev' : (is_test ? 'test' : 'prod')
+export const ENV =  is_dev ? 'dev' : (is_test ? 'test' : 'prod')
 
-console.log(`ENV=${ENV}`)
+if (ENV !== 'prod') {
+	console.log(`ENV=${ENV}`)
+}
 
 const api_url = {
-	'dev': 'http://localhost:5000/api/es/', //feel free to change according to your local environment
+	'dev': 'http://127.0.0.1:5000/api/es/', //feel free to change according to your local environment
 	'test': 'https://frigg-test.isof.se/sagendatabas/api/es/',
 	'prod': 'https://frigg.isof.se/sagendatabas/api/es/',
 }
 
 const rest_api_url = {
-	'dev': 'http://localhost:5000/api/', //feel free to change according to your local environment
+	'dev': 'http://127.0.0.1:5000/api/', //feel free to change according to your local environment
 	'test': 'https://frigg-test.isof.se/sagendatabas/api/',
 	'prod': 'https://frigg.isof.se/sagendatabas/api/',
 }

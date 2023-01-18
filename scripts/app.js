@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Client from 'react-dom/client';
 import { HashRouter, Route, Redirect } from 'react-router-dom'
 
 import Application from './components/Application';
@@ -61,7 +62,9 @@ window.l = Lang.get;
 
 // Initalisera React.js Router som bestämmer vilken "sida" användaren ser baserad på url:et 
 // "component" pekar mot importerade componenter (se högst uppe i denna fil)
-ReactDOM.render(
+const container = document.getElementById('app');
+const root = Client.createRoot(container);
+root.render(
 
 	<HashRouter>
 		<Route exact path="/">
@@ -86,7 +89,5 @@ ReactDOM.render(
 			}
 		/>
 
-	</HashRouter>,
-	document.getElementById('app')
-
+	</HashRouter>
 );
