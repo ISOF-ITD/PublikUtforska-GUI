@@ -266,7 +266,7 @@ export default class SearchBox extends React.Component {
 						placeholder='Sök i Folke'
 						onFocus={this.searchInputFocusHandler}
 						onBlur={this.searchInputBlurHandler}
-						ariaAutoComplete="both"
+						ariaAutocomplete='both'
 						autoComplete='off'
 						autoCorrect='off'
 						autoCapitalize='off'
