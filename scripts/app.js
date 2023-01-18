@@ -8,7 +8,11 @@ import RecordListWrapper from './components/views/RecordListWrapper';
 
 import routeHelper from './utils/routeHelper'
 
-console.log(`PublikUtforska running React.js version ${React.version} and ReactDOM version ${ReactDOM.version}`);
+import { ENV } from './config'
+
+if (ENV !== "prod") {
+	console.log(`PublikUtforska running React.js version ${React.version} and ReactDOM version ${ReactDOM.version} on ${ENV} environment`);
+} 
 
 /*
 Object.assign polyfill
@@ -74,7 +78,7 @@ root.render(
 			<Redirect to="/places/recordtype/one_accession_row/has_media/true" />
 		</Route>
 		<Route
-			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
+			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id', '/statistics']}
 			render={(props) =>
 				<Application
 					popup={<RecordListWrapper
