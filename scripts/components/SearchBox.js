@@ -12,7 +12,8 @@ export default class SearchBox extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.searchInput = React.createRef();
+		this.searchInputRef = React.createRef();
+		this.suggestionsRef = React.createRef();
 
 		// Bind all event handlers to this (the actual component) to make component variables available inside the functions
 		this.inputKeyPressHandler = this.inputKeyPressHandler.bind(this);
@@ -29,9 +30,14 @@ export default class SearchBox extends React.Component {
 		this.languageChangedHandler = this.languageChangedHandler.bind(this);
 		this.totalRecordsHandler = this.totalRecordsHandler.bind(this);
 
+		this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
+		this.searchInputFocusHandler = this.searchInputFocusHandler.bind(this);
+		this.searchInputBlurHandler = this.searchInputBlurHandler.bind(this);
+
 		// Lyssna efter event från eventBus som kommer om url:et ändras med nya sökparams
 
 		this.state = {
+			suggestionsVisible: false,
 			searchParams: {
 				search: '',
 				search_field: 'record',
@@ -60,6 +66,39 @@ export default class SearchBox extends React.Component {
 	inputKeyPressHandler(event) {
 		if (event.key == 'Enter') {
 			this.executeSearch();
+		}
+		if (event.key == 'Escape') {
+			this.setState({
+				suggestionsVisible: false,	
+			});
+		}
+	}
+
+	suggestionClickHandler(keyword) {
+		this.setState({
+			suggestionsVisible: false,
+			searchParams: {
+				search: keyword,
+			}
+		}, () => this.executeSearch());
+	}
+
+	// set suggestionsVisible to true when the search input is focused
+	searchInputFocusHandler() {
+		this.setState({
+			suggestionsVisible: true,
+		});
+	}
+
+	// set suggestionsVisible to false when the search input is blurred
+	searchInputBlurHandler(event) {
+		let close = !!this.suggestionsRef.current;
+		close = close && event.relatedTarget !== this.searchInputRef.current && event.relatedTarget !== this.suggestionsRef.current;
+		close = close && !this.suggestionsRef.current.contains(event.relatedTarget);
+		if(close) {
+			this.setState({
+				suggestionsVisible: false,
+			});
 		}
 	}
 
@@ -217,61 +256,93 @@ export default class SearchBox extends React.Component {
 
 	render() {
 		return (
-			<div
-				className={'search-box map-floating-control' + (this.props.expanded ? ' expanded' : '') + (this.state.searchParams.recordtype === 'one_record' ? ' advanced' : '')} >
-				<input id="searchInputMapMenu" ref="searchInput" type="text"
-					defaultValue={this.state.searchParams.search ? this.state.searchParams.search : ''}
-					// onChange={this.searchValueChangeHandler}
-					onInput={this.searchValueChangeHandler}
-					onKeyDown={this.inputKeyPressHandler}
-					placeholder='Sök i Folke'
-				/>
+			<div className={'search-box map-floating-control' + (this.props.expanded ? ' expanded' : '') + (this.state.searchParams.recordtype === 'one_record' ? ' advanced' : '')} >
+				<div>
+					<input id="searchInputMapMenu" ref={this.searchInputRef} type="text"
+						defaultValue={this.state.searchParams.search ? this.state.searchParams.search : ''}
+						// onChange={this.searchValueChangeHandler}
+						onInput={this.searchValueChangeHandler}
+						onKeyDown={this.inputKeyPressHandler}
+						placeholder='Sök i Folke'
+						onFocus={this.searchInputFocusHandler}
+						onBlur={this.searchInputBlurHandler}
+						ariaAutoComplete="both"
+						autoComplete='off'
+						autoCorrect='off'
+						autoCapitalize='off'
+						spellCheck='false'
+					/>
 
-				<div 
-					className="search-label"
-					style={{
-						'textOverflow': 'ellipsis',
-						'overflow': 'hidden',
-						'whiteSpace': 'nowrap',
-						'maxWidth': 275,
-						'display': 'block',
-						}}
-				>
-					{
-						!!this.state.searchParams.search ?
-							(
-								this.state.searchParams.search_field == 'record' ? 'Innehåll: ' :
-									this.state.searchParams.search_field == 'person' ? 'Person: ' :
-										this.state.searchParams.search_field == 'place' ? 'Ort: ' : ''
-							) : l('Sök i Folke')
-					}
-					<strong>
+					<div 
+						className="search-label"
+						style={{
+							'textOverflow': 'ellipsis',
+							'overflow': 'hidden',
+							'whiteSpace': 'nowrap',
+							'maxWidth': 275,
+							'display': 'block',
+							}}
+					>
 						{
-							this.state.searchParams.search ?
-								this.state.searchParams.search : ''
+							!!this.state.searchParams.search ?
+								(
+									this.state.searchParams.search_field == 'record' ? 'Innehåll: ' :
+										this.state.searchParams.search_field == 'person' ? 'Person: ' :
+											this.state.searchParams.search_field == 'place' ? 'Ort: ' : ''
+								) : l('Sök i Folke')
 						}
-					</strong>
-					{
-						!!this.state.searchParams.has_media ? ' (Digitaliserat)' : ''
+						<strong>
+							{
+								this.state.searchParams.search ?
+									this.state.searchParams.search : ''
+							}
+						</strong>
+						{
+							!!this.state.searchParams.has_media ? ' (Digitaliserat)' : ''
+						}
+						{
+							!!this.state.searchParams.has_transcribed_records ? ' (Avskrivet)' : ''
+						}
+						{
+							!!this.state.searchParams.transcriptionstatus ?
+								(
+									this.state.searchParams.transcriptionstatus == 'published' ? ' (Avskrivna)' : ' (För avskrift)'
+								) : ''
+						}
+						<br/>
+						<small>
+						{
+							this.state.searchParams.category ? 
+							this.state.searchParams.category.split(',').map(
+								(c) => categories.getCategoryName(c)
+							).join(', ') : ''
+						}
+						</small>
+					</div>
+					{ this.state.suggestionsVisible && window.matomo_site_search_keywords.length > 0 &&
+					
+						<ul className="suggestions" ref={this.suggestionsRef} tabIndex="0"
+						// style={{display: this.state.suggestionsVisible ? 'block' : 'none'}}
+						>
+							{
+								// limit list to 5 elements
+								// check the lenght of a list
+								window.matomo_site_search_keywords.map((keyword) => {
+									return (
+										<li
+											className="suggestions-item"
+											key={keyword.label}
+											onClick={() => this.suggestionClickHandler(keyword.label)}
+											tabIndex="0"
+										>
+											{keyword.label}
+										</li>
+									)
+								})
+							}
+						
+						</ul>
 					}
-					{
-						!!this.state.searchParams.has_transcribed_records ? ' (Avskrivet)' : ''
-					}
-					{
-						!!this.state.searchParams.transcriptionstatus ?
-							(
-								this.state.searchParams.transcriptionstatus == 'published' ? ' (Avskrivna)' : ' (För avskrift)'
-							) : ''
-					}
-					<br/>
-					<small>
-					{
-						this.state.searchParams.category ? 
-						this.state.searchParams.category.split(',').map(
-							(c) => categories.getCategoryName(c)
-						).join(', ') : ''
-					}
-					</small>
 				</div>
 				<div className='search-field-buttons'>
 					{/* only show clear button when there is text to clear */}
