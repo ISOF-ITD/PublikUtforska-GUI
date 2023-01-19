@@ -373,7 +373,7 @@ export default class SearchBox extends React.Component {
 								{
 									// filter keywords by search input value
 									window.matomo_site_search_keywords.filter((keyword) => {
-										return keyword.label.toLowerCase().indexOf(this.state.searchParams.search.toLowerCase()) > -1;
+										return keyword.label.toLowerCase().indexOf(this.state.searchParams.search ? this.state.searchParams.search.toLowerCase() : '') > -1;
 									}).slice(0, 5).map((keyword) => {
 										return (
 											<li
@@ -391,7 +391,7 @@ export default class SearchBox extends React.Component {
 															<span
 																key={i}
 																style={{
-																	fontWeight: part.toLowerCase() === this.state.searchParams.search.toLowerCase() ? 'bold' : 'normal'
+																	fontWeight: part.toLowerCase() === (this.state.searchParams.search ? this.state.searchParams.search.toLowerCase() : '') ? 'bold' : 'normal'
 																}}
 															>
 																{part}
