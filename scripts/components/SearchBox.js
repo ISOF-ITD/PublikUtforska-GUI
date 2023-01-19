@@ -73,13 +73,50 @@ export default class SearchBox extends React.Component {
 	}
 
 	inputKeyPressHandler(event) {
-		if (event.key == 'Enter') {
+		// check if event.target is the search input that has the ref "searchInputRef"
+		if (event.key == 'Enter' && (event.target === this.searchInputRef.current)) {
 			this.executeSearch();
+		}
+		if (event.key === 'Enter' && this.suggestionsRef.current.contains(event.target)) {
+			this.setState({
+				suggestionsVisible: false,
+				searchParams: {
+					search: event.target.dataset.value					
+					},
+			}, () => this.executeSearch());
 		}
 		if (event.key == 'Escape') {
 			this.setState({
 				suggestionsVisible: false,	
 			});
+		}
+		//if keydown and  this.suggestionsRef.current.contains(event.target)), change to next suggestion
+		if (event.key == 'ArrowDown' && this.suggestionsRef.current.contains(event.target)) {
+			let next = event.target.nextElementSibling;
+			if (next) {
+				next.focus();
+			}
+		}
+		//if keyup and  this.suggestionsRef.current.contains(event.target)), change to previous suggestion
+		if (event.key == 'ArrowUp' && this.suggestionsRef.current.contains(event.target)) {
+			let prev = event.target.previousElementSibling;
+			if (prev) {
+				prev.focus();
+			}
+		}
+		// if keyup and (event.target === this.searchInputRef.current), change focus to first suggestion
+		if (event.key == 'ArrowDown' && (event.target === this.searchInputRef.current)) {
+			let first = this.suggestionsRef.current.firstElementChild;
+			if (first) {
+				first.focus();
+			}
+		}
+		// if keydown and focus is on first suggestion, change focus to searchInputRef
+		if (event.key == 'ArrowUp' && this.suggestionsRef.current.contains(event.target)) {
+			let first = this.suggestionsRef.current.firstElementChild;
+			if (event.target === first) {
+				this.searchInputRef.current.focus();
+			}
 		}
 	}
 
@@ -330,28 +367,46 @@ export default class SearchBox extends React.Component {
 						</small>
 					</div>
 					{ this.state.suggestionsVisible && window.matomo_site_search_keywords.length > 0 &&
-					
-						<ul className="suggestions" ref={this.suggestionsRef} tabIndex="0"
-						// style={{display: this.state.suggestionsVisible ? 'block' : 'none'}}
-						>
-							{
-								// limit list to 5 elements
-								// check the lenght of a list
-								window.matomo_site_search_keywords.map((keyword) => {
-									return (
-										<li
-											className="suggestions-item"
-											key={keyword.label}
-											onClick={() => this.suggestionClickHandler(keyword.label)}
-											tabIndex="0"
-										>
-											{keyword.label}
-										</li>
-									)
-								})
-							}
-						
-						</ul>
+						<div className="suggestions">
+							<span className="suggestions-label">Vanligaste sökningar</span>
+							<ul ref={this.suggestionsRef}>
+								{
+									// filter keywords by search input value
+									window.matomo_site_search_keywords.filter((keyword) => {
+										return keyword.label.toLowerCase().indexOf(this.state.searchParams.search.toLowerCase()) > -1;
+									}).slice(0, 5).map((keyword) => {
+										return (
+											<li
+												className="suggestions-item"
+												key={keyword.label}
+												onClick={() => this.suggestionClickHandler(keyword.label)}
+												tabIndex="0"
+												onKeyDown={this.inputKeyPressHandler}
+												data-value={keyword.label}
+											>
+												{/* make matching characters bold */}
+												{
+													keyword.label.split(new RegExp(`(${this.state.searchParams.search})`, 'gi')).map((part, i) => {
+														return (
+															<span
+																key={i}
+																style={{
+																	fontWeight: part.toLowerCase() === this.state.searchParams.search.toLowerCase() ? 'bold' : 'normal'
+																}}
+															>
+																{part}
+															</span>
+														)
+													})
+												}
+
+											</li>
+										)
+									})
+								}
+							
+							</ul>
+						</div>
 					}
 				</div>
 				<div className='search-field-buttons'>
