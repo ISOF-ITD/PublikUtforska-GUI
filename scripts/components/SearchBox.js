@@ -127,6 +127,13 @@ export default class SearchBox extends React.Component {
 				this.searchInputRef.current.focus();
 			}
 		}
+		// if any key except keydown, keyup, enter, escape is pressed, and this.suggestionsRef.current.contains(event.target)),
+		// set focus to searchInputRef and add the character to the search input
+		if (event.key != 'ArrowDown' && event.key != 'ArrowUp' && event.key != 'Enter' && event.key != 'Escape'
+			&& this.suggestionsRef.current.contains(event.target)) {
+			this.searchInputRef.current.focus();
+		}
+		
 	}
 
 	suggestionClickHandler(keyword) {
