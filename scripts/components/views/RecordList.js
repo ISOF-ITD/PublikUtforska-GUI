@@ -27,27 +27,31 @@ export default class RecordList extends React.Component {
 		this.collections = new RecordsCollection(function(json) {
 			if(window.eventBus) {
 				window.eventBus.dispatch('recordList.totalRecords', json.metadata.total, json.metadata.total);
-				if (!json.data || json.data.length == 0) {
-					// Om vi hittade inga postar skickar vi visuell meddelande till användaren
-					window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar<br><br>Kanske informationen inte har skannats? Du kan pröva att söka i den andra av de två flikarna "Accessioner" och "Uppteckningar" utifall informationen finns där.<br><br>Klicka för att stänga meddelandet.'));
-				}
+				window.eventBus.dispatch('recordList.fetchingPage', false);
+				// show a message if no records were found
+				// if (!json.data || json.data.length == 0) {
+				// 	// Om vi hittade inga postar skickar vi visuell meddelande till användaren
+				// 	window.eventBus.dispatch('popup-notification.notify', null, l(`Inga sökträffar
+				// 	<br><br>Kanske informationen inte har skannats? Du kan pröva att söka i den andra
+				// 	av de två flikarna "Accessioner" och "Uppteckningar" utifall informationen finns där.
+				// 	<br><br>Klicka för att stänga meddelandet.`));
+				// }
 			}
-
-			this.setState({
-				records: json.data,
-				total: json.metadata.total.value || json.metadata.total, // ES7 vs ES5
-				totalRelation: json.metadata.total.relation || 'eq', // ES7 vs ES5
-				fetchingPage: false
-			});
 			// Handle new ES7 total value definition with total.relation parameter
 			// Needed sometimes if 'track_total_hits' not set in ES-request:
 			// total.relation: "eq": output only value
 			// total.relation: "gte": output '"more than "+value+" hits"' (value = 10000 for values > 10000)
 			let totalPrefixValue = '';
-			if (this.state.totalRelation != 'eq') {
+			if (json.metadata.total.relation !== 'eq') {
 				totalPrefixValue = 'mer än ';
 			}
-			this.setState({totalPrefix: totalPrefixValue});
+			this.setState({
+				records: json.data,
+				total: json.metadata.total.value || json.metadata.total, // ES7 vs ES5
+				totalRelation: json.metadata.total.relation || 'eq', // ES7 vs ES5
+				fetchingPage: false,
+				totalPrefix: totalPrefixValue,
+			});
 
 		}.bind(this));
 	
@@ -107,6 +111,9 @@ export default class RecordList extends React.Component {
 	}
 	
 	fetchData(params) {
+		if(window.eventBus) {
+			window.eventBus.dispatch('recordList.fetchingPage', true);
+		}
 		this.setState({
 			fetchingPage: true
 		});

@@ -34,9 +34,12 @@ export default class SearchBox extends React.Component {
 		this.searchInputFocusHandler = this.searchInputFocusHandler.bind(this);
 		this.searchInputBlurHandler = this.searchInputBlurHandler.bind(this);
 
+		this.fetchingPageHandler = this.fetchingPageHandler.bind(this);
+
 		// Lyssna efter event från eventBus som kommer om url:et ändras med nya sökparams
 
 		this.state = {
+			fetchingPage: false,
 			suggestionsVisible: false,
 			searchParams: {
 				search: '',
@@ -61,7 +64,13 @@ export default class SearchBox extends React.Component {
 	// 		}
 	// 	}, () => this.executeSearch());
 	// }
-	
+
+	fetchingPageHandler(event) {
+		console.log(event)
+		this.setState({
+			fetchingPage: event.target,
+		});
+	}
 
 	inputKeyPressHandler(event) {
 		if (event.key == 'Enter') {
@@ -212,6 +221,7 @@ export default class SearchBox extends React.Component {
 		if (window.eventBus) {
 			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
 			window.eventBus.addEventListener('recordList.totalRecords', this.totalRecordsHandler.bind(this));
+			window.eventBus.addEventListener('recordList.fetchingPage', this.fetchingPageHandler.bind(this));
 		}
 
 		const searchParams = {...this.props.searchParams};
@@ -266,7 +276,7 @@ export default class SearchBox extends React.Component {
 						placeholder='Sök i Folke'
 						onFocus={this.searchInputFocusHandler}
 						onBlur={this.searchInputBlurHandler}
-						ariaAutocomplete='both'
+						aria-autocomplete='both'
 						autoComplete='off'
 						autoCorrect='off'
 						autoCapitalize='off'
@@ -456,9 +466,20 @@ export default class SearchBox extends React.Component {
 					{/* <button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button> */}
 				</div>
 				{
-					this.state.totalRecords.value !== 0 &&
+					!this.state.fetchingPage &&
 					<div className="popup-wrapper">
-						<a className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong className="ignore-expand-menu"><FontAwesomeIcon icon={faList} /> Visa {this.state.totalRecords.value}{this.state.totalRecords.relation === 'gte' ? '+': ''} sökträffar som lista</strong></a>
+						{
+							this.state.totalRecords.value > 0 &&
+							<a className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}>
+								<strong className="ignore-expand-menu"><FontAwesomeIcon icon={faList} /> Visa {this.state.totalRecords.value}{this.state.totalRecords.relation === 'gte' ? '+': ''} sökträffar som lista</strong>
+							</a>
+						}
+						{
+							this.state.totalRecords.value === 0 &&
+							<div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{cursor: 'unset'}}>
+								<strong className="ignore-expand-menu">0 sökträffar</strong>
+							</div>
+						}
 					</div>
 				}
 			</div>
