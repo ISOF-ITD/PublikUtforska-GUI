@@ -8,6 +8,8 @@ import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
 
+import config from '../config';
+
 export default class SearchBox extends React.Component {
 	constructor(props) {
 		super(props);
@@ -40,6 +42,7 @@ export default class SearchBox extends React.Component {
 
 		this.state = {
 			fetchingPage: false,
+			searchSuggestions: [],
 			suggestionsVisible: false,
 			searchParams: {
 				search: '',
@@ -57,13 +60,19 @@ export default class SearchBox extends React.Component {
 		window.searchBox = this;
 	}
 
-	// suggestionClickHandler(event) {
-	// 	this.setState({
-	// 		searchParams: {
-	// 			search: event.target.innerHTML,	
-	// 		}
-	// 	}, () => this.executeSearch());
-	// }
+	getSearchSuggestions() {
+		const path = config.matomoApiUrl;
+        const params = config.searchSuggestionsParams;
+        // add params to path
+        const url = new URL(path);
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+        // read data from json api and store to window object
+		fetch(url, {mode: 'cors'}).then(response => response.json()).then(data => {
+			this.setState({
+				searchSuggestions: data,
+			});
+		});
+	}
 
 	fetchingPageHandler(event) {
 		console.log(event)
@@ -267,6 +276,9 @@ export default class SearchBox extends React.Component {
 		this.setState({
 			searchParams: searchParams,
 		})
+
+		// populate search suggestions from matomo api
+		this.getSearchSuggestions();
 	}
 
 	componentDidUpdate(prevProps) {
@@ -366,13 +378,13 @@ export default class SearchBox extends React.Component {
 						}
 						</small>
 					</div>
-					{ this.state.suggestionsVisible && window.matomo_site_search_keywords.length > 0 &&
+					{ this.state.suggestionsVisible && this.state.searchSuggestions.length > 0 &&
 						<div className="suggestions">
 							<span className="suggestions-label">Vanligaste sökningar</span>
 							<ul ref={this.suggestionsRef}>
 								{
 									// filter keywords by search input value
-									window.matomo_site_search_keywords.filter((keyword) => {
+									this.state.searchSuggestions.filter((keyword) => {
 										return keyword.label.toLowerCase().indexOf(this.state.searchParams.search ? this.state.searchParams.search.toLowerCase() : '') > -1;
 									}).slice(0, 5).map((keyword) => {
 										return (

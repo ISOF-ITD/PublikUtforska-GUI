@@ -37,6 +37,11 @@ const pdf_url = {
 	'prod': 'https://sok.folke.isof.se/arkivfiler/publik/',
 }
 
+const matomo_api_url = {
+	'dev': 'http://127.0.0.1:5000/api/matomo_api_proxy',
+	'test':'https://frigg-test.isof.se/sagendatabas/api/matomo_api_proxy',
+	'prod': 'https://frigg.isof.se/sagendatabas/api/matomo_api_proxy',
+}
 
 export default {
 	siteTitle: 'Folke sök - Institutet för språk och folkminnen',
@@ -162,4 +167,16 @@ export default {
 
 	// Url till Django Rest API
 	restApiUrl: rest_api_url[ENV],
+
+	// Url till Matomo API
+	matomoApiUrl: matomo_api_url[ENV],
+	// link to matomo api docs: https://developer.matomo.org/api-reference/reporting-api
+	searchSuggestionsParams: {
+            module: "API",
+            method: "Actions.getSiteSearchKeywords",
+            idSite: "17",
+            period: "range",
+            date: "2022-01-01,today",
+            format: "JSON",
+        }
 };
