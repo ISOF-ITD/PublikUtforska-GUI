@@ -26,8 +26,7 @@ sed -i 's/production = false/production = true/' gulpfile.js && gulp build && gi
 or in PowerShell:
 
 ```PowerShell
-(Get-Content gulpfile.js) -replace 'production = false', 'production = true' | Set-Content gulpfile.js; gulp build; 
-gulp deploy; git add www; git commit -m 'fresh compile'; git push origin master
+(Get-Content gulpfile.js) -replace 'production = false', 'production = true' | Set-Content gulpfile.js; gulp build; gulp deploy; git add www; git commit -m 'fresh compile'; git push origin master
 ```
 
 Deploy code on server:
