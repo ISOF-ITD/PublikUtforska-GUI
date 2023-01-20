@@ -60,6 +60,13 @@ export default class SearchBox extends React.Component {
 		window.searchBox = this;
 	}
 
+	// filter keywords by search input value
+	filteredSearchSuggestions() {
+		return this.state.searchSuggestions.filter((keyword) => {
+			return keyword.label.toLowerCase().indexOf(this.state.searchParams.search ? this.state.searchParams.search.toLowerCase() : '') > -1;
+		});
+	}
+
 	getSearchSuggestions() {
 		const path = config.matomoApiUrl;
         const params = config.searchSuggestionsParams;
@@ -386,14 +393,15 @@ export default class SearchBox extends React.Component {
 						</small>
 					</div>
 					{ this.state.suggestionsVisible && this.state.searchSuggestions.length > 0 &&
+						// check if keywords filtered by search input value is not empty
+						this.filteredSearchSuggestions().length > 0 &&
+						// if true, show suggestions
 						<div className="suggestions">
 							<span className="suggestions-label">Vanligaste sökningar</span>
 							<ul ref={this.suggestionsRef}>
 								{
 									// filter keywords by search input value
-									this.state.searchSuggestions.filter((keyword) => {
-										return keyword.label.toLowerCase().indexOf(this.state.searchParams.search ? this.state.searchParams.search.toLowerCase() : '') > -1;
-									}).slice(0, 5).map((keyword) => {
+									this.filteredSearchSuggestions().slice(0, 5).map((keyword) => {
 										return (
 											<li
 												className="suggestions-item"
