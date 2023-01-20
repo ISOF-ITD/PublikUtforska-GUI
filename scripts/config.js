@@ -172,11 +172,12 @@ export default {
 	matomoApiUrl: matomo_api_url[ENV],
 	// link to matomo api docs: https://developer.matomo.org/api-reference/reporting-api
 	searchSuggestionsParams: {
-            module: "API",
-            method: "Actions.getSiteSearchKeywords",
-            idSite: "17",
-            period: "range",
-            date: "2022-01-01,today",
-            format: "JSON",
-        }
+		module: "API",
+		method: "Actions.getSiteSearchKeywords",
+		idSite: "17",
+		period: "range",
+		date: "2022-01-01,today",
+		format: "JSON",
+	},
+	numberOfSearchSuggestions: 6,
 };

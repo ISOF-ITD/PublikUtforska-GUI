@@ -401,7 +401,7 @@ export default class SearchBox extends React.Component {
 							<ul ref={this.suggestionsRef}>
 								{
 									// filter keywords by search input value
-									this.filteredSearchSuggestions().slice(0, 5).map((keyword) => {
+									this.filteredSearchSuggestions().slice(0, config.numberOfSearchSuggestions).map((keyword) => {
 										return (
 											<li
 												className="suggestions-item"
