@@ -9,12 +9,25 @@ Public crowdsource map based interface
 sed -i 's/production = true/production = false/' gulpfile.js && gulp
 ```
 
+or in PowerShell:
+
+```PowerShell
+(Get-Content gulpfile.js) -replace 'production = true', 'production = false' | Set-Content gulpfile.js; gulp
+```
+
 ## Bundle code for deployment with gulp, commit and push (make sure you know what you are doing)
 
 Enter the correct path to the ES-API in config.js (frigg-test or frigg). Otherwise it must be done on the server afterwards. Then run:
 
 ```bash
 sed -i 's/production = false/production = true/' gulpfile.js && gulp build && git add www && git commit -m 'fresh compile' && git push origin master
+```
+
+or in PowerShell:
+
+```PowerShell
+(Get-Content gulpfile.js) -replace 'production = false', 'production = true' | Set-Content gulpfile.js; gulp build; 
+gulp deploy; git add www; git commit -m 'fresh compile'; git push origin master
 ```
 
 Deploy code on server:
@@ -33,8 +46,16 @@ cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
 
 ## Upgrade node modules
 
+Bash script to upgrade all node modules:
+
 ```bash
 npm outdated; npm install $(npm outdated | egrep '^[a-z@/-]*' -o | tr '\r\n' ' ') && npm outdated
+```
+
+PowerShell script to upgrade all node modules:
+
+```PowerShell
+npm outdated; npm install $(npm outdated | Select-String -Pattern '^[a-z@/-]*' -AllMatches -CaseSensitive | % { $_.Matches } | % { $_.Value } | Out-String -Width 1000000 | ForEach-Object { $_ -replace "`r`n", " " } | % {$_.TrimStart()}); npm outdated
 ```
 
 ## Import new data
