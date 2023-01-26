@@ -19,7 +19,7 @@ var path = require('path');
 var gulpif = require('gulp-if');
 
 
-var production = true;
+var production = false;
 
 if (production) {
 	process.env.NODE_ENV = 'production';
