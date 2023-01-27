@@ -16,6 +16,7 @@ export default class SearchBox extends React.Component {
 
 		this.searchInputRef = React.createRef();
 		this.suggestionsRef = React.createRef();
+		this.suggestionsCloseRef = React.createRef();
 
 		// Bind all event handlers to this (the actual component) to make component variables available inside the functions
 		this.inputKeyPressHandler = this.inputKeyPressHandler.bind(this);
@@ -33,6 +34,7 @@ export default class SearchBox extends React.Component {
 		this.totalRecordsHandler = this.totalRecordsHandler.bind(this);
 
 		this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
+		this.closeSuggestionsHandler = this.closeSuggestionsHandler.bind(this);
 		this.searchInputFocusHandler = this.searchInputFocusHandler.bind(this);
 		this.searchInputBlurHandler = this.searchInputBlurHandler.bind(this);
 
@@ -87,6 +89,15 @@ export default class SearchBox extends React.Component {
 		});
 	}
 
+	closeSuggestionsHandler() {
+		console.log('closeSuggestionsHandler')
+		this.searchInputRef.current.focus();
+		this.setState({
+			suggestionsVisible: false,	
+		});
+		// set focus to search input
+	}
+
 	inputKeyPressHandler(event) {
 		// check if event.target is the search input that has the ref "searchInputRef"
 		if (event.key == 'Enter' && (event.target === this.searchInputRef.current)) {
@@ -102,9 +113,7 @@ export default class SearchBox extends React.Component {
 			}, () => this.executeSearch());
 		}
 		if (event.key == 'Escape') {
-			this.setState({
-				suggestionsVisible: false,	
-			});
+			this.closeSuggestionsHandler();
 		}
 		//if keydown and  this.suggestionsRef.current.contains(event.target)), change to next suggestion
 		if (event.key == 'ArrowDown'
@@ -123,7 +132,7 @@ export default class SearchBox extends React.Component {
 			}
 		}
 		// if keyup and (event.target === this.searchInputRef.current), change focus to first suggestion
-		if (event.key == 'ArrowDown' && (event.target === this.searchInputRef.current)) {
+		if (event.key == 'ArrowDown' && this.suggestionsRef.current && (event.target === this.searchInputRef.current)) {
 			let first = this.suggestionsRef.current.firstElementChild;
 			if (first) {
 				first.focus();
@@ -162,17 +171,39 @@ export default class SearchBox extends React.Component {
 		});
 	}
 
-	// set suggestionsVisible to false when the search input is blurred
+	// set suggestionsVisible to false when the search input is blurred, but retain focus if the suggestionsCloseButton is clicked. do
+	// not close the suggestions if the focus is moved to the suggestions list or the search input
 	searchInputBlurHandler(event) {
+		const refocusSearchField = event.relatedTarget === this.suggestionsCloseRef.current;
 		let close = !!this.suggestionsRef.current;
 		close = close && event.relatedTarget !== this.searchInputRef.current && event.relatedTarget !== this.suggestionsRef.current;
 		close = close && !this.suggestionsRef.current.contains(event.relatedTarget);
-		if(close) {
-			this.setState({
-				suggestionsVisible: false,
-			});
-		}
+
+		// https://stackoverflow.com/a/9886348
+		// Vi can't set focus in the same event handler that the blur event is fired in, so we have to use setTimeout
+		window.setTimeout(() => {
+			if(refocusSearchField) {
+				this.searchInputRef.current.focus();
+			}
+			if(close) {
+				this.setState({
+					suggestionsVisible: false,
+				});
+			}
+		}, 0);
 	}
+
+	
+	// searchInputBlurHandler(event) {
+	// 	let close = !!this.suggestionsRef.current;
+	// 	close = close && event.relatedTarget !== this.searchInputRef.current && event.relatedTarget !== this.suggestionsRef.current;
+	// 	close = close && !this.suggestionsRef.current.contains(event.relatedTarget);
+	// 	if(close) {
+	// 		this.setState({
+	// 			suggestionsVisible: false,
+	// 		});
+	// 	}
+	// }
 
 	categoryItemClickHandler(event) {
 		// get the clicked category
@@ -347,6 +378,7 @@ export default class SearchBox extends React.Component {
 						autoCorrect='off'
 						autoCapitalize='off'
 						spellCheck='false'
+						tabIndex={0}
 					/>
 
 					<div 
@@ -401,6 +433,14 @@ export default class SearchBox extends React.Component {
 						// if true, show suggestions
 						<div className="suggestions">
 							<span className="suggestions-label">Vanligaste sökningar</span>
+							<span
+								className="suggestions-close"
+								onClick={this.closeSuggestionsHandler}
+								tabIndex="0"
+								ref={this.suggestionsCloseRef}
+							>
+								&times;
+							</span>
 							<ul ref={this.suggestionsRef}>
 								{
 									// filter keywords by search input value
