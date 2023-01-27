@@ -82,7 +82,6 @@ export default class SearchBox extends React.Component {
 	}
 
 	fetchingPageHandler(event) {
-		console.log(event)
 		this.setState({
 			fetchingPage: event.target,
 		});
