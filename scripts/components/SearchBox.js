@@ -93,7 +93,8 @@ export default class SearchBox extends React.Component {
 		if (event.key == 'Enter' && (event.target === this.searchInputRef.current)) {
 			this.executeSearch();
 		}
-		if (event.key === 'Enter' && this.suggestionsRef.current.contains(event.target)) {
+		if (event.key === 'Enter' 
+			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
 			this.setState({
 				suggestionsVisible: false,
 				searchParams: {
@@ -107,14 +108,16 @@ export default class SearchBox extends React.Component {
 			});
 		}
 		//if keydown and  this.suggestionsRef.current.contains(event.target)), change to next suggestion
-		if (event.key == 'ArrowDown' && this.suggestionsRef.current.contains(event.target)) {
+		if (event.key == 'ArrowDown'
+			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
 			let next = event.target.nextElementSibling;
 			if (next) {
 				next.focus();
 			}
 		}
 		//if keyup and  this.suggestionsRef.current.contains(event.target)), change to previous suggestion
-		if (event.key == 'ArrowUp' && this.suggestionsRef.current.contains(event.target)) {
+		if (event.key == 'ArrowUp' 
+			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
 			let prev = event.target.previousElementSibling;
 			if (prev) {
 				prev.focus();
@@ -128,7 +131,8 @@ export default class SearchBox extends React.Component {
 			}
 		}
 		// if keydown and focus is on first suggestion, change focus to searchInputRef
-		if (event.key == 'ArrowUp' && this.suggestionsRef.current.contains(event.target)) {
+		if (event.key == 'ArrowUp'
+			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
 			let first = this.suggestionsRef.current.firstElementChild;
 			if (event.target === first) {
 				this.searchInputRef.current.focus();
@@ -137,7 +141,7 @@ export default class SearchBox extends React.Component {
 		// if any key except keydown, keyup, enter, escape is pressed, and this.suggestionsRef.current.contains(event.target)),
 		// set focus to searchInputRef and add the character to the search input
 		if (event.key != 'ArrowDown' && event.key != 'ArrowUp' && event.key != 'Enter' && event.key != 'Escape'
-			&& this.suggestionsRef.current.contains(event.target)) {
+			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
 			this.searchInputRef.current.focus();
 		}
 		

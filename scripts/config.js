@@ -178,6 +178,7 @@ export default {
 		period: "range",
 		date: "2022-01-01,today",
 		format: "JSON",
+		// filter_limit: "100", // default 100
 	},
 	numberOfSearchSuggestions: 6,
 };
