@@ -39,8 +39,8 @@ const pdf_url = {
 
 const matomo_api_url = {
 	'dev': 'http://127.0.0.1:5002/matomo_api', //feel free to change according to your local environment
-	'test':'https://frigg-test.isof.se/sagendatabas/api/matomo_api_proxy',
-	'prod': 'https://frigg-test.isof.se/sagendatabas/api/matomo_api_proxy',
+	'test':'https://djangoproxy-test.isof.se/matomo_api',
+	'prod': 'https://djangoproxy.isof.se/matomo_api/',
 }
 
 export default {
