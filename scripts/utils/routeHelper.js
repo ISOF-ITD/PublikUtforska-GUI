@@ -9,11 +9,12 @@ const recordRoute = '/records/:record_id(/record_ids/:record_ids)(/search/:searc
 export default {
 	createPlacePathFromPlaces(placeId, placesPath) {
 		placesPath = placesPath.split('?')[0];
-		var router = new RouteParser(placesRoute);
-		var routeParams = router.match(placesPath) || {};
+		const router = new RouteParser(placesRoute);
+		const routeParams = router.match(placesPath) || {};
 
 		routeParams.place_id = placeId;
-		router = new RouteParser(placeRoute);
+		// decode and re-encode the search param to make sure it's encoded properly
+		routeParams.search = routeParams.search ? encodeURIComponent(decodeURIComponent(routeParams.search)) : undefined;
 		return router.reverse(routeParams) || '';
 	},
 
@@ -47,14 +48,12 @@ export default {
 	},
 
 	createSearchRoute(params) {
+		const newParams = {...params};
 		var router = new RouteParser(searchRoute);
-		const newParams = {};
-		Object.keys(params).forEach(function(key) {
-			newParams[key] = params[key] ? params[key] : params[key];
-			if(key === 'search' && newParams[key]) {
-				newParams[key] = encodeURIComponent(newParams[key]); // '###' => '%23%23%23'
-			}
-		})
+		// const newParams = {...params};
+		// on the search parameter, decode and re-encode to make sure it's encoded properly
+		newParams.search = newParams.search ? encodeURIComponent(decodeURIComponent(newParams.search)) : undefined;
+
 		return router.reverse(newParams) || '';
 	},
 
