@@ -1,17 +1,27 @@
 import React from 'react';
 import routeHelper from './../utils/routeHelper'
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars } from '@fortawesome/free-solid-svg-icons';
+
 export default class FilterSwitch extends React.Component {
 	constructor(props) {
 		super(props);
 		this.menuButtonClick = this.menuButtonClick.bind(this);
 		this.openSwitcherHelptext = this.openSwitcherHelptext.bind(this);
+		this.openSideMenu = this.openSideMenu.bind(this);
 	}
 
 	openSwitcherHelptext() {
 		if (window.eventBus) {
 			window.eventBus.dispatch('overlay.switcherHelpText', {
 			});
+		}
+	}
+
+	openSideMenu() {
+		if (window.eventBus) {
+			window.eventBus.dispatch('overlay.sideMenu', 'visible');
 		}
 	}
 
@@ -39,6 +49,10 @@ export default class FilterSwitch extends React.Component {
 
 	render() {
 		return <div className="nordic-switch-wrapper map-floating-control">
+			{/* add a link that is a hamburger-symbol that make the statistics overlay appear, use a fortawesome hamburger symbol */}
+			<span onClick={this.openSideMenu} className="open-sidemenu-button" title="Öppna sidomeny">
+				<FontAwesomeIcon icon={faBars} /> 
+			</span>
 			<a onClick={this.menuButtonClick} data-value="one_accession_row" className={this.props.searchParams.recordtype == 'one_accession_row' ? 'selected' : ''}>{l('Arkivmaterial')}</a>
 			<a onClick={this.menuButtonClick} data-value="one_record" className={this.props.searchParams.recordtype == 'one_record' ? 'selected' : ''}>{l('Skriva av')}</a>
 			<span className='switcher-help-button' onClick={this.openSwitcherHelptext} title='Om accessioner och uppteckningar'>?</span>

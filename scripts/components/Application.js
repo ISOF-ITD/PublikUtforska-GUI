@@ -8,6 +8,7 @@ import PlaceView from './views/PlaceView';
 import PersonView from './views/PersonView';
 import RecordView from './views/RecordView';
 import RoutePopupWindow from './RoutePopupWindow';
+import StatisticsOverlay from './StatisticsOverlay';
 import LocalLibraryView from './../../ISOF-React-modules/components/views/LocalLibraryView';
 import ImageOverlay from './../../ISOF-React-modules/components/views/ImageOverlay';
 import FeedbackOverlay from './../../ISOF-React-modules/components/views/FeedbackOverlay';
@@ -15,7 +16,6 @@ import HelpOverlay from './../../ISOF-React-modules/components/views/HelpOverlay
 import ContributeInfoOverlay from './../../ISOF-React-modules/components/views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './../../ISOF-React-modules/components/views/TranscriptionOverlay';
-import StatisticsOverlay from './../../ISOF-React-modules/components/views/StatisticsOverlay';
 import PopupNotificationMessage from './../../ISOF-React-modules/components/controls/PopupNotificationMessage';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
@@ -356,6 +356,8 @@ export default class Application extends React.Component {
 					<TranscriptionHelpOverlay />
 					<SwitcherHelpTextOverlay />
 					<PopupNotificationMessage />
+					{/* en statistik-overlay som lägger sig över sidan från vänster och täcker ungefär halva bredden */}
+					<StatisticsOverlay />
 
 			</div>
 		);

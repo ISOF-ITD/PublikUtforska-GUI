@@ -1,0 +1,55 @@
+// Styles for the statistics overlay
+// ------------------------------------
+
+.statistics-overlay {
+    background-color: white;
+    bottom: 0;
+    display: none;
+    height: 100vh;
+    left: 0;
+    max-width: 600px;
+    min-width: 300px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 100vw;
+    z-index: 1560;
+    // the wohle width on screens with max-size 550px
+    @media (max-width: 550px) {
+        width: 100%;
+    }
+    .close-button {
+        display: block;
+        position: absolute;
+        top: 35px;
+        right: 35px;
+    }
+    .container-header {
+        position: relative;
+        padding: 50px 50px 30px;
+        color: #fff;
+        background-image: url('../img/header-back.gif');
+        h2 {
+            font-weight: normal;
+        }
+    }
+    .row {
+        padding: 50px;
+    }
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        li {
+            a {
+                color: #000;
+                display: block;
+                padding: 10px 0;
+                text-decoration: none;
+                &:hover {
+                    color: #000;
+                }
+            }
+        }
+    }
+}
