@@ -145,8 +145,8 @@ export default class RecordList extends React.Component {
 			person_id: params.person_id || undefined,
 			socken_id: params.place_id || undefined,
 			transcriptionstatus: params.transcriptionstatus || undefined,
-			sort: this.state.sort || undefined,
-			order: this.state.sort && this.state.order ? this.state.order : undefined,
+			sort: params.sort || this.state.sort || undefined,
+			order: params.sort || (this.state.sort && this.state.order ? this.state.order : undefined),
 		};
 
 		// Add Application defined filter parameter

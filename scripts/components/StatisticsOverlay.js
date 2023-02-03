@@ -14,7 +14,7 @@ export default class StatisticsOverlay extends React.Component {
             size: 5,
             recordtype: 'one_record',
             transcriptionstatus: 'published',
-            sort: 'approveddate',
+            sort: 'approvedate',
             order: 'desc',
         };
 
