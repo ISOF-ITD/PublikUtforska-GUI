@@ -357,7 +357,10 @@ export default class Application extends React.Component {
 					<SwitcherHelpTextOverlay />
 					<PopupNotificationMessage />
 					{/* en statistik-overlay som lägger sig över sidan från vänster och täcker ungefär halva bredden */}
-					<StatisticsOverlay />
+					<StatisticsOverlay
+						// copy props from Application to StatisticsOverlay and keep them in sync
+						{...this.props}
+					/>
 
 			</div>
 		);

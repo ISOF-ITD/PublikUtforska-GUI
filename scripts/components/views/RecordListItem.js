@@ -112,6 +112,10 @@ export default class RecordListItem extends React.Component {
 			}
 	}
 
+	shouldRenderColumn(column_name) {
+		return this.props.shouldRenderColumn(column_name, this.props);
+	}
+
 	render() {
 		const _this = this;
 		if (config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton) {
@@ -208,6 +212,13 @@ export default class RecordListItem extends React.Component {
 			}
 		}
 
+		const transcribedByElement = 
+		( this.props.item._source.transcribedby ? 
+			<span className="transcribed-by">
+				{this.props.item._source.transcribedby}
+			</span> : ''
+		);
+
 		// Prepare transcriptionStatus
 		//var transcriptionStatusArr = {'untranscribed':'Ej transkribera', 'readytotranscribe':'<span style="color:red"> Ej avskriven <span style="color:red">', 'transcribed':'Under granskning', 'reviewing':'Under granskning', 'approved':'Avskriven','published':'Avskriven'};
 		const transcriptionStatuses = {
@@ -264,73 +275,93 @@ export default class RecordListItem extends React.Component {
 			+ routeHelper.createSearchRoute(this.props.searchParams)
 
 		return <tr className={'list-item'+(displayTextSummary ? ' highlighted' : '')}>
-			<td className="text-larger">
-				<a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={record_href}>
-					{
-						config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined &&
-						<ListPlayButton disablePlayback={true} media={audioItem} recordId={this.props.item._source.id} recordTitle={this.props.item._source.title && this.props.item._source.title != '' ? this.props.item._source.title : l('(Utan titel)')} />
-					}
-					{titleText && titleText != '' && titleText != '[]' ? titleText : l('(Utan titel)')}
-					{
-						this.props.item._source.media && this.props.item._source.media.filter(m => m.source && m.source.includes('.pdf'))[0] && 
-						<sub><img src='img/pdf.gif' style={{'marginLeft': 5}} /></sub>
-					}
-				</a>
-				{
-					displayTextSummary &&
-					<div className="item-summary">{textSummary}</div>
-				}
-				{ this.props.item._source.recordtype === "one_accession_row" && this.props.item._source.numberofonerecord !== 0 && subrecords }
-				{ this.props.item._source.transcriptionstatus === "readytotranscribe" && this.props.item._source.media.length > 0 && 
-					<TranscribeButton
-						className="button-primary"
-						label={l('Skriv av')}
-						title={this.props.item._source.title}
-						recordId={this.props.item._source.id}
-						images={this.props.item._source.media}
-						transcriptionType={this.props.item._source.transcriptiontype}
-					 />
-				}
-			</td>
 			{
-				!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
+				this.shouldRenderColumn('title') &&
+				<td className="text-larger">
+					<a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={record_href}>
+						{
+							config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined &&
+							<ListPlayButton disablePlayback={true} media={audioItem} recordId={this.props.item._source.id} recordTitle={this.props.item._source.title && this.props.item._source.title != '' ? this.props.item._source.title : l('(Utan titel)')} />
+						}
+						{titleText && titleText != '' && titleText != '[]' ? titleText : l('(Utan titel)')}
+						{
+							this.props.item._source.media && this.props.item._source.media.filter(m => m.source && m.source.includes('.pdf'))[0] && 
+							<sub><img src='img/pdf.gif' style={{'marginLeft': 5}} /></sub>
+						}
+					</a>
+					{
+						displayTextSummary &&
+						<div className="item-summary">{textSummary}</div>
+					}
+					{ this.props.item._source.recordtype === "one_accession_row" && this.props.item._source.numberofonerecord !== 0 && subrecords }
+					{ this.props.item._source.transcriptionstatus === "readytotranscribe" && this.props.item._source.media.length > 0 && 
+						<TranscribeButton
+							className="button-primary"
+							label={l('Skriv av')}
+							title={this.props.item._source.title}
+							recordId={this.props.item._source.id}
+							images={this.props.item._source.media}
+							transcriptionType={this.props.item._source.transcriptiontype}
+						/>
+					}
+				</td>
+			}
+			{
+				this.shouldRenderColumn('archive_id') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true) &&
 				 this.renderFieldArchiveId() 			
 			}
 			{
-				!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row' &&
+				this.shouldRenderColumn('category') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row') &&
 				<td className="table-buttons" data-title={l('Kategori')+':'}>
 					{
 						taxonomyElement
 					}
 				</td>
 			}
-			<td className="table-buttons" data-title={l('Ort')+':'}>
 			{
-				this.props.item._source.places && this.props.item._source.places.length > 0 &&
-				<a
-					target={config.embeddedApp ? '_parent' : '_self'}
-					href={(config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')+'#/places/'+this.props.item._source.places[0].id+(routeHelper.createSearchRoute({recordtype: this.props.searchParams.recordtype}))}>
-						{this.props.item._source.places[0].name+(this.props.item._source.places[0].landskap || this.props.item._source.places[0].fylke ? (this.props.item._source.places[0].landskap ? ', '+this.props.item._source.places[0].landskap : this.props.item._source.places[0].fylke ? ', '+this.props.item._source.places[0].fylke : '') : '')}
-				</a>
+				this.shouldRenderColumn('place') &&
+				<td className="table-buttons" data-title={l('Ort')+':'}>
+				{
+					this.props.item._source.places && this.props.item._source.places.length > 0 &&
+					<a
+						target={config.embeddedApp ? '_parent' : '_self'}
+						href={(config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')+'#/places/'+this.props.item._source.places[0].id+(routeHelper.createSearchRoute({recordtype: this.props.searchParams.recordtype}))}>
+							{this.props.item._source.places[0].name+(this.props.item._source.places[0].landskap || this.props.item._source.places[0].fylke ? (this.props.item._source.places[0].landskap ? ', '+this.props.item._source.places[0].landskap : this.props.item._source.places[0].fylke ? ', '+this.props.item._source.places[0].fylke : '') : '')}
+					</a>
+				}
+				</td>
 			}
-			</td>
 			{
-				!config.siteOptions.recordList || config.siteOptions.recordList.visibleCollecorPersons == true &&
+				this.shouldRenderColumn('collector') && (!config.siteOptions.recordList || config.siteOptions.recordList.visibleCollecorPersons == true) &&
 				<td className="table-buttons" data-title={l('Insamlare')+':'}>
 					{
 						collectorPersonElement
 					}
 				</td>
 			}
-			<td className="table-text" data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
+			{ 
+				this.shouldRenderColumn('year') &&
+				<td className="table-text" data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
+			}
 			{
-				!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&
+				this.shouldRenderColumn('material_type') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true) &&
 				<td data-title={l('Materialtyp')+':'}>{this.props.item._source.materialtype}</td>
 				//<td data-title={l('Avskriftstatus')+':'}>{this.props.item._source.transcriptionstatus ? this.props.item._source.transcriptionstatus : ''}</td>
 			}
-			<td data-title={l('Avskriftstatus')+':'}>{
-				transcriptionStatusElement
-			}</td>
+			{
+				this.shouldRenderColumn('transcription_status') &&
+				<td data-title={l('Avskriftstatus')+':'}>
+						{transcriptionStatusElement}
+				</td>
+			}
+			{
+				// Den här kolumnen måste explicit läggas till i props.columns (används bara för "senast avskrivna" på sidmenyn)
+
+				this.props.columns && this.props.columns.indexOf('transcribedby') > -1 &&
+				<td data-title={l('Transkriberad av')+':'}>
+						{transcribedByElement}
+				</td>
+			}
 		</tr>;
 	}
 }

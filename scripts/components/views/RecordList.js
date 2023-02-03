@@ -65,6 +65,13 @@ export default class RecordList extends React.Component {
 		}.bind(this));
 	}
 
+	shouldRenderColumn(column_name, props_arg) {
+		// Föredra this.props om de finns, annars använd props som skickas in som argument
+		const props = this.props ? this.props : props_arg;
+		// this.props.columns is optional, if it's not set we render all columns
+		return props.columns ? props.columns.indexOf(column_name) > -1 : true;
+	}
+
 	archiveIdClick(event) {
 		const archive_id_row = event.target.dataset.archiveidrow
 		const recordtype = event.target.dataset.recordtype
@@ -120,7 +127,7 @@ export default class RecordList extends React.Component {
 
 		const fetchParams = {
 			from: params.page ? (params.page-1) * config.hitsPerPage : (this.state.currentPage-1)*config.hitsPerPage,
-			size: config.hitsPerPage,
+			size: params.size || config.hitsPerPage,
 			search: params.search ? encodeURIComponent(params.search) : undefined,
 			search_field: params.search_field || undefined,
 			type: params.type,
@@ -179,8 +186,12 @@ export default class RecordList extends React.Component {
 					item={item}
 					routeParams={searchRouteParams} 
 					highlightRecordsWithMetadataField={this.props.highlightRecordsWithMetadataField}
-					searchParams={this.props.searchParams}
+					// propagate siteSearchParams to RecordListItem instead of searchParams if the exist
+					// this is used in the StatisticsOverlay to write correct links to the list
+					searchParams={this.props.siteSearchParams || this.props.searchParams}
 					archiveIdClick={this.archiveIdClick}
+					shouldRenderColumn={this.shouldRenderColumn}
+					columns={this.props.columns}
 				/>;
 
 		}.bind(this)) : [];
@@ -190,22 +201,25 @@ export default class RecordList extends React.Component {
 				<div className={'table-wrapper records-list list-container'+(this.state.records.length == 0 ? ' loading' : this.state.fetchingPage ? ' loading-page' : '')}>
 
 					{
+						!this.props.disableListPagination && 
 						this.renderListPagination() 
 					}
 
 					<table width="100%" className="table-responsive">
 						<thead>
-							<tr>
-								<th scope="col">
-									{/*<a className='sort' onClick={this.sort} name='title.raw'>
-										{	
-											(this.state.sort === 'title.raw') && (this.state.order === 'asc' ? '▼' : '▲')
-										*/}
-										{l('Titel')}
-									{/*</a>*/}
-								</th>
+							 <tr>
+								{ this.shouldRenderColumn('title') &&
+									<th scope="col">
+										{/*<a className='sort' onClick={this.sort} name='title.raw'>
+											{	
+												(this.state.sort === 'title.raw') && (this.state.order === 'asc' ? '▼' : '▲')
+											*/}
+											{l('Titel')}
+										{/*</a>*/}
+									</th>
+								}
 								{
-									!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true &&
+									this.shouldRenderColumn('archive_id') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true) &&
 									<th scope="col">
 											<a className='sort' onClick={this.sort} name='archive.archive_id_row.keyword'>
 												{	
@@ -221,7 +235,7 @@ export default class RecordList extends React.Component {
 									</th>
 								}
 								{
-									!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row' &&
+									this.shouldRenderColumn('category') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row') &&
 									<th scope="col">
 										<a className='sort' onClick={this.sort} name='taxonomy.category'>
 											{	
@@ -231,9 +245,12 @@ export default class RecordList extends React.Component {
 										</a>
 									</th>
 								}
-								<th scope="col">{l('Ort')}</th>
+								
+								{ this.shouldRenderColumn('place') && 
+									<th scope="col">{l('Ort')}</th>
+								}
 								{
-									!config.siteOptions.recordList || !config.siteOptions.recordList.visibleCollecorPersons || config.siteOptions.recordList.visibleCollecorPersons == true &&
+									this.shouldRenderColumn('collector') && (!config.siteOptions.recordList || !config.siteOptions.recordList.visibleCollecorPersons || config.siteOptions.recordList.visibleCollecorPersons == true) &&
 									<th scope="col">
 										{/* TODO: <a className='sort' onClick={this.sort} name='persons'>
 											{	
@@ -243,20 +260,23 @@ export default class RecordList extends React.Component {
 										{/*</a>*/}
 									</th>
 								}
-								<th scope="col">
-									<a className='sort' onClick={this.sort} name='year'>
-										{	
-											(this.state.sort === 'year') && (this.state.order === 'asc' ? '▼' : '▲')
-										}
-										{l('År')}
-									</a>
-								</th>
 								{
-									!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&
+									this.shouldRenderColumn('year') &&
+									<th scope="col">
+										<a className='sort' onClick={this.sort} name='year'>
+											{	
+												(this.state.sort === 'year') && (this.state.order === 'asc' ? '▼' : '▲')
+											}
+											{l('År')}
+										</a>
+									</th>
+								}
+								{
+									this.shouldRenderColumn('material_type') && !config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&
 									<th scope="col">{l('Materialtyp')}</th>
 								}
 								{
-									!config.siteOptions.recordList || !config.siteOptions.recordList.hideTranscriptionStatus == true &&
+									this.shouldRenderColumn('transcriptionstatus') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideTranscriptionStatus == true) &&
 									<th scope="col">
 										<a className='sort' onClick={this.sort} name='transcriptionstatus.keyword'>
 										{	
@@ -264,6 +284,13 @@ export default class RecordList extends React.Component {
 										}
 										{l('Avskriven')}
 										</a>
+									</th>
+								}
+								{
+									// Den här kolumnen måste explicit läggas till i props.columns (används bara för "senast avskrivna" på sidmenyn)
+									this.props.columns && this.props.columns.indexOf('transcribedby') > -1 &&
+									<th scope="col">
+										{l('Transkriberad av')}
 									</th>
 								}
 							</tr>
@@ -274,6 +301,7 @@ export default class RecordList extends React.Component {
 					</table>
 
 					{
+					!this.props.disableListPagination &&
 					this.renderListPagination()
 					}
 				</div>

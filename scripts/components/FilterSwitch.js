@@ -49,7 +49,6 @@ export default class FilterSwitch extends React.Component {
 
 	render() {
 		return <div className="nordic-switch-wrapper map-floating-control">
-			{/* add a link that is a hamburger-symbol that make the statistics overlay appear, use a fortawesome hamburger symbol */}
 			<span onClick={this.openSideMenu} className="open-sidemenu-button" title="Öppna sidomeny">
 				<FontAwesomeIcon icon={faBars} /> 
 			</span>
