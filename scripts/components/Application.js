@@ -330,18 +330,6 @@ export default class Application extends React.Component {
 									</div>
 								</div>
 
-								{/* <div className="local-library-wrapper map-bottom-control">
-									<TranscribeButton className="button-primary foobar"
-										label={l('Skriv av slumpmässig uppteckning')}
-										random={true}
-										// label={this.state.randomDocument._source.id}
-										// title={this.state.randomDocument._source.title}
-										// recordId={this.state.randomDocument._source.id}
-										// images={this.state.randomDocument._source.media}
-										// transcriptionType={this.state.randomDocument._source.transcriptiontype}
-									/>
-								</div> */}
-
 							</MapView>
 						}
 					/>

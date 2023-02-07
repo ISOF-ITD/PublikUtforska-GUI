@@ -7,6 +7,7 @@ import config from './../../../scripts/config.js';
 
 import routeHelper from './../../../scripts/utils/routeHelper'
 import { pageFromTo, getTitle } from './../../../scripts/utils/helpers'
+import { getPlaceString } from './../../../ISOF-React-modules/components/utils/helpers.js';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 
@@ -300,6 +301,8 @@ export default class RecordListItem extends React.Component {
 							label={l('Skriv av')}
 							title={this.props.item._source.title}
 							recordId={this.props.item._source.id}
+							archiveId={this.props.item._source.archive.archive_id}
+							places={this.props.item._source.places}
 							images={this.props.item._source.media}
 							transcriptionType={this.props.item._source.transcriptiontype}
 						/>
@@ -326,7 +329,9 @@ export default class RecordListItem extends React.Component {
 					<a
 						target={config.embeddedApp ? '_parent' : '_self'}
 						href={(config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : '')+'#/places/'+this.props.item._source.places[0].id+(routeHelper.createSearchRoute({recordtype: this.props.searchParams.recordtype}))}>
-							{this.props.item._source.places[0].name+(this.props.item._source.places[0].landskap || this.props.item._source.places[0].fylke ? (this.props.item._source.places[0].landskap ? ', '+this.props.item._source.places[0].landskap : this.props.item._source.places[0].fylke ? ', '+this.props.item._source.places[0].fylke : '') : '')}
+							{
+								getPlaceString(this.props.item._source.places)
+							}
 					</a>
 				}
 				</td>
