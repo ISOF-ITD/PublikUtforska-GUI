@@ -322,25 +322,24 @@ export default class RecordView extends React.Component {
 
 				pdfElement = pdfObject ? <PdfViewer height="800" url={(config.pdfUrl || config.imageUrl)+pdfObject.source}/> : <div/>;
 				textElement = (
-					<div>
-						<div className="record-text display-line-breaks" dangerouslySetInnerHTML={{__html: text}} />
+
+					<div className={'record-text-container'}>
+						{
+							// for each text part, that is created by splitting the text on every "/" followed and preceded by a line break, create a div
+							// with the class name "record-text display-line-breaks" and the text part as innerHTML. also remove a possible line break
+							// at the beginning or end of the text part
+							text ? text.split(/\/\s*$/m).map((textPart, index) => {
+								return <div
+									key={index}
+									className="record-text display-line-breaks"
+									dangerouslySetInnerHTML={{__html: textPart.replace(/^\s*|\s*$/g, '')}} />
+							}) 
+							: ''
+						}
 						{pdfElement}
 					</div>
 				)
 			}
-			// Annars visar vi texten som vanligt
-			// else {
-			// 	let text = this.state.data.text
-			// 	// create a button/label to hide and show text below "Uppslagsord"
-			// 	if (text && text.includes('<p>Uppslagsord:</p>')) {
-			// 		let uppslagsordLink = '<p><label for="toggle">Uppslagsord</label></p>'
-			// 		let parts = text.split('<p>Uppslagsord:</p>')
-			// 		text = parts[0] 
-			// 			+ uppslagsordLink
-			// 			+ '<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">' + parts[1] + '</div>'
-			// 	}
-			// 	textElement = <div className="record-text" dangerouslySetInnerHTML={{__html: text}} />;
-			// }
 
 			// Förbereder kategori länk
 			var taxonomyElement;
