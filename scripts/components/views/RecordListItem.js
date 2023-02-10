@@ -61,11 +61,13 @@ export default class RecordListItem extends React.Component {
 		// If one_accession_row 
 		if (this.props.item._source.recordtype == 'one_accession_row') {
 			return (
-				<td className="table-text" data-title={l('Arkivnummer')+':'}>
-					{makeArchiveIdHumanReadable(this.props.item._source.archive.archive_id)}
-					{
-						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
-					}
+				<td className="table-buttons" data-title={l('Arkivnummer')+':'}>
+					<span>
+						{makeArchiveIdHumanReadable(this.props.item._source.archive.archive_id)}
+						{
+							this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
+						}
+					</span>
 				</td>
 			); 
 		}
@@ -231,12 +233,12 @@ export default class RecordListItem extends React.Component {
 			'reviewing':'Granskas',
 			'needsimprovement': 'Granskas',
 			'approved':'Granskas',
-			'published':'Ja'
+			'published':'Avskriven'
 		};
-		let transcriptionStatusElement = <span />;
+		let transcriptionStatusElement = <span className='transcriptionstatus empty'/>;
 		if (this.props.item._source.transcriptionstatus && this.props.item._source.transcriptionstatus !== 'accession') {
 			const transcriptionstatus = this.props.item._source.transcriptionstatus;
-			transcriptionStatusElement = <span>{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
+			transcriptionStatusElement = <span className={`transcriptionstatus ${transcriptionstatus}`} >{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
 		} else if (this.props.item._source.transcriptionstatus === 'accession' && this.props.item._source.numberofonerecord && Number.isInteger(this.props.item._source.numberoftranscribedonerecord)) {
 			const transcribedPercent = this.props.item._source.numberofonerecord === 0 ? 0 : Math.round(this.props.item._source.numberoftranscribedonerecord / this.props.item._source.numberofonerecord * 100);
 			transcriptionStatusElement = <div style={{'marginRight': 10}}>
@@ -346,7 +348,9 @@ export default class RecordListItem extends React.Component {
 			}
 			{ 
 				this.shouldRenderColumn('year') &&
-				<td className="table-text" data-title={l('År')+':'}>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</td>
+				<td className="table-buttons" data-title={l('År')+':'}>
+					<span className='year'>{this.props.item._source.year ? this.props.item._source.year.split('-')[0] : ''}</span>
+				</td>
 			}
 			{
 				this.shouldRenderColumn('material_type') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true) &&
@@ -355,7 +359,7 @@ export default class RecordListItem extends React.Component {
 			}
 			{
 				this.shouldRenderColumn('transcription_status') &&
-				<td data-title={l('Avskriftstatus')+':'}>
+				<td data-title={l('Avskriftstatus')+':'} className="table-buttons">
 						{transcriptionStatusElement}
 				</td>
 			}

@@ -28,6 +28,8 @@
 @import "../ISOF-React-modules/less/minimal-scrollbar.less";
 @import "../ISOF-React-modules/less/tables.less";
 
+@import "../ISOF-React-modules/less/ui-components/transcriptionform.less";
+
 @import "statistics.less";
 
 // @import "../ISOF-React-modules/less/accessibility.less";
@@ -304,9 +306,27 @@ audio::-webkit-media-controls-enclosure {
 	border-radius: 3px;
 	color: #097C44;
 	font-size: 0.8rem;
+	border: 1px solid whitesmoke;
 	a {
 		margin: 0;
 		padding: 0;
+	}
+	&.year {
+		color: #000;
+	}
+	&.transcriptionstatus {
+		color:#000;
+		&.empty {
+			display: none;
+		}
+		&.published {
+			background-color: #cfc;
+			border-color: #cfc;
+		}
+		&.undertranscription, &.transcribed {
+			background-color: #ffc;
+			border-color: #ffc;
+		}
 	}
 }
 
