@@ -475,9 +475,9 @@ export default class RecordView extends React.Component {
 														title={`Gå till accessionen ${this.state.data.archive.archive_id_row}`}
 														style={{cursor: this.state.data.archive.archive_id_row ? 'pointer':'inherit', textDecoration: 'underline'}}
 													>
-														{this.state.data.archive.archive_id}
+														{makeArchiveIdHumanReadable(this.state.data.archive.archive_id)}
 													</a>
-												) : makeArchiveIdHumanReadable(this.state.data.archive.archive_id) + "     "
+												) : makeArchiveIdHumanReadable(this.state.data.archive.archive_id)
 											}
 											
 
