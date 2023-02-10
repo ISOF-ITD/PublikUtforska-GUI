@@ -6,7 +6,7 @@ import _ from 'underscore';
 import config from './../../../scripts/config.js';
 
 import routeHelper from './../../../scripts/utils/routeHelper'
-import { pageFromTo, getTitle } from './../../../scripts/utils/helpers'
+import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from './../../../scripts/utils/helpers'
 import { getPlaceString } from './../../../ISOF-React-modules/components/utils/helpers.js';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
@@ -62,7 +62,7 @@ export default class RecordListItem extends React.Component {
 		if (this.props.item._source.recordtype == 'one_accession_row') {
 			return (
 				<td className="table-text" data-title={l('Arkivnummer')+':'}>
-					{this.props.item._source.archive.archive_id}
+					{makeArchiveIdHumanReadable(this.props.item._source.archive.archive_id)}
 					{
 						this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
 					}
@@ -82,7 +82,7 @@ export default class RecordListItem extends React.Component {
 						title={`Gå till accessionen ${this.props.item._source.archive.archive_id_row}`}
 						style={{cursor: this.props.item._source.archive.archive_id_row ? 'pointer':'inherit'}}
 						>
-						{this.props.item._source.archive.archive_id}
+						{makeArchiveIdHumanReadable(this.props.item._source.archive.archive_id)}
 					</a>
 					{
 						this.props.item._source.archive.page && (":" + pageFromTo(this.props.item))
@@ -102,7 +102,7 @@ export default class RecordListItem extends React.Component {
 							title={`Gå till ${this.props.searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
 							style={{cursor: 'pointer'}}
 							>
-							{this.props.item._source.archive.archive_id}
+							{makeArchiveIdHumanReadable(this.props.item._source.archive.archive_id)}
 						</a>
 						{
 							this.props.item._source.archive.page && (":" + this.props.item._source.archive.page)
