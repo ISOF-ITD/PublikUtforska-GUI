@@ -17,7 +17,7 @@ import SitevisionContent from './../../../ISOF-React-modules/components/controls
 import PdfViewer from './../../../ISOF-React-modules/components/controls/PdfViewer';
 
 import routeHelper from './../../../scripts/utils/routeHelper';
-import { pageFromTo, getTitle } from './../../../scripts/utils/helpers';
+import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from './../../../scripts/utils/helpers';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 
@@ -477,7 +477,7 @@ export default class RecordView extends React.Component {
 													>
 														{this.state.data.archive.archive_id}
 													</a>
-												) : this.state.data.archive.archive_id
+												) : makeArchiveIdHumanReadable(this.state.data.archive.archive_id) + "     "
 											}
 											
 
@@ -494,13 +494,13 @@ export default class RecordView extends React.Component {
 										</span>
 									} */}
 									{	
-										this.state.data.recordtype === 'one_accession_row' && this.state.data.numberofonerecord &&
+										this.state.data.recordtype === 'one_accession_row' && !!this.state.data.numberofonerecord &&
 										<span style={{marginLeft: 10}}>
 											<strong>{l('Antal uppteckningar')}</strong>: {this.state.data.numberofonerecord}
 										</span>
 									}
 									{	
-										this.state.data.archive && this.state.data.archive.archive && pages &&
+										!!this.state.data.archive && !!this.state.data.archive.archive && !!pages &&
 										<span style={{marginLeft: 10}}>
 											<strong>{l('Sidnummer')}</strong>: {pages}
 										</span>
