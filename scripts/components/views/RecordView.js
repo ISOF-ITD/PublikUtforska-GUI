@@ -101,6 +101,7 @@ export default class RecordView extends React.Component {
 
 	mediaImageClickHandler(event) {
 		if (window.eventBus) {
+			console.log(event.currentTarget.dataset.image)
 			// Skickar overlay.viewimage till eventBus, ImageOverlay modulen lyssnar på det och visar bilden
 			window.eventBus.dispatch('overlay.viewimage', {
 				imageUrl: event.currentTarget.dataset.image,
