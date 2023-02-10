@@ -322,20 +322,21 @@ export default class RecordView extends React.Component {
 
 				pdfElement = pdfObject ? <PdfViewer height="800" url={(config.pdfUrl || config.imageUrl)+pdfObject.source}/> : <div/>;
 				textElement = (
-
-					<div className={'record-text-container'}>
-						{
-							// for each text part, that is created by splitting the text on every "/" followed and preceded by a line break, create a div
-							// with the class name "record-text display-line-breaks" and the text part as innerHTML. also remove a possible line break
-							// at the beginning or end of the text part
-							text ? text.split(/\/\s*$/m).map((textPart, index) => {
-								return <div
-									key={index}
-									className="record-text display-line-breaks"
-									dangerouslySetInnerHTML={{__html: textPart.replace(/^\s*|\s*$/g, '')}} />
-							}) 
-							: ''
-						}
+					<div>
+						<div className={'record-text-container'}>
+							{
+								// for each text part, that is created by splitting the text on every "/" followed and preceded by a line break, create a div
+								// with the class name "record-text display-line-breaks" and the text part as innerHTML. also remove a possible line break
+								// at the beginning or end of the text part
+								text ? text.split(/\/\s*$/m).map((textPart, index) => {
+									return <div
+										key={index}
+										className="record-text display-line-breaks"
+										dangerouslySetInnerHTML={{__html: textPart.replace(/^\s*|\s*$/g, '')}} />
+								}) 
+								: ''
+							}
+						</div>
 						{pdfElement}
 					</div>
 				)
