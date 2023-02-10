@@ -214,7 +214,7 @@ export default class RecordView extends React.Component {
 					return dataItem.type == 'pdf';
 				});
 				pdfItems = pdfDataItems.map(function(mediaItem, index) {
-					return <a data-type="pdf" href={mediaItem.source} key={'pdf-'+index} className="archive-image pdf" download>
+					return <a data-type="pdf" href={config.pdfUrl+mediaItem.source} key={'pdf-'+index} className="archive-image pdf" download>
 						<div className="pdf-icon" />
 						{
 							mediaItem.title &&
