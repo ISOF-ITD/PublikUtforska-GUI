@@ -214,13 +214,13 @@ export default class RecordView extends React.Component {
 					return dataItem.type == 'pdf';
 				});
 				pdfItems = pdfDataItems.map(function(mediaItem, index) {
-					return <div data-type="pdf" data-image={mediaItem.source} onClick={this.mediaImageClickHandler} key={'pdf-'+index} className="archive-image pdf">
+					return <a data-type="pdf" href={mediaItem.source} key={'pdf-'+index} className="archive-image pdf" download>
 						<div className="pdf-icon" />
 						{
 							mediaItem.title &&
 							<div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
 						}
-					</div>;
+					</a>;
 				}.bind(this));
 
 				if (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition == config.siteOptions.recordView.pdfIconsPosition) {
