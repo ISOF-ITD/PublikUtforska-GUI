@@ -56,6 +56,8 @@ export default class StatisticsOverlay extends React.Component {
                         // keep the global search params when navigating to a record
                         siteSearchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
                         class="table-compressed"
+                        // möjliggör att visa 50 poster efter en klick på "visa fler"
+                        sizeMore={50}
                     />
                 </div>
             </div>

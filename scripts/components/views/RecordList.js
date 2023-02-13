@@ -23,6 +23,7 @@ export default class RecordList extends React.Component {
 		this.stepPage = this.stepPage.bind(this);
 		this.sort = this.sort.bind(this);
 		this.archiveIdClick = this.archiveIdClick.bind(this);
+		this.loadMore = this.loadMore.bind(this);
 
 		this.collections = new RecordsCollection(function(json) {
 			if(window.eventBus) {
@@ -105,6 +106,16 @@ export default class RecordList extends React.Component {
 		}
 	}
 
+	// render more records once, without pagination
+	loadMore() {
+		this.setState({
+			currentPage: 1,
+		}, function() {
+			const searchParams = Object.assign({}, this.props.searchParams, {size: this.props.sizeMore});
+			this.fetchData(searchParams);
+		}.bind(this));
+	}
+
 	sort(event) {
 		// debugger;
 		this.setState({
@@ -176,6 +187,13 @@ export default class RecordList extends React.Component {
 		)
 	}
 
+	// render more records once, without pagination
+	renderMoreButton() {
+		return <div>
+			<button className="button" onClick={this.loadMore}>{l('Visa fler')}</button>
+		</div>
+	}
+			
 	render() {
 		var searchRouteParams = routeHelper.createSearchRoute(this.props.searchParams);
 
@@ -306,6 +324,13 @@ export default class RecordList extends React.Component {
 					{
 					!this.props.disableListPagination &&
 					this.renderListPagination()
+					}
+					{
+						// Checks if sizeMore prop is set and if the number of records is less than sizeMore
+						// If so, render the more button
+						this.props.sizeMore && this.state.records.length < this.props.sizeMore &&
+						this.renderMoreButton()
+
 					}
 				</div>
 			);			
