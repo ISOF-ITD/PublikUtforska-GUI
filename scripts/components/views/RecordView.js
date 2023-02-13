@@ -294,22 +294,30 @@ export default class RecordView extends React.Component {
 					 />
 				</div>;
 			}
-			// Om posten innehåller bara en pdf fil (ingen text, inte ljudfiler och inte bilder), då visar vi pdf filen direkt
-			// else if ((!this.state.data.text || this.state.data.text.length == 0) && _.filter(this.state.data.media, function(item) {
+			// Om posten innehåller minst en pdf fil (ingen text, inte ljudfiler och inte bilder), då visar vi pdf-filerna filen direkt
 			else {
-				let pdfElement = '';
-				let pdfObject = undefined;
-				if (_.filter(this.state.data.media, function(item) {
+				// Initialize variables
+				let pdfElements = [];
+				let pdfObjects = undefined;
+
+				// Check if there is at least one PDF file and no images or audio files
+				if (
+				_.filter(this.state.data.media, function(item) { // Use the filter method to find all items of a certain type
 					return item.type == 'pdf';
-				}).length == 1 && _.filter(this.state.data.media, function(item) {
+				}).length >= 1 && // At least one PDF file
+				_.filter(this.state.data.media, function(item) {
 					return item.type == 'image';
-				}).length == 0 && _.filter(this.state.data.media, function(item) {
+				}).length == 0 && // No images
+				_.filter(this.state.data.media, function(item) {
 					return item.type == 'audio';
-				}).length == 0) {
-					pdfObject = _.find(this.state.data.media, function(item) {
-						return item.type == 'pdf';
-					});
-					forceFullWidth = true;
+				}).length == 0 // No audio files
+				) {
+				// Set the pdfObjects variable to all PDF files
+				pdfObjects = _.filter(this.state.data.media, function(item) { // Use the filter method to find all items of a certain type
+					return item.type == 'pdf';
+				});
+				// Set the forceFullWidth variable to true
+				forceFullWidth = true;
 				}
 				let text = this.state.data.text;
 				// create a button/label to hide and show text below "Uppslagsord"
@@ -320,8 +328,13 @@ export default class RecordView extends React.Component {
 						+ uppslagsordLink
 						+ '<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">' + parts[1] + '</div>';
 				}
+				// If there is at least one PDF file, create a PdfViewer component for every PDF file
+				if (pdfObjects?.length > 0) {
+					pdfObjects.forEach(function(pdfObject, index) {
+						pdfElements.push(<PdfViewer height="800" url={(config.pdfUrl || config.imageUrl)+pdfObject.source} key={index} />);
+					});
+				}
 
-				pdfElement = pdfObject ? <PdfViewer height="800" url={(config.pdfUrl || config.imageUrl)+pdfObject.source}/> : <div/>;
 				textElement = (
 					<div>
 						<div className={'record-text-container'}>
@@ -338,7 +351,10 @@ export default class RecordView extends React.Component {
 								: ''
 							}
 						</div>
-						{pdfElement}
+						{
+							// If there is at least one PDF file, create a PdfViewer component for every PDF file
+							pdfElements.length ? pdfElements : ''
+						}
 					</div>
 				)
 			}
@@ -375,7 +391,7 @@ export default class RecordView extends React.Component {
 				return config.siteOptions.metadataLabels && config.siteOptions.metadataLabels[item] ? config.siteOptions.metadataLabels[item] : item;
 			};
 
-			if (this.state.data.metadata && this.state.data.metadata.length > 0 && config.siteOptions.recordView && config.siteOptions.recordView.visible_metadata_fields && config.siteOptions.recordView.visible_metadata_fields.length > 0) {
+			if (this.state.data.metadata?.length && config.siteOptions.recordView?.visible_metadata_fields?.length) {
 				var itemCount = 0;
 				_.each(this.state.data.metadata, function(item, index) {
 					if (config.siteOptions.recordView.visible_metadata_fields.indexOf(item.type) > -1) {
@@ -400,7 +416,7 @@ export default class RecordView extends React.Component {
 
 			// Prepares pages
 			let pages = '';
-			if ('archive' in this.state.data && 'page' in this.state.data.archive){
+			if (this.state.data?.archive?.page){
 				pages = this.state.data.archive.page;
 				// If pages is not an interval separated with '-': calculate interval
 				// pages can be recorded as interval in case of pages '10a-10b'
@@ -461,7 +477,8 @@ export default class RecordView extends React.Component {
 								</p>
 								<p>
 									{	
-										this.state.data.archive && this.state.data.archive.archive &&
+
+										this.state.data.archive?.archive &&
 										<span>
 											<strong>{l('Accessionsnummer')}</strong>:&nbsp;
 											{
