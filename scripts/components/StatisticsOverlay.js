@@ -55,6 +55,7 @@ export default class StatisticsOverlay extends React.Component {
                         // create siteSearchParams from the current route in order to
                         // keep the global search params when navigating to a record
                         siteSearchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
+                        class="table-compressed"
                     />
                 </div>
             </div>

@@ -198,7 +198,10 @@ export default class RecordList extends React.Component {
 
 		if (this.state.records) {
 			return (
-				<div className={'table-wrapper records-list list-container'+(this.state.records.length == 0 ? ' loading' : this.state.fetchingPage ? ' loading-page' : '')}>
+				<div className={
+					(this.props.class ? this.props.class : '') +
+					' table-wrapper records-list list-container'+(this.state.records.length == 0 ? ' loading' : this.state.fetchingPage ? ' loading-page' : '')
+					}>
 
 					{
 						!this.props.disableListPagination && 
