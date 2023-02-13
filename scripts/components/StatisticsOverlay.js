@@ -33,7 +33,7 @@ export default class StatisticsOverlay extends React.Component {
 
     render() {
         return (
-            <div className="statistics-overlay" style={this.state.visible ? { display: 'block' } : {}}>
+            <div className={`statistics-overlay ${this.state.visible ? 'visible' : ''}`}>
                 <div className="container-header">
                     <a className="close-button white" onClick={function () {
                         this.setState({
