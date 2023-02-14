@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Folke sök - Institutet för språk och folkminnen</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="dcterms.identifier" content="https://www.isof.se" />
+    <meta name="dcterms.language" content="sv" />
+    <meta name="dcterms.format" content="text/html" />
+    <meta name="dcterms.type" content="text" />
+    <link rel='stylesheet' type='text/css' media='all' href='css/style.css' />
+
+
+    <link rel="alternate" href="https://sok.folke.isof.se/" hreflang="sv-SE" />
+
+    <meta property='og:image' content='/img/folkelogga.png' />
+    <meta property="og:image:width" content="200" />
+    <meta property="og:image:height" content="200" />
+    <meta property="og:url" content="https://sok.folke.isof.se/" />
+    <script type="text/javascript">
+        const hostname = window.location.hostname;
+        const is_dev = ["127.0.0.1", "localhost", "0.0.0.0"].some((element) =>
+            hostname.includes(element)
+        );
+        const is_test = ["-test."].some((element) => hostname.includes(element));
+        const ENV = is_dev ? "dev" : is_test ? "test" : "prod";
+
+        // Matomo 
+
+        const matomo_site_ids = {
+            'dev': 62,
+            'test': 65,
+            'prod': 17,
+        }
+
+        const siteId = matomo_site_ids[ENV];
+
+        if(ENV !== 'prod')
+        {
+            console.log("Matomo siteId: " + siteId);
+        }
+
+        var _paq = window._paq = window._paq || [];
+        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+        currentUrl = '/' + window.location.hash.substr(1);
+        //wait for new title before sending data to matomo
+        setTimeout(function () {
+            _paq.push(['setCustomUrl', currentUrl]);
+            _paq.push(['setDocumentTitle', document.title]);
+            _paq.push(['enableLinkTracking']);
+            _paq.push(['trackPageView']);
+            (function () {
+                var u = "https://matomo.isof.se/";
+                _paq.push(['setTrackerUrl', u + 'matomo.php']);
+                _paq.push(['setSiteId', siteId]);
+                var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+                g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
+            })();
+        }, 1000);
+
+        var currentUrl = location.href;
+        window.addEventListener('hashchange', function () {
+            //wait for new title before sending data to matomo
+            setTimeout(function () {
+                _paq.push(['setReferrerUrl', currentUrl]);
+                currentUrl = '/' + window.location.hash.substr(1);
+                _paq.push(['setCustomUrl', currentUrl]);
+                _paq.push(['setDocumentTitle', document.title]);
+
+                // remove all previously assigned custom variables, requires Matomo (formerly Piwik) 3.0.2
+                _paq.push(['deleteCustomVariables', 'page']);
+                _paq.push(['trackPageView']);
+
+                // make Matomo aware of newly added content
+                var content = document.getElementById('app');
+                _paq.push(['MediaAnalytics::scanForMedia', content]);
+                _paq.push(['FormAnalytics::scanForForms', content]);
+                _paq.push(['trackContentImpressionsWithinNode', content]);
+                _paq.push(['enableLinkTracking']);
+            }, 1000);
+        });
+    </script>
+    <!-- End Matomo Code -->
+</head>
+
+<body>
+    <div>
+
+        <!-- Page content starts here -->
+        <div>
+            <!-- <div class="sv-vertical sv-layout">
+            <div id="svid94_1708c59f15a1ca6ae32109f1" class="pagecontent sv-layout">
+                <div id="Mittenspalt">
+                </div>
+                <div class="sv-html-portlet sv-portlet sv-skip-spacer" id="svid12_1708c59f15a1ca6ae3210a13"> -->
+            <div id="HTML">
+                <!-- HTML -->
+            </div>
+
+            <div id="app"></div>
+            <!-- <script>
+                document.write("<script type='text/javascript' src='js/app-28be16e680.js?v=" + Date.now() + "'><\/script>");
+            </script> -->
+            <script type="text/javascript" src="js/app.js"></script>
+            <!-- <script src="js/app-28be16e680.js"></script> -->
+        </div>
+
+        <footer>
+            <div class="logo">
+                <!-- <div class="logo" style="margin-top:0px;width:130px;height:80px"> -->
+                <div id="Logo" class="isof-app-header">
+                    <!-- Logo -->
+                    <a href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke"><img
+                            alt="Folke på Institutet för språk och folkminnen" class="sv-noborder"
+                            style="max-width:326px;max-height:50px;" src="img/folkelogga.svg" /></a>
+                    <div id="about">
+                        <!-- <a href="https://www.isof.se/test-och-utveckling/kartor/sagenkarta/avancerad-version.html" class="normal" style="display:block">Folke utforska</a></li> -->
+                    </div>
+                    <div id="portal" class="isof-app-header">
+                        <a href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke" target="_blank"
+                            class="normal" style="display:block">Om Folke</a></li>
+                    </div>
+                </div>
+                <!-- <a href="https://www.isof.se/"><img alt="Institutet för språk och folkminnen" class="sv-noborder" style="max-width:326px;max-height:202px;" srcset="https://www.isof.se/images/18.5850f85e15732ead0b31e1b/1474455937238/x320p/IFS_logotyp.png 320w, https://www.isof.se/images/18.5850f85e15732ead0b31e1b/1474455937238/IFS_logotyp.png 326w" sizes="100vw" src="https://www.isof.se/images/18.1be27ed6179567ddd4e27ce0/1622628607631/logotyp-isof.svg" /></a> -->
+            </div>
+        </footer>
+    </div>
+    <!-- Page content stops here -->
+    </div>
+    </div>
+</body>
+
+</html>

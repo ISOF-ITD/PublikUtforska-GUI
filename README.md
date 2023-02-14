@@ -6,13 +6,13 @@ Public crowdsource map based interface
 ## Start watching code with gulp
 
 ```bash
-sed -i 's/production = true/production = false/' gulpfile.js && gulp
+npm run gulp
 ```
 
 or in PowerShell:
 
 ```PowerShell
-(Get-Content gulpfile.js) -replace 'production = true', 'production = false' | Set-Content gulpfile.js; gulp
+npm run gulp
 ```
 
 ## Bundle code for deployment with gulp, commit and push (make sure you know what you are doing)
@@ -20,13 +20,13 @@ or in PowerShell:
 Enter the correct path to the ES-API in config.js (frigg-test or frigg). Otherwise it must be done on the server afterwards. Then run:
 
 ```bash
-sed -i 's/production = false/production = true/' gulpfile.js && gulp build && git add www && git commit -m 'fresh compile' && git push origin master
+npm run gulp build && git add www && git commit -m 'fresh compile' && git push origin master
 ```
 
 or in PowerShell:
 
 ```PowerShell
-(Get-Content gulpfile.js) -replace 'production = false', 'production = true' | Set-Content gulpfile.js; gulp build; gulp deploy; git add www; git commit -m 'fresh compile'; git push origin master
+npm run gulp build; git add www; git commit -m 'fresh compile'; git push origin master
 ```
 
 Deploy code on server:
