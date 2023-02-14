@@ -32,7 +32,7 @@ let production = false;
 // ----------------------------------------------------------------------------
 gulp.task('clean', () => {
 	// clean the www folder, but not images
-	return gulp.src(['./www/js', './www/css', './www/fonts', './www/rev-manifest.json', './www/index.html'], {read: false, allowEmpty: true})
+	return gulp.src(['./www/app*.js', './www/style*.css', './www/fonts', './www/rev-manifest.json', './www/index.html'], {read: false, allowEmpty: true})
 		.pipe(clean({force: true}));
 });
 
@@ -40,7 +40,7 @@ gulp.task('scripts', () =>
 {	
 	// Browserify will bundle all our js files together in to one and will let
 	// us use modules in the front end.
-	console.log("production", production)
+	console.log("production:", production)
   	return browserify({
     	entries: './scripts/app.js',
     	debug: !production
@@ -55,7 +55,7 @@ gulp.task('scripts', () =>
 		// add a hash to the file name, so that the browser will always load the latest version of the file
 		// add the hash only if production is true
 		.pipe(gulpif(production, rev()))
-		.pipe(gulp.dest('./www/js/'))
+		.pipe(gulp.dest('./www/'))
 		// create a manifest file that will contain the mapping between the original file name and the hashed file name
 		// create the manifest file only if production is true
 		.pipe(gulpif(production, rev.manifest('www/rev-manifest.json', {base: './www', merge: true})))
@@ -63,7 +63,7 @@ gulp.task('scripts', () =>
 });
 
 gulp.task('less', function(){
-	console.log("production", production)
+	console.log("production:", production)
     return gulp.src('./less/style-basic.less')
         .pipe(less())
         .pipe(gulpif(production, minifyCSS({keepBreaks:true})))
@@ -73,7 +73,7 @@ gulp.task('less', function(){
 		// add the hash only if production is true
 		.pipe(gulpif(production, rev()))
 		// save the file in the www/css folder
-		.pipe(gulp.dest('./www/css/'))
+		.pipe(gulp.dest('./www/'))
 		// add a line to the already existing manifest file that will contain the mapping between the original file name and the hashed file name
 		// add the line only if production is true
 		.pipe(gulpif(production, rev.manifest('www/rev-manifest.json', {base: './www', merge: true})))
