@@ -26,6 +26,7 @@ export function getTitle(title, contents) {
 }
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
+// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
 export function makeArchiveIdHumanReadable(str) {
     // Matcha första delen av strängen som inte är en siffra (bokstäver)
     // och andra delen som är en siffra (0 eller flera siffror)
