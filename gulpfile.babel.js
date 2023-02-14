@@ -53,10 +53,12 @@ gulp.task('scripts', () =>
     	.pipe(buffer())
         .pipe(gulpif(production, uglify()))
 		// add a hash to the file name, so that the browser will always load the latest version of the file
-		.pipe(rev())
+		// add the hash only if production is true
+		.pipe(gulpif(production, rev()))
 		.pipe(gulp.dest('./www/js/'))
 		// create a manifest file that will contain the mapping between the original file name and the hashed file name
-		.pipe(rev.manifest('www/rev-manifest.json', {base: './www', merge: true}))
+		// create the manifest file only if production is true
+		.pipe(gulpif(production, rev.manifest('www/rev-manifest.json', {base: './www', merge: true})))
 		.pipe(gulp.dest('./www/'));
 });
 
@@ -68,11 +70,13 @@ gulp.task('less', function(){
 		// change the name to style.css
 		.pipe(rename('style.css'))
 		// add a hash to the file name, so that the browser will always load the latest version of the file
-		.pipe(rev())
+		// add the hash only if production is true
+		.pipe(gulpif(production, rev()))
 		// save the file in the www/css folder
 		.pipe(gulp.dest('./www/css/'))
 		// add a line to the already existing manifest file that will contain the mapping between the original file name and the hashed file name
-		.pipe(rev.manifest('www/rev-manifest.json', {base: './www', merge: true}))
+		// add the line only if production is true
+		.pipe(gulpif(production, rev.manifest('www/rev-manifest.json', {base: './www', merge: true})))
 		.pipe(gulp.dest('./www/'));
 });
 
@@ -82,16 +86,17 @@ gulp.task('fonts', function(){
 });
  
 gulp.task('watch', function (done) {
-	gulp.watch(['./scripts/*.js', './scripts/**/*.js', './ISOF-React-modules/*.js', './ISOF-React-modules/**/*.js'], gulp.series('scripts', 'index-html'));
-	gulp.watch(['./less/*.less', './less/**/*.less', './ISOF-React-modules/less/*.less', './ISOF-React-modules/less/**/*.less'], gulp.series('less', 'index-html'));
+	gulp.watch(['./scripts/*.js', './scripts/**/*.js', './ISOF-React-modules/*.js', './ISOF-React-modules/**/*.js'], gulp.series('scripts'));
+	gulp.watch(['./less/*.less', './less/**/*.less', './ISOF-React-modules/less/*.less', './ISOF-React-modules/less/**/*.less'], gulp.series('less'));
 	done();
 });
 
 gulp.task('index-html', function(){
 	// replace the references to the old files with the new ones inside www/index.html
-	const manifest = readFileSync('./www/rev-manifest.json');
+	const manifest = production ? readFileSync('./www/rev-manifest.json') : null;
 	return gulp.src('./index.html')
-		.pipe(revRewrite({manifest}))
+		// do revRewrite only if production is true
+		.pipe(gulpif(production, revRewrite({manifest})))
 		.pipe(gulp.dest('./www'));
 });
 
