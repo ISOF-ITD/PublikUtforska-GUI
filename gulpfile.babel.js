@@ -15,7 +15,6 @@ import uglify from 'gulp-uglify';
 import buffer from 'vinyl-buffer';
 import less from 'gulp-less';
 import minifyCSS from 'gulp-csso';
-import path from 'path';
 import gulpif from 'gulp-if';
 import clean from 'gulp-clean';
 import rename from 'gulp-rename';
@@ -32,6 +31,7 @@ let production = false;
 // Gulp tasks
 // ----------------------------------------------------------------------------
 gulp.task('clean', () => {
+	// clean the www folder, but not images
 	return gulp.src(['./www/js', './www/css', './www/fonts', './www/rev-manifest.json', './www/index.html'], {read: false, allowEmpty: true})
 		.pipe(clean({force: true}));
 });
@@ -52,7 +52,6 @@ gulp.task('scripts', () =>
 	    .pipe(source('app.js'))
     	.pipe(buffer())
         .pipe(gulpif(production, uglify()))
-	    // .pipe(gulp.dest('./www/js/'))
 		// add a hash to the file name, so that the browser will always load the latest version of the file
 		.pipe(rev())
 		.pipe(gulp.dest('./www/js/'))
@@ -66,11 +65,11 @@ gulp.task('less', function(){
     return gulp.src('./less/style-basic.less')
         .pipe(less())
         .pipe(gulpif(production, minifyCSS({keepBreaks:true})))
-		// save the file in the www/css folder and change the name to style.css
+		// change the name to style.css
 		.pipe(rename('style.css'))
-		// .pipe(gulp.dest('./www/css/'))
 		// add a hash to the file name, so that the browser will always load the latest version of the file
 		.pipe(rev())
+		// save the file in the www/css folder
 		.pipe(gulp.dest('./www/css/'))
 		// add a line to the already existing manifest file that will contain the mapping between the original file name and the hashed file name
 		.pipe(rev.manifest('www/rev-manifest.json', {base: './www', merge: true}))
