@@ -83,7 +83,7 @@ export default class StatisticsOverlay extends React.Component {
                             range: 'transcriptiondate,now-1M/M,now',
                             aggregation: 'cardinality,transcribedby.keyword',
                         }}
-                        label="olika användare som har avskrivit senaste månaden"
+                        label="användare som har skrivit av uppteckningar senaste månaden"
                         visible={this.state.visible}
                     />
 
