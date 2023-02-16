@@ -18,6 +18,7 @@ export default class RecordList extends React.Component {
 			order: 'asc',
 			//sort: undefined,
 			//order: undefined,
+			loadedMore: false,
 		};
 
 		this.stepPage = this.stepPage.bind(this);
@@ -64,6 +65,19 @@ export default class RecordList extends React.Component {
 		}, function() {
 			this.fetchData(this.props.searchParams);
 		}.bind(this));
+
+		// if props.interval is not undefined, we fetch new data every x seconds
+		if (this.props.interval) {
+			this.interval = setInterval(function() {
+				this.state.loadedMore ? this.loadMore() : this.fetchData(this.props.searchParams);
+			}.bind(this), this.props.interval);
+		}
+	}
+
+	componentWillUnmount() {
+		if (this.interval) {
+			clearInterval(this.interval);
+		}
 	}
 
 	shouldRenderColumn(column_name, props_arg) {
@@ -110,6 +124,7 @@ export default class RecordList extends React.Component {
 	loadMore() {
 		this.setState({
 			currentPage: 1,
+			loadedMore: true,
 		}, function() {
 			const searchParams = Object.assign({}, this.props.searchParams, {size: this.props.sizeMore});
 			this.fetchData(searchParams);
