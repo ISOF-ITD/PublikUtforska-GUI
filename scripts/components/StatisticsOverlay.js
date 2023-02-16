@@ -2,6 +2,8 @@ import React from "react";
 import RecordList from "./views/RecordList.js";
 import routeHelper from "../utils/routeHelper.js";
 
+import ShortStatistics from "./ShortStatistics.js";
+
 export default class StatisticsOverlay extends React.Component {
 
     constructor() {
@@ -45,6 +47,18 @@ export default class StatisticsOverlay extends React.Component {
                     <h2>Upptäck</h2>
                 </div>
                 <div className="row">
+                    {/* Show how many records that have been transcribed the last month */}
+                    {/* <ShortStatistics
+                        params={{
+                            size: 0,
+                            recordtype: 'one_record',
+                            transcriptionstatus: 'published',
+                            range: 'transcriptiondate,now-1M/M,now',
+                        }}
+                        // the label has a placeholder for the value that has been returned from the API
+                        label="avskrivna uppteckningar senaste månaden"
+                        
+                    /> */}
                     <h3>Senast avskrivna uppteckningar</h3>
                     <RecordList 
                         key={`latest-RecordList`}
