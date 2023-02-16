@@ -43,7 +43,7 @@
     "gulp-rev": "^10.0.0",
     "gulp-rev-rewrite": "^5.0.0",
     "gulp-sourcemaps": "^2.6.5",
-    "gulp-uglify": "^3.0.2",
+    "gulp-terser": "^2.1.0",
     "leaflet": "^1.9.3",
     "leaflet.locatecontrol": "^0.71.1",
     "leaflet.markercluster": "^1.4.1",

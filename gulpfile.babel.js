@@ -11,7 +11,7 @@ import browserify from 'browserify';
 import source from 'vinyl-source-stream';
 import log from 'fancy-log';
 import babelify from 'babelify';
-import uglify from 'gulp-uglify';
+import terser from 'gulp-terser';
 import buffer from 'vinyl-buffer';
 import less from 'gulp-less';
 import minifyCSS from 'gulp-csso';
@@ -51,7 +51,7 @@ gulp.task('scripts', () =>
 	    .on('error', production ? log : swallowError)
 	    .pipe(source('app.js'))
     	.pipe(buffer())
-        .pipe(gulpif(production, uglify()))
+        .pipe(gulpif(production, terser()))
 		// add a hash to the file name, so that the browser will always load the latest version of the file
 		// add the hash only if production is true
 		.pipe(gulpif(production, rev()))
