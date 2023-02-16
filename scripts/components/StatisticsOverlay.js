@@ -10,6 +10,7 @@ export default class StatisticsOverlay extends React.Component {
         super();
         this.state = {
             visible: false,
+            hasBeenVisible: false,
         }
 
         this.params = {
@@ -27,7 +28,8 @@ export default class StatisticsOverlay extends React.Component {
         window.eventBus.addEventListener('overlay.sideMenu', function (event, data) {
             if (event.target === 'visible') {
                 this.setState({
-                    visible: true
+                    visible: true,
+                    hasBeenVisible: true,
                 });
             }
         }.bind(this));
@@ -38,6 +40,7 @@ export default class StatisticsOverlay extends React.Component {
             <div className={`statistics-overlay ${this.state.visible ? 'visible' : ''}`}>
                 <div className="container-header">
                     <a className="close-button white" onClick={function () {
+                        // dispatch an event that will close the overlay
                         this.setState({
                             visible: false
                         });
@@ -48,31 +51,33 @@ export default class StatisticsOverlay extends React.Component {
                 </div>
                 <div className="row">
                     {/* Show how many records that have been transcribed the last month */}
-                    {/* <ShortStatistics
+                    <ShortStatistics
                         params={{
-                            size: 0,
                             recordtype: 'one_record',
                             transcriptionstatus: 'published',
                             range: 'transcriptiondate,now-1M/M,now',
                         }}
-                        // the label has a placeholder for the value that has been returned from the API
                         label="avskrivna uppteckningar senaste månaden"
+                        visible={this.state.visible}
                         
-                    /> */}
-                    <h3>Senast avskrivna uppteckningar</h3>
-                    <RecordList 
-                        key={`latest-RecordList`}
-                        disableRouterPagination={true}
-                        searchParams={this.params}
-                        disableListPagination={true}
-                        columns={['title', 'year', 'place', 'transcribedby']}
-                        // create siteSearchParams from the current route in order to
-                        // keep the global search params when navigating to a record
-                        siteSearchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
-                        class="table-compressed"
-                        // möjliggör att visa 50 poster efter en klick på "visa fler"
-                        sizeMore={50}
                     />
+                    <h3>Senast avskrivna uppteckningar</h3>
+                    {/* get the records, when state visible is set to true and the component has not been visible before */}
+                    {(this.state.visible || this.state.hasBeenVisible) &&
+                        <RecordList 
+                            key={`latest-RecordList`}
+                            disableRouterPagination={true}
+                            searchParams={this.params}
+                            disableListPagination={true}
+                            columns={['title', 'year', 'place', 'transcribedby']}
+                            // create siteSearchParams from the current route in order to
+                            // keep the global search params when navigating to a record
+                            siteSearchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
+                            class="table-compressed"
+                            // möjliggör att visa 50 poster efter en klick på "visa fler"
+                            sizeMore={50}
+                        />
+                    }
                 </div>
             </div>
         )
