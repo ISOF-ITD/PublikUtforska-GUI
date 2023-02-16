@@ -56,7 +56,7 @@ export default class StatisticsOverlay extends React.Component {
                             recordtype: 'one_record',
                             transcriptionstatus: 'published',
                             // +2h to account for the time difference between the server and the timestamps in the database
-                            range: 'transcriptiondate,now-1M/M,now%2C2h',
+                            range: 'transcriptiondate,now-1M/M,now%2B2h',
                         }}
                         label="avskrivna uppteckningar senaste månaden"
                         visible={this.state.visible}
@@ -70,7 +70,7 @@ export default class StatisticsOverlay extends React.Component {
                             transcriptionstatus: 'published',
                             // +2h to account for the time difference between the server and the timestamps in the database
                             // urlencode the range parameter. range = 'transcriptiondate,now-1M/M,now+2h'
-                            range: 'transcriptiondate,now-1M/M,now%2C2h',
+                            range: 'transcriptiondate,now-1M/M,now%2B2h',
                             aggregation: 'sum,archive.total_pages',
                         }}
                         label="avskrivna sidor senaste månaden"
@@ -84,7 +84,7 @@ export default class StatisticsOverlay extends React.Component {
                             recordtype: 'one_record',
                             transcriptionstatus: 'published',
                             // +2h to account for the time difference between the server and the timestamps in the database
-                            range: 'transcriptiondate,now-1M/M,now%2C2h',
+                            range: 'transcriptiondate,now-1M/M,now%2B2h',
                             aggregation: 'cardinality,transcribedby.keyword',
                         }}
                         label="användare som har skrivit av uppteckningar senaste månaden"
