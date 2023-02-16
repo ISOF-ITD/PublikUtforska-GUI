@@ -74,6 +74,19 @@ export default class StatisticsOverlay extends React.Component {
                         visible={this.state.visible}
                         
                     />
+
+                    {/* Show how many different users have transcribed in the last month */}
+                    <ShortStatistics
+                        params={{
+                            recordtype: 'one_record',
+                            transcriptionstatus: 'published',
+                            range: 'transcriptiondate,now-1M/M,now',
+                            aggregation: 'cardinality,transcribedby.keyword',
+                        }}
+                        label="olika användare som har avskrivit senaste månaden"
+                        visible={this.state.visible}
+                    />
+
                     <h3>Senast avskrivna uppteckningar</h3>
                     {/* get the records, when state visible is set to true and the component has not been visible before */}
                     {(this.state.visible || this.state.hasBeenVisible) &&
