@@ -67,6 +67,7 @@ export default class Application extends React.Component {
 			// deactivated expanded menu for now
 			// menuExpanded: false,
 			menuExpanded: true,
+			applicationInFocus: true,
 		};
 	}
 
@@ -174,6 +175,21 @@ export default class Application extends React.Component {
 			// detta kör css transition som animerar gränssnittet i början
 			document.body.classList.add('app-initialized');
 		}.bind(this), 1000);
+
+		// set applicationInFocus to true when browser tab gets focus
+		window.addEventListener('focus', function() {
+			this.setState({
+				applicationInFocus: true
+			});
+		}
+		.bind(this));
+
+		// set applicationInFocus to false when browser tab loses focus
+		window.addEventListener('blur', function() {
+			this.setState({
+				applicationInFocus: false
+			});
+		}.bind(this));
 	}
 
 	shouldComponentUpdate(nextProps, nextState) {
@@ -348,6 +364,7 @@ export default class Application extends React.Component {
 					<StatisticsOverlay
 						// copy props from Application to StatisticsOverlay and keep them in sync
 						{...this.props}
+						applicationInFocus={this.state.applicationInFocus}
 					/>
 
 			</div>

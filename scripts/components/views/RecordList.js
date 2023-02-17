@@ -26,7 +26,7 @@ export default class RecordList extends React.Component {
 		this.archiveIdClick = this.archiveIdClick.bind(this);
 		this.loadMore = this.loadMore.bind(this);
 
-		this.collections = new RecordsCollection(function(json) {
+		this.collections = new RecordsCollection((json) => {
 			if(window.eventBus) {
 				window.eventBus.dispatch('recordList.totalRecords', json.metadata.total, json.metadata.total);
 				window.eventBus.dispatch('recordList.fetchingPage', false);
@@ -55,23 +55,25 @@ export default class RecordList extends React.Component {
 				totalPrefix: totalPrefixValue,
 			});
 
-		}.bind(this));
+		});
 	
 	}
 
 	componentDidMount() {
 		this.setState({
 			currentPage: this.props.searchParams.page || 1
-		}, function() {
+		}, () => {
 			this.fetchData(this.props.searchParams);
-		}.bind(this));
+		});
 
-		// if props.interval is not undefined, we fetch new data every x seconds
-		if (this.props.interval) {
-			this.interval = setInterval(function() {
+
+		// set interval for fetching new data
+		// if interval is set, we fetch new data every x seconds
+		this.interval = setInterval(() => {
+			if(this.props.interval) {
 				this.state.loadedMore ? this.loadMore() : this.fetchData(this.props.searchParams);
-			}.bind(this), this.props.interval);
-		}
+			}
+		}, this.props.interval);
 	}
 
 	componentWillUnmount() {
@@ -109,9 +111,9 @@ export default class RecordList extends React.Component {
 		if (this.props.disableRouterPagination) {
 			this.setState({
 				currentPage: this.state.currentPage+pageStep
-			}, function() {
+			}, () => {
 				this.fetchData(this.props.searchParams);
-			}.bind(this));
+			});
 		}
 		else {
 			// Skapar ny router adress via routeHelper, den är baserad på nuvarande params och lägger till ny siffra i 'page'
@@ -125,10 +127,10 @@ export default class RecordList extends React.Component {
 		this.setState({
 			currentPage: 1,
 			loadedMore: true,
-		}, function() {
+		}, () => {
 			const searchParams = Object.assign({}, this.props.searchParams, {size: this.props.sizeMore});
 			this.fetchData(searchParams);
-		}.bind(this));
+		});
 	}
 
 	sort(event) {
@@ -138,9 +140,9 @@ export default class RecordList extends React.Component {
 			order: this.state.order === undefined ? 'asc' : 
 				this.state.sort === event.target.name ? (this.state.order === 'asc' ? 'desc' : 'asc') : 'asc',
 			currentPage: 1,
-		}, function () {
+		}, () => {
 			this.fetchData(this.props.searchParams);
-		}.bind(this));
+		});
 	}
 	
 	fetchData(params) {
@@ -212,7 +214,7 @@ export default class RecordList extends React.Component {
 	render() {
 		var searchRouteParams = routeHelper.createSearchRoute(this.props.searchParams);
 
-		var items = this.state.records ? this.state.records.map(function(item, index) {
+		var items = this.state.records ? this.state.records.map((item, index) => {
 			return <RecordListItem 
 					key={item._source.id}
 					id={item._source.id}
@@ -227,7 +229,7 @@ export default class RecordList extends React.Component {
 					columns={this.props.columns}
 				/>;
 
-		}.bind(this)) : [];
+		}) : [];
 
 		if (this.state.records) {
 			return (

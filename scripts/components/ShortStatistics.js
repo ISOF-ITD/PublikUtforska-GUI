@@ -63,10 +63,10 @@ export default class ShortStatistics extends React.Component {
     }
 
     componentDidMount() {
-        // every 10 seconds, check state.visible
+        // every 10 seconds, check state.visible and props.applicationInFocus
         // and if it's true, fetch the number of records that matches the search params
         this.interval = setInterval(() => {
-            if (this.props.visible) {
+            if (this.props.applicationInFocus && this.props.visible) {
                 this.fetchStatistics();
             }
         }, 10000);
@@ -76,11 +76,14 @@ export default class ShortStatistics extends React.Component {
         clearInterval(this.interval);
     }
     
-    // when the prop "visible" changes to true,
+    // when the prop "visible" changes to true, or when the prop "applicationInFocus" changes to true
     // fetch the number of records that matches the search params
     componentDidUpdate(prevProps) {
-        if (this.props.visible && !prevProps.visible) {
-            this.fetchStatistics();
+        const { visible, applicationInFocus } = this.props;
+        const { visible: prevVisible, applicationInFocus: prevApplicationInFocus } = prevProps;
+
+        if (visible && (!prevVisible || (applicationInFocus && !prevApplicationInFocus))) {
+        this.fetchStatistics();
         }
     }
 

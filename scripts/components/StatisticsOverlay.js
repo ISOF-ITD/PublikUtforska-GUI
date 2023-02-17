@@ -60,6 +60,7 @@ export default class StatisticsOverlay extends React.Component {
                         }}
                         label="avskrivna uppteckningar senaste månaden"
                         visible={this.state.visible}
+                        applicationInFocus={this.props.applicationInFocus}
                         
                     />
 
@@ -75,6 +76,7 @@ export default class StatisticsOverlay extends React.Component {
                         }}
                         label="avskrivna sidor senaste månaden"
                         visible={this.state.visible}
+                        applicationInFocus={this.props.applicationInFocus}
                         
                     />
 
@@ -89,6 +91,7 @@ export default class StatisticsOverlay extends React.Component {
                         }}
                         label="användare som har skrivit av uppteckningar senaste månaden"
                         visible={this.state.visible}
+                        applicationInFocus={this.props.applicationInFocus}
                     />
 
                     <h3>Senast avskrivna uppteckningar</h3>
@@ -106,7 +109,9 @@ export default class StatisticsOverlay extends React.Component {
                             class="table-compressed"
                             // möjliggör att visa 50 poster efter en klick på "visa fler"
                             sizeMore={50}
-                            interval={10000}
+                            // interval is 10000, if this.state.visible is true and the web browser is in focus
+                            interval={this.props.applicationInFocus && this.state.visible && 10000}
+                            // interval={this.state.visible && 10000}
                         />
                     }
                 </div>
