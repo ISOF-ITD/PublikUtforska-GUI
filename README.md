@@ -3,30 +3,30 @@ Public crowdsource map based interface
 
 [Accessibility](Accessibility.md)
 
-## Start watching code with gulp
+## Start watching code with webpack
 
 ```bash
-npm run gulp
+npm run start
 ```
 
 or in PowerShell:
 
 ```PowerShell
-npm run gulp
+npm run start
 ```
 
-## Bundle code for deployment with gulp, commit and push (make sure you know what you are doing)
+## Bundle code for deployment with webpack, commit and push (make sure you know what you are doing)
 
 Enter the correct path to the ES-API in config.js (frigg-test or frigg). Otherwise it must be done on the server afterwards. Then run:
 
 ```bash
-npm run gulp build && git add www && git commit -m 'fresh compile' && git push origin master
+npm run build && git add www && git commit -m 'fresh compile' && git push origin master
 ```
 
 or in PowerShell:
 
 ```PowerShell
-npm run gulp build; git add www; git commit -m 'fresh compile'; git push origin master
+npm run build; git add www; git commit -m 'fresh compile'; git push origin master
 ```
 
 Deploy code on server:

@@ -10,6 +10,8 @@ import routeHelper from './utils/routeHelper'
 
 import { ENV } from './config'
 
+import './../less/style-basic.less';
+
 if (ENV !== "prod") {
 	console.log(`PublikUtforska running React.js version ${React.version} and ReactDOM version ${ReactDOM.version} on ${ENV} environment`);
 } 

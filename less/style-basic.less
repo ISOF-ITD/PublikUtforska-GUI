@@ -1,32 +1,32 @@
 @import "../ISOF-React-modules/less/mixins.less";
 @import "../ISOF-React-modules/less/skeleton.less";
-@import "../ISOF-React-modules/less/leaflet.less";
+@import "leaflet.less";
 @import "../ISOF-React-modules/less/MarkerCluster.Default.less";
 
-@import "../ISOF-React-modules/less/ui-components/map.less";
+@import "ui-components/map.less";
 @import "../ISOF-React-modules/less/ui-components/map-ui.less";
-@import "../ISOF-React-modules/less/ui-components/popupwindow.less";
+@import "ui-components/popupwindow.less";
 @import "popupwindow.less";
 
 @import "mapmenu.less";
 @import "recordview.less";
 
-@import "../ISOF-React-modules/less/ui-components/map-menu-list.less";
+@import "ui-components/map-menu-list.less";
 
-@import "../ISOF-React-modules/less/ui-components/dropdownmenu.less";
-@import "../ISOF-React-modules/less/ui-components/local-library.less";
+@import "ui-components/dropdownmenu.less";
+@import "ui-components/local-library.less";
 @import "local-library.less";
-@import "../ISOF-React-modules/less/ui-components/overlay.less";
-@import "../ISOF-React-modules/less/ui-components/audio-player.less";
+@import "ui-components/overlay.less";
+@import "ui-components/audio-player.less";
 @import "../ISOF-React-modules/less/ui-components/element-notification-message.less";
 @import "../ISOF-React-modules/less/ui-components/popup-notification-message.less";
 @import "../ISOF-React-modules/less/ui-components/share-buttons.less";
 @import "../ISOF-React-modules/less/ui-components/feedback-buttons.less";
-@import "../ISOF-React-modules/less/ui-components/image-map.less";
+@import "ui-components/image-map.less";
 @import "../ISOF-React-modules/less/ui-components/records-list.less";
 
 @import "../ISOF-React-modules/less/minimal-scrollbar.less";
-@import "../ISOF-React-modules/less/tables.less";
+@import "tables.less";
 
 @import "../ISOF-React-modules/less/ui-components/transcriptionform.less";
 
@@ -493,6 +493,8 @@ footer, header {
 		pointer-events: all;
 
 		z-index: 1100;
+
+		background-color: #fff;
 
 		.transition(top 300ms ease-in-out);
 

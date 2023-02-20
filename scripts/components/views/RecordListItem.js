@@ -15,6 +15,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 
+import PdfGif from '../../../img/pdf.gif';
+
 export default class RecordListItem extends React.Component {
 
 	constructor(props) {
@@ -289,7 +291,7 @@ export default class RecordListItem extends React.Component {
 						{titleText && titleText != '' && titleText != '[]' ? titleText : l('(Utan titel)')}
 						{
 							this.props.item._source.media && this.props.item._source.media.filter(m => m.source && m.source.includes('.pdf'))[0] && 
-							<sub><img src='img/pdf.gif' style={{'marginLeft': 5}} /></sub>
+							<sub><img src={PdfGif} style={{'marginLeft': 5}} /></sub>
 						}
 					</a>
 					{
