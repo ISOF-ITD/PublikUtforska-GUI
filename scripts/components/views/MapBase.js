@@ -5,7 +5,7 @@ import 'leaflet.markercluster';
 import 'leaflet.locatecontrol';
 import './../../../ISOF-React-modules/lib/leaflet.active-layers';
 
-import mapHelper from '../../../utils/mapHelper';
+import mapHelper from '../../utils/mapHelper';
 
 // Main CSS: ui-components/map.less
 //           ui-components/map-ui.less

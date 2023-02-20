@@ -9,8 +9,8 @@ import _ from 'underscore';
 import MapBase from './MapBase';
 
 import MapCollection from './../../../ISOF-React-modules/components/collections/MapCollection';
-import mapHelper from './../../../utils/mapHelper';
-import config from './../../../scripts/config.js';
+import mapHelper from './../../utils/mapHelper';
+import config from './../../config';
 
 // Main CSS: ui-components/map.less
 //           ui-components/map-ui.less
@@ -24,6 +24,8 @@ export default class MapView extends React.Component {
 		super(props);
 
 		window.mapView = this;
+
+		this.mapView = React.createRef();
 
 		this.state = {
 			viewMode: 'clusters',
@@ -49,17 +51,17 @@ export default class MapView extends React.Component {
 	componentDidMount() {
 		this.fetchData(this.props.searchParams);
 
-		this.mapBase = this.refs.mapView;
+		this.mapBase = this.mapView.current;
 	}
 
-	UNSAFE_componentWillReceiveProps(props) {
-		var currentSearchParams = JSON.parse(JSON.stringify(this.props.searchParams));
+	componentDidUpdate(prevProps) {
+		const currentSearchParams = {...prevProps.searchParams};
 
 		if (currentSearchParams.place_id) {
 			delete currentSearchParams.place_id;
 		}
 
-		var searchParams = JSON.parse(JSON.stringify(props.searchParams));
+		const searchParams = {...this.props.searchParams};
 		if (searchParams.place_id) {
 			delete searchParams.place_id;
 		}
@@ -81,7 +83,7 @@ export default class MapView extends React.Component {
 
 		if (params) {
 			var fetchParams = {
-				search: params.search || undefined,
+				search: params.search ? encodeURIComponent(params.search) : undefined,
 				search_field: params.search_field || undefined,
 				type: params.type,
 				category: params.category && params.category + `${params.subcategory ? ',' + params.subcategory : ''}`, // subcategory for matkartan
@@ -91,7 +93,11 @@ export default class MapView extends React.Component {
 				// gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : undefined,
 				birth_years: params.birth_years ? (params.person_relation ? params.person_relation+':'+(params.gender ? params.gender+':' : '')+params.birth_years : params.birth_years) : undefined,
 				record_ids: params.record_ids || undefined,
-				has_metadata: params.has_metadata || undefined
+				has_metadata: params.has_metadata || undefined,
+				has_media: params.has_media || undefined,
+				has_transcribed_records: params.has_transcribed_records || undefined,
+				recordtype: params.recordtype || undefined,
+				transcriptionstatus: params.transcriptionstatus || undefined,
 			};
 
 			//TODO Replace with "Application defined filter parameter" where it is used (Sägenkartan)
@@ -151,17 +157,17 @@ export default class MapView extends React.Component {
 				this.markers.clearLayers();
 			}
 
-			this.refs.mapView.map.removeLayer(this.markers);
+			this.mapView.current.map.removeLayer(this.markers);
 		}
 
 		switch (this.state.viewMode) {
 			case 'markers':
 				this.markers = L.featureGroup();
-				this.refs.mapView.map.addLayer(this.markers);
+				this.mapView.current.map.addLayer(this.markers);
 				break;
 			case 'circles':
 				this.markers = L.featureGroup();
-				this.refs.mapView.map.addLayer(this.markers);
+				this.mapView.current.map.addLayer(this.markers);
 				break;
 			case 'clusters':
 				this.markers = new L.MarkerClusterGroup({
@@ -186,7 +192,7 @@ export default class MapView extends React.Component {
 						});
 					}
 				});
-				this.refs.mapView.map.addLayer(this.markers);
+				this.mapView.current.map.addLayer(this.markers);
 				break;
 			case 'heatmap':
 				this.markers = L.heatLayer([], {
@@ -194,7 +200,7 @@ export default class MapView extends React.Component {
 					radius: 18,
 					blur: 15
 				});
-				this.markers.addTo(this.refs.mapView.map);
+				this.markers.addTo(this.mapView.current.map);
 			case 'heatmap-count':
 				this.markers = L.heatLayer([], {
 					minOpacity: 0.35,
@@ -202,7 +208,7 @@ export default class MapView extends React.Component {
 					blur: 15,
 					maxZoom: 4
 				});
-				this.markers.addTo(this.refs.mapView.map);
+				this.markers.addTo(this.mapView.current.map);
 		}
 	}
 
@@ -226,7 +232,7 @@ export default class MapView extends React.Component {
 			// Lägger till alla prickar på kartan
 			if (mapData.length > 0) {
 				// Hämtar current bounds (minus 20%) av synliga kartan
-				var currentBounds = this.refs.mapView.map.getBounds().pad(-0.2);
+				var currentBounds = this.mapView.current.map.getBounds().pad(-0.2);
 
 				// Samlar ihop latLng av alla prickar för att kunna senare zooma inn till dem
 				var bounds = [];
@@ -265,7 +271,7 @@ export default class MapView extends React.Component {
 
 				// Zooma in till alla nya punkena om ingen av dem finns inom synliga kartan
 				if (!markerWithinBounds || (config.siteOptions.mapView && config.siteOptions.mapView.alwaysUpdateViewport == true)) {
-					this.refs.mapView.map.fitBounds(bounds, {
+					this.mapView.current.map.fitBounds(bounds, {
 						maxZoom: 10,
 						padding: [50, 50]
 					});
@@ -329,7 +335,7 @@ export default class MapView extends React.Component {
 			this.markers.setLatLngs(latLngs);
 		}
 		if (this.state.viewMode == 'heatmap-count') {
-			this.refs.mapView.map.removeLayer(this.markers);
+			this.mapView.current.map.removeLayer(this.markers);
 
 			var maxCount = _.max(mapData, function(mapItem) {
 				return Number(mapItem.doc_count);
@@ -342,7 +348,7 @@ export default class MapView extends React.Component {
 				max: maxCount,
 				maxZoom: 0
 			});
-			this.markers.addTo(this.refs.mapView.map);
+			this.markers.addTo(this.mapView.current.map);
 
 			var latLngs = _.map(mapData, function(mapItem) {
 				return [mapItem.location[0], mapItem.location[1], mapItem.doc_count];
@@ -353,10 +359,6 @@ export default class MapView extends React.Component {
 		if (this.props.onMapUpdate) {
 			this.props.onMapUpdate();
 		}
-	}
-
-	shouldComponentUpdate(nextProps, nextState) {
-		return this.state.loading != nextState.loading || this.state.viewMode != nextState.viewMode;
 	}
 
 	render() {
@@ -395,10 +397,10 @@ export default class MapView extends React.Component {
 					<div className="indicator"></div>
 				</div>
 
-				<MapBase ref="mapView"
+				<MapBase ref={this.mapView}
 					className="map-view"
-					layersControlPosition={this.props.layersControlPosition || 'topleft'}
-					zoomControlPosition={this.props.zoomControlPosition || 'topleft'} 
+					layersControlPosition={this.props.layersControlPosition || 'bottomright'}
+					zoomControlPosition={this.props.zoomControlPosition || 'bottomright'} 
 					disableLocateControl={true} // Inte visa locateControl knappen (som kan visa på kartan var användaren är)
 					scrollWheelZoom={true}
 					zoom={this.props.zoom}
