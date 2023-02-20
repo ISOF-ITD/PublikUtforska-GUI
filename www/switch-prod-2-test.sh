@@ -1,2 +1,0 @@
-find . -name 'app.js' | xargs grep -l 'frigg.isof' | xargs sed -i.bak s/frigg.isof.se/frigg-test.isof.se/g
-find . -name 'app.js' | xargs grep -l 'sok.folke.isof' | xargs sed -i.bak s/sok.folke.isof/sok.folke-test.isof/g
