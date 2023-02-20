@@ -1,6 +1,6 @@
 import React from 'react';
 
-import SimpleMap from './../../../ISOF-React-modules/components/views/SimpleMap';
+import SimpleMap from './SimpleMap';
 import RecordList from './RecordList';
 import ContributeInfoButton from './../../../ISOF-React-modules/components/views/ContributeInfoButton';
 import FeedbackButton from './../../../ISOF-React-modules/components/views/FeedbackButton';
@@ -8,8 +8,6 @@ import FeedbackButton from './../../../ISOF-React-modules/components/views/Feedb
 import config from './../../../scripts/config.js';
 
 import { Route } from 'react-router-dom';
-
-import routeHelper from './../../../scripts/utils/routeHelper'
 
 export default class PersonView extends React.Component {
 	constructor(props) {

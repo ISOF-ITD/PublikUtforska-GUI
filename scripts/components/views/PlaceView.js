@@ -6,7 +6,7 @@ import { Route } from 'react-router-dom';
 
 import RecordList from './RecordList';
 import PersonList from './../../../ISOF-React-modules/components/views/PersonList';
-import SimpleMap from './../../../ISOF-React-modules/components/views/SimpleMap';
+import SimpleMap from './SimpleMap';
 import ListPlayButton from './../../../ISOF-React-modules/components/views/ListPlayButton';
 
 import config from './../../../scripts/config.js';

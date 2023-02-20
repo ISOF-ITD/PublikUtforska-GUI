@@ -5,7 +5,7 @@ import config from './../../../scripts/config.js';
 import localLibrary from './../../../ISOF-React-modules/utils/localLibrary';
 
 import ShareButtons from './../../../ISOF-React-modules/components/controls/ShareButtons';
-import SimpleMap from './../../../ISOF-React-modules/components/views/SimpleMap';
+import SimpleMap from './SimpleMap';
 import ListPlayButton from './../../../ISOF-React-modules/components/views/ListPlayButton';
 
 import ContributeInfoButton from './../../../ISOF-React-modules/components/views/ContributeInfoButton';
@@ -20,6 +20,9 @@ import routeHelper from './../../../scripts/utils/routeHelper';
 import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from './../../../scripts/utils/helpers';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
+
+import archiveLogoIsof from './../../../img/archive-logo-isof.png';
+import archiveLogoIkos from './../../../img/archive-logo-ikos.png';
 
 export default class RecordView extends React.Component {
 	constructor(props) {
@@ -158,17 +161,17 @@ export default class RecordView extends React.Component {
 	getArchiveLogo(archive) {
 		var archiveLogos = {};
 
-		archiveLogos['Dialekt-, namn- och folkminnesarkivet i Göteborg'] = 'img/archive-logo-isof.png';
-		archiveLogos['Dialekt- och folkminnesarkivet i Uppsala'] = 'img/archive-logo-isof.png';
-		archiveLogos['Dialekt och folkminnesarkivet i Uppsala'] = 'img/archive-logo-isof.png';
+		archiveLogos['Dialekt-, namn- och folkminnesarkivet i Göteborg'] = archiveLogoIsof;
+		archiveLogos['Dialekt- och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
+		archiveLogos['Dialekt och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
 		archiveLogos['DAG'] = 'img/archive-logo-isof.png';
 		//Needs to be shrinked. By css?
 		//archiveLogos['Norsk folkeminnesamling'] = 'img/UiO_Segl_A.png';
-		archiveLogos['Norsk folkeminnesamling'] = 'img/archive-logo-ikos.png';
-		archiveLogos['NFS'] = 'img/archive-logo-ikos.png';
-		archiveLogos['DFU'] = 'img/archive-logo-isof.png';
-		archiveLogos['SLS'] = 'img/SLS-logga.svg';
-		archiveLogos['Svenska litteratursällskapet i Finland (SLS)'] = 'img/SLS-logga.svg';
+		archiveLogos['Norsk folkeminnesamling'] = archiveLogoIkos;
+		archiveLogos['NFS'] = archiveLogoIkos;
+		archiveLogos['DFU'] = archiveLogoIkos;
+		// archiveLogos['SLS'] = SlsLogga;
+		// archiveLogos['Svenska litteratursällskapet i Finland (SLS)'] = SlsLogga;
 		
 		return archiveLogos[archive] ? config.appUrl+archiveLogos[archive] : config.appUrl+archiveLogos['DAG'];
 	}
