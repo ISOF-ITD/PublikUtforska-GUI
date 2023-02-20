@@ -1,0 +1,5 @@
+const week = 7;
+
+createPlacesPathFromSearchRoute(searchRoute) {
+
+// fetch a website and get the title element
