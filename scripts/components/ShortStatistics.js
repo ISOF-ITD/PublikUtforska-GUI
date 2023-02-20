@@ -63,13 +63,13 @@ export default class ShortStatistics extends React.Component {
     }
 
     componentDidMount() {
-        // every 10 seconds, check state.visible and props.applicationInFocus
+        // every 60 seconds, check state.visible and props.applicationInFocus
         // and if it's true, fetch the number of records that matches the search params
         this.interval = setInterval(() => {
             if (this.props.applicationInFocus && this.props.visible) {
                 this.fetchStatistics();
             }
-        }, 10000);
+        }, 60000);
     }
 
     componentWillUnmount() {

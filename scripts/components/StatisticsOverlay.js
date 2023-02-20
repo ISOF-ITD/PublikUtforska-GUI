@@ -109,9 +109,8 @@ export default class StatisticsOverlay extends React.Component {
                             class="table-compressed"
                             // möjliggör att visa 50 poster efter en klick på "visa fler"
                             sizeMore={50}
-                            // interval is 10000, if this.state.visible is true and the web browser is in focus
-                            interval={this.props.applicationInFocus && this.state.visible && 10000}
-                            // interval={this.state.visible && 10000}
+                            // interval is 60 sec, if this.state.visible is true and the web browser is in focus
+                            interval={this.props.applicationInFocus && this.state.visible && 60000}
                         />
                     }
                 </div>
