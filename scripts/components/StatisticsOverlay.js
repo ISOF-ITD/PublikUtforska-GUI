@@ -43,8 +43,6 @@ export default function StatisticsOverlay(props) {
                     }}
                     label="avskrivna uppteckningar senaste månaden"
                     visible={visible}
-                    applicationInFocus={props.applicationInFocus}
-
                 />
 
                 {/* Show how many pages that have been transcribed the last month */}
@@ -59,8 +57,6 @@ export default function StatisticsOverlay(props) {
                     }}
                     label="avskrivna sidor senaste månaden"
                     visible={visible}
-                    applicationInFocus={props.applicationInFocus}
-
                 />
 
                 {/* Show how many different users have transcribed in the last month */}
@@ -74,7 +70,6 @@ export default function StatisticsOverlay(props) {
                     }}
                     label="användare som har skrivit av uppteckningar senaste månaden"
                     visible={visible}
-                    applicationInFocus={props.applicationInFocus}
                 />
 
                 <h3>Senast avskrivna uppteckningar</h3>
