@@ -31,8 +31,6 @@ export default class Application extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.mapMenu = React.createRef();
-
 		// Lägg till globalt eventBus variable för att skicka data mellan moduler
 		window.eventBus = EventBus;
 
@@ -189,24 +187,7 @@ export default class Application extends React.Component {
 	}
 
 	windowClickHandler(event) {
-		const componentEl = ReactDOM.findDOMNode(this.mapMenu.current);
-
 		eventBus.dispatch('screen-clicked');
-
-		// following lines are not needed right now
-		// because expanded/collapsed menu is deactivated for now:
-		// ----START----
-		// if (!!componentEl && !componentEl.contains(event.target)) {
-		// 	this.setState({
-		// 		menuExpanded: false
-		// 	});
-		// } else if(!event.target.classList.contains('ignore-expand-menu')){
-		// 	this.setState({
-		// 		menuExpanded: true
-		// 	});
-		// 	document.getElementById('searchInputMapMenu').focus();
-		// }
-		// ----END----
 	}
 
 	render() {
@@ -302,7 +283,6 @@ export default class Application extends React.Component {
 								{...props}
 							>
 								<MapMenu
-									ref={this.mapMenu}
 									searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
 									{...props}
 									expanded={this.state.menuExpanded}
