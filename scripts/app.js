@@ -1,12 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Client from 'react-dom/client';
-import { HashRouter, Route, Redirect } from 'react-router-dom'
+import { HashRouter, Router } from 'react-router-dom';
 
-import Application from './components/Application';
-import RecordListWrapper from './components/views/RecordListWrapper';
-
-import routeHelper from './utils/routeHelper'
+import ApplicationWrapper from './components/ApplicationWrapper';
 
 import { ENV } from './config'
 
@@ -70,30 +67,10 @@ window.l = Lang.get;
 // "component" pekar mot importerade componenter (se högst uppe i denna fil)
 const container = document.getElementById('app');
 const root = Client.createRoot(container);
+
+
 root.render(
-
 	<HashRouter>
-		<Route exact path="/">
-			<Redirect to="/places/recordtype/one_accession_row/has_media/true" />
-		</Route>
-		<Route exact path="/places">
-			<Redirect to="/places/recordtype/one_accession_row/has_media/true" />
-		</Route>
-		<Route
-			path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id', '/statistics']}
-			render={(props) =>
-				<Application
-					popup={<RecordListWrapper
-						manuallyOpenPopup={true}
-						openButtonLabel="Visa sökträffar som lista"
-						disableRouterPagination={false}
-						searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
-						{...props}
-						/>}
-					{...props}
-				/>
-			}
-		/>
-
+		<ApplicationWrapper />
 	</HashRouter>
 );

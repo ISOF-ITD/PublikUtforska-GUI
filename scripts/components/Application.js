@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 
 import MapMenu from './MapMenu';
@@ -19,6 +19,7 @@ import TranscriptionOverlay from './../../ISOF-React-modules/components/views/Tr
 import PopupNotificationMessage from './../../ISOF-React-modules/components/controls/PopupNotificationMessage';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
+import RecordListWrapper from './views/RecordListWrapper';
 
 import routeHelper from './../utils/routeHelper';
 
@@ -68,6 +69,16 @@ export default class Application extends React.Component {
 			// menuExpanded: false,
 			menuExpanded: true,
 		};
+
+		this.popup = 
+			<RecordListWrapper
+				manuallyOpenPopup={true}
+				openButtonLabel="Visa sökträffar som lista"
+				disableRouterPagination={false}
+				// highlightRecordsWithMetadataField="has_media"
+				searchParams={routeHelper.createParamsFromSearchRoute(location.pathname.split(match.url)[1])}
+			/>
+		
 	}
 
 	mapMarkerClick(placeId) {
@@ -194,7 +205,7 @@ export default class Application extends React.Component {
 
 		return (
 				<div className={'app-container'+(this.state.popupVisible ? ' has-overlay' : '')}>
-					<Switch>
+					<Routes>
 						<Route 
 							path={[
 								"/statistics",
@@ -254,7 +265,13 @@ export default class Application extends React.Component {
 								onHide={this.popupWindowHideHandler}
 								onClose={this.popupCloseHandler}
 								router={this.context.router}>
-									{this.props.popup}
+									<RecordListWrapper
+										manuallyOpenPopup={true}
+										openButtonLabel="Visa sökträffar som lista"
+										disableRouterPagination={false}
+										// highlightRecordsWithMetadataField="has_media"
+										searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(match.url)[1])}
+									/>
 							</RoutePopupWindow>
 						}/>
 						<Route path = "/records" render={(props) =>
@@ -270,10 +287,10 @@ export default class Application extends React.Component {
 									/>
 							</RoutePopupWindow>
 						}/>
-					</Switch>
+					</Routes>
 
 					<Route
-						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id', '/statistics']} 
+						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']} 
 						render={(props) =>
 							<MapView
 								searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
