@@ -88,7 +88,7 @@ export default function StatisticsOverlay(props) {
                         // möjliggör att visa 50 poster efter en klick på "visa fler"
                         sizeMore={50}
                         // interval is 60 sec, if visible is true and the web browser is in focus
-                        interval={props.applicationInFocus && visible && 60000}
+                        interval={visible && 60000}
                     />
                 }
             </div>
