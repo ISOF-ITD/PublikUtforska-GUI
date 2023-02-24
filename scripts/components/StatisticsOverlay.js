@@ -4,7 +4,10 @@ import routeHelper from "../utils/routeHelper.js";
 
 import ShortStatistics from "./ShortStatistics.js";
 
+import { useLocation } from "react-router-dom";
+
 export default function StatisticsOverlay(props) {
+    const location = useLocation();
 
     const [visible, setVisible] = useState(false);
     const [hasBeenVisible, setHasBeenVisible] = useState(false);
@@ -83,8 +86,8 @@ export default function StatisticsOverlay(props) {
                         columns={['title', 'year', 'place', 'transcribedby']}
                         // create siteSearchParams in order to
                         // keep the global search params when navigating to a record
-                        siteSearchParams={routeHelper.createParamsFromPlacesRoute(props.location.pathname)}
-                        class="table-compressed"
+                        siteSearchParams={routeHelper.createParamsFromPlacesRoute(location.pathname)}
+                        tableClass="table-compressed"
                         // möjliggör att visa 50 poster efter en klick på "visa fler"
                         sizeMore={50}
                         // interval is 60 sec, if visible is true and the web browser is in focus

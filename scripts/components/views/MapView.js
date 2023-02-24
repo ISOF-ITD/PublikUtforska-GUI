@@ -1,413 +1,433 @@
-import React from 'react';
-
 import L from 'leaflet';
 import 'leaflet.markercluster';
-import './../../../ISOF-React-modules/lib/leaflet-heat';
-//import 'leaflet.vectorgrid';
-import _ from 'underscore';
+import '../../../ISOF-React-modules/lib/leaflet-heat';
 
+import { useState, useRef, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import MapBase from './MapBase';
 
-import MapCollection from './../../../ISOF-React-modules/components/collections/MapCollection';
-import mapHelper from './../../utils/mapHelper';
-import config from './../../config';
+import MapCollection from '../../../ISOF-React-modules/components/collections/MapCollection';
+import mapHelper from '../../utils/mapHelper';
+import config from '../../config';
 
-// Main CSS: ui-components/map.less
-//           ui-components/map-ui.less
+import routeHelper from '../../utils/routeHelper';
 
-// Leaflet CSS: leaflet.less
-//              MarkerCluster.Default.less
+export default function MapView({
+  onMarkerClick,
+  onMapUpdate,
+  hideMapmodeMenu,
+  highlightedMarkerIcon,
+  disableHeatmapMode,
+  disableCirclesMode,
+  defaultMarkerIcon,
+  layersControlPosition,
+  zoomControlPosition,
+  zoom,
+  center,
+  disableSwedenMap,
+  children,
+}) {
+  MapView.propTypes = {
+    onMarkerClick: PropTypes.func,
+    onMapUpdate: PropTypes.func,
+    hideMapmodeMenu: PropTypes.bool,
+    highlightedMarkerIcon: PropTypes.string,
+    disableHeatmapMode: PropTypes.bool,
+    disableCirclesMode: PropTypes.bool,
+    defaultMarkerIcon: PropTypes.string,
+    layersControlPosition: PropTypes.string,
+    zoomControlPosition: PropTypes.string,
+    zoom: PropTypes.number,
+    center: PropTypes.arrayOf(PropTypes.number),
+    disableSwedenMap: PropTypes.bool,
+    children: PropTypes.node,
+  };
 
-export default class MapView extends React.Component {
+  MapView.defaultProps = {
+    onMarkerClick: undefined,
+    onMapUpdate: undefined,
+    hideMapmodeMenu: false,
+    highlightedMarkerIcon: undefined,
+    disableHeatmapMode: false,
+    disableCirclesMode: false,
+    defaultMarkerIcon: undefined,
+    layersControlPosition: undefined,
+    zoomControlPosition: undefined,
+    zoom: undefined,
+    center: undefined,
+    disableSwedenMap: false,
+    children: undefined,
+  };
 
-	constructor(props) {
-		super(props);
+  const [viewMode, setViewMode] = useState('clusters');
+  const [loading, setLoading] = useState(false);
+  const [mapData, setMapData] = useState([]);
+  const [markers, setMarkers] = useState({});
 
-		window.mapView = this;
+  const routerParams = useParams();
 
-		this.mapView = React.createRef();
+  const mapView = useRef();
 
-		this.state = {
-			viewMode: 'clusters',
-			loading: false
-		};
+  const createLayers = () => {
+    if (markers) {
+      if (markers.clearLayers) {
+        markers.clearLayers();
+      }
 
-		this.mapData = [];
+      mapView.current.map.removeLayer(markers);
+    }
 
-		this.changeViewMode = this.changeViewMode.bind(this);
-		this.mapBaseLayerChangeHandler = this.mapBaseLayerChangeHandler.bind(this);
+    let newMarkers = {};
+    switch (viewMode) {
+      case 'markers':
+        setMarkers(L.featureGroup());
+        mapView.current.map.addLayer(L.featureGroup());
+        break;
+      case 'circles':
+        setMarkers(L.featureGroup());
+        mapView.current.map.addLayer(L.featureGroup());
+        break;
+      case 'clusters':
+        newMarkers = new L.MarkerClusterGroup({
+          showCoverageOnHover: false,
+          maxClusterRadius: 40,
+          iconCreateFunction(cluster) {
+            const childCount = cluster.getChildCount();
+            let c = ' marker-cluster-';
+            if (childCount < 10) {
+              c += 'small';
+            } else if (childCount < 20) {
+              c += 'medium';
+            } else {
+              c += 'large';
+            }
+            return new L.DivIcon({
+              html: '<div><span>'
+                + `<b>${childCount}</b>`
+                + '</span></div>',
+              className: `marker-cluster${c}`,
+              iconSize: new L.Point(28, 28),
+            });
+          },
+        });
+        setMarkers(newMarkers);
+        mapView.current.map.addLayer(newMarkers);
+        break;
+      case 'heatmap':
+        setMarkers(L.heatLayer([], {
+          minOpacity: 0.35,
+          radius: 18,
+          blur: 15,
+        }));
+        markers.addTo(mapView.current.map);
+        break;
+      case 'heatmap-count':
+        setMarkers(L.heatLayer([], {
+          minOpacity: 0.35,
+          radius: 18,
+          blur: 15,
+          maxZoom: 4,
+        }));
+        markers.addTo(mapView.current.map);
+        break;
+      default:
+        break;
+    }
+  };
 
-		// Förberedar MapCollection som kommer ta hand om att hämta data från api
-		this.collections = new MapCollection(function(json) {
-			this.mapData = json.data || [];
-			this.updateMap();
+  const updateMap = () => {
+    // Om det finns mapFilter (som kan filtrera ut vissa relatontyper av platser),
+    // då filterar vi state.mapData innan vi placerar data på kartan
+    // console.log(this.state.mapFilter)
+    // const mapData = this.state.mapFilter ? _.filter(
+    // this.mapData, (item)=> item.relation_type.indexOf(this.state.mapFilter) > -1) : this.mapData;
 
-			this.setState({
-				loading: false
-			});
-		}.bind(this));
-	}
+    if (viewMode === 'markers' || viewMode === 'clusters') {
+      if (markers?.clearLayers) {
+        markers.clearLayers();
+      } else {
+        createLayers();
+      }
 
-	componentDidMount() {
-		this.fetchData(this.props.searchParams);
+      // Lägger till alla prickar på kartan
+      if (mapData.length > 0) {
+        // Hämtar current bounds (minus 20%) av synliga kartan
+        const currentBounds = mapView.current.map.getBounds().pad(-0.2);
 
-		this.mapBase = this.mapView.current;
-	}
+        // Samlar ihop latLng av alla prickar för att kunna senare zooma inn till dem
+        const bounds = [];
+        let markerWithinBounds = false;
 
-	componentDidUpdate(prevProps) {
-		const currentSearchParams = {...prevProps.searchParams};
+        mapData.forEach((mapItem) => {
+          // console.log(mapItem);
+          if (mapItem.location.length > 0) {
+            // Skalar L.marker objekt och lägger till rätt icon
+            const marker = L.marker([Number(mapItem.location[0]), Number(mapItem.location[1])], {
+              title: mapItem.name,
+              // Om mapItem.has_metadata lägger vi till annan typ av ikon,
+              // används mest av matkartan för att visa kurerade postar
+              // split the above line into two lines to avoid eslint error
+              icon: mapItem.has_metadata
+                ? (highlightedMarkerIcon || mapHelper.markerIconHighlighted)
+                : (defaultMarkerIcon || mapHelper.markerIcon),
+            });
 
-		if (currentSearchParams.place_id) {
-			delete currentSearchParams.place_id;
-		}
+            // Lägger till click event listener
+            marker.on('click', () => {
+              // Om onMarkerClick finns som property för MapView kallar vi den funktionen
+              if (onMarkerClick) {
+                onMarkerClick(mapItem.id);
+              }
+            });
 
-		const searchParams = {...this.props.searchParams};
-		if (searchParams.place_id) {
-			delete searchParams.place_id;
-		}
+            // Lägger pricken till kartan
+            markers.addLayer(marker);
 
-		if (JSON.stringify(currentSearchParams) !== JSON.stringify(searchParams)) {
-			this.fetchData(searchParams);
-		}
-	}
+            // Lägger latLng till bounds
+            bounds.push(mapItem.location);
 
-	mapBaseLayerChangeHandler(event) {
-		// Uppdaterar kartan om underlagret ändras
-		this.updateMap();
-	}
+            // Checkar om punkten är synlig på visibella kartan på skärmen
+            if (currentBounds.contains(mapItem.location)) {
+              markerWithinBounds = true;
+            }
+          }
+        });
 
-	fetchData(params) {
-		this.setState({
-			loading: true
-		});
+        // Zooma in till alla nya punkena om ingen av dem finns inom synliga kartan
+        if (!markerWithinBounds || config.siteOptions.mapView?.alwaysUpdateViewport) {
+          mapView.current.map.fitBounds(bounds, {
+            maxZoom: 10,
+            padding: [50, 50],
+          });
+        }
+      }
+    }
+    if (viewMode === 'circles') {
+      if (markers?.clearLayers) {
+        markers.clearLayers();
+      } else {
+        createLayers();
+      }
 
-		if (params) {
-			var fetchParams = {
-				search: params.search ? encodeURIComponent(params.search) : undefined,
-				search_field: params.search_field || undefined,
-				type: params.type,
-				category: params.category && params.category + `${params.subcategory ? ',' + params.subcategory : ''}`, // subcategory for matkartan
-				year_from: params.year_from || undefined,
-				year_to: params.year_to || undefined,
-				gender: params.gender ? (params.person_relation ? params.person_relation+':'+params.gender : params.gender) : undefined,
-				// gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : undefined,
-				birth_years: params.birth_years ? (params.person_relation ? params.person_relation+':'+(params.gender ? params.gender+':' : '')+params.birth_years : params.birth_years) : undefined,
-				record_ids: params.record_ids || undefined,
-				has_metadata: params.has_metadata || undefined,
-				has_media: params.has_media || undefined,
-				has_transcribed_records: params.has_transcribed_records || undefined,
-				recordtype: params.recordtype || undefined,
-				transcriptionstatus: params.transcriptionstatus || undefined,
-			};
+      if (mapData.length > 0) {
+        // const bounds = [];
 
-			//TODO Replace with "Application defined filter parameter" where it is used (Sägenkartan)
-			if (!params.nordic) {
-				fetchParams.country = config.country;
-			}
+        // const minValue=Math.min(...mapData.map((mapItem)=> Number(mapItem.doc_count))).doc_count;
+        const maxValue = Math.max(...mapData.map((mapItem) => Number(mapItem.doc_count))).doc_count;
 
-			// Add Application defined filter parameter
-			if (config.filterParameterName && config.filterParameterValues) {
-				if ('filter' in params) {
-					if (params['filter'] == 'true' || params['filter'] == true) {
-						fetchParams[config.filterParameterName] = config.filterParameterValues[1];
-					} else {
-						fetchParams[config.filterParameterName] = config.filterParameterValues[0];
-					}
-				}
-			}
+        mapData.forEach((mapItem) => {
+          if (mapItem.location.length > 0) {
+            const marker = L.circleMarker(mapItem.location, {
+              radius: ((mapItem.doc_count / maxValue) * 20) + 2,
+              fillColor: '#047bff',
+              fillOpacity: 0.4,
+              color: '#000',
+              weight: 0.8,
+            });
 
-			this.collections.fetch(fetchParams);
-		}
-	}
+            marker.on('click', () => {
+              if (onMarkerClick) {
+                onMarkerClick(mapItem.id);
+              }
+            });
 
-	changeViewMode(event) {
-		this.setViewmode(event.target.dataset.viewmode);
-	}
+            markers.addLayer(marker);
+          }
+        });
+      }
+    }
+    if (viewMode === 'heatmap') {
+      const latLngs = mapData.map((mapItem) => [mapItem.location[0], mapItem.location[1], 0.5]);
+      markers.setLatLngs(latLngs);
+    }
+    if (viewMode === 'heatmap-count') {
+      mapView.current.map.removeLayer(markers);
 
-	setViewmode(viewMode) {
-		if (viewMode != this.state.viewMode) {
-			this.setState({
-				viewMode: viewMode
-			});
+      const maxCount = Math.max(...mapData.map((mapItem) => Number(mapItem.doc_count))).doc_count;
 
-			if (this.mapData.length > 0) {
-				setTimeout(function() {
-					this.createLayers();
+      setMarkers(L.heatLayer([], {
+        minOpacity: 0.35,
+        radius: 18,
+        blur: 15,
+        max: maxCount,
+        maxZoom: 0,
+      }));
+      markers.addTo(mapView.current.map);
 
-					this.updateMap();
-				}.bind(this), 50);
-			}
-		}
-	}
+      const latLngs = mapData.map((mapItem) => [
+        mapItem.location[0],
+        mapItem.location[1],
+        mapItem.doc_count,
+      ]);
+      markers.setLatLngs(latLngs);
+    }
 
-	// Lägger till filter till kartan, filter gör att bara viss "type" av socken relation syns på kartan
-	// Typ kan vara place_collected, dispatch_place, destination_place, related_person_place eller något annat
-	// Används för folkmusikkartan för att byta mellan visning av alla socknar eller bara related_person_place socknar (socken som kan vara födelsesocken av personer)
-	setMapFilter(filter) {
-		this.setState({
-			mapFilter: filter
-		}, function() {
-			this.updateMap();
-		}.bind(this));
-	}
+    if (onMapUpdate) {
+      onMapUpdate();
+    }
+  };
 
-	createLayers() {
-		if (this.markers) {
-			if (this.markers.clearLayers) {
-				this.markers.clearLayers();
-			}
+  // Förberedar MapCollection som kommer ta hand om att hämta data från api
+  const collections = new MapCollection((json) => {
+    setMapData(json.data || []);
+    updateMap();
 
-			this.mapView.current.map.removeLayer(this.markers);
-		}
+    setLoading(false);
+  });
 
-		switch (this.state.viewMode) {
-			case 'markers':
-				this.markers = L.featureGroup();
-				this.mapView.current.map.addLayer(this.markers);
-				break;
-			case 'circles':
-				this.markers = L.featureGroup();
-				this.mapView.current.map.addLayer(this.markers);
-				break;
-			case 'clusters':
-				this.markers = new L.MarkerClusterGroup({
-					showCoverageOnHover: false,
-					maxClusterRadius: 40,
-					iconCreateFunction: function (cluster) {
-						var childCount = cluster.getChildCount();
-						var c = ' marker-cluster-';
-						if (childCount < 10) {
-							c += 'small';
-						} else if (childCount < 20) {
-							c += 'medium';
-						} else {
-							c += 'large';
-						}
-						return new L.DivIcon({
-							html: '<div><span>'+
-								'<b>'+childCount+'</b>'+
-								'</span></div>',
-							className: 'marker-cluster'+c,
-							iconSize: new L.Point(28, 28)
-						});
-					}
-				});
-				this.mapView.current.map.addLayer(this.markers);
-				break;
-			case 'heatmap':
-				this.markers = L.heatLayer([], {
-					minOpacity: 0.35,
-					radius: 18,
-					blur: 15
-				});
-				this.markers.addTo(this.mapView.current.map);
-			case 'heatmap-count':
-				this.markers = L.heatLayer([], {
-					minOpacity: 0.35,
-					radius: 18,
-					blur: 15,
-					maxZoom: 4
-				});
-				this.markers.addTo(this.mapView.current.map);
-		}
-	}
+  const fetchData = (params) => {
+    setLoading(true);
 
-	updateMap() {
-		// Om det finns mapFilter (som kan filtrera ut vissa relatontyper av platser), då filterar vi state.mapData innan vi placerar data på kartan
-		//console.log(this.state.mapFilter)
-		var mapData = this.state.mapFilter ? _.filter(this.mapData, function(item) {
-			return item.relation_type.indexOf(this.state.mapFilter) > -1;
-		}.bind(this)) : this.mapData;
+    if (params) {
+      const fetchParams = {
+        search: params.search ? encodeURIComponent(params.search) : undefined,
+        search_field: params.search_field || undefined,
+        type: params.type,
+        category: params.category && `${params.category}${params.subcategory ? `,${params.subcategory}` : ''}`, // subcategory for matkartan
+        year_from: params.year_from || undefined,
+        year_to: params.year_to || undefined,
+        gender: params.gender && (
+          params.person_relation
+            ? `${params.person_relation}:${params.gender}`
+            : params.gender
+        ),
+        birth_years: params.birth_years && (
+          params.person_relation
+            ? `${params.person_relation}:${params.gender ? `${params.gender}:` : ''}${params.birth_years}`
+            : params.birth_years
+        ),
+        record_ids: params.record_ids || undefined,
+        has_metadata: params.has_metadata || undefined,
+        has_media: params.has_media || undefined,
+        has_transcribed_records: params.has_transcribed_records || undefined,
+        recordtype: params.recordtype || undefined,
+        transcriptionstatus: params.transcriptionstatus || undefined,
+      };
 
-		//console.log(mapData);
+      // TODO Replace with "Application defined filter parameter" where it is used (Sägenkartan)
+      if (!params.nordic) {
+        fetchParams.country = config.country;
+      }
 
-		if (this.state.viewMode == 'markers' || this.state.viewMode == 'clusters') {
-			if (this.markers) {
-				this.markers.clearLayers();
-			}
-			else {
-				this.createLayers();
-			}
+      // Add Application defined filter parameter
+      // if (config.filterParameterName && config.filterParameterValues) {
+      //   if ('filter' in params) {
+      //     if (params.filter === 'true' || params.filter === true) {
+      //       fetchParams[config.filterParameterName] = config.filterParameterValues[1];
+      //     } else {
+      //       fetchParams[config.filterParameterName] = config.filterParameterValues[0];
+      //     }
+      //   }
+      // }
 
-			// Lägger till alla prickar på kartan
-			if (mapData.length > 0) {
-				// Hämtar current bounds (minus 20%) av synliga kartan
-				var currentBounds = this.mapView.current.map.getBounds().pad(-0.2);
+      collections.fetch(fetchParams);
+    }
+  };
 
-				// Samlar ihop latLng av alla prickar för att kunna senare zooma inn till dem
-				var bounds = [];
-				var markerWithinBounds = false;
+  useEffect(() => {
+    fetchData(routeHelper.createParamsFromSearchRoute(routerParams['*']));
+    // mapBase = mapView.current;
+  }, []);
 
-				_.each(mapData, function(mapItem) {
-					// console.log(mapItem);
-					if (mapItem.location.length > 0) {
-						// Skalar L.marker objekt och lägger till rätt icon
-						var marker = L.marker([Number(mapItem.location[0]), Number(mapItem.location[1])], {
-							title: mapItem.name,
-							// Om mapItem.has_metadata lägger vi till annan typ av ikon, används mest av matkartan för att visa kurerade postar
-							icon: mapItem.has_metadata == true ? (this.props.highlightedMarkerIcon || mapHelper.markerIconHighlighted) : (this.props.defaultMarkerIcon || mapHelper.markerIcon)
-						});
+  useEffect(() => {
+    const searchParams = routeHelper.createParamsFromSearchRoute(routerParams['*']);
+    if (searchParams.place_id) {
+      delete searchParams.place_id;
+    }
+    fetchData(searchParams);
+  }, [routerParams['*']]);
 
-						// Lägger till click event listener
-						marker.on('click', function(event) {
-							// Om onMarkerClick finns som property för MapView kallar vi den funktionen
-							if (this.props.onMarkerClick) {
-								this.props.onMarkerClick(mapItem.id);
-							}
-						}.bind(this));
+  useEffect(() => {
+    updateMap();
+  }, [mapData]);
 
-						// Lägger pricken till kartan
-						this.markers.addLayer(marker);
+  const mapBaseLayerChangeHandler = () => {
+    // Uppdaterar kartan om underlagret ändras
+    updateMap();
+  };
 
-						// Lägger latLng till bounds
-						bounds.push(mapItem.location);
+  const setViewmode = (viewModeParam) => {
+    if (viewModeParam !== viewMode) {
+      setViewMode(viewModeParam);
 
-						// Checkar om punkten är synlig på visibella kartan på skärmen
-						if (currentBounds.contains(mapItem.location)) {
-							markerWithinBounds = true;
-						}
-					}
-				}.bind(this));
+      if (mapData.length > 0) {
+        setTimeout(() => {
+          createLayers();
 
-				// Zooma in till alla nya punkena om ingen av dem finns inom synliga kartan
-				if (!markerWithinBounds || (config.siteOptions.mapView && config.siteOptions.mapView.alwaysUpdateViewport == true)) {
-					this.mapView.current.map.fitBounds(bounds, {
-						maxZoom: 10,
-						padding: [50, 50]
-					});
-				}
-			}
-		}
-		if (this.state.viewMode == 'circles') {
-			if (this.markers) {
-				this.markers.clearLayers();
-			}
-			else {
-				this.createLayers();
-			}
+          updateMap();
+        }, 50);
+      }
+    }
+  };
 
-			if (mapData.length > 0) {
-				var bounds = [];
+  const changeViewMode = (e) => {
+    setViewmode(e.target.dataset.viewmode);
+  };
 
-				var minValue = _.min(mapData, function(mapItem) {
-					return Number(mapItem.doc_count);
-				}).doc_count;
+  return (
+    <div className={`map-wrapper${loading ? ' map-loading' : ''}`}>
+      {children}
 
-				var maxValue = _.max(mapData, function(mapItem) {
-					return Number(mapItem.doc_count);
-				}).doc_count;
+      {
+        !hideMapmodeMenu
+        && (
+          <div className="map-viewmode-menu">
+            <button
+              className={`icon-marker${viewMode === 'clusters' ? ' selected' : ''}`}
+              data-viewmode="clusters"
+              onClick={changeViewMode}
+              type="button"
+            >
+              <span>Cluster</span>
+            </button>
+            {
+              disableHeatmapMode
+              && (
+                <button
+                  className={`icon-heatmap${viewMode === 'heatmap-count' ? ' selected' : ''}`}
+                  data-viewmode="heatmap-count"
+                  onClick={changeViewMode}
+                  type="button"
+                >
+                  <span>Heatmap</span>
+                </button>
+              )
+            }
+            {
+              disableCirclesMode
+              && (
+                <button
+                  className={`icon-circles${viewMode === 'circles' ? ' selected' : ''}`}
+                  data-viewmode="circles"
+                  onClick={changeViewMode}
+                  type="button"
+                >
+                  <span>Circles</span>
+                </button>
+              )
+            }
+          </div>
+        )
+      }
 
-				_.each(mapData, function(mapItem) {
-					if (mapItem.location.length > 0) {
-						var marker = L.circleMarker(mapItem.location, {
-							radius: ((mapItem.doc_count/maxValue)*20)+2,
-							fillColor: "#047bff",
-							fillOpacity: 0.4,
-							color: '#000',
-							weight: 0.8
-						});
+      <div className="map-progress">
+        <div className="indicator" />
+      </div>
 
-						marker.on('click', function(event) {
-							if (this.props.onMarkerClick) {
-								this.props.onMarkerClick(mapItem.id);
-							}
-						}.bind(this));
-
-						this.markers.addLayer(marker);
-					}
-				}.bind(this));
-/*
-				if (this.legendsEl) {
-					var template = _.template($("#mapLegendsTemplate").html());
-					this.legendsEl.html(template({
-						minValue: Number(minValue),
-						maxValue: Number(maxValue)
-					}));
-					this.legendsEl.addClass('visible');
-				}
-*/
-			}
-		}
-		if (this.state.viewMode == 'heatmap') {
-			var latLngs = _.map(mapData, function(mapItem) {
-				return [mapItem.location[0], mapItem.location[1], 0.5];
-			}.bind(this));
-			this.markers.setLatLngs(latLngs);
-		}
-		if (this.state.viewMode == 'heatmap-count') {
-			this.mapView.current.map.removeLayer(this.markers);
-
-			var maxCount = _.max(mapData, function(mapItem) {
-				return Number(mapItem.doc_count);
-			}).doc_count;
-
-			this.markers = L.heatLayer([], {
-				minOpacity: 0.35,
-				radius: 18,
-				blur: 15,
-				max: maxCount,
-				maxZoom: 0
-			});
-			this.markers.addTo(this.mapView.current.map);
-
-			var latLngs = _.map(mapData, function(mapItem) {
-				return [mapItem.location[0], mapItem.location[1], mapItem.doc_count];
-			}.bind(this));
-			this.markers.setLatLngs(latLngs);
-		}
-
-		if (this.props.onMapUpdate) {
-			this.props.onMapUpdate();
-		}
-	}
-
-	render() {
-		return (
-			<div className={'map-wrapper'+(this.state.loading ? ' map-loading' : '')}>
-				{this.props.children}
-
-				{
-					!this.props.hideMapmodeMenu &&
-					<div className="map-viewmode-menu">
-						<a className={'icon-marker'+(this.state.viewMode == 'clusters' ? ' selected' : '')}
-							data-viewmode="clusters"
-							onClick={this.changeViewMode}>
-							<span>Cluster</span>
-						</a>
-						{
-							!this.props.disableHeatmapMode &&
-							<a className={'icon-heatmap'+(this.state.viewMode == 'heatmap-count' ? ' selected' : '')}
-								data-viewmode="heatmap-count"
-								onClick={this.changeViewMode}>
-								<span>Heatmap</span>
-							</a>
-						}
-						{
-							!this.props.disableCirclesMode &&
-							<a className={'icon-circles'+(this.state.viewMode == 'circles' ? ' selected' : '')}
-								data-viewmode="circles"
-								onClick={this.changeViewMode}>
-								<span>Circles</span>
-							</a>
-						}
-					</div>
-				}
-
-				<div className="map-progress">
-					<div className="indicator"></div>
-				</div>
-
-				<MapBase ref={this.mapView}
-					className="map-view"
-					layersControlPosition={this.props.layersControlPosition || 'bottomright'}
-					zoomControlPosition={this.props.zoomControlPosition || 'bottomright'} 
-					disableLocateControl={true} // Inte visa locateControl knappen (som kan visa på kartan var användaren är)
-					scrollWheelZoom={true}
-					zoom={this.props.zoom}
-					center={this.props.center}
-					disableSwedenMap={this.props.disableSwedenMap}
-					onBaseLayerChange={this.mapBaseLayerChangeHandler} />
-			</div>
-		);
-	}
+      <MapBase
+        ref={mapView}
+        className="map-view"
+        layersControlPosition={layersControlPosition || 'bottomright'}
+        zoomControlPosition={zoomControlPosition || 'bottomright'}
+        // Inte visa locateControl knappen (som kan visa på kartan var användaren är)
+        disableLocateControl
+        scrollWheelZoom
+        zoom={zoom}
+        center={center}
+        disableSwedenMap={disableSwedenMap}
+        onBaseLayerChange={mapBaseLayerChangeHandler}
+      />
+    </div>
+  );
 }

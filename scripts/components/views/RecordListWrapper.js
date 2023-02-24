@@ -1,55 +1,71 @@
-import React from 'react';
+import PropTypes from 'prop-types';
+
+import { useEffect, useState } from 'react';
+
+import { useParams, useLocation } from 'react-router-dom';
+
 import RecordList from './RecordList';
-import WindowScroll from './../../../ISOF-React-modules/utils/windowScroll'
-import routeHelper from './../../../scripts/utils/routeHelper'
+import routeHelper from '../../utils/routeHelper';
 
-export default class RecordListWrapper extends React.Component {
-	constructor(props) {
-		super(props);
 
-		this.languageChangedHandler = this.languageChangedHandler.bind(this);
-	}
+import L from '../../../ISOF-React-modules/lang/Lang';
 
-	languageChangedHandler() {
-		this.forceUpdate();
-	}
+const l = L.get;
 
-	componentDidMount() {
-		if (window.eventBus) {
-			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler)
-		}
-	}
+export default function RecordListWrapper({
+  manuallyOpenPopup,
+  openButtonLabel,
+  disableRouterPagination,
+  highlightRecordsWithMetadataField,
+}) {
+  RecordListWrapper.propTypes = {
+    manuallyOpenPopup: PropTypes.bool,
+    openButtonLabel: PropTypes.string,
+    disableRouterPagination: PropTypes.bool,
+    highlightRecordsWithMetadataField: PropTypes.string,
+  };
 
-	componentWillUnmount() {
-		if (window.eventBus) {
-			window.eventBus.removeEventListener('Lang.setCurrentLang', this.languageChangedHandler)
-		}
-	}
+  RecordListWrapper.defaultProps = {
+    manuallyOpenPopup: true,
+    openButtonLabel: 'Visa',
+    disableRouterPagination: true,
+    highlightRecordsWithMetadataField: null,
+  };
 
-	render() {
-		let _props = this.props;
-		return (
-			<div className="container">
+  const params = useParams();
+  const location = useLocation();
 
-				<div className="container-header">
-					<div className="row">
-						<div className="twelve columns">
-							<h2>{l('Sökträffar som lista')} – {this.props.searchParams.recordtype === 'one_accession_row' ? 'Accessioner' : 'Uppteckningar'}</h2>
-						</div>
-					</div>
-				</div>
+  const [searchParams, setSearchParams] = useState(routeHelper.createParamsFromSearchRoute(params['*']));
 
-				<div className="row">
-					<div className="records-list-wrapper">
-						<RecordList 
-							key={`RecordListWrapper-RecordList-${this.props.location.pathname}`}
-							searchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
-							highlightRecordsWithMetadataField={this.props.highlightRecordsWithMetadataField}
-							{..._props}
-						/>
-					</div>
-				</div>
-			</div>
-		);
-	}
+  useEffect(() => {
+    setSearchParams(routeHelper.createParamsFromPlacesRoute(params['*']));
+  }, [params['*']]);
+
+  return (
+    <div className="container">
+      <div className="container-header">
+        <div className="row">
+          <div className="twelve columns">
+            <h2>
+              {l('Sökträffar som lista')}
+              {' '}
+              –
+              {' '}
+              {searchParams.recordtype === 'one_accession_row' ? 'Accessioner' : 'Uppteckningar'}
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="records-list-wrapper">
+          <RecordList
+            key={`RecordListWrapper-RecordList-${location.pathname}`}
+            // searchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
+            highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }

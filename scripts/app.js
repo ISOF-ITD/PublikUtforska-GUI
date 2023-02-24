@@ -1,76 +1,55 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
 import Client from 'react-dom/client';
-import { HashRouter, Router } from 'react-router-dom';
+import { createHashRouter, HashRouter, Navigate, RouterProvider } from 'react-router-dom';
+// import ApplicationWrapper from './components/ApplicationWrapper';
 
-import ApplicationWrapper from './components/ApplicationWrapper';
+import Application from './components/Application';
+import RoutePopupWindow from './components/RoutePopupWindow';
+import RecordListWrapper from './components/views/RecordListWrapper';
+import RecordView from './components/views/RecordView';
 
-import { ENV } from './config'
-
-import './../less/style-basic.less';
-
-if (ENV !== "prod") {
-	console.log(`PublikUtforska running React.js version ${React.version} and ReactDOM version ${ReactDOM.version} on ${ENV} environment`);
-} 
-
-/*
-Object.assign polyfill
-https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-*/
-// For older browsers that has no Object.assign defined:
-if (typeof Object.assign != 'function') {
-	// Must be writable: true, enumerable: false, configurable: true
-	Object.defineProperty(Object, "assign", {
-		value: function assign(target, varArgs) { // .length of function is 2
-			'use strict';
-			if (target == null) { // TypeError if undefined or null
-				throw new TypeError('Cannot convert undefined or null to object');
-			}
-
-			var to = Object(target);
-
-			for (var index = 1; index < arguments.length; index++) {
-				var nextSource = arguments[index];
-
-				if (nextSource != null) { // Skip over if undefined or null
-					for (var nextKey in nextSource) {
-						// Avoid bugs when hasOwnProperty is shadowed
-						if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-							to[nextKey] = nextSource[nextKey];
-						}
-					}
-				}
-			}
-			return to;
-		},
-		writable: true,
-		configurable: true
-	});
-}
-
-// IE 11 backwards compatibility, Promise och Fetch
-import 'whatwg-fetch';
-import Promise from 'promise-polyfill';
-
-if (!window.Promise) {
-	window.Promise = Promise;
-}
+import '../less/style-basic.less';
 
 // Initalisera stöd för flerspråkighet
-import Lang from './../ISOF-React-modules/lang/Lang';
-// Språk: svenska
+// Språk:
+import Lang from '../ISOF-React-modules/lang/Lang';
+
 Lang.setCurrentLang('sv');
 window.Lang = Lang;
 window.l = Lang.get;
 
-// Initalisera React.js Router som bestämmer vilken "sida" användaren ser baserad på url:et 
-// "component" pekar mot importerade componenter (se högst uppe i denna fil)
 const container = document.getElementById('app');
 const root = Client.createRoot(container);
 
+const router = createHashRouter([
+  { path: '/', element: <Navigate to="/places/recordtype/one_accession_row/has_media/true" /> },
+  { path: '/places', element: <Navigate to="/places/recordtype/one_accession_row/has_media/true" /> },
+  {
+    path: '/places/*',
+    element: (
+      <Application>
+        <RoutePopupWindow>
+          <RecordListWrapper
+            manuallyOpenPopup
+            openButtonLabel="Visa sökträffar som lista"
+            disableRouterPagination={false}
+          />
+        </RoutePopupWindow>
+      </Application>),
+  },
+  {
+    path: '/records/:record_id',
+    element: (
+      <Application>
+        <RoutePopupWindow>
+          <RecordView />
+        </RoutePopupWindow>
+      </Application>),
+  },
+
+  // { path: '/records/:record_id/*', element: <Application /> },
+  // { path: '/person/:person_id/*', element: <Application /> },
+]);
 
 root.render(
-	<HashRouter>
-		<ApplicationWrapper />
-	</HashRouter>
+  <RouterProvider router={router} />,
 );

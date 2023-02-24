@@ -1,0 +1,11 @@
+{
+  "presets": [
+    [
+      "@babel/preset-react",
+      {
+        "runtime": "automatic", // defaults to classic
+        "importSource": "react" // defaults to react
+      }
+    ]
+  ]
+}

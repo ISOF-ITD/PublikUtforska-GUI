@@ -1,363 +1,389 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 
-import RecordsCollection from './../../../ISOF-React-modules/components/collections/RecordsCollection';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import PropTypes from 'prop-types';
+
+import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 import RecordListItem from './RecordListItem';
 
-import config from './../../../scripts/config.js';
-import routeHelper from './../../../scripts/utils/routeHelper';
+import config from '../../config';
+import routeHelper from '../../utils/routeHelper';
 
-export default class RecordList extends React.Component {
-	constructor(props) {
-		super(props);
+import L from '../../../ISOF-React-modules/lang/Lang';
 
-		this.state = {
-			records: [],
-			fetchingPage: false,
-			currentPage: 1,
-			sort: 'archive.archive_id_row.keyword',
-			order: 'asc',
-			//sort: undefined,
-			//order: undefined,
-			loadedMore: false,
-		};
+const l = L.get;
 
-		this.stepPage = this.stepPage.bind(this);
-		this.sort = this.sort.bind(this);
-		this.archiveIdClick = this.archiveIdClick.bind(this);
-		this.loadMore = this.loadMore.bind(this);
+export default function RecordList({
+  columns,
+  disableListPagination,
+  disableRouterPagination,
+  highlightRecordsWithMetadataField,
+  interval,
+  searchParams,
+  siteSearchParams,
+  sizeMore,
+  tableClass,
+}) {
+  RecordList.propTypes = {
+    columns: PropTypes.arrayOf(PropTypes.string),
+    disableListPagination: PropTypes.bool,
+    disableRouterPagination: PropTypes.bool,
+    highlightRecordsWithMetadataField: PropTypes.string,
+    interval: PropTypes.number,
+    searchParams: PropTypes.objectOf(PropTypes.string),
+    siteSearchParams: PropTypes.objectOf(PropTypes.string),
+    sizeMore: PropTypes.number,
+    tableClass: PropTypes.string,
+  };
 
-		this.collections = new RecordsCollection((json) => {
-			if(window.eventBus) {
-				window.eventBus.dispatch('recordList.totalRecords', json.metadata.total, json.metadata.total);
-				window.eventBus.dispatch('recordList.fetchingPage', false);
-				// show a message if no records were found
-				// if (!json.data || json.data.length == 0) {
-				// 	// Om vi hittade inga postar skickar vi visuell meddelande till användaren
-				// 	window.eventBus.dispatch('popup-notification.notify', null, l(`Inga sökträffar
-				// 	<br><br>Kanske informationen inte har skannats? Du kan pröva att söka i den andra
-				// 	av de två flikarna "Accessioner" och "Uppteckningar" utifall informationen finns där.
-				// 	<br><br>Klicka för att stänga meddelandet.`));
-				// }
-			}
-			// Handle new ES7 total value definition with total.relation parameter
-			// Needed sometimes if 'track_total_hits' not set in ES-request:
-			// total.relation: "eq": output only value
-			// total.relation: "gte": output '"more than "+value+" hits"' (value = 10000 for values > 10000)
-			let totalPrefixValue = '';
-			if (json.metadata.total.relation !== 'eq') {
-				totalPrefixValue = 'mer än ';
-			}
-			this.setState({
-				records: json.data,
-				total: json.metadata.total.value || json.metadata.total, // ES7 vs ES5
-				totalRelation: json.metadata.total.relation || 'eq', // ES7 vs ES5
-				fetchingPage: false,
-				totalPrefix: totalPrefixValue,
-			});
+  RecordList.defaultProps = {
+    columns: null,
+    disableListPagination: false,
+    disableRouterPagination: true,
+    highlightRecordsWithMetadataField: null,
+    interval: null,
+    searchParams: null,
+    siteSearchParams: {},
+    sizeMore: 100,
+    tableClass: null,
+  };
 
-		});
-	
-	}
+  const location = useLocation();
+  const navigate = useNavigate();
 
-	componentDidMount() {
-		this.setState({
-			currentPage: this.props.searchParams.page || 1
-		}, () => {
-			this.fetchData(this.props.searchParams);
-		});
+  const [records, setRecords] = useState([]);
+  const [fetchingPage, setFetchingPage] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sort, setSort] = useState('archive.archive_id_row.keyword');
+  const [order, setOrder] = useState('asc');
+  const [loadedMore, setLoadedMore] = useState(false);
+  const [searchParamsState] = useState(
+    searchParams || routeHelper.createParamsFromPlacesRoute(location.pathname),
+  );
+  const [total, setTotal] = useState(0);
+  // const [totalRelation, setTotalRelation] = useState('eq');
+  const [totalPrefix, setTotalPrefix] = useState('');
 
+  const collections = new RecordsCollection((json) => {
+    if (window.eventBus) {
+      window.eventBus.dispatch('recordList.totalRecords', json.metadata.total, json.metadata.total);
+      window.eventBus.dispatch('recordList.fetchingPage', false);
+      // show a message if no records were found
+      // if (!json.data || json.data.length == 0) {
+      // // Om vi hittade inga postar skickar vi visuell meddelande till användaren
+      // window.eventBus.dispatch('popup-notification.notify', null, l(`Inga sökträffar
+      // <br><br>Kanske informationen inte har skannats? Du kan pröva att söka i den andra
+      // av de två flikarna "Accessioner" och "Uppteckningar" utifall informationen finns där.
+      // <br><br>Klicka för att stänga meddelandet.`));
+      // }
+    }
+    // Handle new ES7 total value definition with total.relation parameter
+    // Needed sometimes if 'track_total_hits' not set in ES-request:
+    // total.relation: "eq": output only value
+    // total.relation: "gte": output '"more than "+value+" hits"' (value = 10000 for values > 10000)
+    let totalPrefixValue = '';
+    if (json.metadata.total.relation !== 'eq') {
+      totalPrefixValue = 'mer än ';
+    }
 
-		// set interval for fetching new data
-		// if interval is set, we fetch new data every x seconds
-		this.interval = setInterval(() => {
-			if(this.props.interval) {
-				this.state.loadedMore ? this.loadMore() : this.fetchData(this.props.searchParams);
-			}
-		}, this.props.interval);
-	}
+    setRecords(json.data);
+    setTotal(json.metadata.total.value);
+    // setTotalRelation(json.metadata.total.relation);
+    setFetchingPage(false);
+    setTotalPrefix(totalPrefixValue);
+  });
 
-	componentWillUnmount() {
-		if (this.interval) {
-			clearInterval(this.interval);
-		}
-	}
+  // render more records once, without pagination
+  const loadMore = () => {
+    setCurrentPage(1);
+    setLoadedMore(true);
+  };
 
-	shouldRenderColumn(column_name, props_arg) {
-		// Föredra this.props om de finns, annars använd props som skickas in som argument
-		const props = this.props ? this.props : props_arg;
-		// this.props.columns is optional, if it's not set we render all columns
-		return props.columns ? props.columns.indexOf(column_name) > -1 : true;
-	}
+  const fetchData = (params) => {
+    if (window.eventBus) {
+      window.eventBus.dispatch('recordList.fetchingPage', true);
+    }
+    setFetchingPage(true);
 
-	archiveIdClick(event) {
-		const archive_id_row = event.target.dataset.archiveidrow
-		const recordtype = event.target.dataset.recordtype
-		const search = event.target.dataset.search
-		const params = {
-			search: search,
-			recordtype: recordtype,
-		}
-		archive_id_row && this.props.history.push( '/records/' + archive_id_row + routeHelper.createSearchRoute(params))
-		// window.eventBus.dispatch('routePopup.show')
-	}
+    const fetchParams = {
+      from: params.page ? (params.page - 1) * config.hitsPerPage : (currentPage - 1) * config.hitsPerPage,
+      // simplify the above line to:
+      // from: (params.page ?? currentPage - 1) * config.hitsPerPage
+      size: params.size || config.hitsPerPage,
+      search: params.search ? encodeURIComponent(params.search) : undefined,
+      search_field: params.search_field || undefined,
+      type: params.type,
+      category: params.category && `${params.category}${params.subcategory ? `,${params.subcategory}` : ''}`, // subcategory for matkartan
+      year_from: params.year_from || undefined,
+      year_to: params.year_to || undefined,
+      gender: params.gender ? (params.person_relation ? `${params.person_relation}:${params.gender}` : params.gender) : undefined,
+      // gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : undefined,
+      birth_years: params.birth_years ? (params.person_relation ? `${params.person_relation}:${params.gender ? `${params.gender}:` : ''}${params.birth_years}` : params.birth_years) : undefined,
+      record_ids: params.record_ids || undefined,
+      has_metadata: params.has_metadata || undefined,
+      has_media: params.has_media || undefined,
+      has_transcribed_records: params.has_transcribed_records || undefined,
+      recordtype: params.recordtype || undefined,
+      person_id: params.person_id || undefined,
+      socken_id: params.place_id || undefined,
+      transcriptionstatus: params.transcriptionstatus || undefined,
+      sort: params.sort ?? sort ?? undefined,
+      order: params.order ?? order ?? undefined,
+    };
 
-	stepPage(event) {
-		const pageStep = Number(event.target.dataset.pageStep);
-		/*
-			På vanliga sättet använder vi routern för att säga till vilken sida vi hämtar,
-			i moduler som innehåller RecordList (PlaceView, PersonView) lägger vi till disableRouterPagination={true}
-			till RecordList, då hämtar vi ny sida direkt utan att använda routern
-		*/
-		if (this.props.disableRouterPagination) {
-			this.setState({
-				currentPage: this.state.currentPage+pageStep
-			}, () => {
-				this.fetchData(this.props.searchParams);
-			});
-		}
-		else {
-			// Skapar ny router adress via routeHelper, den är baserad på nuvarande params och lägger till ny siffra i 'page'
-			const searchParams = Object.assign({}, this.props.searchParams, {page: Number(this.state.currentPage)+pageStep});
-			this.props.history.push('/places'+routeHelper.createSearchRoute(searchParams));
-		}
-	}
+    // Add Application defined filter parameter
+    if (config.filterParameterName && config.filterParameterValues) {
+      if (params && 'filter' in params) {
+        if (params.filter == 'true' || params.filter == true) {
+          fetchParams[config.filterParameterName] = config.filterParameterValues[1];
+        } else {
+          fetchParams[config.filterParameterName] = config.filterParameterValues[0];
+        }
+      }
+    }
+    collections.fetch(fetchParams);
+  };
 
-	// render more records once, without pagination
-	loadMore() {
-		this.setState({
-			currentPage: 1,
-			loadedMore: true,
-		}, () => {
-			const searchParams = Object.assign({}, this.props.searchParams, {size: this.props.sizeMore});
-			this.fetchData(searchParams);
-		});
-	}
+  useEffect(() => {
+    setCurrentPage(searchParamsState.page || 1);
+    // set interval for fetching new data
+    // if interval is set, we fetch new data every x seconds
+    if (interval) {
+      setInterval(() => {
+        if (loadedMore) {
+          loadMore();
+        } else {
+          fetchData(searchParamsState);
+        }
+      }, interval);
+    }
+  }, []);
 
-	sort(event) {
-		// debugger;
-		this.setState({
-			sort: event.target.name,
-			order: this.state.order === undefined ? 'asc' : 
-				this.state.sort === event.target.name ? (this.state.order === 'asc' ? 'desc' : 'asc') : 'asc',
-			currentPage: 1,
-		}, () => {
-			this.fetchData(this.props.searchParams);
-		});
-	}
-	
-	fetchData(params) {
-		if(window.eventBus) {
-			window.eventBus.dispatch('recordList.fetchingPage', true);
-		}
-		this.setState({
-			fetchingPage: true
-		});
+  useEffect(() => {
+    fetchData(searchParamsState);
+  }, [searchParamsState, currentPage, sort, order]);
 
-		const fetchParams = {
-			from: params.page ? (params.page-1) * config.hitsPerPage : (this.state.currentPage-1)*config.hitsPerPage,
-			size: params.size || config.hitsPerPage,
-			search: params.search ? encodeURIComponent(params.search) : undefined,
-			search_field: params.search_field || undefined,
-			type: params.type,
-			category: params.category && params.category + `${params.subcategory ? ',' + params.subcategory : ''}`, // subcategory for matkartan
-			year_from: params.year_from || undefined,
-			year_to: params.year_to || undefined,
-			gender: params.gender ? (params.person_relation ? params.person_relation+':'+params.gender : params.gender) : undefined,
-			// gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : undefined,
-			birth_years: params.birth_years ? (params.person_relation ? params.person_relation+':'+(params.gender ? params.gender+':' : '')+params.birth_years : params.birth_years) : undefined,
-			record_ids: params.record_ids || undefined,
-			has_metadata: params.has_metadata || undefined,
-			has_media: params.has_media || undefined,
-			has_transcribed_records: params.has_transcribed_records || undefined,
-			recordtype: params.recordtype || undefined,
-			person_id: params.person_id || undefined,
-			socken_id: params.place_id || undefined,
-			transcriptionstatus: params.transcriptionstatus || undefined,
-			sort: params.sort || this.state.sort || undefined,
-			order: params.order || (this.state.order && this.state.order ? this.state.order : undefined),
-		};
+  useEffect(() => {
+    const newSearchParams = { ...searchParamsState, size: sizeMore };
+    fetchData(newSearchParams);
+  }, [loadedMore]);
 
-		// Add Application defined filter parameter
-		if (config.filterParameterName && config.filterParameterValues) {
-			if (params && 'filter' in params) {
-				if (params['filter'] == 'true' || params['filter'] == true) {
-					fetchParams[config.filterParameterName] = config.filterParameterValues[1];
-				} else {
-					fetchParams[config.filterParameterName] = config.filterParameterValues[0];
-				}
-			}
-		}
+  const shouldRenderColumn = (columnName, columnsArg) => {
+    // Föredra columns om de finns, annars använd props som skickas in som argument
+    const newColumns = columns || columnsArg;
+    // columns is optional, if it's not set we render all columns
+    return columns ? columns.indexOf(columnName) > -1 : true;
+  };
 
-		this.collections.fetch(fetchParams);
-	}
+  const archiveIdClick = (e) => {
+    const archiveIdRow = e.target.dataset.archiveidrow;
+    const { recordtype } = e.target.dataset;
+    const { search } = e.target.dataset;
+    const params = {
+      search,
+      recordtype,
+    };
+    if (archiveIdRow) {
+      navigate(`/records/${archiveIdRow}${routeHelper.createSearchRoute(params)}`);
+    }
+  };
 
-	renderListPagination() {
-		return 					(
-			(this.state.total > 0 || this.state.fetchingPage) &&
-			<div className="list-pagination">
-				<hr/>
-				<p className="page-info"><strong>{l('Visar')+' '+((this.state.currentPage*config.hitsPerPage)-(config.hitsPerPage-1))+'-'+(this.state.currentPage*config.hitsPerPage > this.state.total ? this.state.total : this.state.currentPage*config.hitsPerPage)+' '+l(this.state.total ? 'av' : '')+l(this.state.totalPrefix || '')+' '+(this.state.total || '')}</strong></p><br/>
-				<button disabled={this.state.currentPage === 1} className="button prev-button" onClick={this.stepPage} data-page-step={-1}>{l('Föregående')}</button>
-				<span> </span>
-				<button disabled={this.state.total <= this.state.currentPage*config.hitsPerPage} className="button next-button" onClick={this.stepPage} data-page-step={1}>{l('Nästa')}</button>
-			</div>
-		)
-	}
+  const stepPage = (e) => {
+    const pageStep = Number(e.target.dataset.pageStep);
+    /*
+        På vanliga sättet använder vi routern för att säga till vilken sida vi hämtar,
+        i moduler som innehåller RecordList (PlaceView, PersonView) lägger vi till
+        disableRouterPagination={true}
+        till RecordList, då hämtar vi ny sida direkt utan att använda routern
+      */
+    if (disableRouterPagination) {
+      setCurrentPage(currentPage + pageStep);
+    } else {
+      // Skapar ny router adress via routeHelper,
+      // den är baserad på nuvarande params och lägger till ny siffra i 'page'
+      const newSearchParams = { ...searchParamsState, page: Number(currentPage) + pageStep };
+      navigate(`/places${routeHelper.createSearchRoute(newSearchParams)}`);
+    }
+  };
 
-	// render more records once, without pagination
-	renderMoreButton() {
-		return <div>
-			<button className="button" onClick={this.loadMore}>{l('Visa fler')}</button>
-		</div>
-	}
-			
-	render() {
-		var searchRouteParams = routeHelper.createSearchRoute(this.props.searchParams);
+  const sortRecords = (e) => {
+    const defaultOrder = 'asc';
+    const { name } = e.target;
+    const finalOrder = (sort === name && order === 'asc') ? 'desc' : defaultOrder;
+    setOrder(finalOrder);
+    setSort(e.target.name);
+    setCurrentPage(1);
+  };
 
-		var items = this.state.records ? this.state.records.map((item, index) => {
-			return <RecordListItem 
-					key={item._source.id}
-					id={item._source.id}
-					item={item}
-					routeParams={searchRouteParams} 
-					highlightRecordsWithMetadataField={this.props.highlightRecordsWithMetadataField}
-					// propagate siteSearchParams to RecordListItem instead of searchParams if the exist
-					// this is used in the StatisticsOverlay to write correct links to the list
-					searchParams={this.props.siteSearchParams || this.props.searchParams}
-					archiveIdClick={this.archiveIdClick}
-					shouldRenderColumn={this.shouldRenderColumn}
-					columns={this.props.columns}
-				/>;
+  const renderListPagination = () => (
+    (total > 0 || fetchingPage)
+    && (
+      <div className="list-pagination">
+        <hr />
+        <p className="page-info"><strong>{`${l('Visar')} ${(currentPage * config.hitsPerPage) - (config.hitsPerPage - 1)}-${currentPage * config.hitsPerPage > total ? total : currentPage * config.hitsPerPage} ${l(total ? 'av' : '')}${l(totalPrefix || '')} ${total || ''}`}</strong></p>
+        <br />
+        <button disabled={currentPage === 1} className="button prev-button" onClick={stepPage} data-page-step={-1} type="button">{l('Föregående')}</button>
+        <span> </span>
+        <button disabled={total <= currentPage * config.hitsPerPage} className="button next-button" onClick={stepPage} data-page-step={1} type="button">{l('Nästa')}</button>
+      </div>
+    )
+  );
 
-		}) : [];
+  // render more records once, without pagination
+  const renderMoreButton = () => (
+    // return (
+    <div>
+      <button className="button" onClick={loadMore} type="button">{l('Visa fler')}</button>
+    </div>
+  );
 
-		if (this.state.records) {
-			return (
-				<div className={
-					(this.props.class ? this.props.class : '') +
-					' table-wrapper records-list list-container'+(this.state.records.length == 0 ? ' loading' : this.state.fetchingPage ? ' loading-page' : '')
-					}>
+  const searchRouteParams = routeHelper.createSearchRoute(searchParamsState);
 
-					{
-						!this.props.disableListPagination && 
-						this.renderListPagination() 
-					}
+  const items = records ? records.map((item) => (
+    <RecordListItem
+      key={item._source.id}
+      id={item._source.id}
+      item={item}
+      routeParams={searchRouteParams}
+      highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
+      // propagate siteSearchParams to RecordListItem instead of searchParams if the exist
+      // this is used in the StatisticsOverlay to write correct links to the list
+      searchParams={siteSearchParams || searchParams}
+      archiveIdClick={archiveIdClick}
+      shouldRenderColumn={shouldRenderColumn}
+      columns={columns}
+    />
+  )) : [];
 
-					<table width="100%" className="table-responsive">
-						<thead>
-							 <tr>
-								{ this.shouldRenderColumn('title') &&
-									<th scope="col">
-										{/*<a className='sort' onClick={this.sort} name='title.raw'>
-											{	
-												(this.state.sort === 'title.raw') && (this.state.order === 'asc' ? '▼' : '▲')
-											*/}
-											{l('Titel')}
-										{/*</a>*/}
-									</th>
-								}
-								{
-									this.shouldRenderColumn('archive_id') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true) &&
-									<th scope="col">
-											<a className='sort' onClick={this.sort} name='archive.archive_id_row.keyword'>
-												{	
-													(this.state.sort === 'archive.archive_id_row.keyword') && (this.state.order === 'asc' ? '▼' : '▲')
-												}
-												{
-													l('Arkivnummer')
-												}
-												{
-													this.props.searchParams.recordtype === 'one_record' ? ':Sida' : ''
-												}
-											</a>
-									</th>
-								}
-								{
-									this.shouldRenderColumn('category') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories == true && this.props.searchParams.recordtype !== 'one_accession_row') &&
-									<th scope="col">
-										<a className='sort' onClick={this.sort} name='taxonomy.category'>
-											{	
-												(this.state.sort === 'taxonomy.category') && (this.state.order === 'asc' ? '▼' : '▲')
-											}
-											{l('Kategori')}
-										</a>
-									</th>
-								}
-								
-								{ this.shouldRenderColumn('place') && 
-									<th scope="col">{l('Ort')}</th>
-								}
-								{
-									this.shouldRenderColumn('collector') && (!config.siteOptions.recordList || !config.siteOptions.recordList.visibleCollecorPersons || config.siteOptions.recordList.visibleCollecorPersons == true) &&
-									<th scope="col">
-										{/* TODO: <a className='sort' onClick={this.sort} name='persons'>
-											{	
-												(this.state.sort === 'persons') && (this.state.order === 'asc' ? '▼' : '▲')
-											}*/}
-											{l('Insamlare')}
-										{/*</a>*/}
-									</th>
-								}
-								{
-									this.shouldRenderColumn('year') &&
-									<th scope="col">
-										<a className='sort' onClick={this.sort} name='year'>
-											{	
-												(this.state.sort === 'year') && (this.state.order === 'asc' ? '▼' : '▲')
-											}
-											{l('År')}
-										</a>
-									</th>
-								}
-								{
-									this.shouldRenderColumn('material_type') && !config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true &&
-									<th scope="col">{l('Materialtyp')}</th>
-								}
-								{
-									this.shouldRenderColumn('transcriptionstatus') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideTranscriptionStatus == true) &&
-									<th scope="col">
-										<a className='sort' onClick={this.sort} name='transcriptionstatus.keyword'>
-										{	
-											(this.state.sort === 'transcriptionstatus.keyword') && (this.state.order === 'asc' ? '▼' : '▲')
-										}
-										{l('Avskriven')}
-										</a>
-									</th>
-								}
-								{
-									// Den här kolumnen måste explicit läggas till i props.columns (används bara för "senast avskrivna" på sidmenyn)
-									this.props.columns && this.props.columns.indexOf('transcribedby') > -1 &&
-									<th scope="col">
-										{l('Transkriberad av')}
-									</th>
-								}
-							</tr>
-						</thead>
-						<tbody>
-							{items}
-						</tbody>
-					</table>
+  if (records) {
+    return (
+      <div className={
+        `${tableClass ?? ''
+        } table-wrapper records-list list-container${records.length == 0 ? ' loading' : fetchingPage ? ' loading-page' : ''}`
+      }
+      >
 
-					{
-					!this.props.disableListPagination &&
-					this.renderListPagination()
-					}
-					{
-						// Checks if sizeMore prop is set and if the number of records is less than sizeMore
-						// If so, render the more button
-						this.props.sizeMore && this.state.records.length < this.props.sizeMore &&
-						this.renderMoreButton()
+        {
+          !disableListPagination
+          && renderListPagination()
+        }
 
-					}
-				</div>
-			);			
-		}
-		else {
-			return (
-				<div className="table-wrapper list-container">
-					<h3>{l('Inga sökträffar.')}</h3>
-				</div>
-			);
-		}
-	}
+        <table width="100%" className="table-responsive">
+          <thead>
+            <tr>
+              {shouldRenderColumn('title')
+                && (
+                  <th scope="col">
+                    {l('Titel')}
+                  </th>
+                )}
+              {
+                shouldRenderColumn('archive_id') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideAccessionpage == true)
+                && (
+                  <th scope="col">
+                    <a className="sort" onClick={sortRecords} name="archive.archive_id_row.keyword">
+                      {
+                        (sort === 'archive.archive_id_row.keyword') && (order === 'asc' ? '▼' : '▲')
+                      }
+                      {
+                        l('Arkivnummer')
+                      }
+                      {
+                        searchParamsState.recordtype === 'one_record' ? ':Sida' : ''
+                      }
+                    </a>
+                  </th>
+                )
+              }
+              {
+                shouldRenderColumn('category') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true && searchParamsState.recordtype !== 'one_accession_row')
+                && (
+                  <th scope="col">
+                    <a className="sort" onClick={sortRecords} name="taxonomy.category">
+                      {
+                        (sort === 'taxonomy.category') && (order === 'asc' ? '▼' : '▲')
+                      }
+                      {l('Kategori')}
+                    </a>
+                  </th>
+                )
+              }
+
+              {shouldRenderColumn('place')
+                && <th scope="col">{l('Ort')}</th>}
+              {
+                shouldRenderColumn('collector') && (!config.siteOptions.recordList || !config.siteOptions.recordList.visibleCollecorPersons || config.siteOptions.recordList.visibleCollecorPersons == true)
+                && (
+                  <th scope="col">
+                    {l('Insamlare')}
+                  </th>
+                )
+              }
+              {
+                shouldRenderColumn('year')
+                && (
+                  <th scope="col">
+                    <a className="sort" onClick={sortRecords} name="year">
+                      {
+                        (sort === 'year') && (order === 'asc' ? '▼' : '▲')
+                      }
+                      {l('År')}
+                    </a>
+                  </th>
+                )
+              }
+              {
+                shouldRenderColumn('material_type') && !config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType == true
+                && <th scope="col">{l('Materialtyp')}</th>
+              }
+              {
+                shouldRenderColumn('transcriptionstatus') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideTranscriptionStatus == true)
+                && (
+                  <th scope="col">
+                    <a className="sort" onClick={sortRecords} name="transcriptionstatus.keyword">
+                      {
+                        (sort === 'transcriptionstatus.keyword') && (order === 'asc' ? '▼' : '▲')
+                      }
+                      {l('Avskriven')}
+                    </a>
+                  </th>
+                )
+              }
+              {
+                // Den här kolumnen måste explicit läggas till i props.columns (används bara för "senast avskrivna" på sidmenyn)
+                columns && columns.indexOf('transcribedby') > -1
+                && (
+                  <th scope="col">
+                    {l('Transkriberad av')}
+                  </th>
+                )
+              }
+            </tr>
+          </thead>
+          <tbody>
+            {items}
+          </tbody>
+        </table>
+
+        {
+          !disableListPagination
+          && renderListPagination()
+        }
+        {
+          // Checks if sizeMore prop is set and if the number of records is less than sizeMore
+          // If so, render the more button
+          sizeMore && records.length < sizeMore
+          && renderMoreButton()
+
+        }
+      </div>
+    );
+  }
+
+  return (
+    <div className="table-wrapper list-container">
+      <h3>{l('Inga sökträffar.')}</h3>
+    </div>
+  );
 }

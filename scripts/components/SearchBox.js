@@ -1,614 +1,590 @@
-import React from 'react';
-
-import CategoryList from './CategoryList';
-import { Route } from 'react-router-dom';
-import routeHelper from './../utils/routeHelper';
-import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
-
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
+import { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import routeHelper from '../utils/routeHelper';
+import categories from '../../ISOF-React-modules/utils/utforskaCategories';
 
 import config from '../config';
 
-export default class SearchBox extends React.Component {
-	constructor(props) {
-		super(props);
+import Lang from '../../ISOF-React-modules/lang/Lang';
 
-		this.searchInputRef = React.createRef();
-		this.suggestionsRef = React.createRef();
-		this.suggestionsCloseRef = React.createRef();
+export default function SearchBox({ expanded }) {
+  SearchBox.propTypes = {
+    expanded: PropTypes.bool.isRequired,
+  };
 
-		// Bind all event handlers to this (the actual component) to make component variables available inside the functions
-		this.inputKeyPressHandler = this.inputKeyPressHandler.bind(this);
-		this.searchValueChangeHandler = this.searchValueChangeHandler.bind(this);
-		this.executeSearch = this.executeSearch.bind(this);
-		this.clearSearch = this.clearSearch.bind(this);
-		this.checkboxChangeHandler = this.checkboxChangeHandler.bind(this);
-		this.categoryItemClickHandler = this.categoryItemClickHandler.bind(this);
-		// this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
+  const searchInputRef = useRef();
+  const suggestionsRef = useRef();
+  const suggestionsCloseRef = useRef();
 
-		this.openButtonClickHandler = this.openButtonClickHandler.bind(this);
-		this.openButtonKeyUpHandler = this.openButtonKeyUpHandler.bind(this);
+  const [fetchingPage, setFetchingPage] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [suggestionsVisible, setSuggestionsVisible] = useState(false);
+  const [searchParamsState, setSearchParamsState] = useState({
+    search: '',
+    search_field: 'record',
+  });
+  const [search, setSearch] = useState('');
+  const [totalRecords, setTotalRecords] = useState({
+    value: 0,
+    relation: 'eq',
+  });
 
-		this.languageChangedHandler = this.languageChangedHandler.bind(this);
-		this.totalRecordsHandler = this.totalRecordsHandler.bind(this);
+  const params = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-		this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
-		this.closeSuggestionsHandler = this.closeSuggestionsHandler.bind(this);
-		this.searchInputFocusHandler = this.searchInputFocusHandler.bind(this);
-		this.searchInputBlurHandler = this.searchInputBlurHandler.bind(this);
+  const l = Lang.get;
 
-		this.fetchingPageHandler = this.fetchingPageHandler.bind(this);
+  const executeSearch = () => {
+    const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
+    Object.assign(searchParams, searchParamsState);
+    // searchParams.search = search;
+    // delete key "page" from params if it exists
+    if (searchParams.page) {
+      delete searchParams.page;
+    }
+    navigate(
+      `/places${routeHelper.createSearchRoute(searchParams)}
+      ${searchParamsState.search ? `?s=${searchParamsState.search}` : ''}`,
+    );
+  };
 
-		// Lyssna efter event från eventBus som kommer om url:et ändras med nya sökparams
+  const getSearchSuggestions = () => {
+    const path = config.matomoApiUrl;
+    const { searchSuggestionsParams } = config;
+    // add params to path
+    const url = new URL(path);
+    Object.keys(searchSuggestionsParams)
+      .forEach((key) => url.searchParams.append(key, searchSuggestionsParams[key]));
+    // read data from json api and store to window object
+    fetch(url, { mode: 'cors' }).then((response) => response.json()).then((data) => {
+      setSearchSuggestions(data);
+    });
+  };
 
-		this.state = {
-			fetchingPage: false,
-			searchSuggestions: [],
-			suggestionsVisible: false,
-			searchParams: {
-				search: '',
-				search_field: 'record',
-			},
-			totalRecords: {
-				value: 0,
-				relation: 'eq',
-			}
-			// searchSuggestions: [
-			// 	'djävulen', 'Eskilsäter', 'Allahelgon'
-			// ],
-		};
+  const totalRecordsHandler = (e) => {
+    setTotalRecords(e.target);
+  };
 
-		window.searchBox = this;
-	}
+  const openButtonClickHandler = () => {
+    if (window.eventBus) {
+      window.eventBus.dispatch('routePopup.show');
+    }
+  };
 
-	// filter keywords by search input value
-	filteredSearchSuggestions() {
-		return this.state.searchSuggestions.filter((keyword) => {
-			return keyword.label.toLowerCase().indexOf(this.state.searchParams.search ? this.state.searchParams.search.toLowerCase() : '') > -1;
-		});
-	}
+  const fetchingPageHandler = (e) => {
+    setFetchingPage(e.target);
+  };
 
-	getSearchSuggestions() {
-		const path = config.matomoApiUrl;
-        const params = config.searchSuggestionsParams;
-        // add params to path
-        const url = new URL(path);
-        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-        // read data from json api and store to window object
-		fetch(url, {mode: 'cors'}).then(response => response.json()).then(data => {
-			this.setState({
-				searchSuggestions: data,
-			});
-		});
-	}
+  useEffect(() => {
+    if (location.pathname.indexOf('/places') === 0) {
+      executeSearch();
+    }
+  }, [searchParamsState.has_media, searchParamsState.has_transcribed_records]);
 
-	fetchingPageHandler(event) {
-		this.setState({
-			fetchingPage: event.target,
-		});
-	}
+  useEffect(() => {
+    // document.getElementById('app').addEventListener('click', windowClickHandler);
+    if (window.eventBus) {
+      // window.eventBus.addEventListener('Lang.setCurrentLang', languageChangedHandler);
+      window.eventBus.addEventListener('recordList.totalRecords', totalRecordsHandler);
+      window.eventBus.addEventListener('recordList.fetchingPage', fetchingPageHandler);
+    }
 
-	closeSuggestionsHandler() {
-		console.log('closeSuggestionsHandler')
-		this.searchInputRef.current.focus();
-		this.setState({
-			suggestionsVisible: false,	
-		});
-		// set focus to search input
-	}
+    // populate search suggestions from matomo api
+    getSearchSuggestions();
+    console.log("setting searchParamsState to: ", routeHelper.createParamsFromSearchRoute(params['*']));
+    setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
+    setSearch(routeHelper.createParamsFromSearchRoute(params['*']).search);
+  }, []);
 
-	inputKeyPressHandler(event) {
-		// check if event.target is the search input that has the ref "searchInputRef"
-		if (event.key == 'Enter' && (event.target === this.searchInputRef.current)) {
-			this.executeSearch();
-		}
-		if (event.key === 'Enter' 
-			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
-			this.setState({
-				suggestionsVisible: false,
-				searchParams: {
-					search: event.target.dataset.value					
-					},
-			}, () => this.executeSearch());
-		}
-		if (event.key == 'Escape') {
-			this.closeSuggestionsHandler();
-		}
-		//if keydown and  this.suggestionsRef.current.contains(event.target)), change to next suggestion
-		if (event.key == 'ArrowDown'
-			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
-			let next = event.target.nextElementSibling;
-			if (next) {
-				next.focus();
-			}
-		}
-		//if keyup and  this.suggestionsRef.current.contains(event.target)), change to previous suggestion
-		if (event.key == 'ArrowUp' 
-			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
-			let prev = event.target.previousElementSibling;
-			if (prev) {
-				prev.focus();
-			}
-		}
-		// if keyup and (event.target === this.searchInputRef.current), change focus to first suggestion
-		if (event.key == 'ArrowDown' && this.suggestionsRef.current && (event.target === this.searchInputRef.current)) {
-			let first = this.suggestionsRef.current.firstElementChild;
-			if (first) {
-				first.focus();
-			}
-		}
-		// if keydown and focus is on first suggestion, change focus to searchInputRef
-		if (event.key == 'ArrowUp'
-			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
-			let first = this.suggestionsRef.current.firstElementChild;
-			if (event.target === first) {
-				this.searchInputRef.current.focus();
-			}
-		}
-		// if any key except keydown, keyup, enter, escape is pressed, and this.suggestionsRef.current.contains(event.target)),
-		// set focus to searchInputRef and add the character to the search input
-		if (event.key != 'ArrowDown' && event.key != 'ArrowUp' && event.key != 'Enter' && event.key != 'Escape'
-			&& this.suggestionsRef.current && this.suggestionsRef.current.contains(event.target)) {
-			this.searchInputRef.current.focus();
-		}
-		
-	}
+  useEffect(() => {
+    setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
+    setSearch(routeHelper.createParamsFromSearchRoute(params['*']).search);
+  }, [location.pathname]);
 
-	suggestionClickHandler(keyword) {
-		this.setState({
-			suggestionsVisible: false,
-			searchParams: {
-				search: keyword,
-			}
-		}, () => this.executeSearch());
-	}
+  const openButtonKeyUpHandler = (e) => {
+    if (e.keyCode === 13) {
+      openButtonClickHandler(e);
+    }
+  };
 
-	// set suggestionsVisible to true when the search input is focused
-	searchInputFocusHandler() {
-		this.setState({
-			suggestionsVisible: true,
-		});
-	}
+  // filter keywords by search input value
+  const filteredSearchSuggestions = () => searchSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(searchParamsState.search?.toLowerCase() || '') > -1);
 
-	// set suggestionsVisible to false when the search input is blurred, but retain focus if the suggestionsCloseButton is clicked. do
-	// not close the suggestions if the focus is moved to the suggestions list or the search input
-	searchInputBlurHandler(event) {
-		const refocusSearchField = event.relatedTarget === this.suggestionsCloseRef.current;
-		let close = !!this.suggestionsRef.current;
-		close = close && event.relatedTarget !== this.searchInputRef.current && event.relatedTarget !== this.suggestionsRef.current;
-		close = close && !this.suggestionsRef.current.contains(event.relatedTarget);
+  const closeSuggestionsHandler = () => {
+    searchInputRef.current.focus();
+    setSuggestionsVisible(false);
+  };
 
-		// https://stackoverflow.com/a/9886348
-		// Vi can't set focus in the same event handler that the blur event is fired in, so we have to use setTimeout
-		window.setTimeout(() => {
-			if(refocusSearchField) {
-				this.searchInputRef.current.focus();
-			}
-			if(close) {
-				this.setState({
-					suggestionsVisible: false,
-				});
-			}
-		}, 0);
-	}
+  const inputKeyPressHandler = (e) => {
+    // check if event.target is the search input that has the ref "searchInputRef"
+    if (e.key === 'Enter' && (e.target === searchInputRef.current)) {
+      setSearchParamsState({
+        ...searchParamsState,
+        search,
+      });
+    }
+    if (e.key === 'Enter'
+    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      setSuggestionsVisible(false);
+      setSearch(e.target.dataset.value);
+    }
+    if (e.key === 'Escape') {
+      closeSuggestionsHandler();
+    }
+    // if keydown and suggestionsRef.current.contains(event.target)), change to next suggestion
+    if (e.key === 'ArrowDown'
+    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      const next = e.target.nextElementSibling;
+      if (next) {
+        next.focus();
+      }
+    }
+    // if keyup and suggestionsRef.current.contains(event.target)), change to previous suggestion
+    if (e.key === 'ArrowUp'
+    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      const prev = e.target.previousElementSibling;
+      if (prev) {
+        prev.focus();
+      }
+    }
+    // if keyup and (event.target === searchInputRef.current), change focus to first suggestion
+    if (e.key === 'ArrowDown' && suggestionsRef.current && (e.target === searchInputRef.current)) {
+      const first = suggestionsRef.current.firstElementChild;
+      if (first) {
+        first.focus();
+      }
+    }
+    // if keydown and focus is on first suggestion, change focus to searchInputRef
+    if (e.key === 'ArrowUp'
+    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      const first = suggestionsRef.current.firstElementChild;
+      if (e.target === first) {
+        searchInputRef.current.focus();
+      }
+    }
+    // if any key except keydown, keyup, enter, escape is pressed
+    // and suggestionsRef.current.contains(event.target)),
+    // set focus to searchInputRef and add the character to the search input
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter' && e.key !== 'Escape'
+    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      searchInputRef.current.focus();
+    }
+  };
 
-	
-	// searchInputBlurHandler(event) {
-	// 	let close = !!this.suggestionsRef.current;
-	// 	close = close && event.relatedTarget !== this.searchInputRef.current && event.relatedTarget !== this.suggestionsRef.current;
-	// 	close = close && !this.suggestionsRef.current.contains(event.relatedTarget);
-	// 	if(close) {
-	// 		this.setState({
-	// 			suggestionsVisible: false,
-	// 		});
-	// 	}
-	// }
+  const suggestionClickHandler = (keyword) => {
+    setSuggestionsVisible(false);
+    // set the searchParamsState, but only update the search field
+    setSearchParamsState({
+      ...searchParamsState,
+      search: keyword,
+    });
+    setSearch(keyword);
+  };
 
-	categoryItemClickHandler(event) {
-		// get the clicked category
-		const selectedCategory = categories.categories[event.target.dataset.index].letter
-		// derive already selected categories from the current searchParams
-		let currentSelectedCategories = this.props.searchParams.category && this.props.searchParams.category.split(',')
-		let selectedCategories = []
-		// if the clicked category is part of the current search params, remove it from the current search params
-		if (currentSelectedCategories && currentSelectedCategories.includes(selectedCategory)) {
-			selectedCategories = currentSelectedCategories.filter(c => c !== selectedCategory)
-		// else, check if list of current selected categories is not empty, then add the clicked category
-		} else if (currentSelectedCategories) {
-			selectedCategories = currentSelectedCategories
-			selectedCategories.push(selectedCategory)
-		// otherwise (no categories are in the search params), the new list of selected categories will a list with a single item, i.e. the clicked category
-		} else {
-			selectedCategories = [selectedCategory]
-		}
+  // set suggestionsVisible to true when the search input is focused
+  const searchInputFocusHandler = () => {
+    setSuggestionsVisible(true);
+  };
 
-		// create a new params object and change its category to the newly created list
-		const params = {...this.state.searchParams}
-		params['category'] = selectedCategories.join(',')
-	
-		//create a search route from the params object
-		const path = "/places" + routeHelper.createSearchRoute(params)
-	
-		// set the route. All components that read from the route will change their state accordingly
-		this.props.history.push(path);
-	}
+  // set suggestionsVisible to false when the search input is blurred
+  // but retain focus if the suggestionsCloseButton is clicked. do
+  // not close the suggestions if the focus is moved to the suggestions list or the search input
+  const searchInputBlurHandler = (e) => {
+    const refocusSearchField = e.relatedTarget === suggestionsCloseRef.current;
+    let close = !!suggestionsRef.current;
+    if (close) {
+      close = !suggestionsRef.current.contains(e.relatedTarget);
+      close = close && e.relatedTarget !== suggestionsCloseRef.current;
+    }
 
-	executeSearch() {
-		const params = {...this.props.searchParams}
-		Object.assign(params, this.state.searchParams);
-		// delete key "page" from params if it exists
-		if (params.page) {
-			delete params.page;
-		}
-		this.props.history.push(
-			`/places${routeHelper.createSearchRoute(params)}
-			${this.state.searchParams.search ? '?s='+this.state.searchParams.search : ''}`
-			);
-	}
+    // https://stackoverflow.com/a/9886348
+    // Vi can't set focus in the same event handler that the blur event is fired in
+    // so we have to use setTimeout
+    window.setTimeout(() => {
+      if (refocusSearchField) {
+        searchInputRef.current.focus();
+      }
+      if (close) {
+        setSuggestionsVisible(false);
+      }
+    }, 0);
+  };
 
-	// Lägg nytt värde till state om valt värde ändras i sökfält, kategorilistan eller andra sökfält
-	searchValueChangeHandler(event) {
-		if (event.target.value != this.state.searchParams.search) {
-			const searchParams = {...this.state.searchParams};
-			searchParams.search = event.target.value;
-			this.setState({
-				searchParams: searchParams,
-			});
-		}
-	}
+  // const categoryItemClickHandler = (e) => {
+  //   // get the clicked category
+  //   const selectedCategory = categories.categories[e.target.dataset.index].letter;
+  //   // derive already selected categories from the current searchParams
+  //   const currentSelectedCategories = searchParams.category && searchParams.category.split(',');
+  //   let selectedCategories = [];
+  //   // if the clicked category is part of the current search params,
+  //   remove it from the current search params
+  //   if (currentSelectedCategories && currentSelectedCategories.includes(selectedCategory)) {
+  //     selectedCategories = currentSelectedCategories.filter((c) => c !== selectedCategory);
+  //   // else, check if list of current selected categories is not empty
+  //   // then add the clicked category
+  //   } else if (currentSelectedCategories) {
+  //     selectedCategories = currentSelectedCategories;
+  //     selectedCategories.push(selectedCategory);
+  //     // otherwise (no categories are in the search params), the new list of
+  //      //selected categories will a list with a single item, i.e. the clicked category
+  //   } else {
+  //     selectedCategories = [selectedCategory];
+  //   }
 
-	clearSearch() {
-		const searchParams = {...this.state.searchParams};
-		searchParams.search = '';
-		this.setState({
-			searchParams: searchParams,
-		});
-		document.getElementById('searchInputMapMenu').value = '';
-		document.getElementById('searchInputMapMenu').focus();
-	}
+  //   // create a new params object and change its category to the newly created list
+  //   const params = { ...searchParams };
+  //   params.category = selectedCategories.join(',');
 
-	checkboxChangeHandler(event) {
-		if(event.target.name === 'filter') {
-			// for "Digitaliserat", "Avskrivet", "Allt"
-			if (!this.state.searchParams[event.target.value]) {
-				const searchParams = {...this.state.searchParams};
-				searchParams['has_media'] = undefined;
-				searchParams['has_transcribed_records'] = undefined;
-				if(event.target.value !== 'all') {
-					searchParams[event.target.value] = 'true';
-				}
-				this.setState({
-					searchParams: searchParams,
-				}, () => this.executeSearch());
-			}
-		} else {
-			// for "Innehåll", "Person", "Ort"
-			if (event.target.value != this.state.searchParams[event.target.name]) {
-				const searchParams = {...this.state.searchParams};
-				if(event.target.value === 'false') {
-					searchParams[event.target.name] = undefined;
-				} else {
-					searchParams[event.target.name] = event.target.value;
-				}
-				this.setState({
-					searchParams: searchParams,
-				}, () => this.executeSearch());
-			}
-		}
-	}
+  //   // create a search route from the params object
+  //   const path = `/places${routeHelper.createSearchRoute(params)}`;
 
-	languageChangedHandler() {
-		// Gränssnitt tvingas uppdateras om språk ändras
-		this.forceUpdate();
-	}
+  //   // set the route. All components that read from the route will change their state accordingly
+  //   navigate(path);
+  // };
 
-	totalRecordsHandler(event) {
-		this.setState({
-			totalRecords: event.target
-		});
-	}
+  // Lägg nytt värde till state om valt värde ändras i sökfält, kategorilistan eller andra sökfält
+  const searchValueChangeHandler = (e) => {
+    if (e.target.value !== searchParamsState.search) {
+      setSearch(e.target.value);
+    }
+  };
 
-	componentDidMount() {
-		// document.getElementById('app').addEventListener('click', this.windowClickHandler.bind(this));
+  const clearSearch = () => {
+    // const searchParams = { searchParamsState };
+    // searchParams.search = '';
+    setSearchParamsState({
+      ...searchParamsState,
+      search: '',
+    });
+    setSearch('');
+    document.getElementById('searchInputMapMenu').value = '';
+    document.getElementById('searchInputMapMenu').focus();
+  };
 
-		if (window.eventBus) {
-			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler);
-			window.eventBus.addEventListener('recordList.totalRecords', this.totalRecordsHandler.bind(this));
-			window.eventBus.addEventListener('recordList.fetchingPage', this.fetchingPageHandler.bind(this));
-		}
+  const checkboxChangeHandler = (e) => {
+    if (e.target.name === 'filter') {
+      // for "Digitaliserat", "Avskrivet", "Allt"
+      if (!searchParamsState[e.target.value]) {
+        // const searchParams = { ...searchParamsState };
+        // searchParams['has_media'] = undefined;
+        // searchParams['has_transcribed_records'] = undefined;
+        // if (e.target.value !== 'all') {
+        //   searchParams[e.target.value] = 'true';
+        // }
+        setSearchParamsState({
+          ...searchParamsState,
+          has_media: undefined,
+          has_transcribed_records: undefined,
+          [e.target.value]: e.target.value !== 'all' ? 'true' : searchParamsState[e.target.value],
+        });
+      }
+      // for "Innehåll", "Person", "Ort"
+    } else if (e.target.value !== searchParamsState[e.target.name]) {
+      // const searchParams = { ...searchParamsState };
+      // if (e.target.value === 'false') {
+      //   searchParams[e.target.name] = undefined;
+      // } else {
+      //   searchParams[e.target.name] = e.target.value;
+      // }
+      setSearchParamsState({
+        ...searchParamsState,
+        [e.target.name]: e.target.value === 'false' ? undefined : e.target.value,
+      });
+    }
+  };
 
-		const searchParams = {...this.props.searchParams};
-		// searchParams['search_field'] = searchParams['search_field'] || 'record';
+  const searchLabelText = () => {
+    let label = '';
+    if (searchParamsState.search) {
+      switch (searchParamsState.search_field) {
+        case 'record':
+          label = 'Innehåll: ';
+          break;
+        case 'person':
+          label = 'Person: ';
+          break;
+        case 'place':
+          label = 'Ort: ';
+          break;
+        default:
+          label = '';
+      }
+    } else {
+      label = l('Sök i Folke');
+    }
+    return label;
+  };
 
-		this.setState({
-			searchParams: searchParams,
-		})
+  const searchLabelTranscriptionStatusText = () => {
+    let label = '';
 
-		// populate search suggestions from matomo api
-		this.getSearchSuggestions();
-	}
+    if (searchParamsState.transcriptionstatus) {
+      if (searchParamsState.transcriptionstatus === 'published') {
+        label = ' (Avskrivna)';
+      } else {
+        label = ' (För avskrift)';
+      }
+    } else {
+      label = '';
+    }
+    return label;
+  };
 
-	componentDidUpdate(prevProps) {
-		if(JSON.stringify(prevProps.searchParams) !== JSON.stringify(this.props.searchParams)) {
-		const searchParams = {...this.props.searchParams};
-		// searchParams['search_field'] = searchParams['search_field'] || 'record';
-			this.setState({
-				searchParams: searchParams,
-			});
-		}
-	}
+  return (
+    <div className={`search-box map-floating-control${expanded ? ' expanded' : ''}${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
+      <div>
+        <input
+          id="searchInputMapMenu"
+          ref={searchInputRef}
+          type="text"
+          defaultValue={searchParamsState.search ? searchParamsState.search : ''}
+          // onChange={searchValueChangeHandler}
+          onInput={searchValueChangeHandler}
+          onKeyDown={inputKeyPressHandler}
+          placeholder="Sök i Folke"
+          onFocus={searchInputFocusHandler}
+          onBlur={searchInputBlurHandler}
+          aria-autocomplete="both"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          tabIndex={0}
+        />
 
-	componentWillUnmount() {
-		if (window.eventBus) {
-			window.eventBus.removeEventListener('Lang.setCurrentLang', this.languageChangedHandler)
-		}
-	}
+        <div
+          className="search-label"
+          style={{
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            maxWidth: 275,
+            display: 'block',
+          }}
+        >
+          {
+            searchLabelText()
+          }
+          <strong>
+            {
+              searchParamsState.search
+                ? searchParamsState.search : ''
+            }
+          </strong>
+          {
+            searchParamsState.has_media ? ' (Digitaliserat)' : ''
+          }
+          {
+            searchParamsState.has_transcribed_records ? ' (Avskrivet)' : ''
+          }
+          {
+            searchLabelTranscriptionStatusText()
+          }
+          <br />
+          <small>
+            {
+              searchParamsState.category
+                ? searchParamsState.category.split(',').map(
+                  (c) => categories.getCategoryName(c),
+                ).join(', ') : ''
+            }
+          </small>
+        </div>
+        {suggestionsVisible && searchSuggestions.length > 0
+          // check if keywords filtered by search input value is not empty
+          && filteredSearchSuggestions().length > 0
+          // if true, show suggestions
+          && (
+            <div className="suggestions">
+              <span className="suggestions-label">Vanligaste sökningar</span>
+              <span
+                className="suggestions-close"
+                onClick={closeSuggestionsHandler}
+                tabIndex="0"
+                ref={suggestionsCloseRef}
+              >
+                &times;
+              </span>
+              <ul ref={suggestionsRef}>
+                {
+                  // filter keywords by search input value
+                  filteredSearchSuggestions()
+                    .slice(0, config.numberOfSearchSuggestions).map((keyword) => (
+                      <li
+                        className="suggestions-item"
+                        key={keyword.label}
+                        onClick={() => suggestionClickHandler(keyword.label)}
+                        tabIndex="0"
+                        onKeyDown={inputKeyPressHandler}
+                        data-value={keyword.label}
+                      >
+                        {/* make matching characters bold */}
+                        {
+                          keyword.label.split(new RegExp(`(${searchParamsState.search})`, 'gi')).map((part, i) => (
+                            <span
+                              key={i}
+                              style={{
+                                fontWeight: part.toLowerCase() === (searchParamsState.search ? searchParamsState.search.toLowerCase() : '') ? 'bold' : 'normal',
+                              }}
+                            >
+                              {part}
+                            </span>
+                          ))
+                        }
 
-	openButtonKeyUpHandler(event){
-		if(event.keyCode == 13){
-			this.openButtonClickHandler(event);
-		} 
-	}
+                      </li>
+                    ))
+                }
 
-	openButtonClickHandler() {
-		if(window.eventBus) {
-			window.eventBus.dispatch('routePopup.show');
-		}
-		// this.setState({
-		// 	windowOpen: true,
-		// 	manualOpen: true
-		// });
-	}
+              </ul>
+            </div>
+          )}
+      </div>
+      <div className="search-field-buttons">
+        {/* only show clear button when there is text to clear */}
+        {
+          search && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
+        }
+        <button className="search-button" onClick={executeSearch} type="button" aria-label="Sök" />
+      </div>
 
-	render() {
-		return (
-			<div className={'search-box map-floating-control' + (this.props.expanded ? ' expanded' : '') + (this.state.searchParams.recordtype === 'one_record' ? ' advanced' : '')} >
-				<div>
-					<input id="searchInputMapMenu" ref={this.searchInputRef} type="text"
-						defaultValue={this.state.searchParams.search ? this.state.searchParams.search : ''}
-						// onChange={this.searchValueChangeHandler}
-						onInput={this.searchValueChangeHandler}
-						onKeyDown={this.inputKeyPressHandler}
-						placeholder='Sök i Folke'
-						onFocus={this.searchInputFocusHandler}
-						onBlur={this.searchInputBlurHandler}
-						aria-autocomplete='both'
-						autoComplete='off'
-						autoCorrect='off'
-						autoCapitalize='off'
-						spellCheck='false'
-						tabIndex={0}
-					/>
+      <div className="expanded-content">
 
-					<div 
-						className="search-label"
-						style={{
-							'textOverflow': 'ellipsis',
-							'overflow': 'hidden',
-							'whiteSpace': 'nowrap',
-							'maxWidth': 275,
-							'display': 'block',
-							}}
-					>
-						{
-							!!this.state.searchParams.search ?
-								(
-									this.state.searchParams.search_field == 'record' ? 'Innehåll: ' :
-										this.state.searchParams.search_field == 'person' ? 'Person: ' :
-											this.state.searchParams.search_field == 'place' ? 'Ort: ' : ''
-								) : l('Sök i Folke')
-						}
-						<strong>
-							{
-								this.state.searchParams.search ?
-									this.state.searchParams.search : ''
-							}
-						</strong>
-						{
-							!!this.state.searchParams.has_media ? ' (Digitaliserat)' : ''
-						}
-						{
-							!!this.state.searchParams.has_transcribed_records ? ' (Avskrivet)' : ''
-						}
-						{
-							!!this.state.searchParams.transcriptionstatus ?
-								(
-									this.state.searchParams.transcriptionstatus == 'published' ? ' (Avskrivna)' : ' (För avskrift)'
-								) : ''
-						}
-						<br/>
-						<small>
-						{
-							this.state.searchParams.category ? 
-							this.state.searchParams.category.split(',').map(
-								(c) => categories.getCategoryName(c)
-							).join(', ') : ''
-						}
-						</small>
-					</div>
-					{ this.state.suggestionsVisible && this.state.searchSuggestions.length > 0 &&
-						// check if keywords filtered by search input value is not empty
-						this.filteredSearchSuggestions().length > 0 &&
-						// if true, show suggestions
-						<div className="suggestions">
-							<span className="suggestions-label">Vanligaste sökningar</span>
-							<span
-								className="suggestions-close"
-								onClick={this.closeSuggestionsHandler}
-								tabIndex="0"
-								ref={this.suggestionsCloseRef}
-							>
-								&times;
-							</span>
-							<ul ref={this.suggestionsRef}>
-								{
-									// filter keywords by search input value
-									this.filteredSearchSuggestions().slice(0, config.numberOfSearchSuggestions).map((keyword) => {
-										return (
-											<li
-												className="suggestions-item"
-												key={keyword.label}
-												onClick={() => this.suggestionClickHandler(keyword.label)}
-												tabIndex="0"
-												onKeyDown={this.inputKeyPressHandler}
-												data-value={keyword.label}
-											>
-												{/* make matching characters bold */}
-												{
-													keyword.label.split(new RegExp(`(${this.state.searchParams.search})`, 'gi')).map((part, i) => {
-														return (
-															<span
-																key={i}
-																style={{
-																	fontWeight: part.toLowerCase() === (this.state.searchParams.search ? this.state.searchParams.search.toLowerCase() : '') ? 'bold' : 'normal'
-																}}
-															>
-																{part}
-															</span>
-														)
-													})
-												}
+        <div className="radio-group">
 
-											</li>
-										)
-									})
-								}
-							
-							</ul>
-						</div>
-					}
-				</div>
-				<div className='search-field-buttons'>
-					{/* only show clear button when there is text to clear */}
-					{
-						this.state.searchParams.search && <button className="clear-button" onClick={this.clearSearch}></button>
-					}
-					<button className="search-button" onClick={this.executeSearch}></button>
-				</div>
+          <label>
+            <input type="radio" value="record" onChange={checkboxChangeHandler} name="search_field" checked={searchParamsState.search_field === 'record' || !searchParamsState.search_field} />
+            Innehåll
+          </label>
 
-				<div className="expanded-content">
+          <label>
+            <input type="radio" value="person" onChange={checkboxChangeHandler} name="search_field" checked={searchParamsState.search_field == 'person'} />
+            Person
+          </label>
 
-					{/* <div className="search-suggestions">
-						{
-							this.state.searchSuggestions.map((suggestion, index) => {
-								return (
-									<div key={index} className="search-suggestion" onClick={this.suggestionClickHandler.bind(this, suggestion)}>
-										{suggestion}
-										</div>
-								)
-							})
-						}
+          <label>
+            <input type="radio" value="place" onChange={checkboxChangeHandler} name="search_field" checked={searchParamsState.search_field == 'place'} />
+            Ort
+          </label>
 
+        </div>
+        <hr />
+        {
+          searchParamsState.recordtype === 'one_accession_row'
+          && (
+            <div className="radio-group">
 
-					</div> */}
+              <label>
+                <input type="radio" value="has_media" onChange={checkboxChangeHandler} name="filter" checked={searchParamsState.has_media === 'true'} />
+                Digitaliserat
+              </label>
 
-					<div className="radio-group">
+              <label>
+                <input type="radio" value="has_transcribed_records" onChange={checkboxChangeHandler} name="filter" checked={searchParamsState.has_transcribed_records === 'true'} />
+                <span>Avskrivet</span>
+              </label>
 
-						<label>
-							<input type="radio" value="record" onChange={this.checkboxChangeHandler} name="search_field" checked={this.state.searchParams.search_field == 'record' || !this.state.searchParams.search_field} />
-						Innehåll
-					</label>
+              <label>
+                <input type="radio" value="all" onChange={checkboxChangeHandler} name="filter" checked={searchParamsState.has_media !== 'true' && searchParamsState.has_transcribed_records !== 'true'} />
+                Allt
+              </label>
 
-						<label>
-							<input type="radio" value="person" onChange={this.checkboxChangeHandler} name="search_field" checked={this.state.searchParams.search_field == 'person'} />
-						Person
-					</label>
+            </div>
+          )
+        }
 
-						<label>
-							<input type="radio" value="place" onChange={this.checkboxChangeHandler} name="search_field" checked={this.state.searchParams.search_field == 'place'} />
-						Ort
-					</label>
+        {
+          searchParamsState.recordtype === 'one_record'
+          && (
+            <div>
+              <div className="radio-group">
 
-					</div>
-					<hr/>
-					{
-						this.state.searchParams.recordtype == 'one_accession_row' &&
-						<div className="radio-group">
+                <label>
+                  <input type="radio" value="readytotranscribe" onChange={checkboxChangeHandler} name="transcriptionstatus" checked={searchParamsState.transcriptionstatus == 'readytotranscribe'} />
+                  För avskrift
+                </label>
 
-							<label>
-								<input type="radio" value="has_media" onChange={this.checkboxChangeHandler} name="filter" checked={this.state.searchParams.has_media === 'true'} />
-								Digitaliserat
-							</label>
+                <label>
+                  <input type="radio" value="published" onChange={checkboxChangeHandler} name="transcriptionstatus" checked={searchParamsState.transcriptionstatus == 'published'} />
+                  Avskrivet
+                </label>
 
-							<label>
-								<input type="radio" value="has_transcribed_records" onChange={this.checkboxChangeHandler} name="filter" checked={this.state.searchParams.has_transcribed_records === 'true'} />
-								<span>Avskrivet</span>
-							</label>
+                <label>
+                  <input type="radio" value="false" onChange={checkboxChangeHandler} name="transcriptionstatus" checked={!searchParamsState.transcriptionstatus} />
+                  Allt
+                </label>
 
-							<label>
-								<input type="radio" value="all" onChange={this.checkboxChangeHandler} name="filter" checked={this.state.searchParams.has_media !== 'true' && this.state.searchParams.has_transcribed_records !== 'true'} />
-								Allt
-							</label>
+              </div>
+            </div>
+          )
+        }
 
-						</div>
-					}
+        <div className="advanced-content" style={{ display: 'none' }}>
+          <h4>Kategorier</h4>
+          <div tabIndex={-1} className="list-container minimal-scrollbar">
+            {/* <Route
+              path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
+              render= {(props) => */}
+            {/* <CategoryList
+                  multipleSelect="true"
+                  itemClickHandler={categoryItemClickHandler}
+                  {...props}
+                /> */}
+            {/* }
+            /> */}
+          </div>
+        </div>
+        {/* <button className="button-primary" onClick={executeSearch}>{l('Sök')}</button> */}
+      </div>
+      {
+        !fetchingPage
+        && (
+          <div className="popup-wrapper">
+            {
+              totalRecords.value > 0
+              && (
+                <button
+                  className={[
+                    'popup-open-button',
+                    'map-floating-control',
+                    'map-right-control',
+                    'visible',
+                    'ignore-expand-menu',
+                  ].join(' ')}
+                  onClick={openButtonClickHandler}
+                  onKeyUp={openButtonKeyUpHandler}
+                  tabIndex={0}
+                  type="button"
+                >
+                  <strong className="ignore-expand-menu">
+                    <FontAwesomeIcon icon={faList} />
+                    {' '}
+                    Visa
+                    {' '}
+                    {totalRecords.value}
+                    {totalRecords.relation === 'gte' ? '+' : ''}
+                    {' '}
+                    sökträffar som lista
+                  </strong>
+                </button>
+              )
+            }
+            {
+              totalRecords.value === 0
+              && (
+                <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
+                  <strong className="ignore-expand-menu">0 sökträffar</strong>
+                </div>
+              )
+            }
+          </div>
+        )
+      }
+    </div>
 
-					{	
-						this.state.searchParams.recordtype == 'one_record' &&
-						<div>
-							<div className="radio-group">
-
-								<label>
-									<input type="radio" value="readytotranscribe" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'readytotranscribe'} />
-									För avskrift
-								</label>
-
-								<label>
-									<input type="radio" value="published" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={this.state.searchParams.transcriptionstatus == 'published'} />
-									Avskrivet
-								</label>
-
-								<label>
-									<input type="radio" value="false" onChange={this.checkboxChangeHandler} name="transcriptionstatus" checked={!this.state.searchParams.transcriptionstatus} />
-									Allt
-								</label>
-
-							</div>
-						</div>
-					}
-
-					{/* <hr /> */}
-
-					{/* <button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button> */}
-
-					<div className="advanced-content" style={{display: 'none'}}>
-						<h4>Kategorier</h4>
-						<div tabIndex={-1} className={'list-container minimal-scrollbar'}>
-						<Route
-							path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
-							render= {(props) =>
-								<CategoryList 
-									multipleSelect="true"
-									searchParams={routeHelper.createParamsFromSearchRoute(props.location.pathname.split(props.match.url)[1])}
-									itemClickHandler={this.categoryItemClickHandler}
-									{...props}
-								/>
-							}
-						/>
-						</div>
-					</div>
-					{/* <button className="button-primary" onClick={this.executeSearch}>{l('Sök')}</button> */}
-				</div>
-				{
-					!this.state.fetchingPage &&
-					<div className="popup-wrapper">
-						{
-							this.state.totalRecords.value > 0 &&
-							<a className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}>
-								<strong className="ignore-expand-menu"><FontAwesomeIcon icon={faList} /> Visa {this.state.totalRecords.value}{this.state.totalRecords.relation === 'gte' ? '+': ''} sökträffar som lista</strong>
-							</a>
-						}
-						{
-							this.state.totalRecords.value === 0 &&
-							<div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{cursor: 'unset'}}>
-								<strong className="ignore-expand-menu">0 sökträffar</strong>
-							</div>
-						}
-					</div>
-				}
-			</div>
-
-		);
-	}
+  );
 }
