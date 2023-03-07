@@ -73,7 +73,10 @@ https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-
 ### Use cases
 
 * **State**: The entire state of the application (with some exceptions such as the display of overlays) is controlled by the route: E.g. search parameters, type of search, display of a single record. Enables working browser navigation.
-* **Link sharing**: Users can share links to found records, persons, places or search requests.
+* **Link sharing**:
+** Users can share links to found records, persons, places or search requests.
+** Sharable links from within application must work. (`records/record_id`).
+** Maybe in the future: Add sharable links for places (`places/place_id`) and persons (`person/person_id`)
 
 Some examples:
 
