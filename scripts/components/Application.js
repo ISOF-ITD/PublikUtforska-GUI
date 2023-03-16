@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  HashRouter, Routes, useLocation, useMatches, useNavigate, Route, useLoaderData, useParams, Outlet,
+  useLocation, useMatches, useNavigate, useLoaderData, useParams, Outlet,
 } from 'react-router-dom';
 
 import EventBus from 'eventbusjs';
@@ -8,7 +8,6 @@ import EventBus from 'eventbusjs';
 import PropTypes from 'prop-types';
 import MapView from './views/MapView';
 import MapMenu from './MapMenu';
-import PlaceView from './views/PlaceView';
 // import PlaceView from './views/PlaceView';
 // import PersonView from './views/PersonView';
 // import RecordView from './views/RecordView';
@@ -27,7 +26,7 @@ import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
 // import RecordListWrapper from './views/RecordListWrapper';
 
-import routeHelper, { createPlacePathFromPlace } from '../utils/routeHelper';
+import { createPlacePathFromPlace } from '../utils/routeHelper';
 
 import folkelogga from '../../img/folkelogga.svg';
 
@@ -50,60 +49,60 @@ export default function Application({ children, mode }) {
 
   window.eventBus = EventBus;
 
-  const location = useLocation();
-  const match = useMatches();
+  // const location = useLocation();
+  // const match = useMatches();
   const navigate = useNavigate();
   const [mapData, recordsData] = useLoaderData();
   const params = useParams();
 
-  const [popupVisible, setPopupVisible] = useState(false);
+  // const [popupVisible, setPopupVisible] = useState(false);
 
   const mapMarkerClick = (placeId) => {
     // debugger;
     if (mode === 'transcribe') {
-      navigate(`/transcribe${createPlacePathFromPlace(placeId)}${location.pathname}`);
+      navigate(`/transcribe${createPlacePathFromPlace(placeId)}${params['*'] ?? ''}`);
     } else {
-      navigate(`${createPlacePathFromPlace(placeId)}${location.pathname}`);
+      navigate(`${createPlacePathFromPlace(placeId)}${params['*'] ?? ''}`);
     }
   };
 
-  const popupCloseHandler = () => {
-    if (location.pathname.indexOf('records') > -1) {
-      navigate(
-        `/places${routeHelper.createSearchRoute(
-          routeHelper.createParamsFromSearchRoute(location.pathname),
-        )}`,
-      );
-    } else if (location.pathname.indexOf('places') > -1) {
-      navigate(
-        `/places${routeHelper.createSearchRoute(
-          routeHelper.createParamsFromSearchRoute(location.pathname),
-        )}`,
-      );
-    } else {
-      navigate(
-        `/places${routeHelper.createSearchRoute(
-          routeHelper.createParamsFromSearchRoute(location.pathname.split(match[0].pathname)[1]),
-        )}`,
-      );
-    }
-  };
+  // const popupCloseHandler = () => {
+  //   if (location.pathname.indexOf('records') > -1) {
+  //     navigate(
+  //       `/places${createSearchRoute(
+  //         createParamsFromSearchRoute(location.pathname),
+  //       )}`,
+  //     );
+  //   } else if (location.pathname.indexOf('places') > -1) {
+  //     navigate(
+  //       `/places${createSearchRoute(
+  //         createParamsFromSearchRoute(location.pathname),
+  //       )}`,
+  //     );
+  //   } else {
+  //     navigate(
+  //       `/places${createSearchRoute(
+  //         createParamsFromSearchRoute(location.pathname.split(match[0].pathname)[1]),
+  //       )}`,
+  //     );
+  //   }
+  // };
 
-  const popupWindowShowHandler = () => {
-    setTimeout(() => {
-      setPopupVisible(true);
-    }, 10);
-  };
+  // const popupWindowShowHandler = () => {
+  //   setTimeout(() => {
+  //     setPopupVisible(true);
+  //   }, 10);
+  // };
 
-  const popupWindowHideHandler = () => {
-    setTimeout(() => {
-      setPopupVisible(false);
-    }, 10);
-  };
+  // const popupWindowHideHandler = () => {
+  //   setTimeout(() => {
+  //     setPopupVisible(false);
+  //   }, 10);
+  // };
 
-  const introOverlayCloseButtonClickHandler = () => {
-    window.eventBus.dispatch('overlay.hide');
-  };
+  // const introOverlayCloseButtonClickHandler = () => {
+  //   window.eventBus.dispatch('overlay.hide');
+  // };
 
   const windowClickHandler = () => {
     window.eventBus.dispatch('screen-clicked');
@@ -114,15 +113,14 @@ export default function Application({ children, mode }) {
     document.getElementById('app').addEventListener('click', windowClickHandler);
     document.title = config.siteTitle;
 
-    // setTimeout(() => {
-    //   document.body.classList.add('app-initialized');
-    // }, 1000);
-  });
+    setTimeout(() => {
+      document.body.classList.add('app-initialized');
+    }, 1000);
+  }, []);
 
   return (
 
     <div className="app" id="app">
-
 
       <RoutePopupWindow manuallyOpenPopup>
         <RecordListWrapper
@@ -151,13 +149,13 @@ export default function Application({ children, mode }) {
       <div className="intro-overlay">
 
         <div className="map-wrapper">
-         
+
           <MapMenu
             mode={mode}
             params={params}
             recordsData={recordsData}
           />
-              
+
           <div className="map-progress">
             <div className="indicator" />
           </div>

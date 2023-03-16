@@ -97,24 +97,28 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                 </div>
               </div>
 
-              <div className="row search-results-container">
-                <div className="twelve columns">
+              {/* show the following div only if params['*'] is truthy, which
+              means that there is a search query in the URL */}
+              {params['*'] && (
+                <div className="row search-results-container">
+                  <div className="twelve columns">
 
-                  <h3>{l('Sökträffar')}</h3>
+                    <h3>{l('Sökträffar')}</h3>
 
-                  <RecordList
-                    key={`PlaceView-RecordList-${results.id}`}
-                    disableRouterPagination
-                    highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
-                    params={{
-                      ...createParamsFromSearchRoute(params['*']),
-                      place_id: results.id,
-                      has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-                    }}
-                    mode={mode}
-                  />
+                    <RecordList
+                      key={`PlaceView-RecordList-${results.id}`}
+                      disableRouterPagination
+                      highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
+                      params={{
+                        ...createParamsFromSearchRoute(params['*']),
+                        place_id: results.id,
+                        has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
+                      }}
+                      mode={mode}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </Await>
@@ -127,13 +131,16 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
 
               <div className="row">
                 <div className="twelve columns">
-                  <h3>
-                    Samtliga
-                    {' '}
-                    {mode === 'material' ? 'accessioner och uppteckningar' : 'accessioner'}
-                    {' '}
-                    från orten
-                  </h3>
+                  {/* Show the h3 only if params['*'] is truthy, and we have two record lists */}
+                  {params['*'] && (
+                    <h3>
+                      Samtliga
+                      {' '}
+                      {mode === 'material' ? 'accessioner och uppteckningar' : 'accessioner'}
+                      {' '}
+                      från orten
+                    </h3>
+                  )}
 
                   <RecordList
                     disableRouterPagination

@@ -1,5 +1,5 @@
 import Client from 'react-dom/client';
-import { createHashRouter, RouterProvider, defer, Navigate } from 'react-router-dom';
+import { createHashRouter, RouterProvider, defer } from 'react-router-dom';
 // import ApplicationWrapper from './components/ApplicationWrapper';
 
 import Application from './components/Application';
@@ -9,7 +9,11 @@ import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
 
 import {
-  getMapFetchLocation, getPlaceFetchLocation, getRecordFetchLocation, getRecordsCountLocation,
+  getMapFetchLocation,
+  getPlaceFetchLocation,
+  getRecordFetchLocation,
+  getRecordsCountLocation,
+  getPersonFetchLocation,
 } from './utils/helpers';
 
 import '../less/style-basic.less';
@@ -92,13 +96,23 @@ const router = createHashRouter([
           </RoutePopupWindow>
         ),
       },
-      // {
-      //   path: 'places/:placeId',
-      //   // redirect to the same path but with a trailing slash:
-      //   element: ({ params }) => {
-      //     <Navigate to={`places/${params.placeId}/`} />;
-      //   },
-      // },
+      {
+        path: 'persons/:personId/*?',
+        id: 'persons',
+        loader: async ({ params: { personId } }) => fetch(getPersonFetchLocation(personId)),
+        element: (
+          <RoutePopupWindow
+            manuallyOpen={false}
+            onClose={() => {
+              window.history.back();
+            }}
+          >
+            <PersonView
+              mode="material"
+            />
+          </RoutePopupWindow>
+        ),
+      },
     ],
   },
   // {
@@ -228,10 +242,27 @@ const router = createHashRouter([
           </RoutePopupWindow>
         ),
       },
+      {
+        path: 'persons/:personId/*?',
+        id: 'transcribe-persons',
+        loader: async ({ params: { personId } }) => fetch(getPersonFetchLocation(personId)),
+        element: (
+          <RoutePopupWindow
+            manuallyOpen={false}
+            onClose={() => {
+              window.history.back();
+            }}
+          >
+            <PersonView
+              mode="transcribe"
+            />
+          </RoutePopupWindow>
+        ),
+      },
     ],
   },
   // { path: '/records/:record_id/*', element: <Application /> },
-  // { path: '/person/:person_id/*', element: <Application /> },
+  // { path: '/persons/:person_id/*', element: <Application /> },
 ]);
 
 root.render(

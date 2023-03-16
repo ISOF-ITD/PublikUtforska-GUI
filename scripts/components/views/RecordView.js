@@ -228,7 +228,7 @@ export default function RecordView() {
       <tr key={person.id}>
         <td data-title="">
           {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && person.relation === 'i' && person.name}
-          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && person.relation === 'i') && <a href={`#/person/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
+          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && person.relation === 'i') && <a href={`#/persons/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
           {config.siteOptions.disablePersonLinks && person.name}
         </td>
         <td data-title="Födelseår">{person.birth_year && person.birth_year > 0 ? person.birth_year : ''}</td>

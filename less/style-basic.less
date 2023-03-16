@@ -306,24 +306,33 @@ audio::-webkit-media-controls-enclosure {
 	padding-left: 0;
 }
 
+.records-list td.table-buttons {
+	& > a {
+		color: #097C44;
+	}
+	& > span {
+		color: #000;
+	}
+}
+
 .records-list td.table-buttons > a, .records-list td.table-buttons > span {
 	display: inline-block;
 	padding: 2px 5px;
 	margin: 0 5px 5px 0;
 	background: #ffffff;
 	border-radius: 3px;
-	color: #097C44;
+	// color: #097C44;
 	font-size: 0.8rem;
 	border: 1px solid whitesmoke;
 	a {
 		margin: 0;
 		padding: 0;
 	}
-	&.year {
-		color: #000;
-	}
+	// span, &.year, &.category {
+	// 	color: #000;
+	// }
 	&.transcriptionstatus {
-		color:#000;
+		// color:#000;
 		&.empty {
 			display: none;
 		}

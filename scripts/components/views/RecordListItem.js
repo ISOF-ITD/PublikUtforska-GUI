@@ -34,7 +34,7 @@ export default function RecordListItem({
     item: PropTypes.object.isRequired,
     searchParams: PropTypes.object.isRequired,
     archiveIdClick: PropTypes.func.isRequired,
-    columns: PropTypes.array.isRequired,
+    columns: PropTypes.array,
     shouldRenderColumn: PropTypes.func.isRequired,
     highlightRecordsWithMetadataField: PropTypes.string,
     routeParams: PropTypes.object,
@@ -45,6 +45,7 @@ export default function RecordListItem({
     highlightRecordsWithMetadataField: null,
     routeParams: {},
     mode: 'material',
+    columns: null,
   };
 
   const [subrecords, setSubrecords] = useState([]);
@@ -194,10 +195,14 @@ export default function RecordListItem({
     if (item._source.taxonomy.name) {
       if (visibleCategories) {
         if (visibleCategories.indexOf(item._source.taxonomy.type.toLowerCase()) > -1) {
-          taxonomyElement = <a href={`#/places/category/${item._source.taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(item._source.taxonomy.name)}</a>;
+          // taxonomyElement = <a href={`#/places/category/${item._source.taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(item._source.taxonomy.name)}</a>;
+          // remove link to category
+          taxonomyElement = l(item._source.taxonomy.name);
         }
       } else {
-        taxonomyElement = <a href={`#/places/category/${item._source.taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(item._source.taxonomy.name)}</a>;
+        // taxonomyElement = <a href={`#/places/category/${item._source.taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(item._source.taxonomy.name)}</a>;
+        // remove link to category
+        taxonomyElement = l(item._source.taxonomy.name);
       }
     } else if (item._source.taxonomy.length > 0 && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true)) {
       taxonomyElement = _.compact(_.map(item._source.taxonomy, (taxonomyItem, i) => {
@@ -208,10 +213,14 @@ export default function RecordListItem({
           })}`;
           if (visibleCategories) {
             if (visibleCategories.indexOf(taxonomyItem.type.toLowerCase()) > -1) {
-              return <a href={href} key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</a>;
+              // return <a href={href} key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</a>;
+              // remove link to category
+              return <span className="category" key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</span>;
             }
           } else {
-            return <a href={href}>{l(taxonomyItem.name)}</a>;
+            // return <a href={href}>{l(taxonomyItem.name)}</a>;
+            // remove link to category
+            return <span className="category" key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</span>;
           }
         }
       }));
@@ -229,7 +238,7 @@ export default function RecordListItem({
               const _params = routeHelper.createParamsFromSearchRoute(routeParams);
               routeParams = createSearchRoute(_.omit(_params, 'page'));
             }
-            const href = `#/person/${collectorPersonItem.id.toLowerCase()}${routeParams}`;
+            const href = `#/persons/${collectorPersonItem.id.toLowerCase()}${routeParams}`;
             return <a href={href} key={`record-list-item-${id}-${i}`}>{l(collectorPersonItem.name)}</a>;
           }
           return '';
@@ -369,10 +378,10 @@ export default function RecordListItem({
               && (
                 <a
                   target={config.embeddedApp ? '_parent' : '_self'}
-                  href={`${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''}#${mode === 'transcribe' ? '/transcribe' : ''}/places/${item._source.places[0].id}${createSearchRoute({ recordtype: searchParams.recordtype })}`}
+                  href={`${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''}#${mode === 'transcribe' ? '/transcribe' : ''}/places/${item._source.places[0].id}`}
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate(`/places/${item._source.places[0].id}${createSearchRoute({ recordtype: searchParams.recordtype })}`);
+                    navigate(`/places/${item._source.places[0].id}`);
                   }}
                 >
                   {

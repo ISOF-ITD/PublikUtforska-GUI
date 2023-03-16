@@ -114,6 +114,10 @@ export function getRecordFetchLocation(recordId) {
   return `${config.apiUrl}document/${recordId}/`;
 }
 
+export function getPersonFetchLocation(personId) {
+  return `${config.restApiUrl}persons/${personId}/`;
+}
+
 export function getMapFetchLocation(params = {}) {
   const url = `${config.apiUrl}socken/`;
   const paramStrings = [];

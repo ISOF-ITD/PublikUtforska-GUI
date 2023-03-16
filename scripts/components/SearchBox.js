@@ -471,7 +471,7 @@ export default function SearchBox({ mode, params, recordsData }) {
           <h4>Kategorier</h4>
           <div tabIndex={-1} className="list-container minimal-scrollbar">
             {/* <Route
-              path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
+              path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/persons/:person_id']}
               render= {(props) => */}
             {/* <CategoryList
                   multipleSelect="true"

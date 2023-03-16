@@ -89,6 +89,15 @@
 			&:hover {
 				text-decoration: underline;
 			}
+
+			&:visited, &:active, &:focus, &:hover, &:link {
+				color: #000 !important;
+			}
+
+			// do not change text color to blue while clicking
+			&:active {
+				color: #000;
+			}
 		}
 	}
 
