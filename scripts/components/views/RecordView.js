@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import {
+  useNavigate, useLocation, useParams, useLoaderData,
+} from 'react-router-dom';
 import config from '../../config';
 import localLibrary from '../../../ISOF-React-modules/utils/localLibrary';
 
@@ -15,7 +17,7 @@ import ElementNotificationMessage from '../../../ISOF-React-modules/components/c
 import SitevisionContent from '../../../ISOF-React-modules/components/controls/SitevisionContent';
 import PdfViewer from '../../../ISOF-React-modules/components/controls/PdfViewer';
 
-import routeHelper from '../../utils/routeHelper';
+import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
 import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
@@ -29,36 +31,39 @@ const l = Lang.get;
 
 export default function RecordView() {
   const params = useParams();
+  const navigate = useNavigate();
 
   // const params = useParams();
 
-  const [data, setData] = useState({});
+  // const [data, setData] = useState({});
   const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
 
-  const url = `${config.apiUrl}document/`;
+  const { _source: data } = useLoaderData();
+
+  // const url = `${config.apiUrl}document/`;
 
   const collections = new RecordsCollection((json) => {
     setSubrecords(json.data);
   });
 
-  const fetchData = (fetchParams) => {
-    // Add index to callback if defined in config.
-    let index = '';
-    if ('requiredParams' in config && 'index' in config.requiredParams) {
-      index = `?index=${config.requiredParams.index}`;
-    }
-    if (fetchParams.record_id) {
-      fetch(`${url + fetchParams.record_id}/${index}`)
-        .then((response) => response.json()).then((json) => {
-          setData(json._source);
-          setSaved(localLibrary.find({
-            id: json._id,
-          }));
-        }).catch(() => {
-        });
-    }
-  };
+  // const fetchData = (fetchParams) => {
+  //   // Add index to callback if defined in config.
+  //   let index = '';
+  //   if ('requiredParams' in config && 'index' in config.requiredParams) {
+  //     index = `?index=${config.requiredParams.index}`;
+  //   }
+  //   if (fetchParams.record_id) {
+  //     fetch(`${url + fetchParams.record_id}/${index}`)
+  //       .then((response) => response.json()).then((json) => {
+  //         setData(json._source);
+  //         setSaved(localLibrary.find({
+  //           id: json._id,
+  //         }));
+  //       }).catch(() => {
+  //       });
+  //   }
+  // };
 
   const fetchSubrecords = () => {
     const fetchParams = {
@@ -69,7 +74,7 @@ export default function RecordView() {
   };
 
   useEffect(() => {
-    fetchData(params);
+    // fetchData(params);
     if (data.archive) {
       fetchSubrecords();
     }
@@ -127,15 +132,16 @@ export default function RecordView() {
   };
 
   const archiveIdClick = (e) => {
+    e.preventDefault();
     const archiveIdRow = e.target.dataset.archiveidrow;
     const { recordtype } = e.target.dataset;
     const { search } = e.target.dataset;
-    const params = {
+    const localparams = {
       search,
       recordtype,
     };
     if (archiveIdRow) {
-      useNavigate(`/records/${archiveIdRow}${routeHelper.createSearchRoute(params)}`);
+      navigate(`/records/${archiveIdRow}${createSearchRoute(localparams)}`);
     }
   };
 
@@ -165,8 +171,8 @@ export default function RecordView() {
   let pdfItems = [];
   let audioItems = [];
 
-  const routeParams = routeHelper.createSearchRoute(
-    routeHelper.createParamsFromRecordRoute(useLocation().pathname),
+  const routeParams = createSearchRoute(
+    createParamsFromRecordRoute(useLocation().pathname),
   );
 
   if (data) {
@@ -493,7 +499,7 @@ export default function RecordView() {
                       {
                         data.recordtype === 'one_record'
                           ? (
-                            <button
+                            <a
                               data-archiveidrow={data.archive.archive_id_row}
                               // create state.searchParams
                               data-search={params.search || ''}
@@ -501,10 +507,12 @@ export default function RecordView() {
                               onClick={archiveIdClick}
                               title={`Gå till accessionen ${data.archive.archive_id_row}`}
                               style={{ cursor: data.archive.archive_id_row ? 'pointer' : 'inherit', textDecoration: 'underline' }}
-                              type="button"
+                              href={
+                                `#/records/${data.archive.archive_id_row}${createSearchRoute({ search: params.search || '', recordtype: params.recordtype })}`
+                              }
                             >
                               {makeArchiveIdHumanReadable(data.archive.archive_id)}
-                            </button>
+                            </a>
                           ) : makeArchiveIdHumanReadable(data.archive.archive_id)
                       }
 
@@ -715,7 +723,7 @@ export default function RecordView() {
                     (item) => (
                       <li key={`subitem${item._source.id}`}>
                         <small>
-                          <a href={`#/records/${item._source.id}${routeHelper.createSearchRoute(params)}`}>
+                          <a href={`#/records/${item._source.id}${createSearchRoute(params)}`}>
                             Sida
                             {pageFromTo(item)}
                           </a>

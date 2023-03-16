@@ -2,16 +2,27 @@ import PropTypes from 'prop-types';
 import SearchBox from './SearchBox';
 import FilterSwitch from './FilterSwitch';
 
-export default function MapMenu({ expanded }) {
+export default function MapMenu({ mode, params, recordsData }) {
   MapMenu.propTypes = {
-    expanded: PropTypes.bool.isRequired,
+    mode: PropTypes.string,
+    params: PropTypes.object.isRequired,
+    recordsData: PropTypes.object,
+  };
+
+  MapMenu.defaultProps = {
+    mode: 'material',
+    recordsData: { data: [], metadata: { } },
   };
 
   return (
-    <div className={`menu-wrapper${expanded ? ' menu-expanded' : ''}`}>
-      <FilterSwitch />
+    <div className="menu-wrapper menu-expanded">
+      <FilterSwitch
+        mode={mode}
+      />
       <SearchBox
-        expanded={expanded}
+        params={params}
+        mode={mode}
+        recordsData={recordsData}
       />
     </div>
   );

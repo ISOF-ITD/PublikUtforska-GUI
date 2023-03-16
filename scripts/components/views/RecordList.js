@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 
@@ -8,7 +8,7 @@ import RecordsCollection from '../../../ISOF-React-modules/components/collection
 import RecordListItem from './RecordListItem';
 
 import config from '../../config';
-import routeHelper from '../../utils/routeHelper';
+import { createSearchRoute } from '../../utils/routeHelper';
 
 import L from '../../../ISOF-React-modules/lang/Lang';
 
@@ -20,10 +20,12 @@ export default function RecordList({
   disableRouterPagination,
   highlightRecordsWithMetadataField,
   interval,
-  searchParams,
-  siteSearchParams,
+  // searchParams,
+  // siteSearchParams,
   sizeMore,
   tableClass,
+  params,
+  mode,
 }) {
   RecordList.propTypes = {
     columns: PropTypes.arrayOf(PropTypes.string),
@@ -31,10 +33,12 @@ export default function RecordList({
     disableRouterPagination: PropTypes.bool,
     highlightRecordsWithMetadataField: PropTypes.string,
     interval: PropTypes.number,
-    searchParams: PropTypes.objectOf(PropTypes.string),
-    siteSearchParams: PropTypes.objectOf(PropTypes.string),
+    // searchParams: PropTypes.objectOf(PropTypes.any),
+    // siteSearchParams: PropTypes.objectOf(PropTypes.any),
     sizeMore: PropTypes.number,
     tableClass: PropTypes.string,
+    params: PropTypes.objectOf(PropTypes.any),
+    mode: PropTypes.string,
   };
 
   RecordList.defaultProps = {
@@ -43,13 +47,14 @@ export default function RecordList({
     disableRouterPagination: true,
     highlightRecordsWithMetadataField: null,
     interval: null,
-    searchParams: null,
-    siteSearchParams: {},
-    sizeMore: 100,
+    // searchParams: null,
+    // siteSearchParams: null,
+    sizeMore: null,
     tableClass: null,
+    params: {},
+    mode: 'material',
   };
 
-  const location = useLocation();
   const navigate = useNavigate();
 
   const [records, setRecords] = useState([]);
@@ -58,9 +63,7 @@ export default function RecordList({
   const [sort, setSort] = useState('archive.archive_id_row.keyword');
   const [order, setOrder] = useState('asc');
   const [loadedMore, setLoadedMore] = useState(false);
-  const [searchParamsState] = useState(
-    searchParams || routeHelper.createParamsFromPlacesRoute(location.pathname),
-  );
+  // const [searchParamsState] = useState(params);
   const [total, setTotal] = useState(0);
   // const [totalRelation, setTotalRelation] = useState('eq');
   const [totalPrefix, setTotalPrefix] = useState('');
@@ -107,9 +110,7 @@ export default function RecordList({
     setFetchingPage(true);
 
     const fetchParams = {
-      from: params.page ? (params.page - 1) * config.hitsPerPage : (currentPage - 1) * config.hitsPerPage,
-      // simplify the above line to:
-      // from: (params.page ?? currentPage - 1) * config.hitsPerPage
+      from: ((params.page ?? currentPage) - 1) * config.hitsPerPage,
       size: params.size || config.hitsPerPage,
       search: params.search ? encodeURIComponent(params.search) : undefined,
       search_field: params.search_field || undefined,
@@ -124,6 +125,7 @@ export default function RecordList({
       has_metadata: params.has_metadata || undefined,
       has_media: params.has_media || undefined,
       has_transcribed_records: params.has_transcribed_records || undefined,
+      has_untranscribed_records: params.has_untranscribed_records || undefined,
       recordtype: params.recordtype || undefined,
       person_id: params.person_id || undefined,
       socken_id: params.place_id || undefined,
@@ -135,7 +137,7 @@ export default function RecordList({
     // Add Application defined filter parameter
     if (config.filterParameterName && config.filterParameterValues) {
       if (params && 'filter' in params) {
-        if (params.filter == 'true' || params.filter == true) {
+        if (params.filter === 'true' || params.filter === true) {
           fetchParams[config.filterParameterName] = config.filterParameterValues[1];
         } else {
           fetchParams[config.filterParameterName] = config.filterParameterValues[0];
@@ -146,7 +148,7 @@ export default function RecordList({
   };
 
   useEffect(() => {
-    setCurrentPage(searchParamsState.page || 1);
+    setCurrentPage(params.page || 1);
     // set interval for fetching new data
     // if interval is set, we fetch new data every x seconds
     if (interval) {
@@ -154,18 +156,18 @@ export default function RecordList({
         if (loadedMore) {
           loadMore();
         } else {
-          fetchData(searchParamsState);
+          fetchData(params);
         }
       }, interval);
     }
   }, []);
 
   useEffect(() => {
-    fetchData(searchParamsState);
-  }, [searchParamsState, currentPage, sort, order]);
+    fetchData(params);
+  }, [params, currentPage, sort, order]);
 
   useEffect(() => {
-    const newSearchParams = { ...searchParamsState, size: sizeMore };
+    const newSearchParams = { ...params, size: sizeMore };
     fetchData(newSearchParams);
   }, [loadedMore]);
 
@@ -173,7 +175,7 @@ export default function RecordList({
     // Föredra columns om de finns, annars använd props som skickas in som argument
     const newColumns = columns || columnsArg;
     // columns is optional, if it's not set we render all columns
-    return columns ? columns.indexOf(columnName) > -1 : true;
+    return newColumns ? newColumns.indexOf(columnName) > -1 : true;
   };
 
   const archiveIdClick = (e) => {
@@ -185,7 +187,7 @@ export default function RecordList({
       recordtype,
     };
     if (archiveIdRow) {
-      navigate(`/records/${archiveIdRow}${routeHelper.createSearchRoute(params)}`);
+      navigate(`/records/${archiveIdRow}${createSearchRoute(params)}`);
     }
   };
 
@@ -202,8 +204,8 @@ export default function RecordList({
     } else {
       // Skapar ny router adress via routeHelper,
       // den är baserad på nuvarande params och lägger till ny siffra i 'page'
-      const newSearchParams = { ...searchParamsState, page: Number(currentPage) + pageStep };
-      navigate(`/places${routeHelper.createSearchRoute(newSearchParams)}`);
+      const newSearchParams = { ...params, page: Number(currentPage) + pageStep };
+      navigate(`/places${createSearchRoute(newSearchParams)}`);
     }
   };
 
@@ -238,21 +240,20 @@ export default function RecordList({
     </div>
   );
 
-  const searchRouteParams = routeHelper.createSearchRoute(searchParamsState);
-
   const items = records ? records.map((item) => (
     <RecordListItem
       key={item._source.id}
       id={item._source.id}
       item={item}
-      routeParams={searchRouteParams}
+      routeParams={createSearchRoute(params)}
       highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
       // propagate siteSearchParams to RecordListItem instead of searchParams if the exist
       // this is used in the StatisticsOverlay to write correct links to the list
-      searchParams={siteSearchParams || searchParams}
+      searchParams={params}
       archiveIdClick={archiveIdClick}
       shouldRenderColumn={shouldRenderColumn}
       columns={columns}
+      mode={mode}
     />
   )) : [];
 
@@ -290,14 +291,14 @@ export default function RecordList({
                         l('Arkivnummer')
                       }
                       {
-                        searchParamsState.recordtype === 'one_record' ? ':Sida' : ''
+                        params.recordtype === 'one_record' ? ':Sida' : ''
                       }
                     </a>
                   </th>
                 )
               }
               {
-                shouldRenderColumn('category') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true && searchParamsState.recordtype !== 'one_accession_row')
+                shouldRenderColumn('category') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true && params.recordtype !== 'one_accession_row')
                 && (
                   <th scope="col">
                     <a className="sort" onClick={sortRecords} name="taxonomy.category">

@@ -1,54 +1,57 @@
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useRouteLoaderData, useLoaderData } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import routeHelper from '../utils/routeHelper';
-import categories from '../../ISOF-React-modules/utils/utforskaCategories';
 
 import config from '../config';
 
 import Lang from '../../ISOF-React-modules/lang/Lang';
+import { createParamsFromSearchRoute } from '../utils/routeHelper';
 
-export default function SearchBox({ expanded }) {
+export default function SearchBox({ mode, params, recordsData }) {
   SearchBox.propTypes = {
-    expanded: PropTypes.bool.isRequired,
+    // expanded: PropTypes.bool.isRequired,
+    mode: PropTypes.string.isRequired,
+    params: PropTypes.object.isRequired,
+    recordsData: PropTypes.object.isRequired,
   };
 
   const searchInputRef = useRef();
   const suggestionsRef = useRef();
   const suggestionsCloseRef = useRef();
 
-  const [fetchingPage, setFetchingPage] = useState(false);
+  // const [fetchingPage, setFetchingPage] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
-  const [searchParamsState, setSearchParamsState] = useState({
-    search: '',
-    search_field: 'record',
-  });
   const [search, setSearch] = useState('');
-  const [totalRecords, setTotalRecords] = useState({
-    value: 0,
-    relation: 'eq',
-  });
 
-  const params = useParams();
+  const { search: searchParam } = createParamsFromSearchRoute(params['*']);
   const navigate = useNavigate();
-  const location = useLocation();
+
+  // const { metadata: { total: totalFromSearchRoute }} = useRouteLoaderData('search') || { metadata: { total: null } };
+  // const { metadata: { total: totalFromRecordsRoute }} = useRouteLoaderData('records') || { metadata: { total: null } };
+  // const { metadata: { total: totalFromRootRoute }}= useRouteLoaderData('/') || { metadata: { total: null } };
+  // const { metadata: { total: totalFromTranscribeRoute }}= useRouteLoaderData('transcribe') || { metadata: { total: null } };
+
+  // const dataFromRecordsRoute = useRouteLoaderData('records');
+  // const dataFromRootRoute = useRouteLoaderData('/');
+  // const dataFromTranscribeRoute = useRouteLoaderData('transcribe');
+
+  // const total = mode === 'transcribe'
+  const { metadata: { total } } = recordsData;
+  // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
   const l = Lang.get;
 
-  const executeSearch = () => {
-    const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
-    Object.assign(searchParams, searchParamsState);
-    // searchParams.search = search;
-    // delete key "page" from params if it exists
-    if (searchParams.page) {
-      delete searchParams.page;
-    }
+  const executeSearch = (keyword) => {
+    // if keyword is a string, use it as search phrase
+    // otherwise use the value of the search input field
+    const searchPhrase = typeof keyword === 'string' ? keyword : searchInputRef.current.value;
+    const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
+    const searchPart = searchPhrase ? `search/${searchPhrase}?s=${searchPhrase}` : '';
     navigate(
-      `/places${routeHelper.createSearchRoute(searchParams)}
-      ${searchParamsState.search ? `?s=${searchParamsState.search}` : ''}`,
+      `/${transcribePrefix}${searchPart}`,
     );
   };
 
@@ -60,14 +63,14 @@ export default function SearchBox({ expanded }) {
     Object.keys(searchSuggestionsParams)
       .forEach((key) => url.searchParams.append(key, searchSuggestionsParams[key]));
     // read data from json api and store to window object
-    fetch(url, { mode: 'cors' }).then((response) => response.json()).then((data) => {
-      setSearchSuggestions(data);
+    fetch(url, { mode: 'cors' }).then((response) => response.json()).then((json) => {
+      setSearchSuggestions(json);
     });
   };
 
-  const totalRecordsHandler = (e) => {
-    setTotalRecords(e.target);
-  };
+  // const totalRecordsHandler = (e) => {
+  //   setTotalRecords(e.target);
+  // };
 
   const openButtonClickHandler = () => {
     if (window.eventBus) {
@@ -75,35 +78,37 @@ export default function SearchBox({ expanded }) {
     }
   };
 
-  const fetchingPageHandler = (e) => {
-    setFetchingPage(e.target);
-  };
+  // const fetchingPageHandler = (e) => {
+  //   setFetchingPage(e.target);
+  // };
 
-  useEffect(() => {
-    if (location.pathname.indexOf('/places') === 0) {
-      executeSearch();
-    }
-  }, [searchParamsState.has_media, searchParamsState.has_transcribed_records]);
+  // useEffect(() => {
+  //   if (location.pathname.indexOf('/places') === 0) {
+  //     executeSearch();
+  //   }
+  // }, [searchParamsState.has_media, searchParamsState.has_transcribed_records]);
 
   useEffect(() => {
     // document.getElementById('app').addEventListener('click', windowClickHandler);
     if (window.eventBus) {
       // window.eventBus.addEventListener('Lang.setCurrentLang', languageChangedHandler);
-      window.eventBus.addEventListener('recordList.totalRecords', totalRecordsHandler);
-      window.eventBus.addEventListener('recordList.fetchingPage', fetchingPageHandler);
+      // window.eventBus.addEventListener('recordList.totalRecords', totalRecordsHandler);
+      // window.eventBus.addEventListener('recordList.fetchingPage', fetchingPageHandler);
     }
-
     // populate search suggestions from matomo api
     getSearchSuggestions();
-    console.log("setting searchParamsState to: ", routeHelper.createParamsFromSearchRoute(params['*']));
-    setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
-    setSearch(routeHelper.createParamsFromSearchRoute(params['*']).search);
+    // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
+    setSearch(searchParam);
   }, []);
 
   useEffect(() => {
-    setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
-    setSearch(routeHelper.createParamsFromSearchRoute(params['*']).search);
-  }, [location.pathname]);
+    setSearch(searchParam);
+  }, [searchParam]);
+
+  // useEffect(() => {
+  //   // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
+  //   // setSearch(routeHelper.createParamsFromSearchRoute(params['*']).search);
+  // }, [location.pathname]);
 
   const openButtonKeyUpHandler = (e) => {
     if (e.keyCode === 13) {
@@ -112,7 +117,7 @@ export default function SearchBox({ expanded }) {
   };
 
   // filter keywords by search input value
-  const filteredSearchSuggestions = () => searchSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(searchParamsState.search?.toLowerCase() || '') > -1);
+  const filteredSearchSuggestions = () => searchSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
 
   const closeSuggestionsHandler = () => {
     searchInputRef.current.focus();
@@ -122,22 +127,22 @@ export default function SearchBox({ expanded }) {
   const inputKeyPressHandler = (e) => {
     // check if event.target is the search input that has the ref "searchInputRef"
     if (e.key === 'Enter' && (e.target === searchInputRef.current)) {
-      setSearchParamsState({
-        ...searchParamsState,
-        search,
-      });
+      // navigate(`/search/${searchInputRef.current.value}`);
+      setSuggestionsVisible(false);
+      executeSearch();
     }
     if (e.key === 'Enter'
-    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
       setSuggestionsVisible(false);
-      setSearch(e.target.dataset.value);
+      // navigate(`/search/${e.target.dataset.value}`);
+      executeSearch(e.target.dataset.value);
     }
     if (e.key === 'Escape') {
       closeSuggestionsHandler();
     }
     // if keydown and suggestionsRef.current.contains(event.target)), change to next suggestion
     if (e.key === 'ArrowDown'
-    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
       const next = e.target.nextElementSibling;
       if (next) {
         next.focus();
@@ -145,7 +150,7 @@ export default function SearchBox({ expanded }) {
     }
     // if keyup and suggestionsRef.current.contains(event.target)), change to previous suggestion
     if (e.key === 'ArrowUp'
-    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
       const prev = e.target.previousElementSibling;
       if (prev) {
         prev.focus();
@@ -160,7 +165,7 @@ export default function SearchBox({ expanded }) {
     }
     // if keydown and focus is on first suggestion, change focus to searchInputRef
     if (e.key === 'ArrowUp'
-    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
       const first = suggestionsRef.current.firstElementChild;
       if (e.target === first) {
         searchInputRef.current.focus();
@@ -170,7 +175,7 @@ export default function SearchBox({ expanded }) {
     // and suggestionsRef.current.contains(event.target)),
     // set focus to searchInputRef and add the character to the search input
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter' && e.key !== 'Escape'
-    && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
+      && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
       searchInputRef.current.focus();
     }
   };
@@ -178,11 +183,11 @@ export default function SearchBox({ expanded }) {
   const suggestionClickHandler = (keyword) => {
     setSuggestionsVisible(false);
     // set the searchParamsState, but only update the search field
-    setSearchParamsState({
-      ...searchParamsState,
-      search: keyword,
-    });
-    setSearch(keyword);
+    // setSearch({
+    //   search: keyword,
+    // });
+    // setSearch(keyword);
+    executeSearch(keyword);
   };
 
   // set suggestionsVisible to true when the search input is focused
@@ -248,7 +253,7 @@ export default function SearchBox({ expanded }) {
 
   // Lägg nytt värde till state om valt värde ändras i sökfält, kategorilistan eller andra sökfält
   const searchValueChangeHandler = (e) => {
-    if (e.target.value !== searchParamsState.search) {
+    if (e.target.value !== search) {
       setSearch(e.target.value);
     }
   };
@@ -256,63 +261,63 @@ export default function SearchBox({ expanded }) {
   const clearSearch = () => {
     // const searchParams = { searchParamsState };
     // searchParams.search = '';
-    setSearchParamsState({
-      ...searchParamsState,
-      search: '',
-    });
-    setSearch('');
+    setSearch(
+      '',
+    );
+    executeSearch('');
     document.getElementById('searchInputMapMenu').value = '';
     document.getElementById('searchInputMapMenu').focus();
   };
 
-  const checkboxChangeHandler = (e) => {
-    if (e.target.name === 'filter') {
-      // for "Digitaliserat", "Avskrivet", "Allt"
-      if (!searchParamsState[e.target.value]) {
-        // const searchParams = { ...searchParamsState };
-        // searchParams['has_media'] = undefined;
-        // searchParams['has_transcribed_records'] = undefined;
-        // if (e.target.value !== 'all') {
-        //   searchParams[e.target.value] = 'true';
-        // }
-        setSearchParamsState({
-          ...searchParamsState,
-          has_media: undefined,
-          has_transcribed_records: undefined,
-          [e.target.value]: e.target.value !== 'all' ? 'true' : searchParamsState[e.target.value],
-        });
-      }
-      // for "Innehåll", "Person", "Ort"
-    } else if (e.target.value !== searchParamsState[e.target.name]) {
-      // const searchParams = { ...searchParamsState };
-      // if (e.target.value === 'false') {
-      //   searchParams[e.target.name] = undefined;
-      // } else {
-      //   searchParams[e.target.name] = e.target.value;
-      // }
-      setSearchParamsState({
-        ...searchParamsState,
-        [e.target.name]: e.target.value === 'false' ? undefined : e.target.value,
-      });
-    }
-  };
+  // const checkboxChangeHandler = (e) => {
+  //   if (e.target.name === 'filter') {
+  //     // for "Digitaliserat", "Avskrivet", "Allt"
+  //     if (!searchParamsState[e.target.value]) {
+  //       // const searchParams = { ...searchParamsState };
+  //       // searchParams['has_media'] = undefined;
+  //       // searchParams['has_transcribed_records'] = undefined;
+  //       // if (e.target.value !== 'all') {
+  //       //   searchParams[e.target.value] = 'true';
+  //       // }
+  //       setSearchParamsState({
+  //         ...searchParamsState,
+  //         has_media: undefined,
+  //         has_transcribed_records: undefined,
+  //         [e.target.value]: e.target.value !== 'all' ? 'true' : searchParamsState[e.target.value],
+  //       });
+  //     }
+  //     // for "Innehåll", "Person", "Ort"
+  //   } else if (e.target.value !== searchParamsState[e.target.name]) {
+  //     // const searchParams = { ...searchParamsState };
+  //     // if (e.target.value === 'false') {
+  //     //   searchParams[e.target.name] = undefined;
+  //     // } else {
+  //     //   searchParams[e.target.name] = e.target.value;
+  //     // }
+  //     setSearchParamsState({
+  //       ...searchParamsState,
+  //       [e.target.name]: e.target.value === 'false' ? undefined : e.target.value,
+  //     });
+  //   }
+  // };
 
   const searchLabelText = () => {
     let label = '';
-    if (searchParamsState.search) {
-      switch (searchParamsState.search_field) {
-        case 'record':
-          label = 'Innehåll: ';
-          break;
-        case 'person':
-          label = 'Person: ';
-          break;
-        case 'place':
-          label = 'Ort: ';
-          break;
-        default:
-          label = '';
-      }
+    if (search) {
+      label = 'Innehåll: ';
+      // switch (searchParamsState.search_field) {
+      //   case 'record':
+      //     label = 'Innehåll: ';
+      //     break;
+      //   case 'person':
+      //     label = 'Person: ';
+      //     break;
+      //   case 'place':
+      //     label = 'Ort: ';
+      //     break;
+      //   default:
+      //     label = '';
+      // }
     } else {
       label = l('Sök i Folke');
     }
@@ -320,28 +325,34 @@ export default function SearchBox({ expanded }) {
   };
 
   const searchLabelTranscriptionStatusText = () => {
-    let label = '';
+    const label = '';
 
-    if (searchParamsState.transcriptionstatus) {
-      if (searchParamsState.transcriptionstatus === 'published') {
-        label = ' (Avskrivna)';
-      } else {
-        label = ' (För avskrift)';
-      }
-    } else {
-      label = '';
-    }
+    // if (searchParamsState.transcriptionstatus) {
+    //   if (searchParamsState.transcriptionstatus === 'published') {
+    //     label = ' (Avskrivna)';
+    //   } else {
+    //     label = ' (För avskrift)';
+    //   }
+    // } else {
+    //   label = '';
+    // }
     return label;
   };
 
   return (
-    <div className={`search-box map-floating-control${expanded ? ' expanded' : ''}${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
+    <div
+      className={
+        // `search-box map-floating-control${expanded ? ' expanded' : ''}${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
+        'search-box map-floating-control expanded'
+      }
+    >
       <div>
         <input
           id="searchInputMapMenu"
           ref={searchInputRef}
           type="text"
-          defaultValue={searchParamsState.search ? searchParamsState.search : ''}
+          // defaultValue={search || ''}
+          value={search || ''}
           // onChange={searchValueChangeHandler}
           onInput={searchValueChangeHandler}
           onKeyDown={inputKeyPressHandler}
@@ -371,30 +382,31 @@ export default function SearchBox({ expanded }) {
           }
           <strong>
             {
-              searchParamsState.search
-                ? searchParamsState.search : ''
+              search || ''
             }
           </strong>
-          {
+          {/* {
             searchParamsState.has_media ? ' (Digitaliserat)' : ''
           }
           {
             searchParamsState.has_transcribed_records ? ' (Avskrivet)' : ''
-          }
+          } */}
           {
             searchLabelTranscriptionStatusText()
           }
           <br />
           <small>
-            {
+            {/* {
               searchParamsState.category
                 ? searchParamsState.category.split(',').map(
                   (c) => categories.getCategoryName(c),
                 ).join(', ') : ''
-            }
+            } */}
           </small>
         </div>
-        {suggestionsVisible && searchSuggestions.length > 0
+        {
+          mode === 'material'
+          && suggestionsVisible && searchSuggestions.length > 0
           // check if keywords filtered by search input value is not empty
           && filteredSearchSuggestions().length > 0
           // if true, show suggestions
@@ -424,11 +436,11 @@ export default function SearchBox({ expanded }) {
                       >
                         {/* make matching characters bold */}
                         {
-                          keyword.label.split(new RegExp(`(${searchParamsState.search})`, 'gi')).map((part, i) => (
+                          keyword.label.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
                             <span
                               key={i}
                               style={{
-                                fontWeight: part.toLowerCase() === (searchParamsState.search ? searchParamsState.search.toLowerCase() : '') ? 'bold' : 'normal',
+                                fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
                               }}
                             >
                               {part}
@@ -442,7 +454,8 @@ export default function SearchBox({ expanded }) {
 
               </ul>
             </div>
-          )}
+          )
+}
       </div>
       <div className="search-field-buttons">
         {/* only show clear button when there is text to clear */}
@@ -453,75 +466,6 @@ export default function SearchBox({ expanded }) {
       </div>
 
       <div className="expanded-content">
-
-        <div className="radio-group">
-
-          <label>
-            <input type="radio" value="record" onChange={checkboxChangeHandler} name="search_field" checked={searchParamsState.search_field === 'record' || !searchParamsState.search_field} />
-            Innehåll
-          </label>
-
-          <label>
-            <input type="radio" value="person" onChange={checkboxChangeHandler} name="search_field" checked={searchParamsState.search_field == 'person'} />
-            Person
-          </label>
-
-          <label>
-            <input type="radio" value="place" onChange={checkboxChangeHandler} name="search_field" checked={searchParamsState.search_field == 'place'} />
-            Ort
-          </label>
-
-        </div>
-        <hr />
-        {
-          searchParamsState.recordtype === 'one_accession_row'
-          && (
-            <div className="radio-group">
-
-              <label>
-                <input type="radio" value="has_media" onChange={checkboxChangeHandler} name="filter" checked={searchParamsState.has_media === 'true'} />
-                Digitaliserat
-              </label>
-
-              <label>
-                <input type="radio" value="has_transcribed_records" onChange={checkboxChangeHandler} name="filter" checked={searchParamsState.has_transcribed_records === 'true'} />
-                <span>Avskrivet</span>
-              </label>
-
-              <label>
-                <input type="radio" value="all" onChange={checkboxChangeHandler} name="filter" checked={searchParamsState.has_media !== 'true' && searchParamsState.has_transcribed_records !== 'true'} />
-                Allt
-              </label>
-
-            </div>
-          )
-        }
-
-        {
-          searchParamsState.recordtype === 'one_record'
-          && (
-            <div>
-              <div className="radio-group">
-
-                <label>
-                  <input type="radio" value="readytotranscribe" onChange={checkboxChangeHandler} name="transcriptionstatus" checked={searchParamsState.transcriptionstatus == 'readytotranscribe'} />
-                  För avskrift
-                </label>
-
-                <label>
-                  <input type="radio" value="published" onChange={checkboxChangeHandler} name="transcriptionstatus" checked={searchParamsState.transcriptionstatus == 'published'} />
-                  Avskrivet
-                </label>
-
-                <label>
-                  <input type="radio" value="false" onChange={checkboxChangeHandler} name="transcriptionstatus" checked={!searchParamsState.transcriptionstatus} />
-                  Allt
-                </label>
-
-              </div>
-            </div>
-          )
-        }
 
         <div className="advanced-content" style={{ display: 'none' }}>
           <h4>Kategorier</h4>
@@ -541,11 +485,11 @@ export default function SearchBox({ expanded }) {
         {/* <button className="button-primary" onClick={executeSearch}>{l('Sök')}</button> */}
       </div>
       {
-        !fetchingPage
+        total//! fetchingPage
         && (
           <div className="popup-wrapper">
             {
-              totalRecords.value > 0
+              total.value > 0
               && (
                 <button
                   className={[
@@ -565,8 +509,8 @@ export default function SearchBox({ expanded }) {
                     {' '}
                     Visa
                     {' '}
-                    {totalRecords.value}
-                    {totalRecords.relation === 'gte' ? '+' : ''}
+                    {total.value}
+                    {total.relation === 'gte' ? '+' : ''}
                     {' '}
                     sökträffar som lista
                   </strong>
@@ -574,7 +518,7 @@ export default function SearchBox({ expanded }) {
               )
             }
             {
-              totalRecords.value === 0
+              total.value === 0
               && (
                 <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
                   <strong className="ignore-expand-menu">0 sökträffar</strong>

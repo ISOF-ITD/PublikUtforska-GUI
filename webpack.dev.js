@@ -9,9 +9,14 @@ module.exports = merge(common, {
   devtool: 'inline-source-map',
 
   devServer: {
-
+    historyApiFallback: true,
     static: './dist',
 
+  },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+    },
   },
 
 });

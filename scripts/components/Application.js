@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useMatches, useNavigate } from 'react-router-dom';
+import {
+  HashRouter, Routes, useLocation, useMatches, useNavigate, Route, useLoaderData, useParams, Outlet,
+} from 'react-router-dom';
 
 import EventBus from 'eventbusjs';
 
 import PropTypes from 'prop-types';
 import MapView from './views/MapView';
 import MapMenu from './MapMenu';
+import PlaceView from './views/PlaceView';
 // import PlaceView from './views/PlaceView';
 // import PersonView from './views/PersonView';
 // import RecordView from './views/RecordView';
@@ -24,7 +27,7 @@ import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
 // import RecordListWrapper from './views/RecordListWrapper';
 
-import routeHelper from '../utils/routeHelper';
+import routeHelper, { createPlacePathFromPlace } from '../utils/routeHelper';
 
 import folkelogga from '../../img/folkelogga.svg';
 
@@ -34,13 +37,15 @@ import Lang from '../../ISOF-React-modules/lang/Lang';
 
 const l = Lang.get;
 
-export default function Application({ children }) {
+export default function Application({ children, mode }) {
   Application.propTypes = {
-    children: PropTypes.node,
+    children: PropTypes.node.isRequired,
+    mode: PropTypes.string,
   };
 
   Application.defaultProps = {
-    children: null,
+    // children: null,
+    mode: 'material',
   };
 
   window.eventBus = EventBus;
@@ -48,11 +53,18 @@ export default function Application({ children }) {
   const location = useLocation();
   const match = useMatches();
   const navigate = useNavigate();
+  const [mapData, recordsData] = useLoaderData();
+  const params = useParams();
 
   const [popupVisible, setPopupVisible] = useState(false);
 
   const mapMarkerClick = (placeId) => {
-    navigate(routeHelper.createPlacePathFromPlaces(placeId, location.pathname));
+    // debugger;
+    if (mode === 'transcribe') {
+      navigate(`/transcribe${createPlacePathFromPlace(placeId)}${location.pathname}`);
+    } else {
+      navigate(`${createPlacePathFromPlace(placeId)}${location.pathname}`);
+    }
   };
 
   const popupCloseHandler = () => {
@@ -99,28 +111,56 @@ export default function Application({ children }) {
 
   // useEffect
   useEffect(() => {
-    console.log("matches", match[0]);
     document.getElementById('app').addEventListener('click', windowClickHandler);
     document.title = config.siteTitle;
 
-    setTimeout(() => {
-      document.body.classList.add('app-initialized');
-    }, 1000);
-  }, []);
+    // setTimeout(() => {
+    //   document.body.classList.add('app-initialized');
+    // }, 1000);
+  });
 
   return (
+
     <div className="app" id="app">
+
+
+      <RoutePopupWindow manuallyOpenPopup>
+        <RecordListWrapper
+          openButtonLabel="Visa sökträffar som lista"
+          disableRouterPagination
+          mode={mode}
+        />
+      </RoutePopupWindow>
+
+      <Outlet />
       {
         children
       }
+
+      {/* <Route
+                path=":record_id/*"
+                element={(
+                  <RoutePopupWindow>
+                  <PlaceView
+                    onPopupClose={popupCloseHandler}
+                    />
+                    </RoutePopupWindow>
+                )}
+              /> */}
+      {/* </Routes> */}
       <div className="intro-overlay">
-        <MapView
-          onMarkerClick={mapMarkerClick}
-          hideMapmodeMenu
-        >
+
+        <div className="map-wrapper">
+         
           <MapMenu
-            expanded
+            mode={mode}
+            params={params}
+            recordsData={recordsData}
           />
+              
+          <div className="map-progress">
+            <div className="indicator" />
+          </div>
           <div className="map-bottom-wrapper">
 
             <div className="popup-wrapper">
@@ -130,17 +170,6 @@ export default function Application({ children }) {
                 random
               />
             </div>
-
-            {/* <div className='popup-wrapper'>
-                    <a
-                      className="popup-open-button map-floating-control
-                      map-bottom-control visible"
-                      onClick={this.openButtonClickHandler}
-                      onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}>
-                      <strong>{l('Visa statistik')}</strong>
-                    </a>
-                  </div> */}
-
             <div className="popup-wrapper">
               <LocalLibraryView
                 headerText={l('Mina sägner')}
@@ -148,44 +177,56 @@ export default function Application({ children }) {
             </div>
           </div>
 
-        </MapView>
-        <div className="map-progress"><div className="indicator" /></div>
-
-        <ImageOverlay />
-        <FeedbackOverlay />
-        <ContributeInfoOverlay />
-        <TranscriptionOverlay />
-        <TranscriptionHelpOverlay />
-        <SwitcherHelpTextOverlay />
-        <PopupNotificationMessage />
-        <StatisticsOverlay />
-        <footer>
-          <div className="logo">
-            <div id="Logo" className="isof-app-header">
-              {/* Logo */}
-              <a href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke">
-                <img
-                  alt="Folke på Institutet för språk och folkminnen"
-                  className="sv-noborder"
-                  style={{ maxWidth: 326, maxHeight: 50 }}
-                  src={folkelogga}
-                />
-              </a>
-            </div>
-            <div id="portal" className="isof-app-header">
-              <a
-                href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke"
-                target="_blank"
-                className="normal"
-                style={{ display: 'block' }}
-                rel="noreferrer"
-              >
-                Om Folke
-              </a>
-            </div>
-          </div>
-        </footer>
+          <MapView
+            onMarkerClick={mapMarkerClick}
+            mode={mode}
+            params={params}
+            mapData={mapData}
+          />
+          {/* <MapView
+            onMarkerClick={mapMarkerClick}
+            mode={mode}
+            params={params}
+            mapData={results[0]}
+          /> */}
+        </div>
       </div>
+      {/* <div className="map-progress"><div className="indicator" /></div> */}
+
+      <ImageOverlay />
+      <FeedbackOverlay />
+      <ContributeInfoOverlay />
+      <TranscriptionOverlay />
+      <TranscriptionHelpOverlay />
+      <SwitcherHelpTextOverlay />
+      <PopupNotificationMessage />
+      <StatisticsOverlay />
+      <footer>
+        <div className="logo">
+          <div id="Logo" className="isof-app-header">
+            {/* Logo */}
+            <a href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke">
+              <img
+                alt="Folke på Institutet för språk och folkminnen"
+                className="sv-noborder"
+                style={{ maxWidth: 326, maxHeight: 50 }}
+                src={folkelogga}
+              />
+            </a>
+          </div>
+          <div id="portal" className="isof-app-header">
+            <a
+              href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke"
+              target="_blank"
+              className="normal"
+              style={{ display: 'block' }}
+              rel="noreferrer"
+            >
+              Om Folke
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

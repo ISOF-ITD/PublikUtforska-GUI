@@ -1,15 +1,25 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import routeHelper from '../utils/routeHelper';
+import { useEffect } from 'react';
 
-function FilterSwitch() {
+import PropTypes from 'prop-types';
+
+function FilterSwitch({ mode }) {
+  FilterSwitch.propTypes = {
+    mode: PropTypes.string,
+  };
+
+  FilterSwitch.defaultProps = {
+    mode: 'material',
+  };
+
   const navigate = useNavigate();
   const params = useParams();
 
-  const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
-
+  // const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
 
   const openSwitcherHelptext = () => {
     if (window.eventBus) {
@@ -51,8 +61,8 @@ function FilterSwitch() {
       <span onClick={openSideMenu} className="open-sidemenu-button" title="Öppna sidomeny">
         <FontAwesomeIcon icon={faBars} />
       </span>
-      <a onClick={menuButtonClick} data-value="one_accession_row" className={searchParams.recordtype == 'one_accession_row' ? 'selected' : ''}>{l('Arkivmaterial')}</a>
-      <a onClick={menuButtonClick} data-value="one_record" className={searchParams.recordtype == 'one_record' ? 'selected' : ''}>{l('Skriva av')}</a>
+      <Link to="/" className={mode === 'material' ? 'selected' : ''}>{l('Arkivmaterial')}</Link>
+      <Link to="/transcribe" className={mode === 'transcribe' ? 'selected' : ''}>{l('Skriva av')}</Link>
       <span className="switcher-help-button" onClick={openSwitcherHelptext} title="Om accessioner och uppteckningar">?</span>
     </div>
   );

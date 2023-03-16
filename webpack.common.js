@@ -6,7 +6,8 @@ module.exports = {
   entry: './scripts/app.js',
   output: {
     // add a rev-hash to the filename to avoid caching issues
-    filename: 'a.[contenthash].js',
+    filename: 'bndl.[contenthash].js',
+    chunkFilename: 'chnk.[contenthash].js',
     path: path.resolve(__dirname, 'www'),
     clean: true,
   },
