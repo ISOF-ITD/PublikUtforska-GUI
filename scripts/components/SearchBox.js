@@ -1,4 +1,4 @@
-import { useNavigate, useRouteLoaderData, useLoaderData } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
 import { useState, useRef, useEffect } from 'react';
@@ -6,8 +6,10 @@ import PropTypes from 'prop-types';
 
 import config from '../config';
 
-import Lang from '../../ISOF-React-modules/lang/Lang';
 import { createParamsFromSearchRoute } from '../utils/routeHelper';
+
+import SearchSuggestions from './SearchSuggestions';
+import { getPersonFetchLocation, getPlaceFetchLocation } from '../utils/helpers';
 
 export default function SearchBox({ mode, params, recordsData }) {
   SearchBox.propTypes = {
@@ -23,16 +25,15 @@ export default function SearchBox({ mode, params, recordsData }) {
 
   // const [fetchingPage, setFetchingPage] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [personSuggestions, setPersonSuggestions] = useState([]);
+  const [placeSuggestions, setPlaceSuggestions] = useState([]);
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const [search, setSearch] = useState('');
+  const [person, setPerson] = useState(null);
+  const [place, setPlace] = useState(null);
 
-  const { search: searchParam } = createParamsFromSearchRoute(params['*']);
+  const { search: searchParam, search_field: searchFieldParam } = createParamsFromSearchRoute(params['*']);
   const navigate = useNavigate();
-
-  // const { metadata: { total: totalFromSearchRoute }} = useRouteLoaderData('search') || { metadata: { total: null } };
-  // const { metadata: { total: totalFromRecordsRoute }} = useRouteLoaderData('records') || { metadata: { total: null } };
-  // const { metadata: { total: totalFromRootRoute }}= useRouteLoaderData('/') || { metadata: { total: null } };
-  // const { metadata: { total: totalFromTranscribeRoute }}= useRouteLoaderData('transcribe') || { metadata: { total: null } };
 
   // const dataFromRecordsRoute = useRouteLoaderData('records');
   // const dataFromRootRoute = useRouteLoaderData('/');
@@ -42,14 +43,15 @@ export default function SearchBox({ mode, params, recordsData }) {
   const { metadata: { total } } = recordsData;
   // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
-  const l = Lang.get;
-
-  const executeSearch = (keyword) => {
+  const executeSearch = (keyword, searchFieldValue = null) => {
     // if keyword is a string, use it as search phrase
     // otherwise use the value of the search input field
     const searchPhrase = typeof keyword === 'string' ? keyword : searchInputRef.current.value;
     const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
-    const searchPart = searchPhrase ? `search/${searchPhrase}?s=${searchPhrase}` : '';
+    const searchFieldPart = searchFieldValue ? `/search_field/${searchFieldValue}` : '';
+    const searchPart = searchPhrase
+      ? `search/${searchPhrase}${searchFieldPart}?s=${searchFieldValue ? `${searchFieldValue}:` : ''}${searchPhrase}`
+      : '';
     navigate(
       `/${transcribePrefix}${searchPart}`,
     );
@@ -64,29 +66,49 @@ export default function SearchBox({ mode, params, recordsData }) {
       .forEach((key) => url.searchParams.append(key, searchSuggestionsParams[key]));
     // read data from json api and store to window object
     fetch(url, { mode: 'cors' }).then((response) => response.json()).then((json) => {
-      setSearchSuggestions(json);
+      // for every row in json, copy row["label"] to row["value"]
+      const newJson = json.map((row) => ({ ...row, value: row.label }));
+      setSearchSuggestions(newJson);
     });
   };
 
-  // const totalRecordsHandler = (e) => {
-  //   setTotalRecords(e.target);
-  // };
+  const getPersonAutocomplete = (keyword) => {
+    const path = config.apiUrl;
+    // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/person
+    fetch(`${path}autocomplete/persons?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+      // for every row in data, add row["name"] to search suggestions
+      const suggestions = data.map((row) => ({
+        // label is the attribute "name", if there is an attribute "birth_year" add it to the label
+        label: row.name + (row.birth_year ? ` (född ${row.birth_year})` : ''),
+        value: row.id,
+      }));
+      // filter duplicates from suggestions
+      const filteredSuggestions = suggestions.filter(
+        (suggestion, index, self) => index === self.findIndex((t) => t.value === suggestion.value),
+      );
+      setPersonSuggestions(filteredSuggestions);
+    });
+  };
+
+  const getPlaceAutocomplete = (keyword) => {
+    const path = config.apiUrl;
+    // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/socken
+    fetch(`${path}autocomplete/socken?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+      // for every row in data, add row["name"] to search suggestions
+      const suggestions = data.map((row) => ({
+        // label is the attribute "name"
+        label: row.name + (row.landskap ? ` (${row.landskap})` : ''),
+        value: row.id,
+      }));
+      setPlaceSuggestions(suggestions);
+    });
+  };
 
   const openButtonClickHandler = () => {
     if (window.eventBus) {
       window.eventBus.dispatch('routePopup.show');
     }
   };
-
-  // const fetchingPageHandler = (e) => {
-  //   setFetchingPage(e.target);
-  // };
-
-  // useEffect(() => {
-  //   if (location.pathname.indexOf('/places') === 0) {
-  //     executeSearch();
-  //   }
-  // }, [searchParamsState.has_media, searchParamsState.has_transcribed_records]);
 
   useEffect(() => {
     // document.getElementById('app').addEventListener('click', windowClickHandler);
@@ -99,16 +121,45 @@ export default function SearchBox({ mode, params, recordsData }) {
     getSearchSuggestions();
     // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
     setSearch(searchParam);
+    // setSearchField(searchFieldParam);
+    if (searchFieldParam === 'person') {
+      const personFetchLocation = getPersonFetchLocation(searchParam);
+      fetch(personFetchLocation)
+        .then((response) => response.json())
+        .then((data) => {
+          setPerson(data);
+        });
+    } else if (searchFieldParam === 'place') {
+      const placeFetchLocation = getPlaceFetchLocation(searchParam);
+      fetch(placeFetchLocation)
+        .then((response) => response.json())
+        .then((data) => {
+          setPlace(data);
+        });
+    }
   }, []);
 
   useEffect(() => {
-    setSearch(searchParam);
-  }, [searchParam]);
-
-  // useEffect(() => {
-  //   // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
-  //   // setSearch(routeHelper.createParamsFromSearchRoute(params['*']).search);
-  // }, [location.pathname]);
+    // setSearchField(searchFieldParam);
+    if (searchFieldParam === 'person') {
+      const personFetchLocation = getPersonFetchLocation(searchParam);
+      fetch(personFetchLocation)
+        .then((response) => response.json())
+        .then((data) => {
+          setPerson(data);
+        });
+    } else if (searchFieldParam === 'place') {
+      const placeFetchLocation = getPlaceFetchLocation(searchParam);
+      fetch(placeFetchLocation)
+        .then((response) => response.json())
+        .then((data) => {
+          setPlace(data);
+        });
+    } else {
+      setSearch(searchParam);
+      setPerson(null);
+    }
+  }, [searchParam, searchFieldParam]);
 
   const openButtonKeyUpHandler = (e) => {
     if (e.keyCode === 13) {
@@ -118,9 +169,13 @@ export default function SearchBox({ mode, params, recordsData }) {
 
   // filter keywords by search input value
   const filteredSearchSuggestions = () => searchSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
+  const filteredPersonSuggestions = () => personSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
+  const filteredPlaceSuggestions = () => placeSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
 
   const closeSuggestionsHandler = () => {
     searchInputRef.current.focus();
+    setPersonSuggestions([]);
+    setPlaceSuggestions([]);
     setSuggestionsVisible(false);
   };
 
@@ -135,7 +190,7 @@ export default function SearchBox({ mode, params, recordsData }) {
       && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
       setSuggestionsVisible(false);
       // navigate(`/search/${e.target.dataset.value}`);
-      executeSearch(e.target.dataset.value);
+      executeSearch(e.target.dataset.value, e.target.dataset.field);
     }
     if (e.key === 'Escape') {
       closeSuggestionsHandler();
@@ -143,7 +198,12 @@ export default function SearchBox({ mode, params, recordsData }) {
     // if keydown and suggestionsRef.current.contains(event.target)), change to next suggestion
     if (e.key === 'ArrowDown'
       && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
-      const next = e.target.nextElementSibling;
+      // const next = e.target.nextElementSibling;
+      // define a variable next which is the next li sibling of the e.target
+      let next = e.target.nextElementSibling;
+      while (next && next.tagName !== 'LI') {
+        next = next.nextElementSibling;
+      }
       if (next) {
         next.focus();
       }
@@ -151,14 +211,21 @@ export default function SearchBox({ mode, params, recordsData }) {
     // if keyup and suggestionsRef.current.contains(event.target)), change to previous suggestion
     if (e.key === 'ArrowUp'
       && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
-      const prev = e.target.previousElementSibling;
+      // const prev = e.target.previousElementSibling;
+      // define a variable prev which is the previous li sibling of the e.target
+      let prev = e.target.previousElementSibling;
+      while (prev && prev.tagName !== 'LI') {
+        prev = prev.previousElementSibling;
+      }
       if (prev) {
         prev.focus();
       }
     }
     // if keyup and (event.target === searchInputRef.current), change focus to first suggestion
     if (e.key === 'ArrowDown' && suggestionsRef.current && (e.target === searchInputRef.current)) {
-      const first = suggestionsRef.current.firstElementChild;
+      // const first = suggestionsRef.current.firstElementChild;
+      // define a const first, which is the first li-element in the suggestionsRef
+      const first = suggestionsRef.current.querySelector('li');
       if (first) {
         first.focus();
       }
@@ -166,7 +233,7 @@ export default function SearchBox({ mode, params, recordsData }) {
     // if keydown and focus is on first suggestion, change focus to searchInputRef
     if (e.key === 'ArrowUp'
       && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
-      const first = suggestionsRef.current.firstElementChild;
+      const first = suggestionsRef.current.querySelector('li');
       if (e.target === first) {
         searchInputRef.current.focus();
       }
@@ -180,14 +247,29 @@ export default function SearchBox({ mode, params, recordsData }) {
     }
   };
 
-  const suggestionClickHandler = (keyword) => {
+  const personClickHandler = ({ personLabel, personValue }) => {
     setSuggestionsVisible(false);
-    // set the searchParamsState, but only update the search field
-    // setSearch({
-    //   search: keyword,
-    // });
+    // already change input field, before search results are returned
+    setSearch(personLabel);
+    setPerson(true);
+    executeSearch(personValue, 'person');
+  };
+
+  const placeClickHandler = ({ placeLabel, placeValue }) => {
+    setSuggestionsVisible(false);
+    // already change input field, before search results are returned
+    setSearch(placeLabel);
+    setPlace(true);
+    executeSearch(placeValue, 'place');
+  };
+  //
+  // const suggestionClickHandler = ({ value }) => {
+  const suggestionClickHandler = ({ value }) => {
+    setSuggestionsVisible(false);
+    // already change input field, before search results are returned
+    setSearch(value);
     // setSearch(keyword);
-    executeSearch(keyword);
+    executeSearch(value);
   };
 
   // set suggestionsVisible to true when the search input is focused
@@ -199,7 +281,7 @@ export default function SearchBox({ mode, params, recordsData }) {
   // but retain focus if the suggestionsCloseButton is clicked. do
   // not close the suggestions if the focus is moved to the suggestions list or the search input
   const searchInputBlurHandler = (e) => {
-    const refocusSearchField = e.relatedTarget === suggestionsCloseRef.current;
+    // const refocusSearchField = e.relatedTarget === suggestionsCloseRef.current;
     let close = !!suggestionsRef.current;
     if (close) {
       close = !suggestionsRef.current.contains(e.relatedTarget);
@@ -210,57 +292,34 @@ export default function SearchBox({ mode, params, recordsData }) {
     // Vi can't set focus in the same event handler that the blur event is fired in
     // so we have to use setTimeout
     window.setTimeout(() => {
-      if (refocusSearchField) {
-        searchInputRef.current.focus();
-      }
+      // if (refocusSearchField) {
+      //   searchInputRef.current.focus();
+      // }
       if (close) {
         setSuggestionsVisible(false);
       }
     }, 0);
   };
 
-  // const categoryItemClickHandler = (e) => {
-  //   // get the clicked category
-  //   const selectedCategory = categories.categories[e.target.dataset.index].letter;
-  //   // derive already selected categories from the current searchParams
-  //   const currentSelectedCategories = searchParams.category && searchParams.category.split(',');
-  //   let selectedCategories = [];
-  //   // if the clicked category is part of the current search params,
-  //   remove it from the current search params
-  //   if (currentSelectedCategories && currentSelectedCategories.includes(selectedCategory)) {
-  //     selectedCategories = currentSelectedCategories.filter((c) => c !== selectedCategory);
-  //   // else, check if list of current selected categories is not empty
-  //   // then add the clicked category
-  //   } else if (currentSelectedCategories) {
-  //     selectedCategories = currentSelectedCategories;
-  //     selectedCategories.push(selectedCategory);
-  //     // otherwise (no categories are in the search params), the new list of
-  //      //selected categories will a list with a single item, i.e. the clicked category
-  //   } else {
-  //     selectedCategories = [selectedCategory];
-  //   }
-
-  //   // create a new params object and change its category to the newly created list
-  //   const params = { ...searchParams };
-  //   params.category = selectedCategories.join(',');
-
-  //   // create a search route from the params object
-  //   const path = `/places${routeHelper.createSearchRoute(params)}`;
-
-  //   // set the route. All components that read from the route will change their state accordingly
-  //   navigate(path);
-  // };
-
-  // Lägg nytt värde till state om valt värde ändras i sökfält, kategorilistan eller andra sökfält
+  // ändrat värde i sökfältet
   const searchValueChangeHandler = (e) => {
     if (e.target.value !== search) {
       setSearch(e.target.value);
     }
+    if (e.target.value === '') {
+      setPersonSuggestions([]);
+      setPlaceSuggestions([]);
+    } else {
+      getPersonAutocomplete(e.target.value);
+      getPlaceAutocomplete(e.target.value);
+    }
   };
 
   const clearSearch = () => {
-    // const searchParams = { searchParamsState };
-    // searchParams.search = '';
+    setPersonSuggestions([]);
+    setPlaceSuggestions([]);
+    setPerson(false);
+    setPlace(false);
     setSearch(
       '',
     );
@@ -269,90 +328,59 @@ export default function SearchBox({ mode, params, recordsData }) {
     document.getElementById('searchInputMapMenu').focus();
   };
 
-  // const checkboxChangeHandler = (e) => {
-  //   if (e.target.name === 'filter') {
-  //     // for "Digitaliserat", "Avskrivet", "Allt"
-  //     if (!searchParamsState[e.target.value]) {
-  //       // const searchParams = { ...searchParamsState };
-  //       // searchParams['has_media'] = undefined;
-  //       // searchParams['has_transcribed_records'] = undefined;
-  //       // if (e.target.value !== 'all') {
-  //       //   searchParams[e.target.value] = 'true';
-  //       // }
-  //       setSearchParamsState({
-  //         ...searchParamsState,
-  //         has_media: undefined,
-  //         has_transcribed_records: undefined,
-  //         [e.target.value]: e.target.value !== 'all' ? 'true' : searchParamsState[e.target.value],
-  //       });
-  //     }
-  //     // for "Innehåll", "Person", "Ort"
-  //   } else if (e.target.value !== searchParamsState[e.target.name]) {
-  //     // const searchParams = { ...searchParamsState };
-  //     // if (e.target.value === 'false') {
-  //     //   searchParams[e.target.name] = undefined;
-  //     // } else {
-  //     //   searchParams[e.target.name] = e.target.value;
-  //     // }
-  //     setSearchParamsState({
-  //       ...searchParamsState,
-  //       [e.target.name]: e.target.value === 'false' ? undefined : e.target.value,
-  //     });
-  //   }
-  // };
-
   const searchLabelText = () => {
     let label = '';
     if (search) {
       label = 'Innehåll: ';
-      // switch (searchParamsState.search_field) {
-      //   case 'record':
-      //     label = 'Innehåll: ';
-      //     break;
-      //   case 'person':
-      //     label = 'Person: ';
-      //     break;
-      //   case 'place':
-      //     label = 'Ort: ';
-      //     break;
-      //   default:
-      //     label = '';
-      // }
+      if (person) {
+        label = 'Person: ';
+      } else if (place) {
+        label = 'Ort: ';
+      }
     } else {
-      label = l('Sök i Folke');
+      label = '';
     }
-    return label;
-  };
-
-  const searchLabelTranscriptionStatusText = () => {
-    const label = '';
-
-    // if (searchParamsState.transcriptionstatus) {
-    //   if (searchParamsState.transcriptionstatus === 'published') {
-    //     label = ' (Avskrivna)';
-    //   } else {
-    //     label = ' (För avskrift)';
-    //   }
-    // } else {
-    //   label = '';
-    // }
     return label;
   };
 
   return (
     <div
       className={
-        // `search-box map-floating-control${expanded ? ' expanded' : ''}${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
+        // `search-box map-floating-control${expanded ? ' expanded' : ''}
+        // ${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
         'search-box map-floating-control expanded'
       }
     >
       <div>
         <input
+          className={(person && 'person') || (place && 'place') || 'keyword'}
           id="searchInputMapMenu"
           ref={searchInputRef}
           type="text"
           // defaultValue={search || ''}
-          value={search || ''}
+          value={
+            // write out '' if search is falsy, otherwise do the following:
+            // write out the search value,
+            // but if the searchField is 'person', write out person.name
+            // and add " (född " and the birth year and ")"
+            // if the searchField is 'place', write out place.name
+            // and add " (" and the landskap and ")"
+            search && (
+              person
+                ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year || ''})` : ''}`
+                : place
+                  ? `${place.name || search} (${place.landskap || ''})`
+                  : search
+            )
+
+            // (search
+            //   && (person?.birth_year
+            //     ? `${person.name} (född ${person.birth_year})`
+            //     : (person?.name || search)
+            //   ))
+            //   || ('')
+
+          }
           // onChange={searchValueChangeHandler}
           onInput={searchValueChangeHandler}
           onKeyDown={inputKeyPressHandler}
@@ -368,12 +396,13 @@ export default function SearchBox({ mode, params, recordsData }) {
         />
 
         <div
-          className="search-label"
+          className={`search-label ${(person && 'person') || (place && 'place') || 'keyword'}`}
           style={{
+            fontSize: '0.9rem',
             textOverflow: 'ellipsis',
             overflow: 'hidden',
             whiteSpace: 'nowrap',
-            maxWidth: 275,
+            maxWidth: 227,
             display: 'block',
           }}
         >
@@ -382,18 +411,13 @@ export default function SearchBox({ mode, params, recordsData }) {
           }
           <strong>
             {
-              search || ''
+              person
+                ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year || ''})` : ''}`
+                : place
+                  ? `${place.name || search} (${place.landskap || ''})`
+                  : search
             }
           </strong>
-          {/* {
-            searchParamsState.has_media ? ' (Digitaliserat)' : ''
-          }
-          {
-            searchParamsState.has_transcribed_records ? ' (Avskrivet)' : ''
-          } */}
-          {
-            searchLabelTranscriptionStatusText()
-          }
           <br />
           <small>
             {/* {
@@ -408,52 +432,25 @@ export default function SearchBox({ mode, params, recordsData }) {
           mode === 'material'
           && suggestionsVisible && searchSuggestions.length > 0
           // check if keywords filtered by search input value is not empty
-          && filteredSearchSuggestions().length > 0
+          && (
+            filteredSearchSuggestions().length > 0
+            || filteredPersonSuggestions().length > 0
+            || filteredPlaceSuggestions().length > 0
+          )
           // if true, show suggestions
           && (
-            <div className="suggestions">
-              <span className="suggestions-label">Vanligaste sökningar</span>
-              <span
-                className="suggestions-close"
-                onClick={closeSuggestionsHandler}
-                tabIndex="0"
-                ref={suggestionsCloseRef}
-              >
-                &times;
-              </span>
-              <ul ref={suggestionsRef}>
-                {
-                  // filter keywords by search input value
-                  filteredSearchSuggestions()
-                    .slice(0, config.numberOfSearchSuggestions).map((keyword) => (
-                      <li
-                        className="suggestions-item"
-                        key={keyword.label}
-                        onClick={() => suggestionClickHandler(keyword.label)}
-                        tabIndex="0"
-                        onKeyDown={inputKeyPressHandler}
-                        data-value={keyword.label}
-                      >
-                        {/* make matching characters bold */}
-                        {
-                          keyword.label.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
-                            <span
-                              key={i}
-                              style={{
-                                fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                              }}
-                            >
-                              {part}
-                            </span>
-                          ))
-                        }
-
-                      </li>
-                    ))
-                }
-
-              </ul>
-            </div>
+            <SearchSuggestions
+              ref={suggestionsRef}
+              closeSuggestionsHandler={closeSuggestionsHandler}
+              filteredPersonSuggestions={filteredPersonSuggestions}
+              filteredPlaceSuggestions={filteredPlaceSuggestions}
+              filteredSearchSuggestions={filteredSearchSuggestions}
+              inputKeyPressHandler={inputKeyPressHandler}
+              search={search}
+              personClickHandler={personClickHandler}
+              placeClickHandler={placeClickHandler}
+              suggestionClickHandler={suggestionClickHandler}
+            />
           )
 }
       </div>
@@ -465,25 +462,20 @@ export default function SearchBox({ mode, params, recordsData }) {
         <button className="search-button" onClick={executeSearch} type="button" aria-label="Sök" />
       </div>
 
-      <div className="expanded-content">
+      {/* <div className="expanded-content">
 
-        <div className="advanced-content" style={{ display: 'none' }}>
+        <div className="advanced-content">
           <h4>Kategorier</h4>
           <div tabIndex={-1} className="list-container minimal-scrollbar">
-            {/* <Route
-              path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/persons/:person_id']}
-              render= {(props) => */}
-            {/* <CategoryList
-                  multipleSelect="true"
-                  itemClickHandler={categoryItemClickHandler}
-                  {...props}
-                /> */}
-            {/* }
-            /> */}
+
+            <CategoryList
+              multipleSelect="true"
+              itemClickHandler={categoryItemClickHandler}
+            />
+
           </div>
         </div>
-        {/* <button className="button-primary" onClick={executeSearch}>{l('Sök')}</button> */}
-      </div>
+      </div> */}
       {
         total//! fetchingPage
         && (

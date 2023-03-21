@@ -181,4 +181,6 @@ export default {
 		// filter_limit: "100", // default 100
 	},
 	numberOfSearchSuggestions: 6,
+	numberOfPlaceSuggestions: 3,
+	numberOfPersonSuggestions: 3,
 };
