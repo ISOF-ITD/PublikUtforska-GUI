@@ -1,6 +1,5 @@
 import { forwardRef } from 'react';
 import PropTypes from 'prop-types';
-
 import config from '../config';
 
 const SearchSuggestions = forwardRef(
@@ -30,6 +29,43 @@ const SearchSuggestions = forwardRef(
       suggestionClickHandler: PropTypes.func.isRequired,
     };
 
+    const renderSuggestions = (title, label, suggestions, clickHandler, field) => {
+      const filteredSuggestions = suggestions().filter((suggestion, index) => index < config[`numberOf${title}Suggestions`]);
+      if (filteredSuggestions.length === 0) {
+        return null;
+      }
+      return (
+        <>
+          <span className="suggestions-label">{label}</span>
+          {filteredSuggestions.map((item) => (
+            <li
+              className="suggestions-item"
+              key={item.value}
+              onClick={() => clickHandler({ [`${title.toLowerCase()}Label`]: item.label, [`${title.toLowerCase()}Value`]: item.value })}
+              tabIndex="0"
+              onKeyDown={inputKeyPressHandler}
+              data-value={item.value}
+              data-field={field}
+            >
+              {/* make matching characters bold */}
+              {
+                item.label.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
+                    }}
+                  >
+                    {part}
+                  </span>
+                ))
+              }
+            </li>
+          ))}
+        </>
+      );
+    };
+
     return (
       <ul className="suggestions" ref={ref}>
         <span
@@ -39,108 +75,9 @@ const SearchSuggestions = forwardRef(
         >
           &times;
         </span>
-        {
-        filteredPersonSuggestions().length !== 0
-        && <span className="suggestions-label">Personer</span>
-      }
-        {
-        // filter persons by search input value
-        filteredPersonSuggestions()
-          .slice(0, config.numberOfPersonSuggestions).map((person) => (
-            <li
-              className="suggestions-item"
-              key={person.value}
-              onClick={() => personClickHandler({ personLabel: person.label, personValue: person.value })}
-              tabIndex="0"
-              onKeyDown={inputKeyPressHandler}
-              data-value={person.value}
-              data-field="person"
-            >
-              {/* make matching characters bold */}
-              {
-                person.label.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                    }}
-                  >
-                    {part}
-                  </span>
-                ))
-              }
-            </li>
-          ))
-
-      }
-        {
-        filteredPlaceSuggestions().length !== 0
-        && <span className="suggestions-label">Orter</span>
-      }
-        {
-        // filter places by search input value
-        filteredPlaceSuggestions()
-          .slice(0, config.numberOfPlaceSuggestions).map((place) => (
-            <li
-              className="suggestions-item"
-              key={place.value}
-              onClick={() => placeClickHandler({ placeLabel: place.label, placeValue: place.value })}
-              tabIndex="0"
-              onKeyDown={inputKeyPressHandler}
-              data-value={place.value}
-              data-field="place"
-            >
-              {/* make matching characters bold */}
-              {
-                place.label.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                    }}
-                  >
-                    {part}
-                  </span>
-                ))
-              }
-            </li>
-          ))
-      }
-        {
-        filteredSearchSuggestions().length !== 0
-        && <span className="suggestions-label">Vanligaste sökningar</span>
-      }
-        {
-        // filter keywords by search input value
-        filteredSearchSuggestions()
-          .slice(0, config.numberOfSearchSuggestions).map((suggestion) => (
-            <li
-              className="suggestions-item"
-              key={suggestion.label}
-              onClick={() => suggestionClickHandler(suggestion)}
-              tabIndex="0"
-              onKeyDown={inputKeyPressHandler}
-              data-value={suggestion.label}
-            >
-              {/* make matching characters bold */}
-              {
-                suggestion.label.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                    }}
-                  >
-                    {part}
-                  </span>
-                ))
-              }
-
-            </li>
-          ))
-      }
-
-        {/* </div> */}
+        {renderSuggestions('Person', 'Personer', filteredPersonSuggestions, personClickHandler, 'person')}
+        {renderSuggestions('Place', 'Orter', filteredPlaceSuggestions, placeClickHandler, 'place')}
+        {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler)}
       </ul>
     );
   },

@@ -430,7 +430,7 @@ export default function SearchBox({ mode, params, recordsData }) {
         </div>
         {
           mode === 'material'
-          && suggestionsVisible && searchSuggestions.length > 0
+          && suggestionsVisible // && searchSuggestions.length > 0
           // check if keywords filtered by search input value is not empty
           && (
             filteredSearchSuggestions().length > 0
