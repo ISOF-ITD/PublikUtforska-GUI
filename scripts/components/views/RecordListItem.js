@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import _ from 'underscore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
 import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
@@ -19,13 +19,31 @@ import PdfGif from '../../../img/pdf.gif';
 
 export default function RecordListItem({
   id,
-  item,
+  item: {
+    _source: {
+      archive,
+      contents,
+      id: recordId,
+      materialtype,
+      media,
+      metadata,
+      persons,
+      places,
+      recordtype,
+      taxonomy,
+      text,
+      title,
+      transcribedby,
+      transcriptionstatus,
+      transcriptiontype,
+      year,
+    },
+  },
   searchParams,
   archiveIdClick,
   columns,
   shouldRenderColumn,
   highlightRecordsWithMetadataField,
-  routeParams,
   mode,
 }) {
   RecordListItem.propTypes = {
@@ -36,13 +54,11 @@ export default function RecordListItem({
     columns: PropTypes.array,
     shouldRenderColumn: PropTypes.func.isRequired,
     highlightRecordsWithMetadataField: PropTypes.string,
-    routeParams: PropTypes.object,
     mode: PropTypes.string,
   };
 
   RecordListItem.defaultProps = {
     highlightRecordsWithMetadataField: null,
-    routeParams: {},
     mode: 'material',
     columns: null,
   };
@@ -76,7 +92,7 @@ export default function RecordListItem({
   };
 
   useEffect(() => {
-    if (item._source.recordtype === 'one_accession_row') {
+    if (recordtype === 'one_accession_row') {
       const oneRecordParams = {
         search: id,
         recordtype: 'one_record',
@@ -114,35 +130,35 @@ export default function RecordListItem({
 
   const renderFieldArchiveId = () => {
     // If one_accession_row
-    if (item._source.recordtype === 'one_accession_row') {
+    if (recordtype === 'one_accession_row') {
       return (
         <td className="table-buttons" data-title={`${l('Arkivnummer')}:`}>
           <span>
-            {makeArchiveIdHumanReadable(item._source.archive.archive_id)}
+            {makeArchiveIdHumanReadable(archive.archive_id)}
             {
-              item._source.archive.page && (`:${item._source.archive.page}`)
+              archive.page && (`:${archive.page}`)
             }
           </span>
         </td>
       );
     }
     // If one_record
-    if (item._source.recordtype === 'one_record') {
+    if (recordtype === 'one_record') {
       return (
         <td className="table-buttons" data-title={`${l('Arkivnummer')}:`}>
           <span style={{ whiteSpace: 'nowrap' }}>
             <a
-              data-archiveidrow={item._source.archive.archive_id_row}
+              data-archiveidrow={archive.archive_id_row}
               data-search={searchParams.search ? searchParams.search : ''}
               data-recordtype={searchParams.recordtype} // === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
               onClick={archiveIdClick}
-              title={`Gå till accessionen ${item._source.archive.archive_id_row}`}
-              style={{ cursor: item._source.archive.archive_id_row ? 'pointer' : 'inherit' }}
+              title={`Gå till accessionen ${archive.archive_id_row}`}
+              style={{ cursor: archive.archive_id_row ? 'pointer' : 'inherit' }}
             >
-              {makeArchiveIdHumanReadable(item._source.archive.archive_id)}
+              {makeArchiveIdHumanReadable(archive.archive_id)}
             </a>
             {
-              item._source.archive.page && (`:${pageFromTo(item)}`)
+              archive.page && (`:${pageFromTo({ _source: { archive } })}`)
             }
           </span>
         </td>
@@ -153,16 +169,16 @@ export default function RecordListItem({
       <td className="table-buttons" data-title={`${l('Arkivnummer')}:`}>
         <span style={{ whiteSpace: 'nowrap' }}>
           <a
-            data-archiveid={item._source.archive.archive_id}
+            data-archiveid={archive.archive_id}
             data-recordtype={searchParams.recordtype === 'one_accession_row' ? 'one_record' : 'one_accession_row'}
             onClick={archiveIdClick}
             title={`Gå till ${searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
             style={{ cursor: 'pointer' }}
           >
-            {makeArchiveIdHumanReadable(item._source.archive.archive_id)}
+            {makeArchiveIdHumanReadable(archive.archive_id)}
           </a>
           {
-            item._source.archive.page && (`:${item._source.archive.page}`)
+            archive.page && (`:${archive.page}`)
           }
         </span>
       </td>
@@ -170,7 +186,7 @@ export default function RecordListItem({
   };
 
   if (config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton) {
-    var audioItem = _.find(item._source.media, (item) => item.type === 'audio');
+    var audioItem = _.find(media, (mediaItem) => mediaItem.type === 'audio');
   }
 
   const subrecordsElement = (
@@ -198,16 +214,16 @@ export default function RecordListItem({
           </small>
         )}
       <ul>
-        {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((item, index) => {
-          const published = item._source.transcriptionstatus === 'published';
+        {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((subItem, index) => {
+          const published = transcriptionstatus === 'published';
           return (
-            <li key={`subitem${item._source.id}`}>
+            <li key={`subitem${subItem._source.id}`}>
               <small>
-                <a style={{ fontWeight: published ? 'bold' : '' }} href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${item._source.id}${createSearchRoute(searchParams)}`}>
+                <a style={{ fontWeight: published ? 'bold' : '' }} href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(searchParams)}`}>
                   Sida
                   {' '}
-                  {pageFromTo(item)}
-                  {published && `: ${item._source.title}`}
+                  {pageFromTo(subItem)}
+                  {published && `: ${title}`}
                 </a>
               </small>
 
@@ -220,31 +236,31 @@ export default function RecordListItem({
 
   let displayTextSummary = false;
   if (highlightRecordsWithMetadataField) {
-    if (_.findWhere(item._source.metadata, { type: highlightRecordsWithMetadataField })) {
+    if (_.findWhere(metadata, { type: highlightRecordsWithMetadataField })) {
       displayTextSummary = true;
-      var textSummary = item._source.text ? (item._source.text.length > 300 ? `${item._source.text.substr(0, 300)}...` : item._source.text) : '';
+      var textSummary = text ? (text.length > 300 ? `${text.substr(0, 300)}...` : text) : '';
     }
   }
 
   let taxonomyElement;
-  if (item._source.taxonomy) {
+  if (taxonomy) {
     if (config.siteOptions.recordList && config.siteOptions.recordList.visibleCategories) {
       var { visibleCategories } = config.siteOptions.recordList;
     }
-    if (item._source.taxonomy.name) {
+    if (taxonomy.name) {
       if (visibleCategories) {
-        if (visibleCategories.indexOf(item._source.taxonomy.type.toLowerCase()) > -1) {
-          // taxonomyElement = <a href={`#/places/category/${item._source.taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(item._source.taxonomy.name)}</a>;
+        if (visibleCategories.indexOf(taxonomy.type.toLowerCase()) > -1) {
+          // taxonomyElement = <a href={`#/places/category/${taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(taxonomy.name)}</a>;
           // remove link to category
-          taxonomyElement = l(item._source.taxonomy.name);
+          taxonomyElement = l(taxonomy.name);
         }
       } else {
-        // taxonomyElement = <a href={`#/places/category/${item._source.taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(item._source.taxonomy.name)}</a>;
+        // taxonomyElement = <a href={`#/places/category/${taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(taxonomy.name)}</a>;
         // remove link to category
-        taxonomyElement = l(item._source.taxonomy.name);
+        taxonomyElement = l(taxonomy.name);
       }
-    } else if (item._source.taxonomy.length > 0 && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true)) {
-      taxonomyElement = _.compact(_.map(item._source.taxonomy, (taxonomyItem, i) => {
+    } else if (taxonomy.length > 0 && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true)) {
+      taxonomyElement = _.compact(_.map(taxonomy, (taxonomyItem, i) => {
         if (taxonomyItem.category) {
           const href = `#/places${createSearchRoute({
             category: taxonomyItem.category.toLowerCase(),
@@ -267,10 +283,10 @@ export default function RecordListItem({
   }
 
   let collectorPersonElement;
-  if (item._source.persons) {
+  if (persons) {
     if (config.siteOptions.recordList && config.siteOptions.recordList.visibleCollecorPersons === true) {
-      if (item._source.persons.length > 0) {
-        collectorPersonElement = _.compact(_.map(item._source.persons, (collectorPersonItem, i) => {
+      if (persons.length > 0) {
+        collectorPersonElement = _.compact(_.map(persons, (collectorPersonItem, i) => {
           if (collectorPersonItem.relation === 'c') {
             let routeParams = '';
             if (routeParams) {
@@ -286,10 +302,10 @@ export default function RecordListItem({
     }
   }
 
-  const transcribedByElement = (item._source.transcribedby
+  const transcribedByElement = (transcribedby
     ? (
       <span className="transcribed-by">
-        {item._source.transcribedby}
+        {transcribedby}
       </span>
     ) : ''
   );
@@ -308,10 +324,9 @@ export default function RecordListItem({
     published: 'Avskriven',
   };
   let transcriptionStatusElement = <span className="transcriptionstatus empty" />;
-  if (item._source.transcriptionstatus && item._source.transcriptionstatus !== 'accession') {
-    const { transcriptionstatus } = item._source;
+  if (transcriptionstatus && transcriptionstatus !== 'accession') {
     transcriptionStatusElement = <span className={`transcriptionstatus ${transcriptionstatus}`}>{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
-  } else if (item._source.transcriptionstatus === 'accession' && numberOfSubrecords && Number.isInteger(numberOfTranscribedSubrecords)) {
+  } else if (transcriptionstatus === 'accession' && numberOfSubrecords && Number.isInteger(numberOfTranscribedSubrecords)) {
     const transcribedPercent = numberOfSubrecords === 0 ? 0 : Math.round(numberOfTranscribedSubrecords / numberOfSubrecords * 100);
     transcriptionStatusElement = (
       <div style={{ marginRight: 10 }}>
@@ -345,10 +360,10 @@ export default function RecordListItem({
   let titleText;
   if (transcriptionStatusElement === 'Granskas') {
     titleText = 'Titel granskas';
-  } else if (item._source.transcriptionstatus === 'readytotranscribe') {
+  } else if (transcriptionstatus === 'readytotranscribe') {
     titleText = 'Ej avskriven';
   } else {
-    titleText = getTitle(item._source.title, item._source.contents);
+    titleText = getTitle(title, contents);
   }
 
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
@@ -365,30 +380,30 @@ export default function RecordListItem({
             <a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={record_href}>
               {
                 config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined
-                && <ListPlayButton disablePlayback media={audioItem} recordId={item._source.id} recordTitle={item._source.title && item._source.title != '' ? item._source.title : l('(Utan titel)')} />
+                && <ListPlayButton disablePlayback media={audioItem} recordId={recordId} recordTitle={title && title != '' ? title : l('(Utan titel)')} />
               }
-              {titleText && titleText != '' && titleText != '[]' ? titleText : l('(Utan titel)')}
+              {titleText && titleText !== '' && titleText !== '[]' ? titleText : l('(Utan titel)')}
               {
-                item._source.media && item._source.media.filter((m) => m.source && m.source.includes('.pdf'))[0]
-                && <sub><img src={PdfGif} style={{ marginLeft: 5 }} /></sub>
+                media && media.filter((m) => m.source && m.source.includes('.pdf'))[0]
+                && <sub><img src={PdfGif} style={{ marginLeft: 5 }} alt="pdf" /></sub>
               }
             </a>
             {
               displayTextSummary
               && <div className="item-summary">{textSummary}</div>
             }
-            {item._source.recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
-            {item._source.transcriptionstatus === 'readytotranscribe' && item._source.media.length > 0
+            {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
+            {transcriptionstatus === 'readytotranscribe' && media.length > 0
               && (
                 <TranscribeButton
                   className="button-primary"
                   label={l('Skriv av')}
-                  title={item._source.title}
-                  recordId={item._source.id}
-                  archiveId={item._source.archive.archive_id}
-                  places={item._source.places}
-                  images={item._source.media}
-                  transcriptionType={item._source.transcriptiontype}
+                  title={title}
+                  recordId={recordId}
+                  archiveId={archive.archive_id}
+                  places={places}
+                  images={media}
+                  transcriptionType={transcriptiontype}
                 />
               )}
           </td>
@@ -413,18 +428,18 @@ export default function RecordListItem({
         && (
           <td className="table-buttons" data-title={`${l('Ort')}:`}>
             {
-              item._source.places && item._source.places.length > 0
+              places && places.length > 0
               && (
                 <a
                   target={config.embeddedApp ? '_parent' : '_self'}
-                  href={`${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''}#${mode === 'transcribe' ? '/transcribe' : ''}/places/${item._source.places[0].id}`}
+                  href={`${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''}#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}`}
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate(`/places/${item._source.places[0].id}`);
+                    navigate(`/places/${places[0].id}`);
                   }}
                 >
                   {
-                    getPlaceString(item._source.places)
+                    getPlaceString(places)
                   }
                 </a>
               )
@@ -446,14 +461,14 @@ export default function RecordListItem({
         shouldRenderColumn('year', columns)
         && (
           <td className="table-buttons" data-title={`${l('År')}:`}>
-            <span className="year">{item._source.year ? item._source.year.split('-')[0] : ''}</span>
+            <span className="year">{year ? year.split('-')[0] : ''}</span>
           </td>
         )
       }
       {
         shouldRenderColumn('material_type', columns) && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType === true)
-        && <td data-title={`${l('Materialtyp')}:`}>{item._source.materialtype}</td>
-        // <td data-title={l('Avskriftstatus')+':'}>{item._source.transcriptionstatus ? item._source.transcriptionstatus : ''}</td>
+        && <td data-title={`${l('Materialtyp')}:`}>{materialtype}</td>
+        // <td data-title={l('Avskriftstatus')+':'}>{transcriptionstatus ? transcriptionstatus : ''}</td>
       }
       {
         shouldRenderColumn('transcription_status', columns)

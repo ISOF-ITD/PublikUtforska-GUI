@@ -1,10 +1,10 @@
 import _ from 'underscore';
 import config from '../config';
 
-export function pageFromTo(item) {
-  let text = `${item._source.archive.page}`;
-  if (item._source.archive.total_pages > 1) {
-    const toPage = parseInt(item._source.archive.page, 10) + (item._source.archive.total_pages - 1);
+export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
+  let text = `${page}`;
+  if (totalPages > 1) {
+    const toPage = parseInt(page, 10) + (totalPages - 1);
     text += `-${toPage}`;
   }
   return text;
