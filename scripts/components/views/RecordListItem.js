@@ -1,22 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import _ from 'underscore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import { Navigate, useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
 import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
 
 import config from '../../config';
 
-import routeHelper, {createSearchRoute} from '../../utils/routeHelper';
+import routeHelper, { createSearchRoute } from '../../utils/routeHelper';
 import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
 import { getPlaceString } from '../../../ISOF-React-modules/components/utils/helpers';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 
 import PdfGif from '../../../img/pdf.gif';
-
-import PropTypes from 'prop-types';
 
 export default function RecordListItem({
   id,
@@ -50,8 +49,47 @@ export default function RecordListItem({
 
   const [subrecords, setSubrecords] = useState([]);
   const [fetchedSubrecords, setFetchedSubrecords] = useState(false);
+  const [numberOfSubrecords, setNumberOfSubrecords] = useState(0);
+  const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] = useState(0);
 
   const navigate = useNavigate();
+
+  // used for fetching number of subrecords and transcribed subrecords
+  // after the component has mounted
+  // is called in the useEffect hook below
+  const fetchRecordCount = async (params, setValue) => {
+    try {
+      const queryParams = _.defaults(params, config.requiredParams);
+      const queryParamsString = Object.entries(queryParams)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('&');
+      const response = await fetch(`${config.apiUrl}count?${queryParamsString}`);
+      if (response.ok) {
+        const json = await response.json();
+        setValue(json.data.value);
+      } else {
+        throw new Error('Fel vid hämtning av antal uppteckningar');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (item._source.recordtype === 'one_accession_row') {
+      const oneRecordParams = {
+        search: id,
+        recordtype: 'one_record',
+      };
+      const transcribedOneRecordParams = {
+        search: id,
+        recordtype: 'one_record',
+        transcriptionstatus: 'published',
+      };
+      fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
+      fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
+    }
+  }, []);
 
   const collections = new RecordsCollection((json) => {
     if (!json.data || json.data.length === 0) {
@@ -145,7 +183,7 @@ export default function RecordListItem({
               <FontAwesomeIcon icon={faFolder} />
               {' '}
               Visa uppteckningar (
-              {item._source.numberofonerecord}
+              {numberOfSubrecords}
               )
             </a>
           </small>
@@ -155,18 +193,19 @@ export default function RecordListItem({
             <FontAwesomeIcon icon={faFolderOpen} />
             {' '}
             Uppteckningar i den här accessionen (
-            {item._source.numberofonerecord}
+            {numberOfSubrecords}
             ):
           </small>
         )}
       <ul>
-        {subrecords.sort((a, b) => ((parseInt(a._source.archive.page) > parseInt(b._source.archive.page)) ? 1 : -1)).map((item, index) => {
+        {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((item, index) => {
           const published = item._source.transcriptionstatus === 'published';
           return (
             <li key={`subitem${item._source.id}`}>
               <small>
                 <a style={{ fontWeight: published ? 'bold' : '' }} href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${item._source.id}${createSearchRoute(searchParams)}`}>
                   Sida
+                  {' '}
                   {pageFromTo(item)}
                   {published && `: ${item._source.title}`}
                 </a>
@@ -272,16 +311,16 @@ export default function RecordListItem({
   if (item._source.transcriptionstatus && item._source.transcriptionstatus !== 'accession') {
     const { transcriptionstatus } = item._source;
     transcriptionStatusElement = <span className={`transcriptionstatus ${transcriptionstatus}`}>{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
-  } else if (item._source.transcriptionstatus === 'accession' && item._source.numberofonerecord && Number.isInteger(item._source.numberoftranscribedonerecord)) {
-    const transcribedPercent = item._source.numberofonerecord === 0 ? 0 : Math.round(item._source.numberoftranscribedonerecord / item._source.numberofonerecord * 100);
+  } else if (item._source.transcriptionstatus === 'accession' && numberOfSubrecords && Number.isInteger(numberOfTranscribedSubrecords)) {
+    const transcribedPercent = numberOfSubrecords === 0 ? 0 : Math.round(numberOfTranscribedSubrecords / numberOfSubrecords * 100);
     transcriptionStatusElement = (
       <div style={{ marginRight: 10 }}>
-        {`${item._source.numberoftranscribedonerecord} av ${item._source.numberofonerecord}`}
+        {`${numberOfTranscribedSubrecords} av ${numberOfSubrecords}`}
         <br />
         <div
           title={`${transcribedPercent}%`}
           style={{
-            display: item._source.numberofonerecord === 0 ? 'none' : 'inline-block',
+            display: numberOfSubrecords === 0 ? 'none' : 'inline-block',
             width: '100%',
             maxWidth: 200,
             backgroundColor: '#fff',
@@ -338,7 +377,7 @@ export default function RecordListItem({
               displayTextSummary
               && <div className="item-summary">{textSummary}</div>
             }
-            {item._source.recordtype === 'one_accession_row' && item._source.numberofonerecord !== 0 && subrecordsElement}
+            {item._source.recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
             {item._source.transcriptionstatus === 'readytotranscribe' && item._source.media.length > 0
               && (
                 <TranscribeButton
