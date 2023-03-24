@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import _ from 'underscore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faFolderOpen, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
@@ -382,11 +382,15 @@ export default function RecordListItem({
                 config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined
                 && <ListPlayButton disablePlayback media={audioItem} recordId={recordId} recordTitle={title && title != '' ? title : l('(Utan titel)')} />
               }
-              {titleText && titleText !== '' && titleText !== '[]' ? titleText : l('(Utan titel)')}
               {
-                media && media.filter((m) => m.source && m.source.includes('.pdf'))[0]
-                && <sub><img src={PdfGif} style={{ marginLeft: 5 }} alt="pdf" /></sub>
+                media?.filter((m) => m.source && m.source.includes('.pdf'))[0]
+                && <sub><img src={PdfGif} style={{ marginRight: 5 }} alt="pdf" title="Accession" /></sub>
               }
+              {
+                media?.filter((m) => m.source && m.source.includes('.jpg'))[0]
+                && <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
+              }
+              {titleText && titleText !== '' && titleText !== '[]' ? titleText : l('(Utan titel)')}
             </a>
             {
               displayTextSummary
