@@ -271,12 +271,12 @@ export default function SearchBox({ mode, params, recordsData }) {
   };
   //
   // const suggestionClickHandler = ({ value }) => {
-  const suggestionClickHandler = ({ value }) => {
+  const suggestionClickHandler = ({ searchValue }) => {
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
-    setSearch(value);
+    setSearch(searchValue);
     // setSearch(keyword);
-    executeSearch(value);
+    executeSearch(searchValue);
   };
 
   // set suggestionsVisible to true when the search input is focused

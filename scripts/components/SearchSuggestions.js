@@ -75,9 +75,9 @@ const SearchSuggestions = forwardRef(
         >
           &times;
         </span>
+        {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler)}
         {renderSuggestions('Person', 'Personer', filteredPersonSuggestions, personClickHandler, 'person')}
         {renderSuggestions('Place', 'Orter', filteredPlaceSuggestions, placeClickHandler, 'place')}
-        {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler)}
       </ul>
     );
   },
