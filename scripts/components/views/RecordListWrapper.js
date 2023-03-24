@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useParams, useLocation } from 'react-router-dom';
 
 import RecordList from './RecordList';
-import routeHelper, { createParamsFromSearchRoute } from '../../utils/routeHelper';
+import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 
 
 import L from '../../../ISOF-React-modules/lang/Lang';
@@ -13,27 +13,19 @@ import L from '../../../ISOF-React-modules/lang/Lang';
 const l = L.get;
 
 export default function RecordListWrapper({
-  manuallyOpenPopup,
-  openButtonLabel,
   disableListPagination,
   disableRouterPagination,
   highlightRecordsWithMetadataField,
   mode,
-  // params,
 }) {
   RecordListWrapper.propTypes = {
-    manuallyOpenPopup: PropTypes.bool,
-    openButtonLabel: PropTypes.string,
     disableListPagination: PropTypes.bool,
     disableRouterPagination: PropTypes.bool,
     highlightRecordsWithMetadataField: PropTypes.string,
     mode: PropTypes.string,
-    // params: PropTypes.object.isRequired,
   };
 
   RecordListWrapper.defaultProps = {
-    manuallyOpenPopup: true,
-    openButtonLabel: 'Visa',
     disableListPagination: false,
     disableRouterPagination: true,
     highlightRecordsWithMetadataField: null,
@@ -42,10 +34,6 @@ export default function RecordListWrapper({
 
   const params = useParams();
   const location = useLocation();
-
-  useEffect(() => {
-    // setSearchParams(routeHelper.createParamsFromPlacesRoute(params['*']));
-  }, [params]);
 
   return (
     <div className="container">
