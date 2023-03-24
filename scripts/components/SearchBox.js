@@ -168,7 +168,14 @@ export default function SearchBox({ mode, params, recordsData }) {
   };
 
   // filter keywords by search input value
-  const filteredSearchSuggestions = () => searchSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
+  const filteredSearchSuggestions = () => searchSuggestions
+    // filter out keywords that don't contain the search input value
+    .filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
+    // remove out keywords that are duplicates, but only different in case
+    .filter((item, index, arr) => {
+      const label = item.label.toLowerCase();
+      return arr.findIndex((i) => i.label.toLowerCase() === label) === index;
+    });
   const filteredPersonSuggestions = () => personSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
   const filteredPlaceSuggestions = () => placeSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
 
