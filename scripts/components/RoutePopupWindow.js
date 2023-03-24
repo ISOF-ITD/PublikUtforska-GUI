@@ -77,7 +77,7 @@ export default class RoutePopupWindow extends React.Component {
   }
 
   UNSAFE_componentWillReceiveProps(newProps) {
-	const { children, disableAutoScrolling } = this.props;
+    const { children, disableAutoScrolling } = this.props;
     this.setState({
       windowOpen: Boolean(newProps.children) && !newProps.children.props.manuallyOpenPopup,
     });
@@ -88,14 +88,12 @@ export default class RoutePopupWindow extends React.Component {
   }
 
   componentWillUnmount() {
+    const { onHide } = this.props;
     if (window.eventBus) {
       window.eventBus.removeEventListener('Lang.setCurrentLang', this.languageChangedHandler);
     }
-  }
-
-  componentWillUnmount() {
-    if (this.props.onHide) {
-      this.props.onHide();
+    if (onHide) {
+      onHide();
     }
     if (window.eventBus) {
       window.eventBus.dispatch('popup.close');
@@ -103,9 +101,24 @@ export default class RoutePopupWindow extends React.Component {
   }
 
   render() {
-    if (this.state.windowOpen || this.state.manualOpen) {
-      if (this.props.onShow) {
-        this.props.onShow();
+    const {
+      closeButtonClick,
+      closeButtonKeyUp,
+      state: {
+        windowOpen,
+        manualOpen,
+      },
+      props: {
+        children,
+        closeButtonStyle,
+        onShow,
+        onHide,
+      },
+    } = this;
+
+    if (windowOpen || manualOpen) {
+      if (onShow) {
+        onShow();
       }
       if (window.eventBus) {
         setTimeout(() => {
@@ -113,8 +126,8 @@ export default class RoutePopupWindow extends React.Component {
         }, 100);
       }
     } else {
-      if (this.props.onHide) {
-        this.props.onHide();
+      if (onHide) {
+        onHide();
       }
       if (window.eventBus) {
         setTimeout(() => {
@@ -123,19 +136,23 @@ export default class RoutePopupWindow extends React.Component {
       }
     }
 
-    return (
-      <div className={`popup-wrapper${this.state.windowOpen || this.state.manualOpen ? ' visible' : ''}`}>
-        {
-					// this.props.children && this.props.children.props.manuallyOpenPopup &&
+    if (windowOpen || manualOpen) {
+      // TODO: do we want to render the popup even if it's not visible?
+      return (
+        <div className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}>
+          {
+          // this.props.children && this.props.children.props.manuallyOpenPopup &&
 					// <a className="popup-open-button map-floating-control map-bottom-control visible" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong>{l(this.props.children.props.openButtonLabel)}</strong></a>
 				}
-        <div ref="contentWrapper" className="popup-content-wrapper">
-          <div className="page-content">
-            <a tabIndex={0} className={`close-button${this.props.closeButtonStyle == 'dark' ? '' : this.props.closeButtonStyle == 'white' ? ' white' : ' white'}`} onClick={this.closeButtonClick} onKeyUp={this.closeButtonKeyUp} />
-            {this.props.children}
+          <div ref="contentWrapper" className="popup-content-wrapper">
+            <div className="page-content">
+              <a tabIndex={0} className={`close-button${closeButtonStyle == 'dark' ? '' : closeButtonStyle == 'white' ? ' white' : ' white'}`} onClick={closeButtonClick} onKeyUp={closeButtonKeyUp} />
+              {children}
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return null;
   }
 }
