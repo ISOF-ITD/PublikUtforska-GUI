@@ -215,7 +215,7 @@ export default function RecordListItem({
         )}
       <ul>
         {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((subItem, index) => {
-          const published = transcriptionstatus === 'published';
+          const published = subItem._source.transcriptionstatus === 'published';
           return (
             <li key={`subitem${subItem._source.id}`}>
               <small>
@@ -223,7 +223,7 @@ export default function RecordListItem({
                   Sida
                   {' '}
                   {pageFromTo(subItem)}
-                  {published && `: ${title}`}
+                  {published && `: ${subItem._source.title}`}
                 </a>
               </small>
 
