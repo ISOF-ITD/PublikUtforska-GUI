@@ -35,8 +35,14 @@ const router = createHashRouter([
   {
     path: '/*?',
     loader: async ({ params }) => {
-      const mapPromise = fetch(getMapFetchLocation(createParamsFromSearchRoute(params['*']))).then((resp) => resp.json());
-      const recordsPromise = fetch(getRecordsCountLocation(createParamsFromSearchRoute(params['*']))).then((resp) => resp.json());
+      const mapPromise = fetch(getMapFetchLocation({
+        ...createParamsFromSearchRoute(params['*']),
+        transcriptionstatus: 'published,accession',
+      })).then((resp) => resp.json());
+      const recordsPromise = fetch(getRecordsCountLocation({
+        ...createParamsFromSearchRoute(params['*']),
+        transcriptionstatus: 'published,accession',
+      })).then((resp) => resp.json());
       return Promise.all([mapPromise, recordsPromise]);
       // return defer({results: mapPromise})
     },

@@ -59,6 +59,7 @@ export default function RecordListWrapper({
               ...createParamsFromSearchRoute(params['*']),
               recordtype: mode === 'transcribe' ? 'one_accession_row' : null,
               has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
+              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
             }}
             mode={mode}
           />

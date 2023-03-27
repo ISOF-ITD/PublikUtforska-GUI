@@ -58,7 +58,6 @@ export default {
 		type: 'arkiv',
 		categorytypes: 'tradark',
 		publishstatus: 'published',
-		transcriptionstatus: 'published,accession',
 		has_media: 'true', // TODO: Bekräfta att vi ska använda detta
 		//For test with ortnamn data in index only use:
 		//Also add ISOF-React-modules/utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
