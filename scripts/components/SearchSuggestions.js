@@ -9,10 +9,12 @@ const SearchSuggestions = forwardRef(
       filteredPersonSuggestions,
       filteredPlaceSuggestions,
       filteredSearchSuggestions,
+      filteredProvinceSuggestions,
       inputKeyPressHandler,
       search,
       personClickHandler,
       placeClickHandler,
+      provinceClickHandler,
       suggestionClickHandler,
     },
     ref,
@@ -22,10 +24,12 @@ const SearchSuggestions = forwardRef(
       filteredPersonSuggestions: PropTypes.func.isRequired,
       filteredPlaceSuggestions: PropTypes.func.isRequired,
       filteredSearchSuggestions: PropTypes.func.isRequired,
+      filteredProvinceSuggestions: PropTypes.func.isRequired,
       inputKeyPressHandler: PropTypes.func.isRequired,
       search: PropTypes.string.isRequired,
       personClickHandler: PropTypes.func.isRequired,
       placeClickHandler: PropTypes.func.isRequired,
+      provinceClickHandler: PropTypes.func.isRequired,
       suggestionClickHandler: PropTypes.func.isRequired,
     };
 
@@ -78,6 +82,7 @@ const SearchSuggestions = forwardRef(
         {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler)}
         {renderSuggestions('Person', 'Personer', filteredPersonSuggestions, personClickHandler, 'person')}
         {renderSuggestions('Place', 'Orter', filteredPlaceSuggestions, placeClickHandler, 'place')}
+        {renderSuggestions('Province', 'Landskap', filteredProvinceSuggestions, provinceClickHandler, 'place')}
       </ul>
     );
   },

@@ -27,10 +27,12 @@ export default function SearchBox({ mode, params, recordsData }) {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [personSuggestions, setPersonSuggestions] = useState([]);
   const [placeSuggestions, setPlaceSuggestions] = useState([]);
+  const [provinceSuggestions, setProvinceSuggestions] = useState([]);
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [person, setPerson] = useState(null);
   const [place, setPlace] = useState(null);
+  // const [province, setProvince] = useState(null);
 
   const { search: searchParam, search_field: searchFieldParam } = createParamsFromSearchRoute(params['*']);
   const navigate = useNavigate();
@@ -104,6 +106,20 @@ export default function SearchBox({ mode, params, recordsData }) {
     });
   };
 
+  const getProvinceAutocomplete = (keyword) => {
+    const path = config.apiUrl;
+    // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/landskap
+    fetch(`${path}autocomplete/landskap?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+      // for every row in data, add row["name"] to search suggestions
+      const suggestions = data.map((row) => ({
+        // label is the attribute "name"
+        label: row.name,
+        value: row.name,
+      }));
+      setProvinceSuggestions(suggestions);
+    });
+  };
+
   const openButtonClickHandler = () => {
     if (window.eventBus) {
       window.eventBus.dispatch('routePopup.show');
@@ -131,11 +147,17 @@ export default function SearchBox({ mode, params, recordsData }) {
         });
     } else if (searchFieldParam === 'place') {
       const placeFetchLocation = getPlaceFetchLocation(searchParam);
-      fetch(placeFetchLocation)
-        .then((response) => response.json())
-        .then((data) => {
-          setPlace(data);
-        });
+      fetch(placeFetchLocation).then((response) => {
+        const status = response.headers.get('status');
+        if (status !== 200) {
+          setPlace({
+            name: searchParam,
+          });
+        }
+        return response.json();
+      }).then((data) => {
+        setPlace(data);
+      });
     }
   }, []);
 
@@ -150,11 +172,17 @@ export default function SearchBox({ mode, params, recordsData }) {
         });
     } else if (searchFieldParam === 'place') {
       const placeFetchLocation = getPlaceFetchLocation(searchParam);
-      fetch(placeFetchLocation)
-        .then((response) => response.json())
-        .then((data) => {
-          setPlace(data);
-        });
+      fetch(placeFetchLocation).then((response) => {
+        const status = response.headers.get('status');
+        if (status !== 200) {
+          setPlace({
+            name: searchParam,
+          });
+        }
+        return response.json();
+      }).then((data) => {
+        setPlace(data);
+      });
     } else {
       setSearch(searchParam);
       setPerson(null);
@@ -178,11 +206,13 @@ export default function SearchBox({ mode, params, recordsData }) {
     });
   const filteredPersonSuggestions = () => personSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
   const filteredPlaceSuggestions = () => placeSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
+  const filteredProvinceSuggestions = () => provinceSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
 
   const closeSuggestionsHandler = () => {
     searchInputRef.current.focus();
     setPersonSuggestions([]);
     setPlaceSuggestions([]);
+    setProvinceSuggestions([]);
     setSuggestionsVisible(false);
   };
 
@@ -265,12 +295,20 @@ export default function SearchBox({ mode, params, recordsData }) {
   const placeClickHandler = ({ placeLabel, placeValue }) => {
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
+    console.log('placeLabel', placeLabel)
     setSearch(placeLabel);
-    setPlace(true);
+    setPlace(placeLabel);
     executeSearch(placeValue, 'place');
   };
-  //
-  // const suggestionClickHandler = ({ value }) => {
+
+  const provinceClickHandler = ({ provinceLabel, provinceValue }) => {
+    setSuggestionsVisible(false);
+    // already change input field, before search results are returned
+    setSearch(provinceLabel);
+    setPlace(provinceLabel);
+    executeSearch(provinceValue, 'place');
+  };
+
   const suggestionClickHandler = ({ searchValue }) => {
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
@@ -310,23 +348,29 @@ export default function SearchBox({ mode, params, recordsData }) {
 
   // ändrat värde i sökfältet
   const searchValueChangeHandler = (e) => {
-    if (e.target.value !== search) {
-      setSearch(e.target.value);
-    }
-    if (e.target.value === '') {
+    const { value } = e.target;
+    setSearch(value);
+
+    if (value.length > 1) {
+      // we use a promise because we want to wait for all the promises to resolve
+      Promise.all([
+        getPersonAutocomplete(value),
+        getPlaceAutocomplete(value),
+        getProvinceAutocomplete(value),
+      ]);
+    } else {
       setPersonSuggestions([]);
       setPlaceSuggestions([]);
-    } else {
-      getPersonAutocomplete(e.target.value);
-      getPlaceAutocomplete(e.target.value);
+      setProvinceSuggestions([]);
     }
   };
 
   const clearSearch = () => {
     setPersonSuggestions([]);
     setPlaceSuggestions([]);
-    setPerson(false);
-    setPlace(false);
+    setProvinceSuggestions([]);
+    setPerson(null);
+    setPlace(null);
     setSearch(
       '',
     );
@@ -365,29 +409,29 @@ export default function SearchBox({ mode, params, recordsData }) {
           ref={searchInputRef}
           type="text"
           // defaultValue={search || ''}
-          value={
-            // write out '' if search is falsy, otherwise do the following:
-            // write out the search value,
-            // but if the searchField is 'person', write out person.name
-            // and add " (född " and the birth year and ")"
-            // if the searchField is 'place', write out place.name
-            // and add " (" and the landskap and ")"
-            search && (
-              person
-                ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year || ''})` : ''}`
-                : place
-                  ? `${place.name || search} (${place.landskap || ''})`
-                  : search
-            )
+          // value={
+          //   // write out '' if search is falsy, otherwise do the following:
+          //   // write out the search value,
+          //   // but if the searchField is 'person', write out person.name
+          //   // and add " (född " and the birth year and ")"
+          //   // if the searchField is 'place', write out place.name
+          //   // and add " (" and the landskap and ")"
+          //   search && (
+          //     person
+          //       ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year || ''})` : ''}`
+          //       : place
+          //         ? `${place.name || search} ${place.landskap ? `(${place.landskap})`: ''}`
+          //         : search
+          //   )
 
-            // (search
-            //   && (person?.birth_year
-            //     ? `${person.name} (född ${person.birth_year})`
-            //     : (person?.name || search)
-            //   ))
-            //   || ('')
+          //   // (search
+          //   //   && (person?.birth_year
+          //   //     ? `${person.name} (född ${person.birth_year})`
+          //   //     : (person?.name || search)
+          //   //   ))
+          //   //   || ('')
 
-          }
+          // }
           // onChange={searchValueChangeHandler}
           onInput={searchValueChangeHandler}
           onKeyDown={inputKeyPressHandler}
@@ -421,7 +465,7 @@ export default function SearchBox({ mode, params, recordsData }) {
               person
                 ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year || ''})` : ''}`
                 : place
-                  ? `${place.name || search} (${place.landskap || ''})`
+                ? `${place.name || search} ${place.landskap ? `(${place.landskap})`: ''}`
                   : search
             }
           </strong>
@@ -443,6 +487,7 @@ export default function SearchBox({ mode, params, recordsData }) {
             filteredSearchSuggestions().length > 0
             || filteredPersonSuggestions().length > 0
             || filteredPlaceSuggestions().length > 0
+            || filteredProvinceSuggestions().length > 0
           )
           // if true, show suggestions
           && (
@@ -451,11 +496,13 @@ export default function SearchBox({ mode, params, recordsData }) {
               closeSuggestionsHandler={closeSuggestionsHandler}
               filteredPersonSuggestions={filteredPersonSuggestions}
               filteredPlaceSuggestions={filteredPlaceSuggestions}
+              filteredProvinceSuggestions={filteredProvinceSuggestions}
               filteredSearchSuggestions={filteredSearchSuggestions}
               inputKeyPressHandler={inputKeyPressHandler}
               search={search}
               personClickHandler={personClickHandler}
               placeClickHandler={placeClickHandler}
+              provinceClickHandler={provinceClickHandler}
               suggestionClickHandler={suggestionClickHandler}
             />
           )
@@ -466,7 +513,9 @@ export default function SearchBox({ mode, params, recordsData }) {
         {
           search && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
         }
-        <button className="search-button" onClick={executeSearch} type="button" aria-label="Sök" />
+        <button className="search-button" onClick={executeSearch} type="button" aria-label="Sök" style={{
+          visibility: person || place ? 'hidden' : 'unset',
+        }}/>
       </div>
 
       {/* <div className="expanded-content">
@@ -528,6 +577,5 @@ export default function SearchBox({ mode, params, recordsData }) {
         )
       }
     </div>
-
   );
 }

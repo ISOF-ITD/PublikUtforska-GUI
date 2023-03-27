@@ -87,14 +87,12 @@ const router = createHashRouter([
       },
       {
         path: 'records/:recordId/*?',
-        id: 'records',
+        id: 'record',
         loader: async ({ params: { recordId } }) => fetch(getRecordFetchLocation(recordId)),
         element: (
           <RoutePopupWindow
             manuallyOpen={false}
-            onClose={() => {
-              window.history.back();
-            }}
+            routeId="record"
           >
             <RecordView
               mode="material"
@@ -104,7 +102,7 @@ const router = createHashRouter([
       },
       {
         path: 'persons/:personId/*?',
-        id: 'persons',
+        id: 'person',
         loader: async ({ params: { personId } }) => fetch(getPersonFetchLocation(personId)),
         element: (
           <RoutePopupWindow
@@ -112,6 +110,7 @@ const router = createHashRouter([
             onClose={() => {
               window.history.back();
             }}
+            routeId="person"
           >
             <PersonView
               mode="material"
@@ -201,7 +200,7 @@ const router = createHashRouter([
     children: [
       {
         path: 'places/:placeId/*?',
-        id: 'transcribe-places',
+        id: 'transcribe-place',
         loader: ({ params }) => {
           const placePromise = fetch(
             getPlaceFetchLocation(params.placeId),
@@ -233,7 +232,7 @@ const router = createHashRouter([
       },
       {
         path: 'records/:recordId/*?',
-        id: 'transcribe-records',
+        id: 'transcribe-record',
         loader: async ({ params: { recordId } }) => fetch(getRecordFetchLocation(recordId)),
         element: (
           <RoutePopupWindow
@@ -241,6 +240,7 @@ const router = createHashRouter([
             onClose={() => {
               window.history.back();
             }}
+            routeId="transcribe-record"
           >
             <RecordView
               mode="transcribe"
@@ -250,7 +250,7 @@ const router = createHashRouter([
       },
       {
         path: 'persons/:personId/*?',
-        id: 'transcribe-persons',
+        id: 'transcribe-person',
         loader: async ({ params: { personId } }) => fetch(getPersonFetchLocation(personId)),
         element: (
           <RoutePopupWindow

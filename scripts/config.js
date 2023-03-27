@@ -184,4 +184,5 @@ export default {
 	numberOfSearchSuggestions: 6,
 	numberOfPlaceSuggestions: 3,
 	numberOfPersonSuggestions: 3,
+	numberOfProvinceSuggestions: 3,
 };
