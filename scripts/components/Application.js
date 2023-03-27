@@ -58,11 +58,10 @@ export default function Application({ children, mode }) {
   // const [popupVisible, setPopupVisible] = useState(false);
 
   const mapMarkerClick = (placeId) => {
-    // debugger;
     if (mode === 'transcribe') {
-      navigate(`/transcribe${createPlacePathFromPlace(placeId)}${params['*'] ?? ''}`);
+      navigate(`/transcribe${createPlacePathFromPlace(placeId)}/${params['*'] ?? ''}`);
     } else {
-      navigate(`${createPlacePathFromPlace(placeId)}${params['*'] ?? ''}`);
+      navigate(`${createPlacePathFromPlace(placeId)}/${params['*'] ?? ''}`);
     }
   };
 
