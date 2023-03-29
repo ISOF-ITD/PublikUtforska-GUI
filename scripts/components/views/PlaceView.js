@@ -67,6 +67,13 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                       )
                     }
                   </p>
+                  {
+                    results.comment && (
+                      <p>
+                        {results.comment}
+                      </p>
+                    )
+                  }
 
                 </div>
               )}
