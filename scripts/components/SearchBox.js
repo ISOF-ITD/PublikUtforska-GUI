@@ -101,6 +101,7 @@ export default function SearchBox({ mode, params, recordsData }) {
         // label is the attribute "name"
         label: row.name + (row.landskap ? ` (${row.landskap})` : ''),
         value: row.id,
+        comment: row.comment,
       }));
       setPlaceSuggestions(suggestions);
     });
@@ -204,9 +205,13 @@ export default function SearchBox({ mode, params, recordsData }) {
       const label = item.label.toLowerCase();
       return arr.findIndex((i) => i.label.toLowerCase() === label) === index;
     });
-  const filteredPersonSuggestions = () => personSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
-  const filteredPlaceSuggestions = () => placeSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
-  const filteredProvinceSuggestions = () => provinceSuggestions.filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
+  const filteredPersonSuggestions = () => personSuggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
+  const filteredPlaceSuggestions = () => placeSuggestions.filter(
+    (suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1
+    || suggestion.comment.toLowerCase().indexOf(search?.toLowerCase() || '') > -1,
+  );
+
+  const filteredProvinceSuggestions = () => provinceSuggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
 
   const closeSuggestionsHandler = () => {
     searchInputRef.current.focus();
