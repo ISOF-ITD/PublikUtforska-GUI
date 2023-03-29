@@ -295,7 +295,6 @@ export default function SearchBox({ mode, params, recordsData }) {
   const placeClickHandler = ({ placeLabel, placeValue }) => {
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
-    console.log('placeLabel', placeLabel)
     setSearch(placeLabel);
     setPlace(placeLabel);
     executeSearch(placeValue, 'place');
@@ -480,8 +479,7 @@ export default function SearchBox({ mode, params, recordsData }) {
           </small>
         </div>
         {
-          mode === 'material'
-          && suggestionsVisible // && searchSuggestions.length > 0
+          suggestionsVisible // && searchSuggestions.length > 0
           // check if keywords filtered by search input value is not empty
           && (
             filteredSearchSuggestions().length > 0
