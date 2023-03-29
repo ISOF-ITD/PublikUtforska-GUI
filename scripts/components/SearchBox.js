@@ -311,6 +311,7 @@ export default function SearchBox({ mode, params, recordsData }) {
   const suggestionClickHandler = ({ searchValue }) => {
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
+    document.getElementById('searchInputMapMenu').value = searchValue;
     setSearch(searchValue);
     // setSearch(keyword);
     executeSearch(searchValue);
