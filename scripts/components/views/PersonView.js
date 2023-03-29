@@ -148,7 +148,11 @@ export default function PersonView({ mode }) {
           <RecordList
             disableRouterPagination
             disableAutoFetch
-            params={{ person_id: id }}
+            params={{
+              person_id: id,
+              has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
+              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
+            }}
             mode={mode}
           />
         </div>
