@@ -55,15 +55,18 @@ const SearchSuggestions = forwardRef(
             >
               {/* make matching characters bold */}
               {
-                item.label.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                    }}
-                  >
-                    {part}
-                  </span>
+                item.label.split(new RegExp(`(${search
+                  // put all special characters in a character class
+                  ? search.replace(/([.*+?^=!:${}()|[\\/\\])/g, '[$1]')
+                  : ''})`, 'gi')).map((part, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
+                      }}
+                    >
+                      {part}
+                    </span>
                 ))
               }
               {/* make matching characters in item.comment bold. */}
