@@ -209,7 +209,19 @@ export default function SearchBox({ mode, params, recordsData }) {
   const filteredPlaceSuggestions = () => placeSuggestions.filter(
     (suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1
     || suggestion.comment.toLowerCase().indexOf(search?.toLowerCase() || '') > -1,
-  );
+  )
+  // sort the suggestions in a way so that the ones that start with the search input value are first
+    .sort((a, b) => {
+      const aStartsWithSearch = a.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
+      const bStartsWithSearch = b.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
+      if (aStartsWithSearch && !bStartsWithSearch) {
+        return -1;
+      }
+      if (!aStartsWithSearch && bStartsWithSearch) {
+        return 1;
+      }
+      return 0;
+    });
 
   const filteredProvinceSuggestions = () => provinceSuggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
 
