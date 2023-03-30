@@ -370,7 +370,7 @@ export default function RecordListItem({
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
   // 	 }#/records/${this.props.id
   // 	 }${createSearchRoute(searchParams)}`;
-  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}/${params['*']}`;
+  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}/${params['*'] || ''}`;
 
   return (
     <tr className={`list-item${displayTextSummary ? ' highlighted' : ''}`}>
