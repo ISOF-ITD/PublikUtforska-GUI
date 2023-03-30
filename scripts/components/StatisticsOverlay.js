@@ -44,7 +44,7 @@ export default function StatisticsOverlay() {
             // "now/M" is the start of the current month
             range: 'transcriptiondate,now/M,now%2B2h',
           }}
-          label="avskrivna uppteckningar senaste månaden"
+          label="avskrivna uppteckningar den här månaden"
           visible={visible}
         />
         {/* Antal avskrivna uppteckningar totalt  */}
@@ -70,7 +70,7 @@ export default function StatisticsOverlay() {
             range: 'transcriptiondate,now/M,now%2B2h',
             aggregation: 'sum,archive.total_pages',
           }}
-          label="avskrivna sidor senaste månaden"
+          label="avskrivna sidor den här månaden"
           visible={visible}
         />
 
@@ -97,7 +97,7 @@ export default function StatisticsOverlay() {
             range: 'transcriptiondate,now/M,now%2B2h',
             aggregation: 'cardinality,transcribedby.keyword',
           }}
-          label="användare som har skrivit av uppteckningar senaste månaden"
+          label="användare som har skrivit av uppteckningar den här månaden"
           visible={visible}
         />
 
