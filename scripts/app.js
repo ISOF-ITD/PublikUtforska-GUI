@@ -92,6 +92,7 @@ const router = createHashRouter([
         element: (
           <RoutePopupWindow
             manuallyOpen={false}
+            onClose={null}
             routeId="record"
           >
             <RecordView

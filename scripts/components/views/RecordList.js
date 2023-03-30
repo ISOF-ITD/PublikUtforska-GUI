@@ -182,12 +182,12 @@ export default function RecordList({
     const archiveIdRow = e.target.dataset.archiveidrow;
     const { recordtype } = e.target.dataset;
     const { search } = e.target.dataset;
-    const params = {
+    const newParams = {
       search,
       recordtype,
     };
     if (archiveIdRow) {
-      navigate(`/records/${archiveIdRow}${createSearchRoute(params)}`);
+      navigate(`/records/${archiveIdRow}${createSearchRoute(newParams)}`);
     }
   };
 

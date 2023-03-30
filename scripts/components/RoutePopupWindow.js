@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { createParamsFromRecordRoute, createSearchRoute } from '../utils/routeHelper';
 
 // Main CSS: ui-components/poupwindow.less
 
@@ -10,6 +12,7 @@ export default function RoutePopupWindow({
   onHide,
   onShow,
   closeButtonStyle,
+  routeId,
 }) {
   RoutePopupWindow.propTypes = {
     children: PropTypes.node.isRequired,
@@ -18,6 +21,7 @@ export default function RoutePopupWindow({
     onHide: PropTypes.func,
     onShow: PropTypes.func,
     closeButtonStyle: PropTypes.string,
+    routeId: PropTypes.string,
   };
 
   RoutePopupWindow.defaultProps = {
@@ -26,18 +30,25 @@ export default function RoutePopupWindow({
     onHide: null,
     onShow: null,
     closeButtonStyle: 'white',
+    routeId: null,
   };
 
   const [windowOpen, setWindowOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+
   const closeButtonClick = () => {
     if (children.props.manuallyOpenPopup || manuallyOpenPopup) {
       setWindowOpen(false);
       setManualOpen(false);
+    } else if (routeId === 'record' || routeId === 'transcribe-record') {
+      const params = createParamsFromRecordRoute(pathname);
+      delete params.record_id;
+      const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe' : ''}${createSearchRoute(params)}`;
+      navigate(navigationPath);
     } else if (onClose) {
-      // TODO: turn this component into a functional component
-      // and use the useLocation hook instead of this:
       onClose();
     }
   };

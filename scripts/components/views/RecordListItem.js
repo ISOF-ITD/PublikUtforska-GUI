@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import _ from 'underscore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFolderOpen, faFileLines } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
 import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
@@ -69,6 +69,7 @@ export default function RecordListItem({
   const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] = useState(0);
 
   const navigate = useNavigate();
+  const params = useParams();
 
   // used for fetching number of subrecords and transcribed subrecords
   // after the component has mounted
@@ -369,7 +370,7 @@ export default function RecordListItem({
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
   // 	 }#/records/${this.props.id
   // 	 }${createSearchRoute(searchParams)}`;
-  const record_href = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}`;
+  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}/${params['*']}`;
 
   return (
     <tr className={`list-item${displayTextSummary ? ' highlighted' : ''}`}>
@@ -377,7 +378,7 @@ export default function RecordListItem({
         shouldRenderColumn('title', columns)
         && (
           <td className="text-larger">
-            <a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={record_href}>
+            <a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={recordHref}>
               {
                 config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined
                 && <ListPlayButton disablePlayback media={audioItem} recordId={recordId} recordTitle={title && title != '' ? title : l('(Utan titel)')} />
