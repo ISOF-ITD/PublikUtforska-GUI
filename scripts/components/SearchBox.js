@@ -197,35 +197,21 @@ export default function SearchBox({ mode, params, recordsData }) {
   };
 
   const filterAndSortSuggestions = (suggestions) => (
-    // first, filter out suggestions that don't contain the search input value
+    // filter out suggestions that don't contain the search input value
     suggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
-    // then, sort the suggestions alphabetically
+    // sort the suggestions so that the ones that start with the search input value are first
       .sort((a, b) => {
-        const labelA = a.label.toLowerCase();
-        const labelB = b.label.toLowerCase();
-        if (labelA < labelB) {
+        const aStartsWithSearch = a.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
+        const bStartsWithSearch = b.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
+        if (aStartsWithSearch && !bStartsWithSearch) {
           return -1;
         }
-        if (labelA > labelB) {
-          return 1;
-        }
-        return 0;
-      })
-    // then, sort the suggestions so that the ones that start with the search input value are first
-      .sort((a, b) => {
-        const labelA = a.label.toLowerCase();
-        const labelB = b.label.toLowerCase();
-        if (labelA.indexOf(search?.toLowerCase() || '') === 0 && labelB.indexOf(search?.toLowerCase() || '') !== 0) {
-          return -1;
-        }
-        if (labelA.indexOf(search?.toLowerCase() || '') !== 0 && labelB.indexOf(search?.toLowerCase() || '') === 0) {
+        if (!aStartsWithSearch && bStartsWithSearch) {
           return 1;
         }
         return 0;
       })
   );
-
-
 
   // filter keywords by search input value
   const filteredSearchSuggestions = () => searchSuggestions
@@ -496,7 +482,7 @@ export default function SearchBox({ mode, params, recordsData }) {
           <strong>
             {
               person
-                ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year || ''})` : ''}`
+                ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year})` : ''}`
                 : place
                 ? `${place.name || search} ${place.landskap ? `(${place.landskap})`: ''}`
                   : search
