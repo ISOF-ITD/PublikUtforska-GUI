@@ -181,8 +181,10 @@ export default {
 		format: "JSON",
 		// filter_limit: "100", // default 100
 	},
+	// här går det att begränsa antalet sökförslag för varje typ av sökförslag
+	// sätt till null för att inte begränsa
 	numberOfSearchSuggestions: 6,
-	numberOfPlaceSuggestions: 3,
-	numberOfPersonSuggestions: 3,
-	numberOfProvinceSuggestions: 3,
+	numberOfPlaceSuggestions: null,
+	numberOfPersonSuggestions: null,
+	numberOfProvinceSuggestions: null,
 };

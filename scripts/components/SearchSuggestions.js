@@ -33,13 +33,15 @@ const SearchSuggestions = forwardRef(
       suggestionClickHandler: PropTypes.func.isRequired,
     };
 
-    const renderSuggestions = (title, label, suggestions, clickHandler, field) => {
-      const filteredSuggestions = suggestions().filter((suggestion, index) => index < config[`numberOf${title}Suggestions`]);
+    const renderSuggestions = (title, label, suggestions, clickHandler, field, maxHeight) => {
+      const filteredSuggestions = config[`numberOf${title}Suggestions`]
+        ? suggestions().filter((suggestion, index) => index < config[`numberOf${title}Suggestions`])
+        : suggestions();
       if (filteredSuggestions.length === 0) {
         return null;
       }
       return (
-        <>
+        <div style={{ maxHeight, overflowY: 'auto' }}>
           <span className="suggestions-label">{label}</span>
           {filteredSuggestions.map((item) => (
             <li
@@ -82,7 +84,7 @@ const SearchSuggestions = forwardRef(
               }
             </li>
           ))}
-        </>
+        </div>
       );
     };
 
@@ -95,10 +97,10 @@ const SearchSuggestions = forwardRef(
         >
           &times;
         </span>
-        {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler)}
-        {renderSuggestions('Person', 'Personer', filteredPersonSuggestions, personClickHandler, 'person')}
-        {renderSuggestions('Place', 'Orter', filteredPlaceSuggestions, placeClickHandler, 'place')}
-        {renderSuggestions('Province', 'Landskap', filteredProvinceSuggestions, provinceClickHandler, 'place')}
+        {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler, 350)}
+        {renderSuggestions('Person', 'Personer', filteredPersonSuggestions, personClickHandler, 'person', 175)}
+        {renderSuggestions('Place', 'Orter', filteredPlaceSuggestions, placeClickHandler, 'place', 175)}
+        {renderSuggestions('Province', 'Landskap', filteredProvinceSuggestions, provinceClickHandler, 'place', 175)}
       </ul>
     );
   },
