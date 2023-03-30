@@ -34,19 +34,31 @@ export default function StatisticsOverlay() {
       </div>
       <div className="row">
         {/* Show how many records that have been transcribed the last month */}
+        {/* Antal avskrivna uppteckningar den här månaden */}
         <ShortStatistics
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
             // +2h to account for the time difference between
             // the server and the timestamps in the database
-            range: 'transcriptiondate,now-1M,now%2B2h',
+            // "now/M" is the start of the current month
+            range: 'transcriptiondate,now/M,now%2B2h',
           }}
           label="avskrivna uppteckningar senaste månaden"
           visible={visible}
         />
+        {/* Antal avskrivna uppteckningar totalt  */}
+        <ShortStatistics
+          params={{
+            recordtype: 'one_record',
+            transcriptionstatus: 'published',
+          }}
+          label="avskrivna uppteckningar totalt"
+          visible={visible}
+        />
 
         {/* Show how many pages that have been transcribed the last month */}
+        {/* Antal avskrivna sidor den här månaden */}
         <ShortStatistics
           params={{
             recordtype: 'one_record',
@@ -54,24 +66,49 @@ export default function StatisticsOverlay() {
             // +2h to account for the time difference between
             // the server and the timestamps in the database
             // urlencode the range parameter. range = 'transcriptiondate,now-1M,now+2h'
-            range: 'transcriptiondate,now-1M,now%2B2h',
+            // "now/M" is the start of the current month
+            range: 'transcriptiondate,now/M,now%2B2h',
             aggregation: 'sum,archive.total_pages',
           }}
           label="avskrivna sidor senaste månaden"
           visible={visible}
         />
 
+        {/* Antal avskrivna sidor totalt  */}
+        <ShortStatistics
+          params={{
+            recordtype: 'one_record',
+            transcriptionstatus: 'published',
+            aggregation: 'sum,archive.total_pages',
+          }}
+          label="avskrivna sidor totalt"
+          visible={visible}
+        />
+
         {/* Show how many different users have transcribed in the last month */}
+        {/* Antal personer som skrivit av dne här kalendermånaden */}
         <ShortStatistics
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
             // +2h to account for the time difference between
             // the server and the timestamps in the database
-            range: 'transcriptiondate,now-1M,now%2B2h',
+            // "now/M" is the start of the current month
+            range: 'transcriptiondate,now/M,now%2B2h',
             aggregation: 'cardinality,transcribedby.keyword',
           }}
           label="användare som har skrivit av uppteckningar senaste månaden"
+          visible={visible}
+        />
+
+        {/* Antal personer som skrivit av totalt */}
+        <ShortStatistics
+          params={{
+            recordtype: 'one_record',
+            transcriptionstatus: 'published',
+            aggregation: 'cardinality,transcribedby.keyword',
+          }}
+          label="användare som har skrivit av uppteckningar totalt"
           visible={visible}
         />
 
