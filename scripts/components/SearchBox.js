@@ -196,6 +196,37 @@ export default function SearchBox({ mode, params, recordsData }) {
     }
   };
 
+  const filterAndSortSuggestions = (suggestions) => (
+    // first, filter out suggestions that don't contain the search input value
+    suggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
+    // then, sort the suggestions alphabetically
+      .sort((a, b) => {
+        const labelA = a.label.toLowerCase();
+        const labelB = b.label.toLowerCase();
+        if (labelA < labelB) {
+          return -1;
+        }
+        if (labelA > labelB) {
+          return 1;
+        }
+        return 0;
+      })
+    // then, sort the suggestions so that the ones that start with the search input value are first
+      .sort((a, b) => {
+        const labelA = a.label.toLowerCase();
+        const labelB = b.label.toLowerCase();
+        if (labelA.indexOf(search?.toLowerCase() || '') === 0 && labelB.indexOf(search?.toLowerCase() || '') !== 0) {
+          return -1;
+        }
+        if (labelA.indexOf(search?.toLowerCase() || '') !== 0 && labelB.indexOf(search?.toLowerCase() || '') === 0) {
+          return 1;
+        }
+        return 0;
+      })
+  );
+
+
+
   // filter keywords by search input value
   const filteredSearchSuggestions = () => searchSuggestions
     // filter out keywords that don't contain the search input value
@@ -205,35 +236,10 @@ export default function SearchBox({ mode, params, recordsData }) {
       const label = item.label.toLowerCase();
       return arr.findIndex((i) => i.label.toLowerCase() === label) === index;
     });
-  const filteredPersonSuggestions = () => personSuggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
-  const filteredPlaceSuggestions = () => placeSuggestions.filter(
-    (suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1
-    || suggestion.comment.toLowerCase().indexOf(search?.toLowerCase() || '') > -1,
-  )
-  // first, sort the suggestions alphabetically
-    .sort((a, b) => {
-      if (a.label.toLowerCase() < b.label.toLowerCase()) {
-        return -1;
-      }
-      if (a.label.toLowerCase() > b.label.toLowerCase()) {
-        return 1;
-      }
-      return 0;
-    })
-  // then, sort the suggestions in a way so that the ones that start with the search input value are first
-    .sort((a, b) => {
-      const aStartsWithSearch = a.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
-      const bStartsWithSearch = b.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
-      if (aStartsWithSearch && !bStartsWithSearch) {
-        return -1;
-      }
-      if (!aStartsWithSearch && bStartsWithSearch) {
-        return 1;
-      }
-      return 0;
-    });
 
-  const filteredProvinceSuggestions = () => provinceSuggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1);
+  const filteredPersonSuggestions = () => filterAndSortSuggestions(personSuggestions);
+  const filteredPlaceSuggestions = () => filterAndSortSuggestions(placeSuggestions);
+  const filteredProvinceSuggestions = () => filterAndSortSuggestions(provinceSuggestions);
 
   const closeSuggestionsHandler = () => {
     searchInputRef.current.focus();
