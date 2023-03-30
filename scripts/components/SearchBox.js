@@ -316,7 +316,6 @@ export default function SearchBox({ mode, params, recordsData }) {
   const suggestionClickHandler = ({ searchValue }) => {
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
-    document.getElementById('searchInputMapMenu').value = searchValue;
     setSearch(searchValue);
     // setSearch(keyword);
     executeSearch(searchValue);
@@ -413,6 +412,7 @@ export default function SearchBox({ mode, params, recordsData }) {
           id="searchInputMapMenu"
           ref={searchInputRef}
           type="text"
+          value={search}
           // defaultValue={search || ''}
           // value={
           //   // write out '' if search is falsy, otherwise do the following:
@@ -513,9 +513,10 @@ export default function SearchBox({ mode, params, recordsData }) {
 }
       </div>
       <div className="search-field-buttons">
-        {/* only show clear button when there is text to clear */}
+        {/* only show clear button when there is text to clear or if there is text in the input field */}
         {
-          search && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
+          (search || document.getElementById('searchInputMapMenu')?.value)
+          && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
         }
         <button className="search-button" onClick={executeSearch} type="button" aria-label="Sök" style={{
           visibility: person || place ? 'hidden' : 'unset',
