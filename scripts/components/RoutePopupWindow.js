@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { createParamsFromRecordRoute, createSearchRoute } from '../utils/routeHelper';
+import { createParamsFromPlacesRoute, createParamsFromRecordRoute, createSearchRoute } from '../utils/routeHelper';
 
 // Main CSS: ui-components/poupwindow.less
 
@@ -50,7 +50,14 @@ export default function RoutePopupWindow({
         // create search route, but remove leading slash if it exists
         createSearchRoute(params).replace(/^\//, '')
       }`;
-      console.log(navigationPath, "<-- navigationPath")
+      navigate(navigationPath);
+    } else if (routeId === 'place' || routeId === 'transcribe-place') {
+      const params = createParamsFromPlacesRoute(pathname);
+      delete params.place_id;
+      const navigationPath = `${routeId === 'transcribe-place' ? '/transcribe' : '/'}${
+        // create search route, but remove leading slash if it exists
+        createSearchRoute(params).replace(/^\//, '')
+      }`;
       navigate(navigationPath);
     } else if (onClose) {
       onClose();

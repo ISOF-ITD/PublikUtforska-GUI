@@ -55,7 +55,7 @@ const router = createHashRouter([
     children: [
       {
         path: 'places/:placeId/*?',
-        id: 'places',
+        id: 'place',
         loader: ({ params }) => {
           const placePromise = fetch(
             getPlaceFetchLocation(params.placeId),
@@ -78,6 +78,7 @@ const router = createHashRouter([
             onClose={() => {
               window.history.back();
             }}
+            routeId="place"
           >
             <PlaceView
               mode="material"
@@ -224,6 +225,7 @@ const router = createHashRouter([
             onClose={() => {
               window.history.back();
             }}
+            routeId="transcribe-place"
           >
             <PlaceView
               mode="transcribe"

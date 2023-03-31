@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  useLocation, useMatches, useNavigate, useLoaderData, useParams, Outlet,
+  useLocation, useMatches, useNavigate, useLoaderData, useParams, Outlet, createSearchParams,
 } from 'react-router-dom';
 
 import EventBus from 'eventbusjs';
@@ -26,7 +26,7 @@ import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
 // import RecordListWrapper from './views/RecordListWrapper';
 
-import { createPlacePathFromPlace } from '../utils/routeHelper';
+import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import folkelogga from '../../img/folkelogga.svg';
 
@@ -58,50 +58,12 @@ export default function Application({ children, mode }) {
   // const [popupVisible, setPopupVisible] = useState(false);
 
   const mapMarkerClick = (placeId) => {
+    let target = `/places/${(placeId)}${createSearchRoute(createParamsFromSearchRoute(params['*']))}`;
     if (mode === 'transcribe') {
-      navigate(`/transcribe${createPlacePathFromPlace(placeId)}/${params['*'] ?? ''}`);
-    } else {
-      navigate(`${createPlacePathFromPlace(placeId)}/${params['*'] ?? ''}`);
+      target = `/transcribe${target}`;
     }
+    navigate(target);
   };
-
-  // const popupCloseHandler = () => {
-  //   if (location.pathname.indexOf('records') > -1) {
-  //     navigate(
-  //       `/places${createSearchRoute(
-  //         createParamsFromSearchRoute(location.pathname),
-  //       )}`,
-  //     );
-  //   } else if (location.pathname.indexOf('places') > -1) {
-  //     navigate(
-  //       `/places${createSearchRoute(
-  //         createParamsFromSearchRoute(location.pathname),
-  //       )}`,
-  //     );
-  //   } else {
-  //     navigate(
-  //       `/places${createSearchRoute(
-  //         createParamsFromSearchRoute(location.pathname.split(match[0].pathname)[1]),
-  //       )}`,
-  //     );
-  //   }
-  // };
-
-  // const popupWindowShowHandler = () => {
-  //   setTimeout(() => {
-  //     setPopupVisible(true);
-  //   }, 10);
-  // };
-
-  // const popupWindowHideHandler = () => {
-  //   setTimeout(() => {
-  //     setPopupVisible(false);
-  //   }, 10);
-  // };
-
-  // const introOverlayCloseButtonClickHandler = () => {
-  //   window.eventBus.dispatch('overlay.hide');
-  // };
 
   const windowClickHandler = () => {
     window.eventBus.dispatch('screen-clicked');
