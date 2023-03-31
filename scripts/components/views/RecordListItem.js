@@ -220,7 +220,15 @@ export default function RecordListItem({
           return (
             <li key={`subitem${subItem._source.id}`}>
               <small>
-                <a style={{ fontWeight: published ? 'bold' : '' }} href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(searchParams)}`}>
+                <a
+                  style={{ fontWeight: published ? 'bold' : '' }}
+                  href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
+                    {
+                      search: searchParams.search,
+                      search_field: searchParams.search_field,
+                    },
+                  )}`}
+                >
                   Sida
                   {' '}
                   {pageFromTo(subItem)}
