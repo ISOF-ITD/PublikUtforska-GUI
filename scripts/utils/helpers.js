@@ -96,6 +96,7 @@ export function getRecordsCountLocation(params = {}) {
         delete queryParams.search;
       }
       delete queryParams.search_field;
+      queryParams.search = encodeURIComponent(queryParams.search);
     }
 
     Object.keys(queryParams).forEach((key) => {
@@ -139,6 +140,7 @@ export function getMapFetchLocation(params = {}) {
         delete newParams.search;
       }
       delete newParams.search_field;
+      newParams.search = encodeURIComponent(newParams.search);
     }
 
     Object.keys(newParams).forEach((key) => {

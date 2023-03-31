@@ -48,7 +48,7 @@ export default function SearchBox({ mode, params, recordsData }) {
   const executeSearch = (keyword, searchFieldValue = null) => {
     // if keyword is a string, use it as search phrase
     // otherwise use the value of the search input field
-    const searchPhrase = typeof keyword === 'string' ? keyword : searchInputRef.current.value;
+    const searchPhrase = typeof keyword === 'string' ? encodeURIComponent(keyword) : encodeURIComponent(searchInputRef.current.value);
     const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
     const searchFieldPart = searchFieldValue ? `/search_field/${searchFieldValue}` : '';
     const searchPart = searchPhrase

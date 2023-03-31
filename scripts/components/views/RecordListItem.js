@@ -9,7 +9,7 @@ import TranscribeButton from '../../../ISOF-React-modules/components/views/Trans
 
 import config from '../../config';
 
-import routeHelper, { createSearchRoute } from '../../utils/routeHelper';
+import { createSearchRoute } from '../../utils/routeHelper';
 import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
 import { getPlaceString } from '../../../ISOF-React-modules/components/utils/helpers';
 
@@ -69,7 +69,6 @@ export default function RecordListItem({
   const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] = useState(0);
 
   const navigate = useNavigate();
-  const params = useParams();
 
   // used for fetching number of subrecords and transcribed subrecords
   // after the component has mounted
@@ -378,7 +377,10 @@ export default function RecordListItem({
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
   // 	 }#/records/${this.props.id
   // 	 }${createSearchRoute(searchParams)}`;
-  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}/${params['*'] || ''}`;
+  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}${createSearchRoute({
+    search: searchParams.search,
+    search_field: searchParams.search_field,
+  })}`;
 
   return (
     <tr className={`list-item${displayTextSummary ? ' highlighted' : ''}`}>
