@@ -46,7 +46,7 @@ export default function RoutePopupWindow({
     } else if (routeId === 'record' || routeId === 'transcribe-record') {
       const params = createParamsFromRecordRoute(pathname);
       delete params.record_id;
-      const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe' : '/'}${
+      const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe/' : '/'}${
         // create search route, but remove leading slash if it exists
         createSearchRoute(params).replace(/^\//, '')
       }`;
@@ -54,7 +54,7 @@ export default function RoutePopupWindow({
     } else if (routeId === 'place' || routeId === 'transcribe-place') {
       const params = createParamsFromPlacesRoute(pathname);
       delete params.place_id;
-      const navigationPath = `${routeId === 'transcribe-place' ? '/transcribe' : '/'}${
+      const navigationPath = `${routeId === 'transcribe-place' ? '/transcribe/' : '/'}${
         // create search route, but remove leading slash if it exists
         createSearchRoute(params).replace(/^\//, '')
       }`;
