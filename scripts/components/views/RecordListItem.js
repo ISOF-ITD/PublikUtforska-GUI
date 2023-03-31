@@ -271,10 +271,11 @@ export default function RecordListItem({
     } else if (taxonomy.length > 0 && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true)) {
       taxonomyElement = _.compact(_.map(taxonomy, (taxonomyItem, i) => {
         if (taxonomyItem.category) {
-          const href = `#/places${createSearchRoute({
-            category: taxonomyItem.category.toLowerCase(),
-            recordtype: searchParams.recordtype,
-          })}`;
+          // const href = `#${mode === 'transcribe' ? '/transcribe' : ''}/places${createSearchRoute({
+          //   category: taxonomyItem.category.toLowerCase(),
+          //   search: searchParams.search,
+          //   search_field: searchParams.search_field,
+          // })}`;
           if (visibleCategories) {
             if (visibleCategories.indexOf(taxonomyItem.type.toLowerCase()) > -1) {
               // return <a href={href} key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</a>;
@@ -297,12 +298,11 @@ export default function RecordListItem({
       if (persons.length > 0) {
         collectorPersonElement = _.compact(_.map(persons, (collectorPersonItem, i) => {
           if (collectorPersonItem.relation === 'c') {
-            let routeParams = '';
-            if (routeParams) {
-              const _params = routeHelper.createParamsFromSearchRoute(routeParams);
-              routeParams = createSearchRoute(_.omit(_params, 'page'));
-            }
-            const href = `#/persons/${collectorPersonItem.id.toLowerCase()}${routeParams}`;
+            const collectorParams = _.omit(searchParams, 'page');
+            const href = `#${mode === 'transcribe' ? '/transcribe' : ''}/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
+              search: collectorParams.search,
+              search_field: collectorParams.search_field,
+            })}`;
             return <a href={href} key={`record-list-item-${id}-${i}`}>{l(collectorPersonItem.name)}</a>;
           }
           return '';
@@ -445,7 +445,12 @@ export default function RecordListItem({
               && (
                 <a
                   target={config.embeddedApp ? '_parent' : '_self'}
-                  href={`${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''}#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}`}
+                  href={`#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}${createSearchRoute(
+                    {
+                      search: searchParams.search,
+                      search_field: searchParams.search_field,
+                    },
+                  )}`}
                   onClick={(e) => {
                     e.preventDefault();
                     navigate(`/places/${places[0].id}`);
