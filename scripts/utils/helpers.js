@@ -144,7 +144,9 @@ export function getMapFetchLocation(params = {}) {
     }
 
     Object.keys(newParams).forEach((key) => {
-      paramStrings.push(`${key}=${newParams[key]}`);
+      if (newParams[key]) {
+        paramStrings.push(`${key}=${newParams[key]}`);
+      }
     });
   }
 
