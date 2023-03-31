@@ -46,7 +46,11 @@ export default function RoutePopupWindow({
     } else if (routeId === 'record' || routeId === 'transcribe-record') {
       const params = createParamsFromRecordRoute(pathname);
       delete params.record_id;
-      const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe' : '/'}${createSearchRoute(params)}`;
+      const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe' : '/'}${
+        // create search route, but remove leading slash if it exists
+        createSearchRoute(params).replace(/^\//, '')
+      }`;
+      console.log(navigationPath, "<-- navigationPath")
       navigate(navigationPath);
     } else if (onClose) {
       onClose();
