@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import RecordList from './views/RecordList';
-import { createParamsFromPlacesRoute } from '../utils/routeHelper';
+import config from '../config';
 
 import ShortStatistics from './ShortStatistics';
 
 export default function StatisticsOverlay() {
   const [visible, setVisible] = useState(false);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState('');
   const params = {
     size: 10,
     recordtype: 'one_record',
@@ -16,9 +16,19 @@ export default function StatisticsOverlay() {
     order: 'desc',
   };
 
+  // fetch "current_month" from server.
+  // the path is the api address plus "current_time", and the result is a json object with a
+  // "data" property that contains the current date and time as milliseconds since 1970-01-01
+  // the variable current_month's value is the month's name in Swedish for that timestamp
+  fetch(`${config.apiUrl}current_time`)
+    .then((response) => response.json())
+    .then((data) => {
+      setCurrentMonth(new Date(data.data).toLocaleString('sv-SE', { month: 'long' }));
+    });
+
   useEffect(() => {
     // listen for the event that is dispatched when the user clicks the hamburger menu button
-    window.eventBus.addEventListener('overlay.sideMenu', (event, data) => {
+    window.eventBus.addEventListener('overlay.sideMenu', (event) => {
       if (event.target === 'visible') {
         setVisible(true);
         setHasBeenVisible(true);
@@ -44,7 +54,7 @@ export default function StatisticsOverlay() {
             // "now/M" is the start of the current month
             range: 'transcriptiondate,now/M,now%2B2h',
           }}
-          label="avskrivna uppteckningar den här månaden"
+          label={`avskrivna uppteckningar i ${currentMonth}`}
           visible={visible}
         />
         {/* Antal avskrivna uppteckningar totalt  */}
@@ -70,7 +80,7 @@ export default function StatisticsOverlay() {
             range: 'transcriptiondate,now/M,now%2B2h',
             aggregation: 'sum,archive.total_pages',
           }}
-          label="avskrivna sidor den här månaden"
+          label={`avskrivna sidor i ${currentMonth}`}
           visible={visible}
         />
 
@@ -97,7 +107,7 @@ export default function StatisticsOverlay() {
             range: 'transcriptiondate,now/M,now%2B2h',
             aggregation: 'cardinality,transcribedby.keyword',
           }}
-          label="användare som har skrivit av uppteckningar den här månaden"
+          label={`användare som har skrivit av uppteckningar i ${currentMonth}`}
           visible={visible}
         />
 
