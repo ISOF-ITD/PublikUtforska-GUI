@@ -16,16 +16,6 @@ export default function StatisticsOverlay() {
     order: 'desc',
   };
 
-  // fetch "current_month" from server.
-  // the path is the api address plus "current_time", and the result is a json object with a
-  // "data" property that contains the current date and time as milliseconds since 1970-01-01
-  // the variable current_month's value is the month's name in Swedish for that timestamp
-  fetch(`${config.apiUrl}current_time`)
-    .then((response) => response.json())
-    .then((data) => {
-      setCurrentMonth(new Date(data.data).toLocaleString('sv-SE', { month: 'long' }));
-    });
-
   useEffect(() => {
     // listen for the event that is dispatched when the user clicks the hamburger menu button
     window.eventBus.addEventListener('overlay.sideMenu', (event) => {
@@ -34,6 +24,17 @@ export default function StatisticsOverlay() {
         setHasBeenVisible(true);
       }
     });
+
+    // fetch "current_month" from server.
+    // the path is the api address plus "current_time", and the result is a json object with a
+    // "data" property that contains the current date and time as milliseconds since 1970-01-01
+    // the variable current_month's value is the month's name in Swedish for that timestamp
+    // only fetch once, when the component is mounted
+    fetch(`${config.apiUrl}current_time`)
+      .then((response) => response.json())
+      .then((data) => {
+        setCurrentMonth(new Date(data.data).toLocaleString('sv-SE', { month: 'long' }));
+      });
   }, []);
 
   return (
