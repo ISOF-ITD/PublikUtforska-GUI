@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from 'react';
-import { useRouteLoaderData, Await } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import '../../../ISOF-React-modules/lib/leaflet-heat';
@@ -47,8 +46,9 @@ export default function MapView({
 
   const updateMap = () => {
     // Remove any existing markers from the map:
+    // remove layer if it is not the tile layer.
     mapView.current.map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.MarkerCluster) {
+      if (layer._url === undefined) {
         mapView.current.map.removeLayer(layer);
       }
     });
@@ -77,7 +77,7 @@ export default function MapView({
 
     // Use the Leaflet.markercluster plugin to group your markers into clusters:
     const clusterGroup = L.markerClusterGroup({
-      showCoverageOnHover: false,
+      showCoverageOnHover: false, // visa området som täcks av cluster
       maxClusterRadius: 45,
       iconCreateFunction(cluster) {
         const childCount = cluster.getChildCount();
@@ -105,10 +105,6 @@ export default function MapView({
       mapView.current.map.addLayer(clusterGroup);
     }
   };
-
-  useEffect(() => {
-    updateMap();
-  }, []);
 
   useEffect(() => {
     updateMap();
