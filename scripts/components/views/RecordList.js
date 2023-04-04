@@ -219,15 +219,23 @@ export default function RecordList({
   };
 
   const renderListPagination = () => (
-    (total > 0 || fetchingPage)
+    (total > 2 || fetchingPage)
     && (
       <div className="list-pagination">
         <hr />
         <p className="page-info"><strong>{`${l('Visar')} ${(currentPage * config.hitsPerPage) - (config.hitsPerPage - 1)}-${currentPage * config.hitsPerPage > total ? total : currentPage * config.hitsPerPage} ${l(total ? 'av' : '')}${l(totalPrefix || '')} ${total || ''}`}</strong></p>
         <br />
-        <button disabled={currentPage === 1} className="button prev-button" onClick={stepPage} data-page-step={-1} type="button">{l('Föregående')}</button>
-        <span> </span>
-        <button disabled={total <= currentPage * config.hitsPerPage} className="button next-button" onClick={stepPage} data-page-step={1} type="button">{l('Nästa')}</button>
+        {
+          // show only if we have more than one page
+          total > config.hitsPerPage
+          && (
+          < >
+            <button disabled={currentPage === 1} className="button prev-button" onClick={stepPage} data-page-step={-1} type="button">{l('Föregående')}</button>
+            <span> </span>
+            <button disabled={total <= currentPage * config.hitsPerPage} className="button next-button" onClick={stepPage} data-page-step={1} type="button">{l('Nästa')}</button>
+          </>
+          )
+        }
       </div>
     )
   );
