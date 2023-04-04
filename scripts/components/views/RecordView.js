@@ -524,8 +524,7 @@ export default function RecordView() {
                   && (
                     <span style={{ marginLeft: 10 }}>
                       <strong>{l('Antal uppteckningar')}</strong>
-                      :
-                      {data.numberofonerecord}
+                      {`: ${data.numberofonerecord}`}
                     </span>
                   )
                 }
@@ -724,8 +723,7 @@ export default function RecordView() {
                       <li key={`subitem${item._source.id}`}>
                         <small>
                           <a href={`#/records/${item._source.id}${createSearchRoute(params)}`}>
-                            Sida
-                            {pageFromTo(item)}
+                            {`Sida ${pageFromTo(item)}`}
                           </a>
                         </small>
                       </li>
