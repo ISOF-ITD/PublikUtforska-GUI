@@ -65,6 +65,7 @@ export default function RecordListItem({
 
   const [subrecords, setSubrecords] = useState([]);
   const [fetchedSubrecords, setFetchedSubrecords] = useState(false);
+  const [visibleSubrecords, setVisibleSubrecords] = useState(false);
   const [numberOfSubrecords, setNumberOfSubrecords] = useState(0);
   const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] = useState(0);
 
@@ -126,6 +127,13 @@ export default function RecordListItem({
     };
 
     collections.fetch(fetchParams);
+  };
+
+  const toggleSubrecords = () => {
+    setVisibleSubrecords(!visibleSubrecords);
+    if (!fetchedSubrecords) {
+      fetchData();
+    }
   };
 
   const renderFieldArchiveId = () => {
@@ -191,11 +199,22 @@ export default function RecordListItem({
 
   const subrecordsElement = (
     <div className="subrecords">
-      {fetchedSubrecords === false
+      {fetchedSubrecords && visibleSubrecords
 
         ? (
           <small>
-            <a onClick={fetchData}>
+            <a onClick={toggleSubrecords}>
+              <FontAwesomeIcon icon={faFolderOpen} />
+              {' '}
+              Uppteckningar i den här accessionen (
+              {numberOfSubrecords}
+              ):
+            </a>
+          </small>
+        )
+        : (
+          <small>
+            <a onClick={toggleSubrecords}>
               <FontAwesomeIcon icon={faFolder} />
               {' '}
               Visa uppteckningar (
@@ -203,42 +222,37 @@ export default function RecordListItem({
               )
             </a>
           </small>
-        )
-        : (
-          <small>
-            <FontAwesomeIcon icon={faFolderOpen} />
-            {' '}
-            Uppteckningar i den här accessionen (
-            {numberOfSubrecords}
-            ):
-          </small>
         )}
-      <ul>
-        {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((subItem, index) => {
-          const published = subItem._source.transcriptionstatus === 'published';
-          return (
-            <li key={`subitem${subItem._source.id}`}>
-              <small>
-                <a
-                  style={{ fontWeight: published ? 'bold' : '' }}
-                  href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
-                    {
-                      search: searchParams.search,
-                      search_field: searchParams.search_field,
-                    },
-                  )}`}
-                >
-                  Sida
-                  {' '}
-                  {pageFromTo(subItem)}
-                  {published && `: ${subItem._source.title}`}
-                </a>
-              </small>
+      {
+        visibleSubrecords && (
+        <ul>
+          {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((subItem, index) => {
+            const published = subItem._source.transcriptionstatus === 'published';
+            return (
+              <li key={`subitem${subItem._source.id}`}>
+                <small>
+                  <a
+                    style={{ fontWeight: published ? 'bold' : '' }}
+                    href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
+                      {
+                        search: searchParams.search,
+                        search_field: searchParams.search_field,
+                      },
+                    )}`}
+                  >
+                    Sida
+                    {' '}
+                    {pageFromTo(subItem)}
+                    {published && `: ${subItem._source.title}`}
+                  </a>
+                </small>
 
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+        )
+    }
     </div>
   );
 
