@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { createParamsFromPlacesRoute, createParamsFromRecordRoute, createSearchRoute } from '../utils/routeHelper';
 
 // Main CSS: ui-components/poupwindow.less
@@ -38,6 +38,16 @@ export default function RoutePopupWindow({
 
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const params = useParams();
+
+    // if placeId exists in params, save it to localStorage to navigate back to place view
+    // when closing the popup
+  useEffect(() => {
+    const { placeId } = params;
+    if (placeId && localStorage.getItem('placeViewId') !== placeId) {
+      localStorage.setItem('placeViewId', placeId);
+    }
+  }, [params.placeId]);
 
   const closeButtonClick = () => {
     if (children.props.manuallyOpenPopup || manuallyOpenPopup) {
@@ -46,12 +56,21 @@ export default function RoutePopupWindow({
     } else if (routeId === 'record' || routeId === 'transcribe-record') {
       const params = createParamsFromRecordRoute(pathname);
       delete params.record_id;
+      // read placeId from localStorage
+      const placeViewId = localStorage.getItem('placeViewId');
       const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe/' : '/'}${
-        // create search route, but remove leading slash if it exists
+        // add placeId to search route if it exists in localStorage
+        placeViewId
+          ? `places/${placeViewId}/`
+          : ''
+      }${
         createSearchRoute(params).replace(/^\//, '')
       }`;
       navigate(navigationPath);
     } else if (routeId === 'place' || routeId === 'transcribe-place') {
+      // delete placeid from localStorage, since we're navigating away from the place view
+      localStorage.removeItem('placeViewId');
+
       const params = createParamsFromPlacesRoute(pathname);
       delete params.place_id;
       const navigationPath = `${routeId === 'transcribe-place' ? '/transcribe/' : '/'}${
