@@ -20,8 +20,6 @@ export default function RecordList({
   disableRouterPagination,
   highlightRecordsWithMetadataField,
   interval,
-  // searchParams,
-  // siteSearchParams,
   sizeMore,
   tableClass,
   params,

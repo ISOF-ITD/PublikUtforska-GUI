@@ -18,7 +18,7 @@ import SitevisionContent from '../../../ISOF-React-modules/components/controls/S
 import PdfViewer from '../../../ISOF-React-modules/components/controls/PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
-import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
+import { getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
 
 import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
 
@@ -26,6 +26,7 @@ import archiveLogoIsof from '../../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../../img/archive-logo-ikos.png';
 
 import Lang from '../../../ISOF-React-modules/lang/Lang';
+import RecordList from './RecordList';
 
 const l = Lang.get;
 
@@ -712,7 +713,7 @@ export default function RecordView() {
                 <h3>{l('Uppteckningar')}</h3>
                 {subrecords.length === 0
                   && <span>Inga resultat</span>}
-                <ul>
+                {/* <ul>
                   {subrecords.sort(
                     (a, b) => (
                       (parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10))
@@ -729,7 +730,14 @@ export default function RecordView() {
                       </li>
                     ),
                   )}
-                </ul>
+                </ul> */}
+                <RecordList
+                  params={{
+                    search: data.archive.archive_id_row,
+                    recordtype: 'one_record',
+                  }}
+                  />
+
               </div>
             </div>
           )

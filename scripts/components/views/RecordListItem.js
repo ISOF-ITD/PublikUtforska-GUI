@@ -383,7 +383,7 @@ export default function RecordListItem({
   if (transcriptionStatusElement === 'Granskas') {
     titleText = 'Titel granskas';
   } else if (transcriptionstatus === 'readytotranscribe') {
-    titleText = 'Ej avskriven';
+    titleText = '';
   } else {
     titleText = getTitle(title, contents);
   }
@@ -415,7 +415,7 @@ export default function RecordListItem({
                 media?.filter((m) => m.source && m.source.includes('.jpg'))[0]
                 && <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
               }
-              {titleText && titleText !== '' && titleText !== '[]' ? titleText : l('(Utan titel)')}
+              {titleText && titleText !== '[]' ? titleText : ''}
             </a>
             {
               displayTextSummary
