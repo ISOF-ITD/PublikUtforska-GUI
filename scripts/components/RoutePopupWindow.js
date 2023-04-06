@@ -44,8 +44,8 @@ export default function RoutePopupWindow({
     // when closing the popup
   useEffect(() => {
     const { placeId } = params;
-    if (placeId && localStorage.getItem('placeViewId') !== placeId) {
-      localStorage.setItem('placeViewId', placeId);
+    if (placeId && localStorage.getItem(`placeViewId-${window.sessionId}`) !== placeId) {
+      localStorage.setItem(`placeViewId-${window.sessionId}`, placeId);
     }
   }, [params.placeId]);
 
@@ -57,7 +57,7 @@ export default function RoutePopupWindow({
       const params = createParamsFromRecordRoute(pathname);
       delete params.record_id;
       // read placeId from localStorage
-      const placeViewId = localStorage.getItem('placeViewId');
+      const placeViewId = localStorage.getItem(`placeViewId-${window.sessionId}`);
       const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe/' : '/'}${
         // add placeId to search route if it exists in localStorage
         placeViewId
@@ -69,7 +69,7 @@ export default function RoutePopupWindow({
       navigate(navigationPath);
     } else if (routeId === 'place' || routeId === 'transcribe-place') {
       // delete placeid from localStorage, since we're navigating away from the place view
-      localStorage.removeItem('placeViewId');
+      localStorage.removeItem(`placeViewId-${window.sessionId}`);
 
       const params = createParamsFromPlacesRoute(pathname);
       delete params.place_id;

@@ -28,6 +28,10 @@ Lang.setCurrentLang('sv');
 window.Lang = Lang;
 window.l = Lang.get;
 
+// generate a random id for this session
+// this is used to identify the session in the local storage
+window.sessionId = Math.random().toString(36).substr(2, 8);
+
 const container = document.getElementById('app');
 const root = Client.createRoot(container);
 
