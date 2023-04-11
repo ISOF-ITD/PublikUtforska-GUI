@@ -79,6 +79,24 @@ export default function RecordView() {
     if (data.archive) {
       fetchSubrecords();
     }
+    // if the component receives the "sent" signal from overlay.transcribe,
+    // it should fetch the subrecords again
+    const { eventBus } = window;
+    if (eventBus) {
+      eventBus.addEventListener('overlay.transcribe.sent', () => {
+        // first, wait 500ms before fetching subrecords again
+        setTimeout(() => {
+          fetchSubrecords();
+        }
+        , 3000);
+        // then, wait 5 seconds before fetching subrecords again.
+        // this is to give elasticsearch time to index the new transcription
+        setTimeout(() => {
+          fetchSubrecords();
+        }
+        , 10000);
+      });
+    }
   }, []);
 
   // componentDidUpdate(prevProps, prevState) {
