@@ -556,8 +556,7 @@ export default function RecordView() {
                   && (
                     <span style={{ marginLeft: 10 }}>
                       <strong>{l('Sidnummer')}</strong>
-                      :
-                      {pages}
+                      {`: ${pages}`}
                     </span>
                   )
                 }
