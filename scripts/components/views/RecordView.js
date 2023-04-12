@@ -757,6 +757,7 @@ export default function RecordView() {
                     search: data.archive.archive_id_row,
                     recordtype: 'one_record',
                   }}
+                  useRouteParams
                 />
 
               </div>
