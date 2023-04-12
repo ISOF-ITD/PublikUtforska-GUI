@@ -9,7 +9,7 @@ import TranscribeButton from '../../../ISOF-React-modules/components/views/Trans
 
 import config from '../../config';
 
-import { createSearchRoute } from '../../utils/routeHelper';
+import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/routeHelper';
 import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
 import { getPlaceString } from '../../../ISOF-React-modules/components/utils/helpers';
 
@@ -40,6 +40,9 @@ export default function RecordListItem({
     },
   },
   searchParams,
+  // useRouteParams: use the route params instead of the search params for the link
+  // maybe this should be the default behaviour and search params via props should be optional?
+  useRouteParams,
   archiveIdClick,
   columns,
   shouldRenderColumn,
@@ -55,12 +58,14 @@ export default function RecordListItem({
     shouldRenderColumn: PropTypes.func.isRequired,
     highlightRecordsWithMetadataField: PropTypes.string,
     mode: PropTypes.string,
+    useRouteParams: PropTypes.bool,
   };
 
   RecordListItem.defaultProps = {
     highlightRecordsWithMetadataField: null,
     mode: 'material',
     columns: null,
+    useRouteParams: false,
   };
 
   const [subrecords, setSubrecords] = useState([]);
@@ -70,6 +75,7 @@ export default function RecordListItem({
   const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] = useState(0);
 
   const navigate = useNavigate();
+  const params = useParams();
 
   // used for fetching number of subrecords and transcribed subrecords
   // after the component has mounted
@@ -391,10 +397,14 @@ export default function RecordListItem({
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
   // 	 }#/records/${this.props.id
   // 	 }${createSearchRoute(searchParams)}`;
-  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}${createSearchRoute({
-    search: searchParams.search,
-    search_field: searchParams.search_field,
-  })}`;
+  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}${createSearchRoute(
+    useRouteParams
+      ? createParamsFromSearchRoute(params['*'])
+      : {
+        search: searchParams.search,
+        search_field: searchParams.search_field,
+      },
+  )}`;
 
   return (
     <tr className={`list-item${displayTextSummary ? ' highlighted' : ''}`}>
