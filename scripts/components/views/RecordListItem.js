@@ -254,7 +254,7 @@ export default function RecordListItem({
                     but title exists, show title but add "ej transkriberad"
                     in brackets after the title */}
                     {published && `: ${subItem._source.title}`}
-                    {!published && subItem._source.title && `: ${subItem._source.title} (ej transkriberad)`}
+                    {!published && subItem._source.title && `: ${subItem._source.title} (ej avskriven)`}
                   </a>
                 </small>
 
