@@ -249,7 +249,12 @@ export default function RecordListItem({
                     Sida
                     {' '}
                     {pageFromTo(subItem)}
+                    {/* {published && `: ${subItem._source.title}`} */}
+                    {/* if published, show the title, if not published,
+                    but title exists, show title but add "ej transkriberad"
+                    in brackets after the title */}
                     {published && `: ${subItem._source.title}`}
+                    {!published && subItem._source.title && `: ${subItem._source.title} (ej transkriberad)`}
                   </a>
                 </small>
 
