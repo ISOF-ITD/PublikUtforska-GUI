@@ -475,6 +475,10 @@ export default function RecordView() {
       titleText = 'Titel granskas';
     } else if (data.transcriptionstatus === 'readytotranscribe') {
       titleText = 'Ej avskriven';
+      // If there is a title, use it, and put "Ej avskriven" in brackets
+      if (data.title) {
+        titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
+      }
     } else {
       titleText = getTitle(data.title, data.contents);
     }
