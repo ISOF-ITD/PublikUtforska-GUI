@@ -390,6 +390,10 @@ export default function RecordListItem({
     titleText = 'Titel granskas';
   } else if (transcriptionstatus === 'readytotranscribe') {
     titleText = '';
+    // if there is a title, write it
+    if (title) {
+      titleText = getTitle(title, contents);
+    }
   } else {
     titleText = getTitle(title, contents);
   }
