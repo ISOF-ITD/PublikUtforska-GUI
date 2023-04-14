@@ -158,6 +158,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                       has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
                       transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
                     }}
+                    mode={mode}
                   />
                 </div>
               </div>

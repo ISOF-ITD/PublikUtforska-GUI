@@ -23,6 +23,7 @@ import { createParamsFromSearchRoute } from './utils/routeHelper';
 // Initalisera stöd för flerspråkighet
 // Språk:
 import Lang from '../ISOF-React-modules/lang/Lang';
+import NavigationContextProvider from './NavigationContext';
 
 Lang.setCurrentLang('sv');
 window.Lang = Lang;
@@ -279,5 +280,7 @@ const router = createHashRouter([
 ]);
 
 root.render(
-  <RouterProvider router={router} />,
+  <NavigationContextProvider>
+    <RouterProvider router={router} />
+  </NavigationContextProvider>,
 );

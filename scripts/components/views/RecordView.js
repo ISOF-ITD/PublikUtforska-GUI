@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   useNavigate, useLocation, useParams, useLoaderData,
 } from 'react-router-dom';
+import PropTypes from 'prop-types';
+
 import config from '../../config';
 import localLibrary from '../../../ISOF-React-modules/utils/localLibrary';
 
@@ -30,7 +32,15 @@ import RecordList from './RecordList';
 
 const l = Lang.get;
 
-export default function RecordView() {
+export default function RecordView({ mode }) {
+  RecordView.propTypes = {
+    mode: PropTypes.string,
+  };
+
+  RecordView.defaultProps = {
+    mode: 'material',
+  };
+
   const params = useParams();
   const navigate = useNavigate();
 
@@ -762,6 +772,7 @@ export default function RecordView() {
                     recordtype: 'one_record',
                   }}
                   useRouteParams
+                  mode={mode}
                 />
 
               </div>

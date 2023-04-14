@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { createParamsFromPlacesRoute, createParamsFromRecordRoute, createSearchRoute } from '../utils/routeHelper';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createSearchRoute } from '../utils/routeHelper';
+import { NavigationContext } from '../NavigationContext';
 
 // Main CSS: ui-components/poupwindow.less
 
@@ -36,48 +37,46 @@ export default function RoutePopupWindow({
   const [windowOpen, setWindowOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
-  const { pathname } = useLocation();
   const navigate = useNavigate();
   const params = useParams();
 
-    // if placeId exists in params, save it to localStorage to navigate back to place view
-    // when closing the popup
+  const {
+    previousNavigation,
+    addToNavigationHistory,
+    removeLatestFromNavigationHistory,
+  } = useContext(NavigationContext);
+
   useEffect(() => {
-    const { placeId } = params;
-    if (placeId && localStorage.getItem(`placeViewId-${window.sessionId}`) !== placeId) {
-      localStorage.setItem(`placeViewId-${window.sessionId}`, placeId);
+    const { recordId, placeId, personId } = params;
+    if (recordId || placeId || personId) {
+      addToNavigationHistory(
+        recordId
+          ? 'record'
+          : placeId
+            ? 'place'
+            : 'person',
+        recordId || placeId || personId,
+      );
     }
-  }, [params.placeId]);
+  }, [params.recordId, params.placeId, params.personId]);
 
   const closeButtonClick = () => {
     if (children.props.manuallyOpenPopup || manuallyOpenPopup) {
       setWindowOpen(false);
       setManualOpen(false);
-    } else if (routeId === 'record' || routeId === 'transcribe-record') {
-      const params = createParamsFromRecordRoute(pathname);
-      delete params.record_id;
-      // read placeId from localStorage
-      const placeViewId = localStorage.getItem(`placeViewId-${window.sessionId}`);
-      const navigationPath = `${routeId === 'transcribe-record' ? '/transcribe/' : '/'}${
-        // add placeId to search route if it exists in localStorage
-        placeViewId
-          ? `places/${placeViewId}/`
+    } else if (routeId === 'record' || routeId === 'transcribe-record' || routeId === 'place' || routeId === 'transcribe-place' || routeId === 'person' || routeId === 'transcribe-person') {
+      // remove latest navigation from navigationHistory
+      const { type, id } = previousNavigation || { type: null, id: null };
+      const navigationPath = `${routeId.startsWith('transcribe') ? '/transcribe/' : '/'}${
+        // add placeId to search route if it exists in context
+        id
+          ? `${type}s/${id}/`
           : ''
       }${
         createSearchRoute(params).replace(/^\//, '')
       }`;
       navigate(navigationPath);
-    } else if (routeId === 'place' || routeId === 'transcribe-place') {
-      // delete placeid from localStorage, since we're navigating away from the place view
-      localStorage.removeItem(`placeViewId-${window.sessionId}`);
-
-      const params = createParamsFromPlacesRoute(pathname);
-      delete params.place_id;
-      const navigationPath = `${routeId === 'transcribe-place' ? '/transcribe/' : '/'}${
-        // create search route, but remove leading slash if it exists
-        createSearchRoute(params).replace(/^\//, '')
-      }`;
-      navigate(navigationPath);
+      removeLatestFromNavigationHistory();
     } else if (onClose) {
       onClose();
     }
