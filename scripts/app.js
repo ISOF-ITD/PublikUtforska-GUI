@@ -1,7 +1,5 @@
 import Client from 'react-dom/client';
 import { createHashRouter, RouterProvider, defer } from 'react-router-dom';
-// import ApplicationWrapper from './components/ApplicationWrapper';
-
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './components/views/RecordView';
@@ -17,266 +15,127 @@ import {
 } from './utils/helpers';
 
 import '../less/style-basic.less';
-
 import { createParamsFromSearchRoute } from './utils/routeHelper';
-
-// Initalisera stöd för flerspråkighet
-// Språk:
 import Lang from '../ISOF-React-modules/lang/Lang';
 import NavigationContextProvider from './NavigationContext';
 
-Lang.setCurrentLang('sv');
-window.Lang = Lang;
-window.l = Lang.get;
-
-// generate a random id for this session
-// this is used to identify the session in the local storage
-window.sessionId = Math.random().toString(36).substring(2, 10);
+function initializeLanguage() {
+  Lang.setCurrentLang('sv');
+  window.Lang = Lang;
+  window.l = Lang.get;
+}
+initializeLanguage();
 
 const container = document.getElementById('app');
 const root = Client.createRoot(container);
 
-const router = createHashRouter([
-  {
+function fetchMapAndRecords(params) {
+  const mapPromise = fetch(getMapFetchLocation(params)).then((resp) => resp.json());
+  const recordsPromise = fetch(getRecordsCountLocation(params)).then((resp) => resp.json());
+  return Promise.all([mapPromise, recordsPromise]);
+}
+
+function fetchPlace(placeId) {
+  return fetch(getPlaceFetchLocation(placeId)).then((resp) => resp.json());
+}
+
+function fetchRecord(recordId) {
+  return fetch(getRecordFetchLocation(recordId));
+}
+
+function fetchPerson(personId) {
+  return fetch(getPersonFetchLocation(personId));
+}
+
+function createPopupRoutes(prefix) {
+  return [
+    {
+      path: 'places/:placeId/*?',
+      id: `${prefix}place`,
+      loader: ({ params }) => defer({ results: fetchPlace(params.placeId) }),
+      element: (
+        <RoutePopupWindow
+          manuallyOpen={false}
+          onClose={() => {
+            window.history.back();
+          }}
+          routeId={`${prefix}place`}
+        >
+          <PlaceView mode={prefix.slice(0, -1) || 'material'} />
+        </RoutePopupWindow>
+      ),
+    },
+    {
+      path: 'records/:recordId/*?',
+      id: `${prefix}record`,
+      loader: async ({ params: { recordId } }) => fetchRecord(recordId),
+      element: (
+        <RoutePopupWindow
+          manuallyOpen={false}
+          onClose={() => {
+            window.history.back();
+          }}
+          routeId={`${prefix}record`}
+        >
+          <RecordView mode={prefix.slice(0, -1) || 'material'} />
+        </RoutePopupWindow>
+      ),
+    },
+    {
+      path: 'persons/:personId/*?',
+      id: `${prefix}person`,
+      loader: async ({ params: { personId } }) => fetchPerson(personId),
+      element: (
+        <RoutePopupWindow
+          manuallyOpen={false}
+          onClose={() => {
+            window.history.back();
+          }}
+          routeId={`${prefix}person`}
+        >
+          <PersonView mode={prefix.slice(0, -1) || 'material'} />
+        </RoutePopupWindow>
+      ),
+    },
+  ];
+}
+
+function createRootRoute() {
+  return {
     path: '/*?',
     loader: async ({ params }) => {
-      const mapPromise = fetch(getMapFetchLocation({
+      const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
         transcriptionstatus: 'published,accession',
-      })).then((resp) => resp.json());
-      const recordsPromise = fetch(getRecordsCountLocation({
-        ...createParamsFromSearchRoute(params['*']),
-        transcriptionstatus: 'published,accession',
-      })).then((resp) => resp.json());
-      return Promise.all([mapPromise, recordsPromise]);
-      // return defer({results: mapPromise})
+      };
+      return fetchMapAndRecords(queryParams);
     },
     id: 'root',
-    element: (
-      <Application
-        mode="material"
-      />
-    ),
-    children: [
-      {
-        path: 'places/:placeId/*?',
-        id: 'place',
-        loader: ({ params }) => {
-          const placePromise = fetch(
-            getPlaceFetchLocation(params.placeId),
-          ).then((resp) => resp.json());
-          // const recordsPromise = fetch(getRecordsFetchLocation({
-          //   ...createParamsFromSearchRoute(params['*']),
-          //   socken_id: params.placeId,
-          // })).then((resp) => resp.json());
-          // const allRecordsPromise = fetch(getRecordsFetchLocation({
-          //   socken_id: params.placeId,
-          // })).then((resp) => resp.json());
-          // Here we use defer to be able to start building DOM elements before the data is loaded
-          // We then use <React.Suspense> and <Await> to wait for the data to be loaded
-          return defer({ results: placePromise });
-          // return defer({ results: Promise.all([placePromise]) });
-        },
-        element: (
-          <RoutePopupWindow
-            manuallyOpen={false}
-            onClose={() => {
-              window.history.back();
-            }}
-            routeId="place"
-          >
-            <PlaceView
-              mode="material"
-            />
-          </RoutePopupWindow>
-        ),
-      },
-      {
-        path: 'records/:recordId/*?',
-        id: 'record',
-        loader: async ({ params: { recordId } }) => fetch(getRecordFetchLocation(recordId)),
-        element: (
-          <RoutePopupWindow
-            manuallyOpen={false}
-            onClose={null}
-            routeId="record"
-          >
-            <RecordView
-              mode="material"
-            />
-          </RoutePopupWindow>
-        ),
-      },
-      {
-        path: 'persons/:personId/*?',
-        id: 'person',
-        loader: async ({ params: { personId } }) => fetch(getPersonFetchLocation(personId)),
-        element: (
-          <RoutePopupWindow
-            manuallyOpen={false}
-            onClose={() => {
-              window.history.back();
-            }}
-            routeId="person"
-          >
-            <PersonView
-              mode="material"
-            />
-          </RoutePopupWindow>
-        ),
-      },
-    ],
-  },
-  // {
-  //   path: 'records/:record_id/search?/:search?',
-  //   id: 'records',
-  //   loader: async () => fetch(getRecordsFetchLocation()),
-  //   element: (
-  //     <Application
-  //       mode="material"
-  //     >
-  //       <RoutePopupWindow
-  //         manuallyOpen={false}
-  //         onClose={() => {
-  //           // navigate one step back in history
-  //           // TODO: This is a hack, find a better way to do this
-  //           window.history.back();
-  //         }}
-  //       >
-  //         <RecordView />
-  //       </RoutePopupWindow>
-  //       ,
-  //     </Application>),
-  // },
-  // {
-  //   path: 'persons/:person_id/search?/:search?',
-  //   id: 'persons',
-  //   element: (
-  //     <Application>
-  //       <RoutePopupWindow
-  //         onClose={() => {
-  //           // navigate one step back in history
-  //           // TODO: This is a hack, find a better way to do this
-  //           window.history.back();
-  //         }}
-  //       >
-  //         <PersonView />
-  //       </RoutePopupWindow>
-  //     </Application>),
-  // },
-  // {
-  //   path: 'places/:place_id/search?/:search?',
-  //   id: 'places',
-  //   // TODO: add a loader for the map???
-  //   element: (
-  //     <Application>
-  //       <RoutePopupWindow
-  //         onClose={() => {
-  //           // navigate one step back in history
-  //           // TODO: This is a hack, find a better way to do this
-  //           window.history.back();
-  //         }}
-  //       >
-  //         <PlaceView />
-  //       </RoutePopupWindow>
-  //     </Application>),
-  // },
-  {
+    element: <Application mode="material" />,
+    children: createPopupRoutes(''),
+  };
+}
+
+function createTranscribeRoute() {
+  return {
     path: '/transcribe/*?',
     loader: async ({ params }) => {
-      const mapPromise = fetch(getMapFetchLocation({
+      const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
         recordtype: 'one_accession_row',
         has_untranscribed_records: true,
-      })).then((resp) => resp.json());
-      const recordsPromise = fetch(getRecordsCountLocation(
-        {
-          ...createParamsFromSearchRoute(params['*']),
-          recordtype: 'one_accession_row',
-          has_untranscribed_records: true,
-        },
-      )).then((resp) => resp.json());
-      return Promise.all([mapPromise, recordsPromise]);
+      };
+      return fetchMapAndRecords(queryParams);
     },
     id: 'transcribe-root',
-    element: (
-      <Application
-        mode="transcribe"
-      />
-    ),
-    children: [
-      {
-        path: 'places/:placeId/*?',
-        id: 'transcribe-place',
-        loader: ({ params }) => {
-          const placePromise = fetch(
-            getPlaceFetchLocation(params.placeId),
-          ).then((resp) => resp.json());
-          // const recordsPromise = fetch(getRecordsFetchLocation({
-          //   ...createParamsFromSearchRoute(params['*']),
-          //   socken_id: params.placeId,
-          // })).then((resp) => resp.json());
-          // const allRecordsPromise = fetch(getRecordsFetchLocation({
-          //   socken_id: params.placeId,
-          // })).then((resp) => resp.json());
-          // Here we use defer to be able to start building DOM elements before the data is loaded
-          // We then use <React.Suspense> and <Await> to wait for the data to be loaded
-          return defer({ results: placePromise });
-          // return defer({ results: Promise.all([placePromise]) });
-        },
-        element: (
-          <RoutePopupWindow
-            manuallyOpen={false}
-            onClose={() => {
-              window.history.back();
-            }}
-            routeId="transcribe-place"
-          >
-            <PlaceView
-              mode="transcribe"
-            />
-          </RoutePopupWindow>
-        ),
-      },
-      {
-        path: 'records/:recordId/*?',
-        id: 'transcribe-record',
-        loader: async ({ params: { recordId } }) => fetch(getRecordFetchLocation(recordId)),
-        element: (
-          <RoutePopupWindow
-            manuallyOpen={false}
-            onClose={() => {
-              window.history.back();
-            }}
-            routeId="transcribe-record"
-          >
-            <RecordView
-              mode="transcribe"
-            />
-          </RoutePopupWindow>
-        ),
-      },
-      {
-        path: 'persons/:personId/*?',
-        id: 'transcribe-person',
-        loader: async ({ params: { personId } }) => fetch(getPersonFetchLocation(personId)),
-        element: (
-          <RoutePopupWindow
-            manuallyOpen={false}
-            onClose={() => {
-              window.history.back();
-            }}
-          >
-            <PersonView
-              mode="transcribe"
-            />
-          </RoutePopupWindow>
-        ),
-      },
-    ],
-  },
-  // { path: '/records/:record_id/*', element: <Application /> },
-  // { path: '/persons/:person_id/*', element: <Application /> },
+    element: <Application mode="transcribe" />,
+    children: createPopupRoutes('transcribe-'),
+  };
+}
+
+const router = createHashRouter([
+  createRootRoute(),
+  createTranscribeRoute(),
 ]);
 
 root.render(
