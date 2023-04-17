@@ -54,6 +54,7 @@ export default function Application({ children, mode }) {
   const navigate = useNavigate();
   const { results } = useLoaderData();
   const [mapData, setMapData] = useState(null);
+  const [recordsData, setRecordsData] = useState({ data: [], metadata: { } });
 
   const params = useParams();
 
@@ -67,10 +68,11 @@ export default function Application({ children, mode }) {
     navigate(target);
   };
 
-  // when results is resolved, set mapData
+  // when results is resolved, set mapData and recordsData
   useEffect(() => {
     results.then((data) => {
       setMapData(data[0]);
+      setRecordsData(data[1]);
     });
   }, [results]);
 
@@ -87,9 +89,10 @@ export default function Application({ children, mode }) {
       document.body.classList.add('app-initialized');
     }, 1000);
 
-    // when results resolves, set mapData
+    // when results resolves, set mapData and recordsData
     results.then((data) => {
       setMapData(data[0]);
+      setRecordsData(data[1]);
     });
   }, []);
 
@@ -113,25 +116,12 @@ export default function Application({ children, mode }) {
       <div className="intro-overlay">
 
         <div className="map-wrapper">
-          <React.Suspense
-            fallback={(
-              <MapMenu
-                recordsData={{ data: [], metadata: {} }}
-                params={{}}
-              />
-            )}
-          >
-            <Await resolve={results}>
-              {(resultsData) => (
 
-                <MapMenu
-                  mode={mode}
-                  params={params}
-                  recordsData={resultsData[1]}
-                />
-              )}
-            </Await>
-          </React.Suspense>
+          <MapMenu
+            mode={mode}
+            params={params}
+            recordsData={recordsData}
+          />
 
           <div className="map-progress">
             <div className="indicator" />
@@ -156,9 +146,7 @@ export default function Application({ children, mode }) {
             onMarkerClick={mapMarkerClick}
             mode={mode}
             params={params}
-            mapData={
-              mapData
-            }
+            mapData={mapData}
           />
         </div>
       </div>
