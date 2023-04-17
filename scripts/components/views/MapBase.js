@@ -24,8 +24,8 @@ export default class MapBase extends React.Component {
   }
 
   componentWillUnmount() {
-    // this.map.off();
-    // this.map.remove();
+    // remove map container
+    this.map.remove();
   }
 
   componentDidMount() {

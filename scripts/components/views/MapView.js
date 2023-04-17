@@ -59,7 +59,7 @@ export default function MapView({
     // // Loop through your list of objects and
     // create a marker for each one, adding it to the markerGroup:
     const markers = [];
-    mapData.data.forEach((obj) => {
+    mapData?.data?.forEach((obj) => {
       const marker = L.marker([obj.location[0], obj.location[1]], {
         title: obj.name,
         // om obj.has_metadata lägger vi till en annan typ av ikon,

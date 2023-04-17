@@ -47,6 +47,7 @@ function fetchPerson(personId) {
   return fetch(getPersonFetchLocation(personId));
 }
 
+// prefix is either 'transcribe' or ''
 function createPopupRoutes(prefix) {
   return [
     {
@@ -103,14 +104,17 @@ function createPopupRoutes(prefix) {
 function createRootRoute() {
   return {
     path: '/*?',
-    loader: async ({ params }) => {
+    loader: ({ params }) => {
       const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
         transcriptionstatus: 'published,accession',
       };
-      return fetchMapAndRecords(queryParams);
+      return defer({
+        results: fetchMapAndRecords(queryParams)}
+      );
     },
     id: 'root',
+    // suspense: true,
     element: <Application mode="material" />,
     children: createPopupRoutes(''),
   };
@@ -125,7 +129,9 @@ function createTranscribeRoute() {
         recordtype: 'one_accession_row',
         has_untranscribed_records: true,
       };
-      return fetchMapAndRecords(queryParams);
+      return defer({
+        results: fetchMapAndRecords(queryParams)}
+      );
     },
     id: 'transcribe-root',
     element: <Application mode="transcribe" />,

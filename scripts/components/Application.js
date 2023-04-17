@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  useLocation, useMatches, useNavigate, useLoaderData, useParams, Outlet, createSearchParams,
+  useNavigate, useLoaderData, useParams, Outlet, Await,
 } from 'react-router-dom';
 
 import EventBus from 'eventbusjs';
@@ -52,7 +52,9 @@ export default function Application({ children, mode }) {
   // const location = useLocation();
   // const match = useMatches();
   const navigate = useNavigate();
-  const [mapData, recordsData] = useLoaderData();
+  const { results } = useLoaderData();
+  const [mapData, setMapData] = useState(null);
+
   const params = useParams();
 
   // const [popupVisible, setPopupVisible] = useState(false);
@@ -64,6 +66,13 @@ export default function Application({ children, mode }) {
     }
     navigate(target);
   };
+
+  // when results is resolved, set mapData
+  useEffect(() => {
+    results.then((data) => {
+      setMapData(data[0]);
+    });
+  }, [results]);
 
   const windowClickHandler = () => {
     window.eventBus.dispatch('screen-clicked');
@@ -77,6 +86,11 @@ export default function Application({ children, mode }) {
     setTimeout(() => {
       document.body.classList.add('app-initialized');
     }, 1000);
+
+    // when results resolves, set mapData
+    results.then((data) => {
+      setMapData(data[0]);
+    });
   }, []);
 
   return (
@@ -96,26 +110,28 @@ export default function Application({ children, mode }) {
         children
       }
 
-      {/* <Route
-                path=":record_id/*"
-                element={(
-                  <RoutePopupWindow>
-                  <PlaceView
-                    onPopupClose={popupCloseHandler}
-                    />
-                    </RoutePopupWindow>
-                )}
-              /> */}
-      {/* </Routes> */}
       <div className="intro-overlay">
 
         <div className="map-wrapper">
+          <React.Suspense
+            fallback={(
+              <MapMenu
+                recordsData={{ data: [], metadata: {} }}
+                params={{}}
+              />
+            )}
+          >
+            <Await resolve={results}>
+              {(resultsData) => (
 
-          <MapMenu
-            mode={mode}
-            params={params}
-            recordsData={recordsData}
-          />
+                <MapMenu
+                  mode={mode}
+                  params={params}
+                  recordsData={resultsData[1]}
+                />
+              )}
+            </Await>
+          </React.Suspense>
 
           <div className="map-progress">
             <div className="indicator" />
@@ -140,14 +156,10 @@ export default function Application({ children, mode }) {
             onMarkerClick={mapMarkerClick}
             mode={mode}
             params={params}
-            mapData={mapData}
+            mapData={
+              mapData
+            }
           />
-          {/* <MapView
-            onMarkerClick={mapMarkerClick}
-            mode={mode}
-            params={params}
-            mapData={results[0]}
-          /> */}
         </div>
       </div>
       {/* <div className="map-progress"><div className="indicator" /></div> */}
