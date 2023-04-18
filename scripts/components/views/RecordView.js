@@ -92,6 +92,8 @@ export default function RecordView({ mode }) {
     // if the component receives the "sent" signal from overlay.transcribe,
     // it should fetch the subrecords again
     const { eventBus } = window;
+    // TODO: den följande logiken borde ligga i RecordList componenten. oklart varför det ens funkar här
+    // den ska ladda om listan med subrecords när en transkription har skickats
     if (eventBus) {
       eventBus.addEventListener('overlay.transcribe.sent', () => {
         // first, wait 500ms before fetching subrecords again
@@ -741,31 +743,13 @@ export default function RecordView({ mode }) {
         <hr />
 
         {
-          data.recordtype === 'one_accession_row' && (
+          data.recordtype === 'one_accession_row'
+          && subrecords.length > 0
+          && (
             <div className="row">
 
               <div className="twelve columns">
                 <h3>{l('Uppteckningar')}</h3>
-                {subrecords.length === 0
-                  && <span>Inga resultat</span>}
-                {/* <ul>
-                  {subrecords.sort(
-                    (a, b) => (
-                      (parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10))
-                        ? 1 : -1
-                    ),
-                  ).map(
-                    (item) => (
-                      <li key={`subitem${item._source.id}`}>
-                        <small>
-                          <a href={`#/records/${item._source.id}${createSearchRoute(params)}`}>
-                            {`Sida ${pageFromTo(item)}`}
-                          </a>
-                        </small>
-                      </li>
-                    ),
-                  )}
-                </ul> */}
                 <RecordList
                   params={{
                     search: data.archive.archive_id_row,
