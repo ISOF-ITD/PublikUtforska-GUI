@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createSearchRoute } from '../utils/routeHelper';
+import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 import { NavigationContext } from '../NavigationContext';
 
 // Main CSS: ui-components/poupwindow.less
@@ -73,7 +73,7 @@ export default function RoutePopupWindow({
           ? `${type}s/${id}/`
           : ''
       }${
-        createSearchRoute(params).replace(/^\//, '')
+        createSearchRoute(createParamsFromSearchRoute(params['*'])).replace(/^\//, '')
       }`;
       navigate(navigationPath);
       removeLatestFromNavigationHistory();
