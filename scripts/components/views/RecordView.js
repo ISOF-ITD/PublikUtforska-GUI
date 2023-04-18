@@ -557,11 +557,11 @@ export default function RecordView({ mode }) {
                   )
                 }
                 {
-                  data.recordtype === 'one_accession_row' && !!data.numberofonerecord
+                  data.recordtype === 'one_accession_row' && subrecords?.length
                   && (
                     <span style={{ marginLeft: 10 }}>
                       <strong>{l('Antal uppteckningar')}</strong>
-                      {`: ${data.numberofonerecord}`}
+                      {`: ${subrecords.length}`}
                     </span>
                   )
                 }

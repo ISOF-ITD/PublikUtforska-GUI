@@ -114,7 +114,6 @@ function createRootRoute() {
       );
     },
     id: 'root',
-    // suspense: true,
     element: <Application mode="material" />,
     children: createPopupRoutes(''),
   };
