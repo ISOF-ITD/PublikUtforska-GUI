@@ -110,11 +110,11 @@ function createRootRoute() {
         transcriptionstatus: 'published,accession',
       };
       return defer({
-        results: fetchMapAndRecords(queryParams)}
-      );
+        results: fetchMapAndRecords(queryParams),
+      });
     },
     id: 'root',
-    element: <Application mode="material" />,
+    element: <Application mode="material" hasFilter />,
     children: createPopupRoutes(''),
   };
 }
@@ -129,11 +129,11 @@ function createTranscribeRoute() {
         has_untranscribed_records: true,
       };
       return defer({
-        results: fetchMapAndRecords(queryParams)}
-      );
+        results: fetchMapAndRecords(queryParams),
+      });
     },
     id: 'transcribe-root',
-    element: <Application mode="transcribe" />,
+    element: <Application mode="transcribe" hasFilter={false} />,
     children: createPopupRoutes('transcribe-'),
   };
 }
