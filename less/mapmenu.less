@@ -256,6 +256,24 @@
 				background-repeat: no-repeat;
 			}
 
+			.search-spinner {
+				background-image: url(../img/icon-spinner.png);
+				background-size: 20px 20px;
+				background-position: center;
+				background-repeat: no-repeat;
+				// animate spinner, rotate it
+				animation: spin 1s infinite linear;
+			}
+			
+			@keyframes spin {
+				from {
+					transform: rotate(0deg);
+				}
+				to {
+					transform: rotate(360deg);
+				}
+			}
+
 			.clear-button {
 				background-image: url(../img/icon-clear.png);
 				background-size: 20px 20px;
@@ -352,7 +370,7 @@
 				opacity: 0;
 			}
 
-			.search-button, .clear-button {
+			.search-button, .clear-button, .search-spinner {
 				pointer-events: all;
 
 				// @media (min-width: 550px) {

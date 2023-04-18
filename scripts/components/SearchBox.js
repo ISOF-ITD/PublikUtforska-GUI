@@ -11,12 +11,15 @@ import { createParamsFromSearchRoute } from '../utils/routeHelper';
 import SearchSuggestions from './SearchSuggestions';
 import { getPersonFetchLocation, getPlaceFetchLocation } from '../utils/helpers';
 
-export default function SearchBox({ mode, params, recordsData }) {
+export default function SearchBox({
+  mode, params, recordsData, loading,
+}) {
   SearchBox.propTypes = {
     // expanded: PropTypes.bool.isRequired,
     mode: PropTypes.string.isRequired,
     params: PropTypes.object.isRequired,
     recordsData: PropTypes.object.isRequired,
+    loading: PropTypes.bool.isRequired,
   };
 
   const searchInputRef = useRef();
@@ -484,7 +487,7 @@ export default function SearchBox({ mode, params, recordsData }) {
               person
                 ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year})` : ''}`
                 : place
-                ? `${place.name || search} ${place.landskap ? `(${place.landskap})`: ''}`
+                  ? `${place.name || search} ${place.landskap ? `(${place.landskap})` : ''}`
                   : search
             }
           </strong>
@@ -532,9 +535,31 @@ export default function SearchBox({ mode, params, recordsData }) {
           (search || document.getElementById('searchInputMapMenu')?.value)
           && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
         }
-        <button className="search-button" onClick={executeSearch} type="button" aria-label="Sök" style={{
-          visibility: person || place ? 'hidden' : 'unset',
-        }}/>
+        {
+          !loading
+          && (
+            <button
+              className="search-button"
+              onClick={executeSearch}
+              type="button"
+              aria-label="Sök"
+              style={{
+                visibility: person || place ? 'hidden' : 'unset',
+              }}
+            />
+          )
+        }
+        {
+          loading
+          && (
+            <button
+              className="search-spinner"
+              style={{
+                visibility: person || place ? 'hidden' : 'unset',
+              }}
+            />
+          )
+        }
       </div>
 
       {/* <div className="expanded-content">
@@ -557,6 +582,7 @@ export default function SearchBox({ mode, params, recordsData }) {
           <div className="popup-wrapper">
             {
               total.value > 0
+              && !loading
               && (
                 <button
                   className={[
@@ -584,8 +610,15 @@ export default function SearchBox({ mode, params, recordsData }) {
                 </button>
               )
             }
+            { loading
+              && (
+                <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
+                  <strong className="ignore-expand-menu">Söker...</strong>
+                </div>
+              )}
             {
               total.value === 0
+              && !loading
               && (
                 <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
                   <strong className="ignore-expand-menu">0 sökträffar</strong>

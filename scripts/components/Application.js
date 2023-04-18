@@ -55,6 +55,7 @@ export default function Application({ children, mode }) {
   const { results } = useLoaderData();
   const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: { } });
+  const [loading, setLoading] = useState(true);
 
   const params = useParams();
 
@@ -70,9 +71,11 @@ export default function Application({ children, mode }) {
 
   // when results is resolved, set mapData and recordsData
   useEffect(() => {
+    setLoading(true);
     results.then((data) => {
       setMapData(data[0]);
       setRecordsData(data[1]);
+      setLoading(false);
     });
   }, [results]);
 
@@ -93,6 +96,7 @@ export default function Application({ children, mode }) {
     results.then((data) => {
       setMapData(data[0]);
       setRecordsData(data[1]);
+      setLoading(false);
     });
   }, []);
 
@@ -121,6 +125,7 @@ export default function Application({ children, mode }) {
             mode={mode}
             params={params}
             recordsData={recordsData}
+            loading={loading}
           />
 
           <div className="map-progress">
@@ -147,6 +152,7 @@ export default function Application({ children, mode }) {
             mode={mode}
             params={params}
             mapData={mapData}
+            loading={loading}
           />
         </div>
       </div>
