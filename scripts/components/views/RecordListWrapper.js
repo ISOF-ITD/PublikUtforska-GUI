@@ -4,6 +4,10 @@ import { useState } from 'react';
 
 import { useParams, useLocation } from 'react-router-dom';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileLines } from '@fortawesome/free-solid-svg-icons';
+import PdfGif from '../../../img/pdf.gif';
+
 import RecordList from './RecordList';
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 
@@ -66,10 +70,12 @@ export default function RecordListWrapper({
               </label>
               <label htmlFor="one-accession-row-filter">
                 <input type="radio" name="filter" value="one_accession_row" checked={filter === 'one_accession_row'} onChange={handleFilterChange} id="one-accession-row-filter" />
+                <sub><img src={PdfGif} style={{ marginRight: 5 }} alt="pdf" title="Accession" /></sub>
                 Accessioner
               </label>
               <label htmlFor="one-record-filter">
                 <input type="radio" name="filter" value="one_record" checked={filter === 'one_record'} onChange={handleFilterChange} id="one-record-filter" />
+                <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
                 Uppteckningar
               </label>
             </div>
