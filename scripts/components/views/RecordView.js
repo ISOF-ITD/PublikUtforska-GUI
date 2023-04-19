@@ -560,12 +560,13 @@ export default function RecordView({ mode }) {
                 }
                 {
                   data.recordtype === 'one_accession_row' && subrecords?.length
-                  && (
-                    <span style={{ marginLeft: 10 }}>
-                      <strong>{l('Antal uppteckningar')}</strong>
-                      {`: ${subrecords.length}`}
-                    </span>
-                  )
+                    ? (
+                      <span style={{ marginLeft: 10 }}>
+                        <strong>{l('Antal uppteckningar')}</strong>
+                        {`: ${subrecords.length}`}
+                      </span>
+                    )
+                    : null
                 }
                 {
                   !!data.archive && !!data.archive.archive && !!pages
