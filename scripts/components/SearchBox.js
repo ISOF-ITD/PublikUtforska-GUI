@@ -86,21 +86,21 @@ export default function SearchBox({
         // label is the attribute "name", if there is an attribute "birth_year" add it to the label
         label: row.name + (row.birth_year ? ` (född ${row.birth_year})` : ''),
         value: row.id,
-        id: row.id,
       }));
       const filteredSuggestions = suggestions
         .filter(
         // filter out "p-personer"
-        // checks if the id starts with "p" and then a number
+        // checks if the value starts with "p" and then a number
         // and if it does, it returns false, otherwise true
-          (suggestion) => !suggestion.id.match(/^p\d+$/),
+          (suggestion) => !suggestion.value.match(/^p\d+$/),
         ).filter(
         // filter duplicates from suggestions
         // for every suggestion, check if the value of the suggestion
         // is the same as the value of any other suggestion
-          (suggestion, index, self) => index === self.findIndex(
-            (t) => t.value === suggestion.value,
-          ),
+        // if it is, return false, otherwise true
+          (suggestion, index, self) => self.findIndex(
+            (s) => s.value === suggestion.value,
+          ) === index,
         );
 
       setPersonSuggestions(filteredSuggestions);
