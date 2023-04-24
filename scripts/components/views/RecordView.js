@@ -727,7 +727,7 @@ export default function RecordView({ mode }) {
         <div className="row">
 
           <div className="six columns">
-            <ShareButtons path={`${config.siteUrl}#/records/${data.id}`} text={`"${data.title}"`} title={l('Kopiera länk')} />
+            <ShareButtons path={`${config.siteUrl}#/records/${data.id}`} title={l('Kopiera länk')} />
           </div>
 
           {
@@ -739,6 +739,17 @@ export default function RecordView({ mode }) {
             )
           }
 
+        </div>
+        <div className="row">
+          <div className="six columns">
+            {/* copies the citation to the clipboard */}
+            <ShareButtons
+              path={(
+              `${makeArchiveIdHumanReadable(data.archive.archive_id_row)}, ${data.archive.page ? `s. ${data.archive.page}, ` : ''}${data.archive.archive}`
+            )}
+              title={l('Källhänvisning')}
+            />
+          </div>
         </div>
 
         <hr />
