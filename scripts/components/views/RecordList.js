@@ -309,7 +309,7 @@ export default function RecordList({
                   </th>
                 )
               }
-              {
+              {/* {
                 shouldRenderColumn('category') && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true && params.recordtype !== 'one_accession_row')
                 && (
                   <th scope="col">
@@ -321,7 +321,7 @@ export default function RecordList({
                     </a>
                   </th>
                 )
-              }
+              } */}
 
               {shouldRenderColumn('place')
                 && <th scope="col">{l('Ort')}</th>}
