@@ -462,14 +462,14 @@ export default function RecordListItem({
         && renderFieldArchiveId()
       }
       {
-        shouldRenderColumn('category', columns) && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true && searchParams.recordtype !== 'one_accession_row')
-        && (
-          <td className="table-buttons" data-title={`${l('Kategori')}:`}>
-            {
-              taxonomyElement
-            }
-          </td>
-        )
+        // shouldRenderColumn('category', columns) && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true && searchParams.recordtype !== 'one_accession_row')
+        // && (
+        //   <td className="table-buttons" data-title={`${l('Kategori')}:`}>
+        //     {
+        //       taxonomyElement
+        //     }
+        //   </td>
+        // )
       }
       {
         shouldRenderColumn('place', columns)
