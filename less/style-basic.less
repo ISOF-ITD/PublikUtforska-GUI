@@ -103,10 +103,6 @@
 #Publiceringsdatum + span {
 	display: none;
 }
-.sv-column-6 {
-//    display: none !important;
-}
-
 html, body {
 	height: 100vh;
 	width: 100vw;
@@ -164,7 +160,7 @@ h3 {
 	font-weight: normal;
 }
 
-.isof-app-header {
+.isof-app-footer {
 	padding: 5px 5px !important;
 	//background: @color-darker-isof;
 	background: white;
@@ -192,7 +188,7 @@ h3 {
 		overflow: hidden;
 
 		// Center vertically by simple solution margin:
-		margin-top: 10px;
+		// margin-top: 10px;
 		// display: table-cell;
 		// vertical-align: middle;
 	}
@@ -358,12 +354,12 @@ audio::-webkit-media-controls-enclosure {
 	color: white;
 	cursor: pointer;
 	font-weight: bold;
-	height: 42px;
-	padding: 13px 0 0;
+	padding: 0 5px;
 	// position: absolute;
 	text-align: center;
-	width: 12%;
+	// width: 12%;
 	display: inline-block;
+	margin-left: 10px;
 }
 
 .open-sidemenu-button {
@@ -371,12 +367,13 @@ audio::-webkit-media-controls-enclosure {
 	color: white;
 	cursor: pointer;
 	font-weight: bold;
-	height: 42px;
-	padding: 13px 0 0;
+	height: 45px;
+	padding: 0; //13px 0 0;
 	// position: absolute;
-	text-align: center;
-	width: 12%;
-	display: inline-block;
+	// text-align: center;
+	width: 80px;
+	display: block;
+	float: left;
 }
 
 .subrecords {
@@ -482,7 +479,7 @@ header .logo, footer .logo {
 	@media (max-width: 550px) {
 		// display: none;
 		top: unset;
-		.isof-app-header {
+		.isof-app-footer {
 			padding: 0 !important;
 			#portal {
 				display: none;
@@ -651,7 +648,7 @@ footer, header {
 .filter-wrapper {
 	display: flex;
 	flex-direction: row;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: flex-start;
 }
   

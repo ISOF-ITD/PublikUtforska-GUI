@@ -21,6 +21,7 @@ export default function RecordListWrapper({
   highlightRecordsWithMetadataField,
   mode,
   hasFilter,
+  openSwitcherHelptext,
 }) {
   RecordListWrapper.propTypes = {
     disableListPagination: PropTypes.bool,
@@ -28,6 +29,7 @@ export default function RecordListWrapper({
     highlightRecordsWithMetadataField: PropTypes.string,
     mode: PropTypes.string,
     hasFilter: PropTypes.bool,
+    openSwitcherHelptext: PropTypes.func.isRequired,
   };
 
   RecordListWrapper.defaultProps = {
@@ -78,6 +80,7 @@ export default function RecordListWrapper({
                 <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
                 Uppteckningar
               </label>
+              <span className="switcher-help-button" onClick={openSwitcherHelptext} title="Om accessioner och uppteckningar">?</span>
             </div>
             )
           }

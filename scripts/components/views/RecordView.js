@@ -32,9 +32,10 @@ import RecordList from './RecordList';
 
 const l = Lang.get;
 
-export default function RecordView({ mode }) {
+export default function RecordView({ mode, openSwitcherHelptext }) {
   RecordView.propTypes = {
     mode: PropTypes.string,
+    openSwitcherHelptext: PropTypes.func.isRequired,
   };
 
   RecordView.defaultProps = {
@@ -526,6 +527,7 @@ export default function RecordView({ mode }) {
                 {
                   data.recordtype === 'one_record' && l('Uppteckning')
                 }
+                <span className="switcher-help-button" onClick={openSwitcherHelptext} title="Om accessioner och uppteckningar">?</span>
               </p>
               <p>
                 {

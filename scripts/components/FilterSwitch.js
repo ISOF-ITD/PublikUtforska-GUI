@@ -1,9 +1,8 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
-
 import PropTypes from 'prop-types';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
+
+import Folkelogga from '../../img/folke-white.svg';
 
 export default function FilterSwitch({ mode }) {
   FilterSwitch.propTypes = {
@@ -14,17 +13,9 @@ export default function FilterSwitch({ mode }) {
     mode: 'material',
   };
 
-  const navigate = useNavigate();
   const params = useParams();
 
   // const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
-
-  const openSwitcherHelptext = () => {
-    if (window.eventBus) {
-      window.eventBus.dispatch('overlay.switcherHelpText', {
-      });
-    }
-  };
 
   const openSideMenu = () => {
     if (window.eventBus) {
@@ -57,7 +48,7 @@ export default function FilterSwitch({ mode }) {
   return (
     <div className="nordic-switch-wrapper map-floating-control">
       <span onClick={openSideMenu} className="open-sidemenu-button" title="Öppna sidomeny">
-        <FontAwesomeIcon icon={faBars} />
+        <img src={Folkelogga} alt="Folkelogga" />
       </span>
       <Link
         to={
@@ -75,7 +66,6 @@ export default function FilterSwitch({ mode }) {
       >
         {l('Skriva av')}
       </Link>
-      <span className="switcher-help-button" onClick={openSwitcherHelptext} title="Om accessioner och uppteckningar">?</span>
     </div>
   );
 }

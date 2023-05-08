@@ -47,6 +47,13 @@ function fetchPerson(personId) {
   return fetch(getPersonFetchLocation(personId));
 }
 
+const openSwitcherHelptext = () => {
+  if (window.eventBus) {
+    window.eventBus.dispatch('overlay.switcherHelpText', {
+    });
+  }
+};
+
 // prefix is either 'transcribe' or ''
 function createPopupRoutes(prefix) {
   return [
@@ -78,7 +85,7 @@ function createPopupRoutes(prefix) {
           }}
           routeId={`${prefix}record`}
         >
-          <RecordView mode={prefix.slice(0, -1) || 'material'} />
+          <RecordView mode={prefix.slice(0, -1) || 'material'} openSwitcherHelptext={openSwitcherHelptext}/>
         </RoutePopupWindow>
       ),
     },
@@ -114,7 +121,7 @@ function createRootRoute() {
       });
     },
     id: 'root',
-    element: <Application mode="material" hasFilter />,
+    element: <Application mode="material" hasFilter openSwitcherHelptext={openSwitcherHelptext} />,
     children: createPopupRoutes(''),
   };
 }

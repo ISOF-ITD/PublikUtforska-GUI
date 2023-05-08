@@ -28,12 +28,15 @@ import Lang from '../../ISOF-React-modules/lang/Lang';
 
 const l = Lang.get;
 
-export default function Application({ children, mode, hasFilter }) {
+export default function Application({
+  children, mode, hasFilter, openSwitcherHelptext,
+}) {
   Application.propTypes = {
     children: PropTypes.node.isRequired,
     mode: PropTypes.string,
     // hasFilter: if true, the RecordListWrapper will have a filter for recordtype
     hasFilter: PropTypes.bool,
+    openSwitcherHelptext: PropTypes.func.isRequired,
   };
 
   Application.defaultProps = {
@@ -95,6 +98,7 @@ export default function Application({ children, mode, hasFilter }) {
           disableRouterPagination
           mode={mode}
           hasFilter={hasFilter}
+          openSwitcherHelptext={openSwitcherHelptext}
         />
       </RoutePopupWindow>
 

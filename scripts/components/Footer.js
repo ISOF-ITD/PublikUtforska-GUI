@@ -1,20 +1,13 @@
-import folkelogga from '../../img/folkelogga.svg';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import logoIsof from '../../img/logotyp-isof.svg';
 
 export default function Footer() {
   return (
     <footer>
       <div className="logo">
-        <div id="Logo" className="isof-app-header">
-          <a href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke">
-            <img
-              alt="Folke på Institutet för språk och folkminnen"
-              className="sv-noborder"
-              style={{ maxWidth: 326, maxHeight: 50 }}
-              src={folkelogga}
-            />
-          </a>
-        </div>
-        <div id="portal" className="isof-app-header">
+
+        <div id="portal" className="isof-app-footer">
           <a
             href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke"
             target="_blank"
@@ -23,6 +16,21 @@ export default function Footer() {
             rel="noreferrer"
           >
             Om Folke
+            &nbsp;
+            <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+          </a>
+        </div>
+        <div id="Logo" className="isof-app-footer">
+          <a href="https://www.isof.se/">
+            {/* Institutet för språk och folkminnen */}
+            <img
+              src={logoIsof}
+              alt="Institutet för språk och folkminnen"
+              style={{
+                background: '#005462',
+                padding: '0.5rem',
+              }}
+            />
           </a>
         </div>
       </div>
