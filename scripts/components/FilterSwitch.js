@@ -47,7 +47,7 @@ export default function FilterSwitch({ mode }) {
 
   return (
     <div className="nordic-switch-wrapper map-floating-control">
-      <span onClick={openSideMenu} className="open-sidemenu-button" title="Öppna sidomeny">
+      <span onClick={openSideMenu} className="open-sidemenu-button" title="Öppna statistik">
         <img src={Folkelogga} alt="Folkelogga" />
       </span>
       <Link
