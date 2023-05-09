@@ -36,7 +36,7 @@
 // Accessibility
 *:focus {
     opacity: 1 !important;
-    outline: 2px solid #01535d !important;
+    outline: 2px solid #01535d;
 }
 
 // @import "../ISOF-React-modules/less/sitevision.less";
@@ -163,10 +163,13 @@ h3 {
 .isof-app-footer {
 	padding: 5px 5px !important;
 	//background: @color-darker-isof;
-	background: white;
+	// vit med 75% transparens
+	background: rgba(255, 255, 255, 0.75);
+
 
 	display: inline-flex;
-	// display: inline-block;
+    flex-direction: column;
+    align-items: center;
 	
 	overflow: hidden;
 
@@ -372,13 +375,24 @@ audio::-webkit-media-controls-enclosure {
 	color: white;
 	cursor: pointer;
 	font-weight: bold;
-	height: 45px;
+	// height: 45px;
 	padding: 0; //13px 0 0;
 	// position: absolute;
 	// text-align: center;
+	height: 48px;
 	width: 80px;
 	display: block;
 	float: left;
+	box-sizing: border-box;
+	border: 2px solid @color-lighter-isof;
+	// on hover, the image in the div zooms in a bit
+	// and the background color changes to a darker shade
+	// of green.
+	transition: border-color 0.1s ease-in-out;
+	&:hover {
+		border: 2px solid white;
+		// animate the border color change
+	}	
 }
 
 .subrecords {
@@ -509,8 +523,6 @@ footer, header {
 
 		z-index: 1100;
 
-		background-color: #fff;
-
 		.transition(top 300ms ease-in-out);
 
 		@media print {
@@ -518,12 +530,6 @@ footer, header {
 			left: 0;
 		}
 
-		@media (max-width: 550px) {
-
-			img {
-				width: 85px !important;
-			}
-		}
 
 		.has-docked-control & {
 			top: 65px;

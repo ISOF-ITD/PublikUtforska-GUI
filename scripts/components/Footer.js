@@ -19,8 +19,6 @@ export default function Footer() {
             &nbsp;
             <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
           </a>
-        </div>
-        <div id="Logo" className="isof-app-footer">
           <a href="https://www.isof.se/">
             {/* Institutet för språk och folkminnen */}
             <img

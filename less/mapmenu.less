@@ -66,15 +66,25 @@
 		a {
 			display: block;
 			float: left;
-
+			height: 48px;
 			// width: 37.5%; //38%; //44%; //50%;
 			width: 133px;
+
+			@media screen and (max-width: 550px) {
+				// the with is 100% - 80 px, divided by two
+				width: calc(50% - 40px);
+			}
 			
-			margin-right: 0.5%;
+			// margin-right: 0.5%;
+			// make so that the border is inside the element
+			
+
+
 
 			padding: 12px;
 
 			box-sizing: border-box;
+			border: 2px solid @color-darkgray;
 
 			text-decoration: none;
 			text-align: center;
@@ -85,10 +95,16 @@
 
 			.transition(all 200ms ease-in-out);
 
+			&:focus {
+				outline: none !important;
+				border: 2px solid black !important;
+			}
+
 			&.selected {
 				color: #000;
 				
 				background: @color-gray;
+				border: 2px solid @color-gray;
 			}
 
 			&:hover {
@@ -109,7 +125,7 @@
 	.search-box {
 		position: absolute;
 
-		top: 44px;
+		top: 48px;
 		right: 0;
 		left: 0;
 
@@ -362,7 +378,7 @@
 			cursor: auto;
 
 			@media (max-width: 550px) {
-				top: 31px;
+				top: 38px;
 			}
 
 			input[type="text"] {
