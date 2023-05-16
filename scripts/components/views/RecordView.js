@@ -359,7 +359,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       if (pdfObjects?.length > 0) {
         pdfObjects.forEach((pdfObject) => {
           // pdfElements.push(<PdfViewer height="800" url={(config.pdfUrl || config.imageUrl) + pdfObject.source} key={pdfObject.source} />);
-          pdfElements.push(<PdfViewer url={(config.pdfUrl || config.imageUrl) + pdfObject.source} key={pdfObject.source} />);
+          pdfElements.push(<PdfViewer height="100%" url={(config.pdfUrl || config.imageUrl) + pdfObject.source} key={pdfObject.source} />);
         });
       }
 
