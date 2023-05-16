@@ -521,12 +521,12 @@ export default function RecordListItem({
       {
         shouldRenderColumn('material_type', columns) && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideMaterialType === true)
         && <td data-title={`${l('Materialtyp')}:`}>{materialtype}</td>
-        // <td data-title={l('Avskriftstatus')+':'}>{transcriptionstatus ? transcriptionstatus : ''}</td>
+        // <td data-title={l('Avskriven')+':'}>{transcriptionstatus ? transcriptionstatus : ''}</td>
       }
       {
         shouldRenderColumn('transcription_status', columns)
         && (
-          <td data-title={`${l('Avskriftstatus')}:`} className="table-buttons">
+          <td data-title={`${l('Avskriven')}:`} className="table-buttons">
             {transcriptionStatusElement}
           </td>
         )
