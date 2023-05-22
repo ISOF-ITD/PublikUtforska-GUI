@@ -1,0 +1,76 @@
+.feedback-button {
+	position: absolute;
+
+	top: 0;
+	right: 95px;
+
+	height: auto;
+
+	margin: 0;
+	padding: 15px 15px 10px 15px;
+
+	border: none;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.61);
+
+	background: rgba(255, 255, 255, 0.4);
+
+	color: #fff;
+	line-height: inherit;
+
+	.transform(translateY(-5px));
+
+	@media print {
+		display: none;
+	}
+
+	&:hover {
+		box-shadow: 0 1px 2px rgba(0, 0, 6px, 0.61);
+
+		background: rgba(255, 255, 255, 0.5);
+
+		color: #fff;
+
+		.transform(translateY(-2px));
+
+		@media (max-width: 550px) {
+			background: @color-red-lighter;
+		}
+	}
+
+	@media (max-width: 550px) {
+		position: fixed;
+
+		top: auto;
+		bottom: 10px;
+		right: 20px;
+
+		padding: 10px 15px;
+
+		background: @color-red;
+
+		border-radius: 20px;
+
+		z-index: 600;
+	}
+}
+.contributeinfo-button {
+	right: 310px;
+
+	@media screen and (max-width: 550px) {
+		right: unset;
+		left: 20px;
+	}
+		
+	}
+.help-button {
+	right: 400px;
+}
+.transcriptionhelp-button {
+	right: 440px;
+}
+.on-top-of-map-button {
+	background: @color-red;
+}
+
