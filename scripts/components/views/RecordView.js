@@ -732,18 +732,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           <div className="six columns">
             <ShareButtons path={`${config.siteUrl}#/records/${data.id}`} title={l('Kopiera länk')} />
           </div>
-
-          {
-            config.siteOptions && config.siteOptions.copyrightContent && data.copyrightlicense
-            && (
-              <div className="six columns">
-                <div className="copyright" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[data.copyrightlicense] }} />
-              </div>
-            )
-          }
-
-        </div>
-        <div className="row">
+        {/* </div>
+        
+        <div className="row"> */}
           <div className="six columns">
             {/* copies the citation to the clipboard */}
             <ShareButtons
@@ -753,6 +744,17 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               title={l('Källhänvisning')}
             />
           </div>
+        </div>
+        <div className="row">
+          {
+            config.siteOptions && config.siteOptions.copyrightContent && data.copyrightlicense
+            && (
+              <div className="six columns offset-by-six">
+                <div className="copyright" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[data.copyrightlicense] }} />
+              </div>
+            )
+          }
+
         </div>
 
         <hr />
