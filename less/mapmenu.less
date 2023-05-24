@@ -27,14 +27,17 @@
 	}
 
 	.nordic-switch-wrapper {
+		// background: #f5f5f5;
+		background: transparent;
 		position: relative;
+		height: 48px;
 
 		padding: 0;
 
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
 
-		overflow: hidden;
+		// overflow: hidden;
 
 		z-index: 1400;
 
@@ -61,13 +64,27 @@
 
 
 		a {
-			display: inline-block;
+			display: block;
+			float: left;
+			height: 48px;
+			// width: 37.5%; //38%; //44%; //50%;
+			width: 133px;
 
-			width: 38%; //44%; //50%;
+			@media screen and (max-width: 550px) {
+				// the with is 100% - 80 px, divided by two
+				width: calc(50% - 40px);
+			}
+			
+			// margin-right: 0.5%;
+			// make so that the border is inside the element
+			
+
+
 
 			padding: 12px;
 
 			box-sizing: border-box;
+			border: 2px solid @color-darkgray;
 
 			text-decoration: none;
 			text-align: center;
@@ -78,14 +95,29 @@
 
 			.transition(all 200ms ease-in-out);
 
+			&:focus {
+				outline: none !important;
+				border: 2px solid black !important;
+			}
+
 			&.selected {
 				color: #000;
 				
 				background: @color-gray;
+				border: 2px solid @color-gray;
 			}
 
 			&:hover {
 				text-decoration: underline;
+			}
+
+			&:visited, &:active, &:focus, &:hover, &:link {
+				color: #000 !important;
+			}
+
+			// do not change text color to blue while clicking
+			&:active {
+				color: #000;
 			}
 		}
 	}
@@ -93,11 +125,11 @@
 	.search-box {
 		position: absolute;
 
-		top: 42px;
+		top: 48px;
 		right: 0;
 		left: 0;
 
-		z-index: 1500;
+		z-index: 1000;
 
 		cursor: pointer;
 
@@ -134,14 +166,28 @@
 
 			pointer-events: none;
 
-			.transition(all 300ms ease-in-out);
+			// .transition(all 200ms ease-in-out);
+
+			&.person, &.place {
+				// deactivate mouse interaction, make it impossible to add a cursor that can edit the input field
+				pointer-events: none !important;
+				opacity: 0 !important;
+				.search-button {
+					visibility: hidden;
+				}
+
+			}
+		}
+
+		.search-label.person, .search-label.place {
+			opacity: 1 !important;
 		}
 
 		.dropdown-link {
 			background-color: #fff;
 		}
 
-		.suggestions {
+		ul.suggestions {
 			display: block;
 			border-radius: 3px;
 			box-shadow: rgb(209, 209, 209) 0px 1px 12px 1px;
@@ -152,6 +198,9 @@
 			z-index: 2500;
 			overflow: hidden;
 			margin: 0.6rem 0px;
+			list-style-type: none;
+			margin-bottom: 0;
+			margin-top: 5px;
 			.suggestions-label {
 				padding: 0.5rem 1rem;
 				font-size: 0.8rem;
@@ -165,16 +214,11 @@
 				color: #999;
 				font-size: 1.2rem;
 			}
-			ul {
-				list-style-type: none;
-				margin-bottom: 0;
-				margin-top: 5px;
-				li {
-					padding: 0.5rem 1rem;
-					cursor: pointer;
-					&:hover, &.selected, &:focus {
-						background-color: #f5f5f5;
-					}
+			li {
+				padding: 0.5rem 1rem;
+				cursor: pointer;
+				&:hover, &.selected, &:focus {
+					background-color: #f5f5f5;
 				}
 			}
 		}
@@ -231,6 +275,24 @@
 				background-size: 20px 20px;
 				background-position: center;
 				background-repeat: no-repeat;
+			}
+
+			.search-spinner {
+				background-image: url(../img/icon-spinner.png);
+				background-size: 20px 20px;
+				background-position: center;
+				background-repeat: no-repeat;
+				// animate spinner, rotate it
+				animation: spin 1s infinite linear;
+			}
+			
+			@keyframes spin {
+				from {
+					transform: rotate(0deg);
+				}
+				to {
+					transform: rotate(360deg);
+				}
 			}
 
 			.clear-button {
@@ -316,9 +378,7 @@
 			cursor: auto;
 
 			@media (max-width: 550px) {
-				left: -9px;
-				right: -9px;
-				top: -9px;
+				top: 38px;
 			}
 
 			input[type="text"] {
@@ -331,7 +391,7 @@
 				opacity: 0;
 			}
 
-			.search-button, .clear-button {
+			.search-button, .clear-button, .search-spinner {
 				pointer-events: all;
 
 				// @media (min-width: 550px) {

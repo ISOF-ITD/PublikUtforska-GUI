@@ -1,61 +1,71 @@
-import React from 'react';
-import routeHelper from './../utils/routeHelper'
+import PropTypes from 'prop-types';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import Folkelogga from '../../img/folke-white.svg';
 
-export default class FilterSwitch extends React.Component {
-	constructor(props) {
-		super(props);
-		this.menuButtonClick = this.menuButtonClick.bind(this);
-		this.openSwitcherHelptext = this.openSwitcherHelptext.bind(this);
-		this.openSideMenu = this.openSideMenu.bind(this);
-	}
+export default function FilterSwitch({ mode }) {
+  FilterSwitch.propTypes = {
+    mode: PropTypes.string,
+  };
 
-	openSwitcherHelptext() {
-		if (window.eventBus) {
-			window.eventBus.dispatch('overlay.switcherHelpText', {
-			});
-		}
-	}
+  FilterSwitch.defaultProps = {
+    mode: 'material',
+  };
 
-	openSideMenu() {
-		if (window.eventBus) {
-			window.eventBus.dispatch('overlay.sideMenu', 'visible');
-		}
-	}
+  const params = useParams();
 
-	menuButtonClick(event) {
-		const value = event.currentTarget.dataset.value;
-		const params = {...this.props.searchParams};
-		params['recordtype'] = value;
-		// 
-		if (value === 'one_accession_row') {
-			params['category'] = undefined;
-			params['transcriptionstatus'] = undefined;
-			// default is digitized material 
-			params['has_media'] = true;
-			params['has_transcribed_records'] = undefined;
-		} else if (value === 'one_record') {
-			params['has_media'] = undefined;
-			params['has_transcribed_records'] = undefined;
-			params['transcriptionstatus'] = 'readytotranscribe';
-		}
-		this.props.history.push(
-			'/places'
-			+ routeHelper.createSearchRoute(params)
-			);
-	}
+  // const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
 
-	render() {
-		return <div className="nordic-switch-wrapper map-floating-control">
-			<span onClick={this.openSideMenu} className="open-sidemenu-button" title="Öppna sidomeny">
-				<FontAwesomeIcon icon={faBars} /> 
-			</span>
-			<a onClick={this.menuButtonClick} data-value="one_accession_row" className={this.props.searchParams.recordtype == 'one_accession_row' ? 'selected' : ''}>{l('Arkivmaterial')}</a>
-			<a onClick={this.menuButtonClick} data-value="one_record" className={this.props.searchParams.recordtype == 'one_record' ? 'selected' : ''}>{l('Skriva av')}</a>
-			<span className='switcher-help-button' onClick={this.openSwitcherHelptext} title='Om accessioner och uppteckningar'>?</span>
-		</div>;
-	}
+  const openSideMenu = () => {
+    if (window.eventBus) {
+      window.eventBus.dispatch('overlay.sideMenu', 'visible');
+    }
+  };
 
+  // const menuButtonClick = (e) => {
+  //   const { value } = e.currentTarget.dataset;
+  //   const searchParams = {
+  //     ...searchParams,
+  //     recordtype: value,
+  //   };
+  //   if (value === 'one_accession_row') {
+  //     searchParams.category = undefined;
+  //     searchParams.transcriptionstatus = undefined;
+  //     // default is digitized material
+  //     searchParams.has_media = true;
+  //     searchParams.has_transcribed_records = undefined;
+  //   } else if (value === 'one_record') {
+  //     searchParams.has_media = undefined;
+  //     searchParams.has_transcribed_records = undefined;
+  //     searchParams.transcriptionstatus = 'readytotranscribe';
+  //   }
+  //   navigate(
+  //     `/places${routeHelper.createSearchRoute(searchParams)}`,
+  //   );
+  // };
+
+  return (
+    <div className="nordic-switch-wrapper map-floating-control">
+      <span onClick={openSideMenu} className="open-sidemenu-button" title="Öppna statistik">
+        <img src={Folkelogga} alt="Folkelogga" />
+      </span>
+      <Link
+        to={
+          `/${createSearchRoute(createParamsFromSearchRoute(params['*']))
+          // remove leading slash if it exists
+            .replace(/^\//, '')}`
+        }
+        className={mode === 'material' ? 'selected' : ''}
+      >
+        {l('Arkivmaterial')}
+      </Link>
+      <Link
+        to={`/transcribe/${createSearchRoute(createParamsFromSearchRoute(params['*'])).replace(/^\//, '')}`}
+        className={mode === 'transcribe' ? 'selected' : ''}
+      >
+        {l('Skriva av')}
+      </Link>
+    </div>
+  );
 }

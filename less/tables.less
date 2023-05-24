@@ -128,6 +128,10 @@ table.table-responsive {
 		display: block;
 
 		white-space: normal;
+
+		@media screen and (max-width: 550px) {
+			overflow: auto;
+		}
 	}
 	
 	tr {	 
@@ -182,7 +186,18 @@ table.table-responsive {
 		}
 		
 		td {
-			padding-left: 0;
+			@media screen and (min-width: 768px) {
+				padding-left: 0;
+			}
+			@media screen and (max-width: 767px) {
+				padding: 15px 12px 0 15px;
+				min-height: 40px;
+				&:last-child {
+					margin-bottom: 15px;
+					padding-bottom: 15px;
+				}
+			}
+			
 
 			min-height: 50px;
 

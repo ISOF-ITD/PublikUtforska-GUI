@@ -48,7 +48,7 @@ export default class CategoryMenu extends React.Component {
 
 				<div tabIndex={-1} className={'list-container minimal-scrollbar'}>
 					<Route
-						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
+						path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/persons/:person_id']}
 						render= {(props) =>
 							<CategoryList 
 								multipleSelect="true"

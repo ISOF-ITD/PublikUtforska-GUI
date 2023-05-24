@@ -58,6 +58,7 @@ export default {
 		type: 'arkiv',
 		categorytypes: 'tradark',
 		publishstatus: 'published',
+		has_media: 'true', // TODO: Bekräfta att vi ska använda detta
 		//For test with ortnamn data in index only use:
 		//Also add ISOF-React-modules/utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
 		//type: 'ortnamn',
@@ -78,13 +79,13 @@ export default {
 			// Döljd Accession:page i RecordList, används för vissa kartor
 			//hideAccessionpage: true,
 
-			/*
+			
 			// Dölj kategorier kolumn i RecordList, används för folkmusiken
-			hideCategories: true
+			// hideCategories: true,
 
 			// Dölj TranscriptionStatus kolumn i RecordList, används bara för crowdsource?
-			hideTranscriptionStatus: true
-			*/
+			// hideTranscriptionStatus: true
+			
 
 			// Vilka kategorier vi vill visa i listan, här vill vi bara visa matkarta kategorier men dölja frågolista-kategorier
 			visibleCategories: ['tradark'],
@@ -180,5 +181,10 @@ export default {
 		format: "JSON",
 		// filter_limit: "100", // default 100
 	},
+	// här går det att begränsa antalet sökförslag för varje typ av sökförslag
+	// sätt till null för att inte begränsa
 	numberOfSearchSuggestions: 6,
+	numberOfPlaceSuggestions: null,
+	numberOfPersonSuggestions: null,
+	numberOfProvinceSuggestions: null,
 };

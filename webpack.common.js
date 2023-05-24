@@ -6,7 +6,8 @@ module.exports = {
   entry: './scripts/app.js',
   output: {
     // add a rev-hash to the filename to avoid caching issues
-    filename: 'a.[contenthash].js',
+    filename: 'bndl.[contenthash].js',
+    chunkFilename: 'chnk.[contenthash].js',
     path: path.resolve(__dirname, 'www'),
     clean: true,
   },
@@ -16,16 +17,7 @@ module.exports = {
         test: /\.m?js$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              [
-                '@babel/preset-env',
-                { targets: "defaults" }
-              ],
-              '@babel/preset-react'
-            ]
-          }
+          loader: "babel-loader",
         }
       },
       // add support for .less files

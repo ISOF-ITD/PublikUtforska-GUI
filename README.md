@@ -97,7 +97,7 @@ In app.js, we specify which route patterns can be matched:
 ```javascript
 // app.js
 <Route 
-    path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}
+    path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/persons/:person_id']}
 ```
 
 In each component, the *routeHelper* (see routeHelper.js) can derive the search parameters from the route (which is accessible in `props.match.url`), so that the search parameters are available inside the component with `this.props.searchParams`.

@@ -1,139 +1,161 @@
-import React from 'react';
+import { useEffect, useState, useContext } from 'react';
+import PropTypes from 'prop-types';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
+import { NavigationContext } from '../NavigationContext';
 
 // Main CSS: ui-components/poupwindow.less
 
-export default class RoutePopupWindow extends React.Component {
-	constructor(props) {
-		super(props);
+export default function RoutePopupWindow({
+  children,
+  onClose,
+  manuallyOpenPopup,
+  onHide,
+  onShow,
+  closeButtonStyle,
+  routeId,
+}) {
+  RoutePopupWindow.propTypes = {
+    children: PropTypes.node.isRequired,
+    onClose: PropTypes.func,
+    manuallyOpenPopup: PropTypes.bool,
+    onHide: PropTypes.func,
+    onShow: PropTypes.func,
+    closeButtonStyle: PropTypes.string,
+    routeId: PropTypes.string,
+  };
 
-		this.closeButtonClick = this.closeButtonClick.bind(this);
-		this.closeButtonKeyUp = this.closeButtonKeyUp.bind(this);
-		this.openButtonClickHandler = this.openButtonClickHandler.bind(this);
-		this.openButtonKeyUpHandler = this.openButtonKeyUpHandler.bind(this);
-		this.languageChangedHandler = this.languageChangedHandler.bind(this);
-		this.showRoutePopup = this.showRoutePopup.bind(this);
+  RoutePopupWindow.defaultProps = {
+    onClose: null,
+    manuallyOpenPopup: false,
+    onHide: null,
+    onShow: null,
+    closeButtonStyle: 'white',
+    routeId: null,
+  };
 
-		this.state = {
-			windowOpen: false,
-			manualOpen: false
-		};
-	}
+  const [windowOpen, setWindowOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
-	closeButtonKeyUp(event){
-		if(event.keyCode == 13){
-			this.closeButtonClick(event);
-		} 
-	}
+  const navigate = useNavigate();
+  const params = useParams();
 
-	closeButtonClick() {
-		if (this.props.children.props.manuallyOpenPopup) {
-			this.setState({
-				windowOpen: false,
-				manualOpen: false
-			});
-		}
-		else {
-			if (this.props.onClose) {
-				this.props.onClose();
-			}
-		}
-	}
+  const {
+    previousNavigation,
+    addToNavigationHistory,
+    removeLatestFromNavigationHistory,
+  } = useContext(NavigationContext);
 
-	openButtonKeyUpHandler(event){
-		if(event.keyCode == 13){
-			this.openButtonClickHandler(event);
-		} 
-	}
+  useEffect(() => {
+    const { recordId, placeId, personId } = params;
+    if (recordId || placeId || personId) {
+      addToNavigationHistory(
+        recordId
+          ? 'record'
+          : placeId
+            ? 'place'
+            : 'person',
+        recordId || placeId || personId,
+      );
+    }
+  }, [params.recordId, params.placeId, params.personId]);
 
-	openButtonClickHandler() {
-		this.setState({
-			windowOpen: true,
-			manualOpen: true
-		});
-	}
+  const closeButtonClick = () => {
+    if (children.props.manuallyOpenPopup || manuallyOpenPopup) {
+      setWindowOpen(false);
+      setManualOpen(false);
+    } else if (routeId === 'record' || routeId === 'transcribe-record' || routeId === 'place' || routeId === 'transcribe-place' || routeId === 'person' || routeId === 'transcribe-person') {
+      // remove latest navigation from navigationHistory
+      const { type, id } = previousNavigation || { type: null, id: null };
+      const navigationPath = `${routeId.startsWith('transcribe') ? '/transcribe/' : '/'}${
+        // add placeId to search route if it exists in context
+        id
+          ? `${type}s/${id}/`
+          : ''
+      }${
+        createSearchRoute(createParamsFromSearchRoute(params['*'])).replace(/^\//, '')
+      }`;
+      navigate(navigationPath);
+      removeLatestFromNavigationHistory();
+    } else if (onClose) {
+      onClose();
+    }
+  };
 
-	languageChangedHandler() {
-		this.forceUpdate();
-	}
+  const closeButtonKeyUp = (event) => {
+    if (event.keyCode === 13) {
+      closeButtonClick(event);
+    }
+  };
 
-	showRoutePopup() {
-		this.setState({
-			windowOpen: false,
-			manualOpen: true,
-		})
-	}
+  const showRoutePopup = () => {
+    setWindowOpen(false);
+    setManualOpen(true);
+  };
 
-	componentDidMount() {
-		if (window.eventBus) {
-			window.eventBus.addEventListener('Lang.setCurrentLang', this.languageChangedHandler)
-			window.eventBus.addEventListener('routePopup.show', this.showRoutePopup)
-		}
-		
-		this.setState({
-			windowOpen: Boolean(this.props.children) && !this.props.children.props.manuallyOpenPopup
-		});
-	}
+  useEffect(() => {
+    if (window.eventBus) {
+      window.eventBus.addEventListener('routePopup.show', showRoutePopup);
+    }
+    setWindowOpen(!manuallyOpenPopup);
 
-	UNSAFE_componentWillReceiveProps(props) {
-		this.setState({
-			windowOpen: Boolean(props.children) && !props.children.props.manuallyOpenPopup
-		});
+    // componentWillUnmount
+    return () => {
+      if (onHide) {
+        onHide();
+      }
+      if (window.eventBus) {
+        window.eventBus.dispatch('popup.close');
+      }
+    };
+  }, []);
 
-		if (!props.children == this.props.children && !this.props.disableAutoScrolling) {
-			this.refs.contentWrapper.scrollTo(0, 0);
-		}
-	}
+  if (windowOpen || manualOpen) {
+    if (onShow) {
+      onShow();
+    }
+    if (window.eventBus) {
+      setTimeout(() => {
+        window.eventBus.dispatch('popup.open');
+      }, 100);
+    }
+  } else {
+    if (onHide) {
+      onHide();
+    }
+    if (window.eventBus) {
+      setTimeout(() => {
+        window.eventBus.dispatch('popup.close');
+      }, 100);
+    }
+  }
 
-	componentWillUnmount() {
-		if (window.eventBus) {
-			window.eventBus.removeEventListener('Lang.setCurrentLang', this.languageChangedHandler)
-		}
-	}
+  // when this component receives changes, scroll to top of popup
+  useEffect(() => {
+    // get all popup windows
+    const els = document.getElementsByClassName('popup-content-wrapper');
+    if (els.length > 0) {
+      // in the last popup window, scroll to top
+      els[els.length - 1].scrollTop = 0;
+    }
+  }, [children]);
 
-	componentWillUnmount() {
-		if (this.props.onHide) {
-			this.props.onHide();
-		}
-		if (window.eventBus) {
-			window.eventBus.dispatch('popup.close');
-		}
-	}
-
-	render() {
-		if (this.state.windowOpen || this.state.manualOpen) {
-			if (this.props.onShow) {
-				this.props.onShow();
-			}
-			if (window.eventBus) {
-				setTimeout(function() {
-					window.eventBus.dispatch('popup.open');
-				}.bind(this), 100);
-			}
-		}
-		else {
-			if (this.props.onHide) {
-				this.props.onHide();
-			}
-			if (window.eventBus) {
-				setTimeout(function() {
-					window.eventBus.dispatch('popup.close');
-				}.bind(this), 100);
-			}
-		}
-
-		return (
-			<div className={'popup-wrapper'+(this.state.windowOpen || this.state.manualOpen ? ' visible' : '')}>
-				{
-					// this.props.children && this.props.children.props.manuallyOpenPopup &&
-					// <a className="popup-open-button map-floating-control map-bottom-control visible" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong>{l(this.props.children.props.openButtonLabel)}</strong></a>
-				}
-				<div ref="contentWrapper" className={'popup-content-wrapper'}>
-					<div className="page-content">
-						<a tabIndex={0} className={'close-button'+(this.props.closeButtonStyle == 'dark' ? '' : this.props.closeButtonStyle == 'white' ? ' white' : ' white')} onClick={this.closeButtonClick} onKeyUp={this.closeButtonKeyUp}></a>
-						{this.props.children}
-					</div>
-				</div>
-			</div>
-		);
-	}
+  if (windowOpen || manualOpen) {
+    // TODO: do we want to render the popup even if it's not visible?
+    return (
+      <div className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}>
+        {
+          // this.props.children && this.props.children.props.manuallyOpenPopup &&
+          // <a className="popup-open-button map-floating-control map-bottom-control visible" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong>{l(this.props.children.props.openButtonLabel)}</strong></a>
+        }
+        <div className="popup-content-wrapper">
+          <div className="page-content">
+            <a tabIndex={0} className={`close-button${closeButtonStyle == 'dark' ? '' : closeButtonStyle == 'white' ? ' white' : ' white'}`} onClick={closeButtonClick} onKeyUp={closeButtonKeyUp} />
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return null;
 }

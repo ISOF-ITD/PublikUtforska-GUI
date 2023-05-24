@@ -1,28 +1,31 @@
-import React from 'react';
-import { Route } from 'react-router-dom';
-import routeHelper from './../utils/routeHelper'
+import PropTypes from 'prop-types';
 import SearchBox from './SearchBox';
 import FilterSwitch from './FilterSwitch';
 
-export default function MapMenu(props) {
-  const searchParams = (pathname) => {
-    return routeHelper.createParamsFromSearchRoute(pathname.split(props.match.url)[1]);
+export default function MapMenu({ mode, params, recordsData, loading }) {
+  MapMenu.propTypes = {
+    mode: PropTypes.string,
+    params: PropTypes.object.isRequired,
+    recordsData: PropTypes.object,
+    loading: PropTypes.bool.isRequired,
+  };
+
+  MapMenu.defaultProps = {
+    mode: 'material',
+    recordsData: { data: [], metadata: { } },
   };
 
   return (
-    <Route path={['/places/:place_id([0-9]+)?', '/records/:record_id', '/person/:person_id']}>
-      {(routeProps) => (
-        <div className={`menu-wrapper${props.expanded ? ' menu-expanded' : ''}`}>
-          <FilterSwitch {...routeProps} searchParams={searchParams(routeProps.location.pathname)} />
-          <SearchBox
-		  	{...routeProps}
-			// the search field value does not update when the route changes
-			// so we need to force it to update with the key prop
-			key={routeProps.location.pathname}
-			searchParams={searchParams(routeProps.location.pathname)}
-			expanded={props.expanded} />
-        </div>
-      )}
-    </Route>
+    <div className="menu-wrapper menu-expanded">
+      <FilterSwitch
+        mode={mode}
+      />
+      <SearchBox
+        params={params}
+        mode={mode}
+        recordsData={recordsData}
+        loading={loading}
+      />
+    </div>
   );
 }

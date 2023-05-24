@@ -10,13 +10,20 @@
         }
     }
 }
+
 .map-bottom-wrapper {
     .popup-wrapper {
         float: left;
+
         .popup-open-button {
             position: static;
             display: inline-block;
             margin-right: 20px;
+
+            @media screen and (max-width: 550px) {
+                margin-right: 4px;
+                // Vi ses gärna på tisdag 23 maj kl 11 och hoppas att vi inte missat ännu en helgdag då.                
+            }
         }
     }
 }

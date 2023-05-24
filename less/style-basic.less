@@ -20,8 +20,8 @@
 @import "ui-components/audio-player.less";
 @import "../ISOF-React-modules/less/ui-components/element-notification-message.less";
 @import "../ISOF-React-modules/less/ui-components/popup-notification-message.less";
-@import "../ISOF-React-modules/less/ui-components/share-buttons.less";
-@import "../ISOF-React-modules/less/ui-components/feedback-buttons.less";
+@import "ui-components/share-buttons.less";
+@import "ui-components/feedback-buttons.less";
 @import "ui-components/image-map.less";
 @import "../ISOF-React-modules/less/ui-components/records-list.less";
 
@@ -36,7 +36,7 @@
 // Accessibility
 *:focus {
     opacity: 1 !important;
-    outline: 2px solid #01535d !important;
+    outline: 2px solid #01535d;
 }
 
 // @import "../ISOF-React-modules/less/sitevision.less";
@@ -75,7 +75,7 @@
 @color-lightest-isof: #3FD695;
 //Icke aktiv knapp: (HELST om fungerar)
 //Text alternativfärg (ej standard dvs vanligtvis svart):
-@color-text-contrast-isof: #097C44;
+@color-text-contrast-isof: #005462;
 //Profilfärg
 @color-lighter-isof: #005462;
 //Aktiv knapp + knapp-hover-over: 
@@ -103,10 +103,6 @@
 #Publiceringsdatum + span {
 	display: none;
 }
-.sv-column-6 {
-//    display: none !important;
-}
-
 html, body {
 	height: 100vh;
 	width: 100vw;
@@ -130,6 +126,10 @@ body {
 	background-image: url('../img/loader.gif');
 	background-position: center;
 	background-repeat: no-repeat;
+}
+
+button {
+	font-family: "Source Sans Pro",sans-serif;
 }
 
 .text-small {
@@ -160,19 +160,22 @@ h3 {
 	font-weight: normal;
 }
 
-.isof-app-header {
+.isof-app-footer {
 	padding: 5px 5px !important;
 	//background: @color-darker-isof;
-	background: white;
+	// vit med 75% transparens
+	background: rgba(255, 255, 255, 0.75);
+
 
 	display: inline-flex;
-	// display: inline-block;
+    flex-direction: column;
+    align-items: center;
 	
 	overflow: hidden;
 
 	a {
 		img {
-			height: 3rem;
+			height: 5rem;
 		}
 		// padding: 20px 30px !important;
 
@@ -188,7 +191,7 @@ h3 {
 		overflow: hidden;
 
 		// Center vertically by simple solution margin:
-		margin-top: 10px;
+		// margin-top: 10px;
 		// display: table-cell;
 		// vertical-align: middle;
 	}
@@ -302,24 +305,39 @@ audio::-webkit-media-controls-enclosure {
 	padding-left: 0;
 }
 
+.records-list td.table-buttons {
+	& > a {
+		color: #005462;
+	}
+	& > span {
+		color: #000;
+	}
+	@media screen and (max-width: 550px) {
+		padding: 12px 15px 0 15px;
+		&:last-child {
+			padding-bottom: 15px;
+		}
+	}
+}
+
 .records-list td.table-buttons > a, .records-list td.table-buttons > span {
 	display: inline-block;
 	padding: 2px 5px;
 	margin: 0 5px 5px 0;
 	background: #ffffff;
 	border-radius: 3px;
-	color: #097C44;
+	// color: #005462;
 	font-size: 0.8rem;
 	border: 1px solid whitesmoke;
 	a {
 		margin: 0;
 		padding: 0;
 	}
-	&.year {
-		color: #000;
-	}
+	// span, &.year, &.category {
+	// 	color: #000;
+	// }
 	&.transcriptionstatus {
-		color:#000;
+		// color:#000;
 		&.empty {
 			display: none;
 		}
@@ -341,16 +359,21 @@ audio::-webkit-media-controls-enclosure {
 }
 
 .switcher-help-button {
+    width: 1rem;
 	background: @color-lighter-isof;
+	border-radius: 50%;
+	border: 1px solid white;
 	color: white;
 	cursor: pointer;
-	font-weight: bold;
-	height: 42px;
-	padding: 11px 0 0;
-	// position: absolute;
-	text-align: center;
-	width: 12%;
 	display: inline-block;
+	font-size: 1rem;
+	font-weight: bold;
+	height: 1rem;
+	line-height: 1rem;
+	margin: 0 0.5rem;
+	padding: 0;
+	text-align: center;
+	vertical-align: middle;
 }
 
 .open-sidemenu-button {
@@ -358,12 +381,24 @@ audio::-webkit-media-controls-enclosure {
 	color: white;
 	cursor: pointer;
 	font-weight: bold;
-	height: 42px;
-	padding: 11px 0 0;
+	// height: 45px;
+	padding: 0; //13px 0 0;
 	// position: absolute;
-	text-align: center;
-	width: 12%;
-	display: inline-block;
+	// text-align: center;
+	height: 48px;
+	width: 80px;
+	display: block;
+	float: left;
+	box-sizing: border-box;
+	border: 2px solid @color-lighter-isof;
+	// on hover, the image in the div zooms in a bit
+	// and the background color changes to a darker shade
+	// of green.
+	transition: border-color 0.1s ease-in-out;
+	&:hover {
+		border: 2px solid white;
+		// animate the border color change
+	}	
 }
 
 .subrecords {
@@ -420,6 +455,9 @@ div.display-line-breaks {
 	bottom: 20px;
 	left: 20px;
 	z-index: 1100;
+	@media screen and (max-width: 550px) {
+		left: 0;	
+	}
 }
 
 .map-bottom-control {
@@ -455,6 +493,9 @@ div.display-line-breaks {
 footer .logo {
 	bottom: 20px;
 	right: 10px;
+	@media screen and (max-width: 550px) {
+		right: 0;
+	}
 }
 
 header .logo {
@@ -469,7 +510,7 @@ header .logo, footer .logo {
 	@media (max-width: 550px) {
 		// display: none;
 		top: unset;
-		.isof-app-header {
+		.isof-app-footer {
 			padding: 0 !important;
 			#portal {
 				display: none;
@@ -494,8 +535,6 @@ footer, header {
 
 		z-index: 1100;
 
-		background-color: #fff;
-
 		.transition(top 300ms ease-in-out);
 
 		@media print {
@@ -503,12 +542,6 @@ footer, header {
 			left: 0;
 		}
 
-		@media (max-width: 550px) {
-
-			img {
-				width: 85px !important;
-			}
-		}
 
 		.has-docked-control & {
 			top: 65px;
@@ -633,4 +666,18 @@ footer, header {
 			}
 		}
 	}
+}
+
+.filter-wrapper {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+  
+.filter-wrapper label {
+	margin-left: 10px;
+	@media screen and (max-width: 550px) {
+		font-size: 12px;
+	}	
 }
