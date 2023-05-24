@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 import _ from 'underscore';
 import {
-  Await, useLoaderData, useParams,
+  Await, useLoaderData, useParams, useNavigate,
 } from 'react-router-dom';
 
 import { Suspense } from 'react';
@@ -24,6 +24,19 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
 
   const { results } = useLoaderData();
   const params = useParams();
+  const navigate = useNavigate();
+
+  function validateResults(results) {
+    if (!results) {
+      return false;
+    }
+
+    if (!results.id) {
+      return false;
+    }
+
+    return true;
+  }
 
   return (
     <div className="container">
@@ -31,11 +44,16 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
         <div className="row">
           <Suspense>
             <Await resolve={results}>
-              {(results) => (
-                <div className="twelve columns">
-                  <h2>{results.name && results.name.replace(/ sn$/, ' socken')}</h2>
-                  <p>
-                    {
+              {(results) => {
+                if (!validateResults(results)) {
+                  navigate('/');
+                  return null;
+                }
+                return (
+                  <div className="twelve columns">
+                    <h2>{results.name && results.name.replace(/ sn$/, ' socken')}</h2>
+                    <p>
+                      {
                       results.fylke && (
                         <span>
                           <strong>{l('Fylke')}</strong>
@@ -44,7 +62,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                         </span>
                       )
                     }
-                    {
+                      {
                       !results.fylke && results.harad && (
                         <span>
                           <strong>{l('Härad')}</strong>
@@ -66,8 +84,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                         </span>
                       )
                     }
-                  </p>
-                  {
+                    </p>
+                    {
                     results.comment && (
                       <p>
                         {results.comment}
@@ -75,8 +93,9 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                     )
                   }
 
-                </div>
-              )}
+                  </div>
+                );
+              }}
             </Await>
           </Suspense>
         </div>
