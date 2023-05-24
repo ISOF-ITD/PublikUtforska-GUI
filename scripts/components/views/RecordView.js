@@ -875,7 +875,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 <p>
                   <strong>{l('Acc. nr')}</strong>
                   <br />
-                  {data.archive.archive_id}
+                  {makeArchiveIdHumanReadable(data.archive.archive_id)}
                 </p>
               )
             }
