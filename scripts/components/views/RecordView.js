@@ -393,32 +393,33 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     // Förbereder kategori länk
     let taxonomyElement;
 
-    if (data.taxonomy) {
-      if (data.taxonomy.name) {
-        taxonomyElement = (
-          <p>
-            <strong>{l('Kategori')}</strong>
-            <br />
-            <a href={`#/places/category/${data.taxonomy.category.toLowerCase()}${routeParams || ''}`}>{l(data.taxonomy.name)}</a>
-          </p>
-        );
-      } else if (data.taxonomy.length > 0) {
-        taxonomyElement = (
-          <p>
-            <strong>{l('Kategori')}</strong>
-            <br />
-            <span dangerouslySetInnerHTML={{
-              __html: data.taxonomy.filter(
-                (taxonomyItem) => taxonomyItem.category,
-              ).map(
-                (taxonomyItem) => `<a href="#/places/category/${taxonomyItem.category.toLowerCase()}${routeParams || ''}">${l(taxonomyItem.name)}</a>`,
-              ).join(', '),
-            }}
-            />
-          </p>
-        );
-      }
-    }
+    // Deactivate categories for now
+    // if (data.taxonomy) {
+    //   if (data.taxonomy.name) {
+    //     taxonomyElement = (
+    //       <p>
+    //         <strong>{l('Kategori')}</strong>
+    //         <br />
+    //         <a href={`#/places/category/${data.taxonomy.category.toLowerCase()}${routeParams || ''}`}>{l(data.taxonomy.name)}</a>
+    //       </p>
+    //     );
+    //   } else if (data.taxonomy.length > 0) {
+    //     taxonomyElement = (
+    //       <p>
+    //         <strong>{l('Kategori')}</strong>
+    //         <br />
+    //         <span dangerouslySetInnerHTML={{
+    //           __html: data.taxonomy.filter(
+    //             (taxonomyItem) => taxonomyItem.category,
+    //           ).map(
+    //             (taxonomyItem) => `<a href="#/places/category/${taxonomyItem.category.toLowerCase()}${routeParams || ''}">${l(taxonomyItem.name)}</a>`,
+    //           ).join(', '),
+    //         }}
+    //         />
+    //       </p>
+    //     );
+    //   }
+    // }
 
     // Prepares country for this record
     let country = 'unknown';
