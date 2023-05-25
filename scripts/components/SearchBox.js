@@ -212,8 +212,10 @@ export default function SearchBox({
   };
 
   const filterAndSortSuggestions = (suggestions) => (
+    suggestions
     // filter out suggestions that don't contain the search input value
-    suggestions.filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
+    // why was this here?
+    // .filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
     // sort the suggestions so that the ones that start with the search input value are first
       .sort((a, b) => {
         const aStartsWithSearch = a.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
