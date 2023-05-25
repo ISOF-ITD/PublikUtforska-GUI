@@ -1,10 +1,21 @@
 import { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 import { NavigationContext } from '../NavigationContext';
 
 // Main CSS: ui-components/poupwindow.less
+
+const useNavigationCount = () => {
+  const [navigationCount, setNavigationCount] = useState(0);
+  const location = useLocation();
+
+  useEffect(() => {
+    setNavigationCount((prevCount) => prevCount + 1);
+  }, [location]);
+
+  return navigationCount;
+};
 
 export default function RoutePopupWindow({
   children,
@@ -36,6 +47,8 @@ export default function RoutePopupWindow({
 
   const [windowOpen, setWindowOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+
+  const navigationCount = useNavigationCount();
 
   const navigate = useNavigate();
   const params = useParams();
@@ -79,7 +92,15 @@ export default function RoutePopupWindow({
       }${
         createSearchRoute(createParamsFromSearchRoute(params['*'])).replace(/^\//, '')
       }`;
-      navigate(navigationPath);
+      // Check if a back navigation would navigate out of our app
+      if (window.history.length - 1 > navigationCount) {
+        // It would not, so we can safely use window.history.back()
+        window.history.back();
+      } else {
+        // It would, so we navigate programmatically instead
+        navigate(navigationPath);
+      }
+
       removeLatestFromNavigationHistory();
     } else if (onClose) {
       onClose();
