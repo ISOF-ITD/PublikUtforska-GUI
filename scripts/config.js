@@ -8,13 +8,13 @@ if (ENV !== 'prod') {
 }
 
 const api_url = {
-	'dev': 'http://127.0.0.1:5001/api/es/', //feel free to change according to your local environment
+	'dev': 'https://frigg.isof.se/sagendatabas/api/es/', //feel free to change according to your local environment
 	'test': 'https://frigg-test.isof.se/sagendatabas/api/es/',
 	'prod': 'https://frigg.isof.se/sagendatabas/api/es/',
 }
 
 const rest_api_url = {
-	'dev': 'http://127.0.0.1:5001/api/', //feel free to change according to your local environment
+	'dev': 'https://frigg.isof.se/sagendatabas/api/', //feel free to change according to your local environment
 	'test': 'https://frigg-test.isof.se/sagendatabas/api/',
 	'prod': 'https://frigg.isof.se/sagendatabas/api/',
 }
