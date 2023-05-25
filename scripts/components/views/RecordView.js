@@ -114,6 +114,10 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         );
       });
     }
+    // on unnount, set the document title back to the site title
+    return () => {
+      document.title = config.siteTitle;
+    };
   }, []);
 
   // componentDidUpdate(prevProps, prevState) {

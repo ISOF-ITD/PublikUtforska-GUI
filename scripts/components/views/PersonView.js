@@ -31,6 +31,11 @@ export default function PersonView({ mode }) {
     document.title = `${name} - ${config.siteTitle}`;
   }, [name]);
 
+  // on unnount, set the document title back to the site title
+  useEffect(() => () => {
+    document.title = config.siteTitle;
+  }, []);
+
   // Prepare person county/region:
   let personCounty = '';
   if (places) {

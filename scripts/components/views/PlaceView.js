@@ -4,12 +4,13 @@ import {
   Await, useLoaderData, useParams, useNavigate,
 } from 'react-router-dom';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import RecordList from './RecordList';
 import SimpleMap from './SimpleMap';
 
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
+import config from '../../config';
 
 export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
   PlaceView.propTypes = {
@@ -38,6 +39,11 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
     return true;
   }
 
+  // on unnount, set the document title back to the site title
+  useEffect(() => () => {
+    document.title = config.siteTitle;
+  }, []);
+
   return (
     <div className="container">
       <div className="container-header">
@@ -45,6 +51,9 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
           <Suspense>
             <Await resolve={results}>
               {(results) => {
+                if (results.name) {
+                  document.title = `${results.name} - ${config.siteTitle}`;
+                }
                 if (!validateResults(results)) {
                   navigate('/');
                   return null;
