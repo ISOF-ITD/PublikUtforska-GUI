@@ -44,6 +44,7 @@ export default function RoutePopupWindow({
     previousNavigation,
     addToNavigationHistory,
     removeLatestFromNavigationHistory,
+    clearNavigationHistory,
   } = useContext(NavigationContext);
 
   useEffect(() => {
@@ -59,6 +60,9 @@ export default function RoutePopupWindow({
       );
     }
   }, [params.recordId, params.placeId, params.personId]);
+
+  // on unmount, clear navigation history
+  useEffect(() => () => clearNavigationHistory(), []);
 
   const closeButtonClick = () => {
     if (children.props.manuallyOpenPopup || manuallyOpenPopup) {

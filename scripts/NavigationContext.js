@@ -21,11 +21,17 @@ function NavigationContextProvider({ children }) {
     setNavigationHistory(navigationHistory.slice(0, -2));
   };
 
+  const clearNavigationHistory = () => {
+    setNavigationHistory([]);
+  };
+
   const memo = useMemo(() => ({
     previousNavigation,
     addToNavigationHistory,
     removeLatestFromNavigationHistory,
+    clearNavigationHistory,
   }), [navigationHistory]);
+
   return (
     <NavigationContext.Provider value={memo}>
       {children}
