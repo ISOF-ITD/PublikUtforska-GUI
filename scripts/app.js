@@ -121,7 +121,7 @@ function createRootRoute() {
       });
     },
     id: 'root',
-    element: <Application mode="material" hasFilter openSwitcherHelptext={openSwitcherHelptext} />,
+    element: <Application mode="material" openSwitcherHelptext={openSwitcherHelptext} />,
     children: createPopupRoutes(''),
   };
 }
@@ -140,7 +140,7 @@ function createTranscribeRoute() {
       });
     },
     id: 'transcribe-root',
-    element: <Application mode="transcribe" hasFilter={false} />,
+    element: <Application mode="transcribe" />,
     children: createPopupRoutes('transcribe-'),
   };
 }

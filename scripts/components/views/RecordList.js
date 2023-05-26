@@ -10,7 +10,12 @@ import RecordListItem from './RecordListItem';
 import config from '../../config';
 import { createSearchRoute } from '../../utils/routeHelper';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileLines } from '@fortawesome/free-solid-svg-icons';
+import PdfGif from '../../../img/pdf.gif';
+
 import L from '../../../ISOF-React-modules/lang/Lang';
+import _ from 'underscore';
 
 const l = L.get;
 
@@ -18,8 +23,10 @@ export default function RecordList({
   columns,
   disableListPagination,
   disableRouterPagination,
+  hasFilter,
   highlightRecordsWithMetadataField,
   interval,
+  openSwitcherHelptext,
   sizeMore,
   tableClass,
   params,
@@ -32,10 +39,12 @@ export default function RecordList({
     columns: PropTypes.arrayOf(PropTypes.string),
     disableListPagination: PropTypes.bool,
     disableRouterPagination: PropTypes.bool,
+    hasFilter: PropTypes.bool,
     highlightRecordsWithMetadataField: PropTypes.string,
     interval: PropTypes.number,
     // searchParams: PropTypes.objectOf(PropTypes.any),
     // siteSearchParams: PropTypes.objectOf(PropTypes.any),
+    openSwitcherHelptext: PropTypes.func.isRequired,
     sizeMore: PropTypes.number,
     tableClass: PropTypes.string,
     params: PropTypes.objectOf(PropTypes.any),
@@ -47,6 +56,7 @@ export default function RecordList({
     columns: null,
     disableListPagination: false,
     disableRouterPagination: true,
+    hasFilter: true,
     highlightRecordsWithMetadataField: null,
     interval: null,
     // searchParams: null,
@@ -70,6 +80,14 @@ export default function RecordList({
   const [total, setTotal] = useState(0);
   // const [totalRelation, setTotalRelation] = useState('eq');
   const [totalPrefix, setTotalPrefix] = useState('');
+  const [filter, setFilter] = useState('');
+
+  const uniqueId = _.uniqueId();
+
+  const handleFilterChange = (event) => {
+    setFilter(event.target.value);
+    setCurrentPage(1);
+  };
 
   const collections = new RecordsCollection((json) => {
     if (window.eventBus) {
@@ -129,7 +147,7 @@ export default function RecordList({
       has_media: params.has_media || undefined,
       has_transcribed_records: params.has_transcribed_records || undefined,
       has_untranscribed_records: params.has_untranscribed_records || undefined,
-      recordtype: params.recordtype || undefined,
+      recordtype: params.recordtype || (mode === 'transcribe' ? 'one_accession_row' : (filter || null)),
       person_id: params.person_id || undefined,
       socken_id: params.place_id || undefined,
       transcriptionstatus: params.transcriptionstatus || undefined,
@@ -167,7 +185,7 @@ export default function RecordList({
 
   useEffect(() => {
     fetchData(params);
-  }, [params, currentPage, sort, order]);
+  }, [params, currentPage, sort, order, filter]);
 
   useEffect(() => {
     const newSearchParams = { ...params, size: sizeMore };
@@ -225,7 +243,6 @@ export default function RecordList({
     (total > 2 || fetchingPage)
     && (
       <div className="list-pagination">
-        <hr />
         <p className="page-info"><strong>{`${l('Visar')} ${(currentPage * config.hitsPerPage) - (config.hitsPerPage - 1)}-${currentPage * config.hitsPerPage > total ? total : currentPage * config.hitsPerPage} ${l(total ? 'av' : '')}${l(totalPrefix || '')} ${total || ''}`}</strong></p>
         <br />
         {
@@ -269,8 +286,32 @@ export default function RecordList({
     />
   )) : [];
 
-  if (records) {
+  
     return (
+      <>{
+        hasFilter
+        && (
+        <div className="filter-wrapper">
+          <label htmlFor={`all-filter-${uniqueId}`}>
+            <input type="radio" name={`filter-${uniqueId}`} value="" checked={filter === ''} onChange={handleFilterChange} id={`all-filter-${uniqueId}`} />
+            Allt
+          </label>
+          <label htmlFor={`one-accession-row-filter-${uniqueId}`}>
+            <input type="radio" name={`filter-${uniqueId}`} value="one_accession_row" checked={filter === 'one_accession_row'} onChange={handleFilterChange} id={`one-accession-row-filter-${uniqueId}`} />
+            <sub><img src={PdfGif} style={{ marginRight: 5 }} alt="pdf" title="Accession" /></sub>
+            Accessioner
+          </label>
+          <label htmlFor={`one-record-filter-${uniqueId}`}>
+            <input type="radio" name={`filter-${uniqueId}`} value="one_record" checked={filter === 'one_record'} onChange={handleFilterChange} id={`one-record-filter-${uniqueId}`} />
+            <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
+            Uppteckningar
+          </label>
+          <span className="switcher-help-button" onClick={openSwitcherHelptext} title="Om accessioner och uppteckningar">?</span>
+        </div>
+        )
+      }
+      {
+        !fetchingPage &&
       <div className={
         `${tableClass ?? ''
         } table-wrapper records-list list-container${records.length == 0 ? ' loading' : fetchingPage ? ' loading-page' : ''}`
@@ -391,12 +432,18 @@ export default function RecordList({
 
         }
       </div>
-    );
-  }
-
-  return (
+}
+{
+  fetchingPage && (
+    <p className="page-info"><strong>Söker...</strong></p>
+  )
+}
+{
+  !fetchingPage && records.length === 0 && (
     <div className="table-wrapper list-container">
-      <h3>{l('Inga sökträffar.')}</h3>
-    </div>
-  );
+       <h3>{l('Inga sökträffar.')}</h3>
+     </div>)
+}
+      </>
+    );
 }

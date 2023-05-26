@@ -151,6 +151,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                         transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
                       }}
                       mode={mode}
+                      hasFilter={mode === 'transcribe' ? false : true}
                     />
                   </div>
                 </div>
@@ -187,6 +188,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                       transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
                     }}
                     mode={mode}
+                    hasFilter={mode === 'transcribe' ? false : true}
+                    // add a random id to be able to have the same form twice on the same page
                   />
                 </div>
               </div>

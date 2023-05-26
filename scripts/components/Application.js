@@ -29,19 +29,16 @@ import Lang from '../../ISOF-React-modules/lang/Lang';
 const l = Lang.get;
 
 export default function Application({
-  children, mode, hasFilter, openSwitcherHelptext,
+  children, mode, openSwitcherHelptext,
 }) {
   Application.propTypes = {
     children: PropTypes.node.isRequired,
     mode: PropTypes.string,
-    // hasFilter: if true, the RecordListWrapper will have a filter for recordtype
-    hasFilter: PropTypes.bool,
     openSwitcherHelptext: PropTypes.func.isRequired,
   };
 
   Application.defaultProps = {
     mode: 'material',
-    hasFilter: false,
   };
 
   window.eventBus = EventBus;
@@ -97,7 +94,6 @@ export default function Application({
           openButtonLabel="Visa sökträffar som lista"
           disableRouterPagination
           mode={mode}
-          hasFilter={hasFilter}
           openSwitcherHelptext={openSwitcherHelptext}
         />
       </RoutePopupWindow>

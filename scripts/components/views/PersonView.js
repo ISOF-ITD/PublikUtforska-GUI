@@ -159,6 +159,7 @@ export default function PersonView({ mode }) {
               transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
             }}
             mode={mode}
+            hasFilter={mode === 'transcribe' ? false : true}
           />
         </div>
       </div>

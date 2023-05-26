@@ -142,6 +142,7 @@ export default function StatisticsOverlay() {
                       sizeMore={50}
                         // interval is 60 sec, if visible is true and the web browser is in focus
                       interval={visible ? 60000 : null}
+                      hasFilter={false}
                     />
                     )}
       </div>

@@ -779,6 +779,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                   }}
                   useRouteParams
                   mode={mode}
+                  hasFilter={false}
                 />
 
               </div>
