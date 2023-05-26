@@ -62,7 +62,7 @@ export default class SimpleMap extends React.Component {
 			this.removeMarkers();
 		}
 
-		if (markerData && ((markerData.lat && markerData.lng) || (markerData.location && markerData.location.lat && markerData.location.lon))) {
+		if (this.mapView.current && markerData && ((markerData.lat && markerData.lng) || (markerData.location && markerData.location.lat && markerData.location.lon))) {
 			var animateMap = this.props.animate;
 
 			if (this.marker && !allowMultiple) {
