@@ -12,7 +12,7 @@ export default function StatisticsOverlay() {
     size: 10,
     recordtype: 'one_record',
     transcriptionstatus: 'published',
-    sort: 'transcriptiondate', // 'approvedate',
+    sort: 'changedate', //'transcriptiondate', // 'approvedate',
     order: 'desc',
   };
 
