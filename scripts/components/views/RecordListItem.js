@@ -107,7 +107,7 @@ export default function RecordListItem({
       const transcribedOneRecordParams = {
         search: id,
         recordtype: 'one_record',
-        transcriptionstatus: 'published',
+        transcriptionstatus: 'published,transcribed',
       };
       fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
       fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
