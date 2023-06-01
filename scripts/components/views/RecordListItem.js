@@ -38,6 +38,7 @@ export default function RecordListItem({
       transcriptiontype,
       year,
     },
+    highlight,
   },
   searchParams,
   // useRouteParams: use the route params instead of the search params for the link
@@ -439,6 +440,38 @@ export default function RecordListItem({
             {
               displayTextSummary
               && <div className="item-summary">{textSummary}</div>
+            }
+            {
+              highlight?.text &&
+              // for every item in highlight.text, create a new div that contains the highlighted text
+              // look for <span class="highlight"> in each of those items and only show the closest content
+              // which is 100 characters before and after the highlight. If we needed to cut the text, add
+              // an ellipsis at the end or beginning.
+              highlight.text.map((item, i) => {
+                const highlightIndex = item.indexOf('<span class="highlight">');
+                const highlightEndIndex = item.indexOf('</span>');
+                let startIndex = highlightIndex - 60;
+                let endIndex = highlightEndIndex + 60;
+                if (startIndex < 0) {
+                  startIndex = 0;
+                }
+                if (endIndex > item.length) {
+                  endIndex = item.length;
+                }
+                let text = item.substring(startIndex, endIndex);
+                if (startIndex > 0) {
+                  text = `...${text}`;
+                }
+                if (endIndex < item.length) {
+                  text = `${text}...`;
+                }
+                return (
+                  <div key={`highlight-${i}`} className="item-summary record-text small">
+                    <span dangerouslySetInnerHTML={{ __html: text }} />
+                  </div>
+                );
+              }
+              )
             }
             {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
             {transcriptionstatus === 'readytotranscribe' && media.length > 0
