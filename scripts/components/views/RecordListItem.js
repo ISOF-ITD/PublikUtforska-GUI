@@ -232,39 +232,39 @@ export default function RecordListItem({
         )}
       {
         visibleSubrecords && (
-        <ul>
-          {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((subItem, index) => {
-            const published = subItem._source.transcriptionstatus === 'published';
-            return (
-              <li key={`subitem${subItem._source.id}`}>
-                <small>
-                  <a
-                    style={{ fontWeight: published ? 'bold' : '' }}
-                    href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
-                      {
-                        search: searchParams.search,
-                        search_field: searchParams.search_field,
-                      },
-                    )}`}
-                  >
-                    Sida
-                    {' '}
-                    {pageFromTo(subItem)}
-                    {/* {published && `: ${subItem._source.title}`} */}
-                    {/* if published, show the title, if not published,
+          <ul>
+            {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((subItem, index) => {
+              const published = subItem._source.transcriptionstatus === 'published';
+              return (
+                <li key={`subitem${subItem._source.id}`}>
+                  <small>
+                    <a
+                      style={{ fontWeight: published ? 'bold' : '' }}
+                      href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
+                        {
+                          search: searchParams.search,
+                          search_field: searchParams.search_field,
+                        },
+                      )}`}
+                    >
+                      Sida
+                      {' '}
+                      {pageFromTo(subItem)}
+                      {/* {published && `: ${subItem._source.title}`} */}
+                      {/* if published, show the title, if not published,
                     but title exists, show title but add "ej transkriberad"
                     in brackets after the title */}
-                    {published && `: ${subItem._source.title}`}
-                    {!published && subItem._source.title && `: ${subItem._source.title} (ej avskriven)`}
-                  </a>
-                </small>
+                      {published && `: ${subItem._source.title}`}
+                      {!published && subItem._source.title && `: ${subItem._source.title} (ej avskriven)`}
+                    </a>
+                  </small>
 
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
         )
-    }
+      }
     </div>
   );
 
@@ -441,45 +441,66 @@ export default function RecordListItem({
               displayTextSummary
               && <div className="item-summary">{textSummary}</div>
             }
-            {/* 
-              This component extracts text surrounding a highlighted <span> element. 
-              It looks for a <span> with the class 'highlight' and extracts the span 
-              plus 60 characters before and after it. The result is inserted into a <div> 
-              element with the class 'item-summary record-text small'. 
-              Ellipsis are only added if characters were removed. 
-            */}
+            {/*
+This component extracts text surrounding a highlighted <span> element.
+It looks for a <span> with the class 'highlight' and extracts the span
+plus 60 characters before and after it. The result is inserted into a <div>
+element with the class 'item-summary record-text small'.
+Ellipsis are only added if characters were removed.
+The highlighted text is kept within a span with the class 'highlight'.
+*/}
             {
-              highlight?.text && highlight.text.map(text => {
-                // Create a regex to find all <span> with the class "highlight"
-                let regex = /(<span class="highlight">.*?<\/span>)/g;
-              
-                // Find all matches in the input text
-                let matches = text.match(regex);
-              
-                return matches?.map((match, i) => {
-                  // Find the index of the match in the input text
-                  let matchIndex = text.indexOf(match);
-              
-                  // Extract 60 characters before and after the match
-                  let beforeStartIndex = Math.max(0, matchIndex - 60);
-                  let before = text.substring(beforeStartIndex, matchIndex);
-                  let afterEndIndex = matchIndex + match.length + 60;
-                  let after = text.substring(matchIndex + match.length, afterEndIndex);
-              
+              highlight?.text && (() => {
+                // Parse the HTML string to a document
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(highlight.text[0], 'text/html');
+
+                // Get all the highlighted span elements
+                const spans = Array.from(doc.querySelectorAll('span.highlight'));
+
+                // Function to get surrounding text of an element
+                function getSurroundingText(element, n) {
+                  const parent = element.parentNode;
+                  const index = Array.from(parent.childNodes).indexOf(element);
+
+                  let beforeText = ''; let
+                    afterText = '';
+
+                  // Find the text before the element
+                  for (let i = index - 1; i >= 0 && beforeText.length < n; i--) {
+                    const node = parent.childNodes[i];
+                    beforeText = node.textContent + beforeText;
+                  }
+
+                  // Find the text after the element
+                  for (let i = index + 1; i < parent.childNodes.length && afterText.length < n; i++) {
+                    const node = parent.childNodes[i];
+                    afterText += node.textContent;
+                  }
+
+                  beforeText = beforeText.slice(-n);
+                  afterText = afterText.slice(0, n);
+
                   // Add ellipsis if characters were removed
-                  before = beforeStartIndex > 0 ? '...' + before : before;
-                  after = afterEndIndex < text.length ? after + '...' : after;
-              
-                  // Return a div containing the match and surrounding text
+                  beforeText = beforeText.length >= n ? `...${beforeText}` : beforeText;
+                  afterText = afterText.length >= n ? `${afterText}...` : afterText;
+
+                  return beforeText + element.outerHTML + afterText;
+                }
+
+                return spans.map((span, i) => {
+                  // Get 60 characters before and after the span
+                  const surroundingText = getSurroundingText(span, 60);
+
                   return (
                     <div
                       key={i}
                       className="item-summary record-text small"
-                      dangerouslySetInnerHTML={{ __html: before + match + after }}
+                      dangerouslySetInnerHTML={{ __html: surroundingText }}
                     />
                   );
                 });
-              })
+              })()
             }
 
             {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
