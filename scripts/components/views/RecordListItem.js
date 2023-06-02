@@ -441,38 +441,47 @@ export default function RecordListItem({
               displayTextSummary
               && <div className="item-summary">{textSummary}</div>
             }
+            {/* 
+              This component extracts text surrounding a highlighted <span> element. 
+              It looks for a <span> with the class 'highlight' and extracts the span 
+              plus 60 characters before and after it. The result is inserted into a <div> 
+              element with the class 'item-summary record-text small'. 
+              Ellipsis are only added if characters were removed. 
+            */}
             {
-              highlight?.text &&
-              // for every item in highlight.text, create a new div that contains the highlighted text
-              // look for <span class="highlight"> in each of those items and only show the closest content
-              // which is 100 characters before and after the highlight. If we needed to cut the text, add
-              // an ellipsis at the end or beginning.
-              highlight.text.map((item, i) => {
-                const highlightIndex = item.indexOf('<span class="highlight">');
-                const highlightEndIndex = item.indexOf('</span>');
-                let startIndex = highlightIndex - 60;
-                let endIndex = highlightEndIndex + 60;
-                if (startIndex < 0) {
-                  startIndex = 0;
-                }
-                if (endIndex > item.length) {
-                  endIndex = item.length;
-                }
-                let text = item.substring(startIndex, endIndex);
-                if (startIndex > 0) {
-                  text = `...${text}`;
-                }
-                if (endIndex < item.length) {
-                  text = `${text}...`;
-                }
-                return (
-                  <div key={`highlight-${i}`} className="item-summary record-text small">
-                    <span dangerouslySetInnerHTML={{ __html: text }} />
-                  </div>
-                );
-              }
-              )
+              highlight?.text && highlight.text.map(text => {
+                // Create a regex to find all <span> with the class "highlight"
+                let regex = /(<span class="highlight">.*?<\/span>)/g;
+              
+                // Find all matches in the input text
+                let matches = text.match(regex);
+              
+                return matches?.map((match, i) => {
+                  // Find the index of the match in the input text
+                  let matchIndex = text.indexOf(match);
+              
+                  // Extract 60 characters before and after the match
+                  let beforeStartIndex = Math.max(0, matchIndex - 60);
+                  let before = text.substring(beforeStartIndex, matchIndex);
+                  let afterEndIndex = matchIndex + match.length + 60;
+                  let after = text.substring(matchIndex + match.length, afterEndIndex);
+              
+                  // Add ellipsis if characters were removed
+                  before = beforeStartIndex > 0 ? '...' + before : before;
+                  after = afterEndIndex < text.length ? after + '...' : after;
+              
+                  // Return a div containing the match and surrounding text
+                  return (
+                    <div
+                      key={i}
+                      className="item-summary record-text small"
+                      dangerouslySetInnerHTML={{ __html: before + match + after }}
+                    />
+                  );
+                });
+              })
             }
+
             {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
             {transcriptionstatus === 'readytotranscribe' && media.length > 0
               && (
