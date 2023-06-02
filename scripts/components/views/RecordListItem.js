@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
 import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
-import HighlightedText from './../HighlightedText';
+import HighlightedText from '../HighlightedText';
 
 import config from '../../config';
 
@@ -445,9 +445,6 @@ export default function RecordListItem({
             {
               highlight?.text?.[0] && <HighlightedText text={highlight.text[0]} surroundingCharsForHighlights={60} />
             }
-
-
-
 
             {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
             {transcriptionstatus === 'readytotranscribe' && media.length > 0
