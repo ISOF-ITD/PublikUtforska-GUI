@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
 import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
+import HighlightedText from './../HighlightedText';
 
 import config from '../../config';
 
@@ -441,67 +442,12 @@ export default function RecordListItem({
               displayTextSummary
               && <div className="item-summary">{textSummary}</div>
             }
-            {/*
-This component extracts text surrounding a highlighted <span> element.
-It looks for a <span> with the class 'highlight' and extracts the span
-plus 60 characters before and after it. The result is inserted into a <div>
-element with the class 'item-summary record-text small'.
-Ellipsis are only added if characters were removed.
-The highlighted text is kept within a span with the class 'highlight'.
-*/}
             {
-              highlight?.text && (() => {
-                // Parse the HTML string to a document
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(highlight.text[0], 'text/html');
-
-                // Get all the highlighted span elements
-                const spans = Array.from(doc.querySelectorAll('span.highlight'));
-
-                // Function to get surrounding text of an element
-                function getSurroundingText(element, n) {
-                  const parent = element.parentNode;
-                  const index = Array.from(parent.childNodes).indexOf(element);
-
-                  let beforeText = ''; let
-                    afterText = '';
-
-                  // Find the text before the element
-                  for (let i = index - 1; i >= 0 && beforeText.length < n; i--) {
-                    const node = parent.childNodes[i];
-                    beforeText = node.textContent + beforeText;
-                  }
-
-                  // Find the text after the element
-                  for (let i = index + 1; i < parent.childNodes.length && afterText.length < n; i++) {
-                    const node = parent.childNodes[i];
-                    afterText += node.textContent;
-                  }
-
-                  beforeText = beforeText.slice(-n);
-                  afterText = afterText.slice(0, n);
-
-                  // Add ellipsis if characters were removed
-                  beforeText = beforeText.length >= n ? `...${beforeText}` : beforeText;
-                  afterText = afterText.length >= n ? `${afterText}...` : afterText;
-
-                  return beforeText + element.outerHTML + afterText;
-                }
-
-                return spans.map((span, i) => {
-                  // Get 60 characters before and after the span
-                  const surroundingText = getSurroundingText(span, 60);
-
-                  return (
-                    <div
-                      key={i}
-                      className="item-summary record-text small"
-                      dangerouslySetInnerHTML={{ __html: surroundingText }}
-                    />
-                  );
-                });
-              })()
+              highlight?.text?.[0] && <HighlightedText text={highlight.text[0]} surroundingCharsForHighlights={60} />
             }
+
+
+
 
             {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
             {transcriptionstatus === 'readytotranscribe' && media.length > 0
