@@ -63,6 +63,7 @@ export function getRecordsFetchLocation(params = {}) {
         delete queryParams.search;
       }
       delete queryParams.search_field;
+      queryParams.search = queryParams.search ? encodeURIComponent(queryParams.search) : undefined;
     }
 
     Object.keys(queryParams).forEach((key) => {

@@ -12,6 +12,7 @@ import {
   getRecordFetchLocation,
   getRecordsCountLocation,
   getPersonFetchLocation,
+  getRecordsFetchLocation,
 } from './utils/helpers';
 
 import '../less/style-basic.less';
@@ -39,7 +40,14 @@ function fetchPlace(placeId) {
   return fetch(getPlaceFetchLocation(placeId)).then((resp) => resp.json());
 }
 
-function fetchRecord(recordId) {
+function fetchRecord(recordId, searchValue = null) {
+  // if there is a search value, we use the search endpoint because it will return highlighted text also
+  if (searchValue) {
+    console.log("searchValue", searchValue)
+    return fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }));
+  }
+  // otherwise we use the document endpoint, which will only return the document without
+  // performing a search
   return fetch(getRecordFetchLocation(recordId));
 }
 
@@ -76,7 +84,7 @@ function createPopupRoutes(prefix) {
     {
       path: 'records/:recordId/*?',
       id: `${prefix}record`,
-      loader: async ({ params: { recordId } }) => fetchRecord(recordId),
+      loader: async ({ params: { recordId, '*': star } }) => fetchRecord(recordId, createParamsFromSearchRoute(star).search),
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
@@ -85,7 +93,7 @@ function createPopupRoutes(prefix) {
           }}
           routeId={`${prefix}record`}
         >
-          <RecordView mode={prefix.slice(0, -1) || 'material'} openSwitcherHelptext={openSwitcherHelptext}/>
+          <RecordView mode={prefix.slice(0, -1) || 'material'} openSwitcherHelptext={openSwitcherHelptext} />
         </RoutePopupWindow>
       ),
     },

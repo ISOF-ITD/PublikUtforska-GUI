@@ -45,37 +45,20 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   const params = useParams();
   const navigate = useNavigate();
 
-  // const params = useParams();
-
-  // const [data, setData] = useState({});
   const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
+  const [highlight, setHighlight] = useState(true);
 
-  const { _source: data } = useLoaderData();
-
-  // const url = `${config.apiUrl}document/`;
+  const loaderData = useLoaderData();
+  // the data is either in the _source property (if we used getRecordFetchLocation)
+  // or in the data property (if we used getRecordsFetchLocation)
+  // see app.js
+  const data = loaderData._source || loaderData.data[0]._source;
+  const highlightedText = loaderData.data?.[0]?.highlight?.text?.[0];
 
   const collections = new RecordsCollection((json) => {
     setSubrecords(json.data);
   });
-
-  // const fetchData = (fetchParams) => {
-  //   // Add index to callback if defined in config.
-  //   let index = '';
-  //   if ('requiredParams' in config && 'index' in config.requiredParams) {
-  //     index = `?index=${config.requiredParams.index}`;
-  //   }
-  //   if (fetchParams.record_id) {
-  //     fetch(`${url + fetchParams.record_id}/${index}`)
-  //       .then((response) => response.json()).then((json) => {
-  //         setData(json._source);
-  //         setSaved(localLibrary.find({
-  //           id: json._id,
-  //         }));
-  //       }).catch(() => {
-  //       });
-  //   }
-  // };
 
   const fetchSubrecords = () => {
     const fetchParams = {
@@ -350,7 +333,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         // Set the forceFullWidth variable to true
         forceFullWidth = true;
       }
-      let { text } = data;
+      let text = (highlight && highlightedText) || data.text;
       // create a button/label to hide and show text below "Uppslagsord"
       if (text?.includes('<p>Uppslagsord:</p>')) {
         const uppslagsordLink = '<p><label for="toggle">Uppslagsord</label></p>';
@@ -617,7 +600,22 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             && (
               <div className={`${sitevisionUrl || imageItems.length === 0 || forceFullWidth || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
                 {
-                  textElement
+                  <>
+                    {textElement}
+                    {/* add a switch that toggles the state variable highlight */}
+                    {highlightedText
+                    && (
+                      <label htmlFor="highlight">
+                        <input
+                          type="checkbox"
+                          id="highlight"
+                          checked={highlight}
+                          onChange={() => setHighlight(!highlight)}
+                        />
+                        <span style={{ marginLeft: 10 }}>Markera sökord</span>
+                      </label>
+                    )}
+                  </>
                 }
 
                 {
