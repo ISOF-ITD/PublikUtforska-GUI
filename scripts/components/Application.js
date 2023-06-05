@@ -11,7 +11,7 @@ import RecordListWrapper from './views/RecordListWrapper';
 import StatisticsOverlay from './StatisticsOverlay';
 import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
-import ContributeInfoOverlay from '../../ISOF-React-modules/components/views/ContributeInfoOverlay';
+import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from '../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
 import PopupNotificationMessage from '../../ISOF-React-modules/components/controls/PopupNotificationMessage';
