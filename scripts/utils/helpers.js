@@ -30,7 +30,7 @@ export function getTitle(title, contents) {
 export function makeArchiveIdHumanReadable(str) {
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
   // och andra delen som är en siffra (0 eller flera siffror)
-  const [letterPart, numberPart = ''] = str.match(/^(\D*)(\d+)?/).slice(1);
+  const [letterPart, numberPart = ''] = str.match(/^(\D*)([0-9:]+)?/).slice(1);
 
   // Stora bokstäver för den första delen och ta bort alla nollor i början av den andra delen
   const parts = [
