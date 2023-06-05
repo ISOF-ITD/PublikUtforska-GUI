@@ -17,7 +17,7 @@ import {
 
 import '../less/style-basic.less';
 import { createParamsFromSearchRoute } from './utils/routeHelper';
-import Lang from '../ISOF-React-modules/lang/Lang';
+import Lang from './lang/Lang';
 import NavigationContextProvider from './NavigationContext';
 
 function initializeLanguage() {

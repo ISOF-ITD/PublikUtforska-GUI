@@ -24,7 +24,7 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 
 import config from '../config';
 
-import Lang from '../../ISOF-React-modules/lang/Lang';
+import Lang from '../lang/Lang';
 
 const l = Lang.get;
 

@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import PdfGif from '../../../img/pdf.gif';
 
-import L from '../../../ISOF-React-modules/lang/Lang';
+import L from '../../lang/Lang';
 import _ from 'underscore';
 
 const l = L.get;

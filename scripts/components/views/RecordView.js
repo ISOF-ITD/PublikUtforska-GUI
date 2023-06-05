@@ -27,7 +27,7 @@ import RecordsCollection from '../../../ISOF-React-modules/components/collection
 import archiveLogoIsof from '../../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../../img/archive-logo-ikos.png';
 
-import Lang from '../../../ISOF-React-modules/lang/Lang';
+import Lang from '../../lang/Lang';
 import RecordList from './RecordList';
 
 const l = Lang.get;
