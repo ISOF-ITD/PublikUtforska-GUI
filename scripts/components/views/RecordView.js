@@ -17,7 +17,7 @@ import FeedbackButton from '../../../ISOF-React-modules/components/views/Feedbac
 import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
 import ElementNotificationMessage from '../../../ISOF-React-modules/components/controls/ElementNotificationMessage';
 import SitevisionContent from '../../../ISOF-React-modules/components/controls/SitevisionContent';
-import PdfViewer from '../../../ISOF-React-modules/components/controls/PdfViewer';
+import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
 import { getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
