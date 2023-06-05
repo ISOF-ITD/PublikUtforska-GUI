@@ -41,14 +41,18 @@ function fetchPlace(placeId) {
 }
 
 function fetchRecord(recordId, searchValue = null) {
-  // if there is a search value, we use the search endpoint because it will return highlighted text also
+  // if there is a search value, we use both the search and the document endpoint because
+  // the search endpoint it will return highlighted text also
   if (searchValue) {
-    console.log("searchValue", searchValue)
-    return fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }));
+    const recordsPromise = fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }))
+      .then((resp) => resp.json());
+    const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
+    return Promise.all([recordsPromise, recordPromise]);
   }
   // otherwise we use the document endpoint, which will only return the document without
   // performing a search
-  return fetch(getRecordFetchLocation(recordId));
+  const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
+  return Promise.all([recordPromise]);
 }
 
 function fetchPerson(personId) {

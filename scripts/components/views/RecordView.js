@@ -55,8 +55,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   // the data is either in the _source property (if we used getRecordFetchLocation)
   // or in the data property (if we used getRecordsFetchLocation)
   // see app.js
-  const data = loaderData._source || loaderData.data[0]._source;
-  const highlightedText = loaderData.data?.[0]?.highlight?.text?.[0];
+  const data = loaderData[0]?.data?.[0]?._source || loaderData[1]?._source || loaderData[0]?._source;
+  const highlightedText = loaderData[0]?.data?.[0]?.highlight?.text?.[0];
 
   const collections = new RecordsCollection((json) => {
     setSubrecords(json.data);
