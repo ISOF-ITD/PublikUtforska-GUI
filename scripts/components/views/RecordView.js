@@ -11,8 +11,8 @@ import ShareButtons from '../../../ISOF-React-modules/components/controls/ShareB
 import SimpleMap from './SimpleMap';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
 
-import ContributeInfoButton from '../../../ISOF-React-modules/components/views/ContributeInfoButton';
-import FeedbackButton from '../../../ISOF-React-modules/components/views/FeedbackButton';
+import ContributeInfoButton from './ContributeInfoButton';
+import FeedbackButton from './FeedbackButton';
 
 import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
 import ElementNotificationMessage from '../../../ISOF-React-modules/components/controls/ElementNotificationMessage';
@@ -48,6 +48,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
+
+  const location = useLocation();
 
   const loaderData = useLoaderData();
   // the data is either in the _source property (if we used getRecordFetchLocation)
@@ -195,7 +197,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   let audioItems = [];
 
   const routeParams = createSearchRoute(
-    createParamsFromRecordRoute(useLocation().pathname),
+    createParamsFromRecordRoute(location.pathname),
   );
 
   if (data) {
@@ -585,11 +587,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
 
           {
             !config.siteOptions.hideContactButton
-            && <FeedbackButton title={data.title} type="Uppteckning" country={country} location={useLocation()} />
+            && <FeedbackButton title={data.title} type="Uppteckning" country={country} location={location} />
           }
           {
             !config.siteOptions.hideContactButton
-            && <ContributeInfoButton title={data.title} type="Uppteckning" country={country} id={data.id} location={useLocation()} />
+            && <ContributeInfoButton title={data.title} type="Uppteckning" country={country} id={data.id} location={location} />
           }
         </div>
 

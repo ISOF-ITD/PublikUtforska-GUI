@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import config from '../../config.js';
-import PdfViewer from '../controls/PdfViewer';
+import { useState, useEffect } from 'react';
+import config from '../../config';
+import PdfViewer from '../PdfViewer';
 
 // Main CSS: ui-components/overlay.less
 

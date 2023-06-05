@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useLoaderData, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import ContributeInfoButton from './ContributeInfoButton';
 import SimpleMap from './SimpleMap';
 import RecordList from './RecordList';
-import ContributeInfoButton from '../../../ISOF-React-modules/components/views/ContributeInfoButton';
-import FeedbackButton from '../../../ISOF-React-modules/components/views/FeedbackButton';
+import FeedbackButton from './FeedbackButton';
 
 import config from '../../config';
 
@@ -104,7 +104,7 @@ export default function PersonView({ mode }) {
         }
         {
           !config.siteOptions.hideContactButton
-          && <ContributeInfoButton title={name || ''} type="Person" />
+          && <ContributeInfoButton title={name || ''} type="Person" location={location} />
         }
       </div>
 
