@@ -2,9 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'underscore';
 
-import categories from './../../ISOF-React-modules/utils/utforskaCategories.js';
-//For test with ortnamn data in index:
-//import categories from './../../ISOF-React-modules/utils/orLokaltypCategories.js';
+import categories from '../utils/utforskaCategories';
 
 import routeHelper from './../utils/routeHelper'
 

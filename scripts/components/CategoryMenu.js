@@ -2,7 +2,7 @@ import React from 'react';
 import _ from 'underscore';
 
 import CategoryList from './CategoryList';
-import categories from './../../ISOF-React-modules/utils/utforskaCategories';
+import categories from '../utils/utforskaCategories';
 import { Route } from 'react-router-dom';
 import routeHelper from './../utils/routeHelper'
 
