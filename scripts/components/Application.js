@@ -12,7 +12,7 @@ import StatisticsOverlay from './StatisticsOverlay';
 import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
-import TranscriptionHelpOverlay from '../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
+import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
 import PopupNotificationMessage from '../../ISOF-React-modules/components/controls/PopupNotificationMessage';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
