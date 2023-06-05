@@ -14,7 +14,7 @@ import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
-import PopupNotificationMessage from '../../ISOF-React-modules/components/controls/PopupNotificationMessage';
+import PopupNotificationMessage from './PopupNotificationMessage';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 
 import MapWrapper from './MapWrapper';
