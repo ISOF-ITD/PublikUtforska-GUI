@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import RoutePopupWindow from './RoutePopupWindow';
 import RecordListWrapper from './views/RecordListWrapper';
 import StatisticsOverlay from './StatisticsOverlay';
-import ImageOverlay from '../../ISOF-React-modules/components/views/ImageOverlay';
+import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from '../../ISOF-React-modules/components/views/FeedbackOverlay';
 import ContributeInfoOverlay from '../../ISOF-React-modules/components/views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from '../../ISOF-React-modules/components/views/TranscriptionHelpOverlay';
