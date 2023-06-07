@@ -14,7 +14,7 @@ import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPla
 import ContributeInfoButton from './ContributeInfoButton';
 import FeedbackButton from './FeedbackButton';
 
-import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
+import TranscribeButton from './TranscribeButton';
 import ElementNotificationMessage from '../../../ISOF-React-modules/components/controls/ElementNotificationMessage';
 import SitevisionContent from '../../../ISOF-React-modules/components/controls/SitevisionContent';
 import PdfViewer from '../PdfViewer';

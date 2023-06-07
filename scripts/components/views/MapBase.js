@@ -3,7 +3,7 @@ import React from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import 'leaflet.locatecontrol';
-import '../../../ISOF-React-modules/lib/leaflet.active-layers';
+import '../../lib/leaflet.active-layers';
 
 import mapHelper from '../../utils/mapHelper';
 

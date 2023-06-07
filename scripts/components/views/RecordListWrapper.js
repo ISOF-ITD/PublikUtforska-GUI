@@ -21,7 +21,7 @@ export default function RecordListWrapper({
     disableRouterPagination: PropTypes.bool,
     highlightRecordsWithMetadataField: PropTypes.string,
     mode: PropTypes.string,
-    openSwitcherHelptext: PropTypes.func.isRequired,
+    openSwitcherHelptext: PropTypes.func,
   };
 
   RecordListWrapper.defaultProps = {
@@ -29,6 +29,7 @@ export default function RecordListWrapper({
     disableRouterPagination: true,
     highlightRecordsWithMetadataField: null,
     mode: 'material',
+    openSwitcherHelptext: () => {},
   };
 
   const params = useParams();

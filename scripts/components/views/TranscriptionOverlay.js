@@ -10,7 +10,7 @@ import Uppteckningsblankett from '../../../ISOF-React-modules/components/views/t
 import Fritext from '../../../ISOF-React-modules/components/views/transcriptionForms/Fritext';
 
 import { getPlaceString } from '../../utils/helpers';
-import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
+import TranscribeButton from './TranscribeButton';
 
 // Main CSS: ui-components/overlay.less
 // ImageMap CSS: ui-components/image-map.less

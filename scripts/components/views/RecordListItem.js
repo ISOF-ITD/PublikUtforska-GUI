@@ -5,7 +5,7 @@ import { faFolder, faFolderOpen, faFileLines } from '@fortawesome/free-solid-svg
 import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
-import TranscribeButton from '../../../ISOF-React-modules/components/views/TranscribeButton';
+import TranscribeButton from './TranscribeButton';
 import HighlightedText from '../HighlightedText';
 
 import config from '../../config';

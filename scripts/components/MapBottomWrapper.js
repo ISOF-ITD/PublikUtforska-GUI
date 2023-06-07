@@ -1,5 +1,5 @@
 // import LocalLibraryView from './views/LocalLibraryView';
-import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
+import TranscribeButton from './views/TranscribeButton';
 
 export default function MapBottomWrapper() {
   return (
