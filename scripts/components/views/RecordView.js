@@ -508,7 +508,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                   autoHide
                   message={l('Klicka på stjärnan för att spara sägner till din egen lista.')}
                 >
-                  <button className={`save-button${saved ? ' saved' : ''}`} onClick={toggleSaveRecord} type="button"><span>{l('Spara')}</span></button>
+                  {/* favorites/save not working at the moment */}
+                  {/* <button className={`save-button${saved ? ' saved' : ''}`} onClick={toggleSaveRecord} type="button"><span>{l('Spara')}</span></button> */}
+                  {/*  */}
                 </ElementNotificationMessage>
               </h2>
               <p>

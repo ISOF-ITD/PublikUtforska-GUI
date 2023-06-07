@@ -1,4 +1,4 @@
-import LocalLibraryView from '../../ISOF-React-modules/components/views/LocalLibraryView';
+// import LocalLibraryView from './views/LocalLibraryView';
 import TranscribeButton from '../../ISOF-React-modules/components/views/TranscribeButton';
 
 export default function MapBottomWrapper() {
@@ -11,11 +11,12 @@ export default function MapBottomWrapper() {
           random
         />
       </div>
-      <div className="popup-wrapper">
+      {/* not working at the moment */}
+      {/* <div className="popup-wrapper">
         <LocalLibraryView
           headerText={l('Mina sägner')}
         />
-      </div>
+      </div> */}
     </div>
   );
 }
