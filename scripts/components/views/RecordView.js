@@ -9,7 +9,7 @@ import localLibrary from '../../../ISOF-React-modules/utils/localLibrary';
 
 import ShareButtons from '../../../ISOF-React-modules/components/controls/ShareButtons';
 import SimpleMap from './SimpleMap';
-import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
+import ListPlayButton from './ListPlayButton';
 
 import ContributeInfoButton from './ContributeInfoButton';
 import FeedbackButton from './FeedbackButton';

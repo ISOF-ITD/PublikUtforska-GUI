@@ -4,15 +4,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFolderOpen, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import ListPlayButton from '../../../ISOF-React-modules/components/views/ListPlayButton';
+import ListPlayButton from './ListPlayButton';
 import TranscribeButton from './TranscribeButton';
 import HighlightedText from '../HighlightedText';
 
 import config from '../../config';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/routeHelper';
-import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
-import { getPlaceString } from '../../utils/helpers';
+import {
+  pageFromTo, getTitle, makeArchiveIdHumanReadable, getPlaceString,
+} from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
 
