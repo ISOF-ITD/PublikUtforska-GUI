@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 
-import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
+import RecordsCollection from '../collections/RecordsCollection';
 import RecordListItem from './RecordListItem';
 
 import config from '../../config';

@@ -14,7 +14,7 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/rout
 import { pageFromTo, getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
 import { getPlaceString } from '../../utils/helpers';
 
-import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
+import RecordsCollection from '../collections/RecordsCollection';
 
 import PdfGif from '../../../img/pdf.gif';
 

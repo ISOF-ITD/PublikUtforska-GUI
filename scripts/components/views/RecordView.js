@@ -22,7 +22,7 @@ import PdfViewer from '../PdfViewer';
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
 import { getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
 
-import RecordsCollection from '../../../ISOF-React-modules/components/collections/RecordsCollection';
+import RecordsCollection from '../collections/RecordsCollection';
 
 import archiveLogoIsof from '../../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../../img/archive-logo-ikos.png';
