@@ -5,13 +5,13 @@ import PropTypes from 'prop-types';
 import config from '../../config';
 
 // TODO: enter correct paths
-import DropdownMenu from '../../../ISOF-React-modules/components/controls/DropdownMenu';
-import ShareButton from '../../../ISOF-React-modules/components/controls/ShareButtons';
-import ElementNotificationMessage from '../../../ISOF-React-modules/components/controls/ElementNotificationMessage';
+import DropdownMenu from '../DropdownMenu';
+import ShareButton from '../ShareButtons';
+import ElementNotificationMessage from '../ElementNotificationMessage';
 
-import localLibrary from '../../../ISOF-React-modules/utils/localLibrary';
+import localLibrary from '../../utils/localLibrary';
 
-import clipboard from '../../../ISOF-React-modules/utils/clipboard';
+import clipboard from '../../utils/clipboard';
 
 // Main CSS: ui-components/local-library.less
 

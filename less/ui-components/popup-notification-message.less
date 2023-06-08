@@ -1,0 +1,40 @@
+@arrow-size: 10px;
+
+.popup-notification-message {
+	position: fixed;
+
+	top: 50%;
+	left: 50%;
+
+	max-width: 70%;
+
+	padding: 20px;
+
+	background: @notification-background;
+
+	border-radius: 5px;
+	box-shadow: 0 2px 18px 3px rgba(0, 0, 0, 0.25);
+
+	text-align: center;
+
+	z-index: 1700;
+
+	pointer-events: none;
+
+	opacity: 0;
+
+	.transition(all 600ms ease-in-out);
+
+	.transform(translate(-50%, -60%));
+
+	&.visible {
+		opacity: 1;
+
+		.transform(translate(-50%, -50%));
+	}
+
+	.message-container {
+		font-size: 1.2rem;
+		color: #fff;
+	}
+}

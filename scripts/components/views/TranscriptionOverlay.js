@@ -1,13 +1,13 @@
 import React from 'react';
 import config from '../../config';
-import ImageMap from '../../../ISOF-React-modules/components/views/ImageMap';
+import ImageMap from './ImageMap';
 
 import ContributeInfoButton from './ContributeInfoButton';
 import FeedbackButton from './FeedbackButton';
 import TranscriptionHelpButton from './TranscriptionHelpButton';
 
-import Uppteckningsblankett from '../../../ISOF-React-modules/components/views/transcriptionForms/Uppteckningsblankett';
-import Fritext from '../../../ISOF-React-modules/components/views/transcriptionForms/Fritext';
+import Uppteckningsblankett from './transcriptionForms/Uppteckningsblankett';
+import Fritext from './transcriptionForms/Fritext';
 
 import { getPlaceString } from '../../utils/helpers';
 import TranscribeButton from './TranscribeButton';

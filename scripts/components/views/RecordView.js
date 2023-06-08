@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   useNavigate, useLocation, useParams, useLoaderData,
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import config from '../../config';
-import localLibrary from '../../../ISOF-React-modules/utils/localLibrary';
+// import localLibrary from '../../utils/localLibrary';
 
-import ShareButtons from '../../../ISOF-React-modules/components/controls/ShareButtons';
+import ShareButtons from '../ShareButtons';
 import SimpleMap from './SimpleMap';
 import ListPlayButton from './ListPlayButton';
 
@@ -15,8 +15,8 @@ import ContributeInfoButton from './ContributeInfoButton';
 import FeedbackButton from './FeedbackButton';
 
 import TranscribeButton from './TranscribeButton';
-import ElementNotificationMessage from '../../../ISOF-React-modules/components/controls/ElementNotificationMessage';
-import SitevisionContent from '../../../ISOF-React-modules/components/controls/SitevisionContent';
+// import ElementNotificationMessage from '../ElementNotificationMessage';
+import SitevisionContent from '../SitevisionContent';
 import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
@@ -45,7 +45,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   const params = useParams();
   const navigate = useNavigate();
 
-  const [saved, setSaved] = useState(false);
+  // const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
 
@@ -125,25 +125,25 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   //     }
 
   // Sparar posten till localLibrary
-  const toggleSaveRecord = () => {
-    const libraryItem = {
-      id: data.id,
-      title: data.title,
-      place: data.places?.length > 0 ? data.places[0].name : null,
-    };
+  // const toggleSaveRecord = () => {
+  //   const libraryItem = {
+  //     id: data.id,
+  //     title: data.title,
+  //     place: data.places?.length > 0 ? data.places[0].name : null,
+  //   };
 
-    if (!localLibrary.find(libraryItem)) {
-      localLibrary.add(libraryItem);
-      setSaved(true);
+  //   if (!localLibrary.find(libraryItem)) {
+  //     localLibrary.add(libraryItem);
+  //     setSaved(true);
 
-      if (window.eventBus) {
-        window.eventBus.dispatch('popup-notification.notify', null, `<strong>${data.title}</strong> ${l('har sparats till dina sägner')}.`);
-      }
-    } else {
-      localLibrary.remove(libraryItem);
-      setSaved(false);
-    }
-  };
+  //     if (window.eventBus) {
+  //       window.eventBus.dispatch('popup-notification.notify', null, `<strong>${data.title}</strong> ${l('har sparats till dina sägner')}.`);
+  //     }
+  //   } else {
+  //     localLibrary.remove(libraryItem);
+  //     setSaved(false);
+  //   }
+  // };
 
   const mediaImageClickHandler = (e) => {
     if (window.eventBus) {
@@ -499,7 +499,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               <h2>
                 {titleText && titleText !== '' && titleText !== '[]' ? titleText : l('(Utan titel)')}
                 {' '}
-                <ElementNotificationMessage
+                {/* favorites/save not working at the moment */}
+                {/* <ElementNotificationMessage
                   placement="under"
                   placementOffsetX="-1"
                   messageId="saveLegendsNotification"
@@ -508,10 +509,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                   autoHide
                   message={l('Klicka på stjärnan för att spara sägner till din egen lista.')}
                 >
-                  {/* favorites/save not working at the moment */}
-                  {/* <button className={`save-button${saved ? ' saved' : ''}`} onClick={toggleSaveRecord} type="button"><span>{l('Spara')}</span></button> */}
-                  {/*  */}
-                </ElementNotificationMessage>
+                  <button className={`save-button${saved ? ' saved' : ''}`} onClick={toggleSaveRecord} type="button"><span>{l('Spara')}</span></button>
+                </ElementNotificationMessage> */}
               </h2>
               <p>
                 {

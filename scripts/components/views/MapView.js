@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
-import '../../../ISOF-React-modules/lib/leaflet-heat';
+import '../../lib/leaflet-heat';
 
 import PropTypes from 'prop-types';
 import MapBase from './MapBase';
