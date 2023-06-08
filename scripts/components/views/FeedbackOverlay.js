@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import config from '../../config';
 
 // Main CSS: ui-components/overlay.less
@@ -13,6 +14,8 @@ export default function FeedbackOverlay() {
   const [title, setTitle] = useState(null);
   const [url, setUrl] = useState(null);
   const [appUrl, setAppUrl] = useState(null);
+
+  const location = useLocation();
 
   useEffect(() => {
     const feedbackHandler = (event) => {
@@ -105,7 +108,7 @@ export default function FeedbackOverlay() {
         <p>{config.siteOptions.feedbackText || 'Har du frågor eller synpunkter på hur applikationen fungerar? Har du hittat fel, till exempel i avskrifterna? Kontakta oss gärna!'}</p>
         <p>
           Du är nu på sidan '
-          <a href={url}>{title}</a>
+          <a href={location.pathname}>{location.pathname}</a>
           ' men kan också använda formuläret för mer generella förslag och synpunkter.
           <br />
           <br />

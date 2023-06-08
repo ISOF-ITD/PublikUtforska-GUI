@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import config from '../../config';
+import { useLocation } from 'react-router-dom';
 
 export default function ContributeinfoOverlay() {
   const [state, setState] = useState({
@@ -15,6 +16,8 @@ export default function ContributeinfoOverlay() {
     appUrl: '',
     id: '',
   });
+
+  const location = useLocation();
 
   useEffect(() => {
     const contributeInfoListener = (event) => setState({
@@ -128,7 +131,7 @@ export default function ContributeinfoOverlay() {
         </p>
         <p>
           Du är nu på sidan '
-          <a href={state.url}>{state.title}</a>
+          <a href={location.pathname}>{location.pathname}</a>
           ' men kan också använda formuläret för mer generella förslag och synpunkter.
           <br />
           <br />
