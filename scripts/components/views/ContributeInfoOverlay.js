@@ -87,7 +87,7 @@ export default function ContributeinfoOverlay() {
       subject: `${subject.split(/[/]+/).pop()}: ContributeInfo`,
       recordid: state.id,
       message: `${state.type}: ${state.title}\n${
-        state.url}\n\n`
+        location.pathname}\n\n`
                 + `Från: ${state.nameInputValue} (${state.emailInputValue})\n\n${
                   state.messageInputValue}`,
     };

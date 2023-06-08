@@ -12,7 +12,6 @@ export default function FeedbackOverlay() {
   const [messageSent, setMessageSent] = useState(false);
   const [type, setType] = useState(null);
   const [title, setTitle] = useState(null);
-  const [url, setUrl] = useState(null);
   const [appUrl, setAppUrl] = useState(null);
 
   const location = useLocation();
@@ -22,7 +21,6 @@ export default function FeedbackOverlay() {
       setVisible(true);
       setType(event.target.type);
       setTitle(event.target.title);
-      setUrl(event.target.url);
       setAppUrl(event.target.appUrl);
     };
 
@@ -72,7 +70,7 @@ export default function FeedbackOverlay() {
       from_name: nameInputValue,
       subject: `${subject.split(/[/]+/).pop()}: Feedback`,
       message: `${type}: ${title}\n${
-        url}\n\n`
+        location.pathname}\n\n`
         + `Från: ${nameInputValue} (${emailInputValue})\n\n${
           messageInputValue}`,
     };
