@@ -1,6 +1,6 @@
 /* @preserve
- * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
- * (c) 2010-2023 Vladimir Agafonkin, (c) 2010-2011 CloudMade
+ * Leaflet 1.9.3, a JS library for interactive maps. https://leafletjs.com
+ * (c) 2010-2022 Vladimir Agafonkin, (c) 2010-2011 CloudMade
  */
 
 /*!
@@ -60,7 +60,7 @@ You can find the project at: https://github.com/domoritz/leaflet-locatecontrol
  */
 
 /**
- * @remix-run/router v1.6.2
+ * @remix-run/router v1.3.2
  *
  * Copyright (c) Remix Software Inc.
  *
@@ -71,7 +71,7 @@ You can find the project at: https://github.com/domoritz/leaflet-locatecontrol
  */
 
 /**
- * React Router DOM v6.11.2
+ * React Router DOM v6.8.1
  *
  * Copyright (c) Remix Software Inc.
  *
@@ -82,7 +82,7 @@ You can find the project at: https://github.com/domoritz/leaflet-locatecontrol
  */
 
 /**
- * React Router v6.11.2
+ * React Router v6.8.1
  *
  * Copyright (c) Remix Software Inc.
  *
