@@ -14,7 +14,6 @@ import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
-import PopupNotificationMessage from './PopupNotificationMessage';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 
 import MapWrapper from './MapWrapper';
@@ -68,12 +67,7 @@ export default function Application({
     });
   }, [results]);
 
-  const windowClickHandler = () => {
-    window.eventBus.dispatch('screen-clicked');
-  };
-
   useEffect(() => {
-    document.getElementById('app').addEventListener('click', windowClickHandler);
     document.title = config.siteTitle;
 
     setTimeout(() => {
@@ -118,7 +112,6 @@ export default function Application({
       <TranscriptionOverlay />
       <TranscriptionHelpOverlay />
       <SwitcherHelpTextOverlay />
-      <PopupNotificationMessage />
       <StatisticsOverlay />
       <Footer />
     </div>

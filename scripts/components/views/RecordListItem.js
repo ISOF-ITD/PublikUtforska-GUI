@@ -118,12 +118,6 @@ export default function RecordListItem({
   }, []);
 
   const collections = new RecordsCollection((json) => {
-    if (!json.data || json.data.length === 0) {
-      // Om vi hittade inga postar skickar vi visuell meddelande till användaren
-      if (window.eventBus) {
-        window.eventBus.dispatch('popup-notification.notify', null, l('Inga sökträffar'));
-      }
-    }
     setSubrecords(json.data);
   });
 

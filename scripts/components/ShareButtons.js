@@ -1,4 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import {
+  useEffect, useState, useCallback, useRef,
+} from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
@@ -23,16 +25,24 @@ export default function ShareButtons({
     title: '',
     hideLink: false,
   };
-  const [initialized, setInitialized] = useState(false);
-  const [fbInitialized, setFbInitialized] = useState(false);
-  const [twitterInitialized, setTwitterInitialized] = useState(false);
+
+  //   const [initialized, setInitialized] = useState(false);
+  const [copyMessageVisible, setCopyMessageVisible] = useState(false);
+  const countdownRef = useRef(null);
+  const [countdown, setCountdown] = useState(5);
 
   const linkClickHandler = useCallback((event) => {
     event.preventDefault();
     if (clipboard.copy(path)) {
-      if (window.eventBus) {
-        window.eventBus.dispatch('popup-notification.notify', null, l('Länk har kopierats.'));
-      }
+      setCopyMessageVisible(true);
+      setCountdown(500); // 500 hundredths of a second, equals to 5 seconds
+      countdownRef.current = setInterval(() => {
+        setCountdown((prevCountdown) => prevCountdown - 1);
+      }, 10); // decrement the countdown every 10ms
+      setTimeout(() => {
+        setCopyMessageVisible(false);
+        clearInterval(countdownRef.current);
+      }, 5000);
     }
   }, [path]);
 
@@ -44,46 +54,9 @@ export default function ShareButtons({
     selection.addRange(range);
   }, []);
 
-  const initialize = () => {
-    if (initialized) {
-      return;
-    }
-    const fbInit = () => {
-      try {
-        if (FB) {
-          FB.XFBML.parse();
-          setFbInitialized(true);
-          if (fbInitialized && twitterInitialized) {
-            setInitialized(true);
-          }
-        }
-      } catch (e) {
-        setTimeout(fbInit, 2000);
-      }
-    };
-    fbInit();
-
-    const twitterInit = () => {
-      try {
-        if (twttr) {
-          twttr.widgets.load();
-          setTwitterInitialized(true);
-          if (fbInitialized && twitterInitialized) {
-            setInitialized(true);
-          }
-        }
-      } catch (e) {
-        setTimeout(twitterInit, 2000);
-      }
-    };
-    twitterInit();
-  };
-
-  useEffect(() => {
-    if (!manualInit) {
-      setTimeout(() => {
-        initialize();
-      }, 500);
+  useEffect(() => () => {
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
     }
   }, [manualInit]);
 
@@ -110,8 +83,26 @@ export default function ShareButtons({
             <FontAwesomeIcon icon={faCopy} />
           </a>
           &nbsp;
-          <span className="copy-link" onClick={handleCopyLinkClick}>
-            {path}
+          <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick}>
+            {copyMessageVisible
+              ? (
+                <>
+                  Kopierat till urklipp
+                  &nbsp;
+                  <svg viewBox="0 0 36 36" className="progress-ring" height="16" width={16}>
+                    <path
+                      className="progress-ring"
+                      stroke="grey"
+                      fill="none"
+                      strokeDasharray={`${countdown * 0.2}, 100`} // 100 / 500 = 0.2
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                </>
+              )
+              : path}
           </span>
         </div>
         )}

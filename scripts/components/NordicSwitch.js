@@ -8,7 +8,7 @@ export default class NordicSwitch extends React.Component {
 		this.menuButtonClick = this.menuButtonClick.bind(this);
 
 		if (window.eventBus) {
-			window.eventBus.addEventListener('application.searchParams', this.receivedSearchParams.bind(this))
+			window.eventBus.addEventListener('application.searchParams', this.receivedSearchParams.bind(this));
 		}
 
 		//console.log('window.applicationSettings.includeNordic:' + window.applicationSettings.includeNordic)

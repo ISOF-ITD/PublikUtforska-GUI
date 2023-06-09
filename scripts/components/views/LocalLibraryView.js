@@ -58,7 +58,8 @@ export default function LocalLibraryView({ headerText }) {
   const copyLinkClickHandler = (event) => {
     if (clipboard.copy(event.currentTarget.dataset.url)) {
       if (window.eventBus) {
-        window.eventBus.dispatch('popup-notification.notify', null, l('Länk till dina sägner har kopierats.'));
+        // add a text under the link that says "Copied to clipboard" in Swedish
+        // and disappears after 5 seconds
       }
     }
   };
