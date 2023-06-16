@@ -134,7 +134,7 @@ export default function StatisticsOverlay() {
             aggregation: 'terms,transcribedby.keyword,10',
           }}
           // label={`Top 10 transcriberare i ${currentMonth}`}
-          label="Flest avskrivna sidor"
+          label="Flest avskrivna uppteckningar"
           visible={visible}
         />
 
