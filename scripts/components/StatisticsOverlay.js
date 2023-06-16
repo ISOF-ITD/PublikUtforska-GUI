@@ -3,6 +3,7 @@ import RecordList from './views/RecordList';
 import config from '../config';
 
 import ShortStatistics from './ShortStatistics';
+import StatisticsList from './StatisticsList';
 
 export default function StatisticsOverlay() {
   const [visible, setVisible] = useState(false);
@@ -12,7 +13,7 @@ export default function StatisticsOverlay() {
     size: 10,
     recordtype: 'one_record',
     transcriptionstatus: 'published',
-    sort: 'changedate', //'transcriptiondate', // 'approvedate',
+    sort: 'changedate', // 'transcriptiondate', // 'approvedate',
     order: 'desc',
   };
 
@@ -120,6 +121,19 @@ export default function StatisticsOverlay() {
             aggregation: 'cardinality,transcribedby.keyword',
           }}
           label="användare som har skrivit av uppteckningar totalt"
+          visible={visible}
+        />
+
+        {/* Show the top ten transcribers for the current month */}
+        <StatisticsList
+          params={{
+            recordtype: 'one_record',
+            transcriptionstatus: 'published',
+            range: 'transcriptiondate,now/M,now%2B2h',
+            // aggregation: type,field,size(optional,default=50)
+            aggregation: 'terms,transcribedby.keyword,10',
+          }}
+          label={`Top 10 transcriberare i ${currentMonth}`}
           visible={visible}
         />
 
