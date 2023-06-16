@@ -1,6 +1,5 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const AppleTouchIconsWebpackPlugin = require('apple-touch-icons-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -58,19 +57,5 @@ module.exports = {
       robots: 'index, follow',
     },
     template: './index.html',
-  }),
-  new AppleTouchIconsWebpackPlugin({
-    background: '#fff', // Bakgrundsfärgen för ikonen.
-    logo: './img/favicon.png', // Sökvägen till din logotyp eller ikon.
-    persistentCache: true, // Valbart, avgör om en beständig cache ska användas.
-    inject: true, // Avgör om pluginet automatiskt ska injicera ikonerna i din HTML.
-    icons: {
-      // Här kan du ange vilka ikoner du vill skapa.
-      // Du kan ange ikonstorlekar som värden här.
-      // Exempel:
-      appleIcon: true,
-      appleStartup: true,
-    },
   })],
-
 };
