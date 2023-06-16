@@ -129,11 +129,12 @@ export default function StatisticsOverlay() {
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
-            range: 'transcriptiondate,now/M,now%2B2h',
+            // range: 'transcriptiondate,now/M,now%2B2h',
             // aggregation: type,field,size(optional,default=50)
             aggregation: 'terms,transcribedby.keyword,10',
           }}
-          label={`Top 10 transcriberare i ${currentMonth}`}
+          // label={`Top 10 transcriberare i ${currentMonth}`}
+          label="Flest avskrivna sidor"
           visible={visible}
         />
 
