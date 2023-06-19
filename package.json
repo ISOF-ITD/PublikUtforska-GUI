@@ -16,7 +16,7 @@
     "@react-spring/web": "^9.7.2",
     "@turf/boolean-point-in-polygon": "^6.5.0",
     "eventbusjs": "^0.2.0",
-    "html-webpack-plugin": "^5.5.1",
+    "html-webpack-plugin": "^5.5.3",
     "leaflet": "^1.9.4",
     "leaflet.locatecontrol": "^0.79.0",
     "leaflet.markercluster": "^1.4.1",
