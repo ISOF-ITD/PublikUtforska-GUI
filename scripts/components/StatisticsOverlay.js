@@ -145,7 +145,7 @@ export default function StatisticsOverlay() {
             // aggregation works like this: type,field,size(optional,default=50)
             aggregation: 'terms,transcribedby.keyword,10',
           }}
-          label="Flest avskrivna uppteckningar"
+          label="Flest avskrivna uppteckningar totalt"
           visible={visible}
         />
 
