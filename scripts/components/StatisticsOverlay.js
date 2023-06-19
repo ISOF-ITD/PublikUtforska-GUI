@@ -130,10 +130,22 @@ export default function StatisticsOverlay() {
             recordtype: 'one_record',
             transcriptionstatus: 'published',
             // range: 'transcriptiondate,now/M,now%2B2h',
-            // aggregation: type,field,size(optional,default=50)
+            // aggregation works like this: type,field,size(optional,default=50)
             aggregation: 'terms,transcribedby.keyword,10',
           }}
-          // label={`Top 10 transcriberare i ${currentMonth}`}
+          label={`Flest avskrivna uppteckningar i ${currentMonth}`}
+          visible={visible}
+        />
+
+        {/* Show the top ten transcribers */}
+        <StatisticsList
+          params={{
+            recordtype: 'one_record',
+            transcriptionstatus: 'published',
+            range: 'transcriptiondate,now/M,now%2B2h',
+            // aggregation works like this: type,field,size(optional,default=50)
+            aggregation: 'terms,transcribedby.keyword,10',
+          }}
           label="Flest avskrivna uppteckningar"
           visible={visible}
         />
