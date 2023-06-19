@@ -63,6 +63,8 @@ export default function StatisticsList({ params: rawParams, visible, label }) {
             </span>
             :
             {' '}
+            {item.doc_count}
+            {' '}
             {item.doc_count === 1 ? 'uppteckning' : 'uppteckningar'}
           </li>
         ))}
