@@ -129,7 +129,7 @@ export default function StatisticsOverlay() {
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
-            // range: 'transcriptiondate,now/M,now%2B2h',
+            range: 'transcriptiondate,now/M,now%2B2h',
             // aggregation works like this: type,field,size(optional,default=50)
             aggregation: 'terms,transcribedby.keyword,10',
           }}
@@ -142,7 +142,6 @@ export default function StatisticsOverlay() {
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
-            range: 'transcriptiondate,now/M,now%2B2h',
             // aggregation works like this: type,field,size(optional,default=50)
             aggregation: 'terms,transcribedby.keyword,10',
           }}
