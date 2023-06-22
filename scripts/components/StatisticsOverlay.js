@@ -130,10 +130,9 @@ export default function StatisticsOverlay() {
             recordtype: 'one_record',
             transcriptionstatus: 'published',
             range: 'transcriptiondate,now/M,now%2B2h',
-            // aggregation works like this: type,field,size(optional,default=50)
-            aggregation: 'terms,transcribedby.keyword,10',
           }}
-          label={`Flest avskrivna uppteckningar i ${currentMonth}`}
+          type="topTranscribersByPages"
+          label={`Flest avskrivna sidor i ${currentMonth}`}
           visible={visible}
         />
 
@@ -142,10 +141,9 @@ export default function StatisticsOverlay() {
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
-            // aggregation works like this: type,field,size(optional,default=50)
-            aggregation: 'terms,transcribedby.keyword,10',
           }}
-          label="Flest avskrivna uppteckningar totalt"
+          type="topTranscribersByPages"
+          label="Flest avskrivna sidor totalt"
           visible={visible}
         />
 

@@ -1,48 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import _ from 'underscore';
 import config from '../config';
 
-// Is used for top lists, e.g. top 10 transcribers the current month
-export default function StatisticsList({ params: rawParams, visible, label }) {
+export default function StatisticsList({
+  params: rawParams = {}, visible, label, type,
+}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
 
-  const fetchStatistics = () => {
-    const paramStrings = [];
-    const queryParams = _.defaults(rawParams, config.requiredParams);
+  const fetchStatistics = async () => {
+    const queryParams = { ...config.requiredParams, ...rawParams };
+    const paramString = new URLSearchParams(queryParams).toString();
 
-    Object.entries(queryParams).forEach(([key, value]) => {
-      if (value) {
-        paramStrings.push(`${key}=${value}`);
-      }
-    });
+    let esApiEndpoint;
+    switch (type) {
+      case 'topTranscribersByPages':
+        esApiEndpoint = 'statistics/get_top_transcribers_by_pages';
+        break;
+      default:
+        setFetchError(`Unsupported type: ${type}`);
+        return;
+    }
 
-    const paramString = paramStrings.join('&');
+    try {
+      const response = await fetch(`${config.apiUrl}${esApiEndpoint}?${paramString}`);
 
-    fetch(`${config.apiUrl}documents?${paramString}`)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
+      if (!response.ok) {
         throw new Error('Fel vid hämtning av statistik');
-      })
-      .then((json) => {
-        setData(json.aggregations.aggresult.buckets);
-        setLoading(false);
-        setFetchError(false);
-      })
-      .catch(() => {
-        setLoading(false);
-        setFetchError(true);
-      });
+      }
+
+      const json = await response.json();
+      setData(json.data);
+      setLoading(false);
+      setFetchError(false);
+    } catch (error) {
+      setLoading(false);
+      setFetchError(error.message);
+    }
   };
 
   useEffect(() => {
     if (visible) {
       fetchStatistics();
-
       const timer = setInterval(fetchStatistics, 60000);
       return () => clearInterval(timer);
     }
@@ -52,20 +52,26 @@ export default function StatisticsList({ params: rawParams, visible, label }) {
   return (
     <div className="statistics-list">
       {loading && <div className="loading">Hämtar statistik...</div>}
-      {fetchError && <div className="error">Fel vid hämtning av statistik</div>}
+      {fetchError && (
+      <div className="error">
+        Fel vid hämtning av statistik:
+        {' '}
+        {fetchError}
+      </div>
+      )}
       {!loading && !fetchError && <h3>{label}</h3>}
-      {!loading && !fetchError && visible && (
+      {!loading && !fetchError && visible && data && (
       <ul>
         {data.map((item) => (
-          <li key={`${item.key}-${item.doc_count}`}>
+          <li key={`${item.key}-${item.value}`}>
             <span className="key">
               {item.key}
             </span>
             :
             {' '}
-            {item.doc_count}
+            {item.value}
             {' '}
-            {item.doc_count === 1 ? 'uppteckning' : 'uppteckningar'}
+            {item.value === 1 ? 'sida' : 'sidor'}
           </li>
         ))}
       </ul>
@@ -75,7 +81,12 @@ export default function StatisticsList({ params: rawParams, visible, label }) {
 }
 
 StatisticsList.propTypes = {
-  params: PropTypes.object.isRequired,
+  params: PropTypes.object,
   visible: PropTypes.bool.isRequired,
   label: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
+};
+
+StatisticsList.defaultProps = {
+  params: {},
 };
