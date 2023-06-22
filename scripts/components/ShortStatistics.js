@@ -51,7 +51,7 @@ export default function ShortStatistics({ visible, params, label }) {
       {error && <div className="error">Fel vid hämtning av statistik</div>}
       {!loading && !error && visible && (
         <animated.div className="value">
-          {animatedValue.number.interpolate((num) => Math.floor(num))}
+          {animatedValue.number.interpolate((num) => Math.floor(num).toLocaleString('sv-SE'))}
         </animated.div>
       )}
       {!loading && !error && <div className="label">{label}</div>}

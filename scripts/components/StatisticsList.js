@@ -69,7 +69,7 @@ export default function StatisticsList({
             </span>
             :
             {' '}
-            {item.value}
+            {parseInt(item.value, 10).toLocaleString('sv-SE')}
             {' '}
             {item.value === 1 ? 'sida' : 'sidor'}
           </li>
