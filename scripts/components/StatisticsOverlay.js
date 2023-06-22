@@ -54,7 +54,7 @@ export default function StatisticsOverlay() {
             // +2h to account for the time difference between
             // the server and the timestamps in the database
             // "now/M" is the start of the current month
-            range: 'transcriptiondate,now/M,now%2B2h',
+            range: 'transcriptiondate,now/M,now%+2h',
           }}
           label={`avskrivna uppteckningar i ${currentMonth}`}
           visible={visible}
@@ -106,7 +106,7 @@ export default function StatisticsOverlay() {
             // +2h to account for the time difference between
             // the server and the timestamps in the database
             // "now/M" is the start of the current month
-            range: 'transcriptiondate,now/M,now%2B2h',
+            range: 'transcriptiondate,now/M,now+2h',
             aggregation: 'cardinality,transcribedby.keyword',
           }}
           label={`användare som har skrivit av uppteckningar i ${currentMonth}`}
@@ -129,7 +129,7 @@ export default function StatisticsOverlay() {
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
-            range: 'transcriptiondate,now/M,now%2B2h',
+            range: 'transcriptiondate,now/M,now+2h',
           }}
           type="topTranscribersByPages"
           label={`Flest avskrivna sidor i ${currentMonth}`}
