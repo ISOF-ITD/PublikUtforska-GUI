@@ -15,6 +15,7 @@ import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
+import IntroOverlay from './views/IntroOverlay';
 
 import MapWrapper from './MapWrapper';
 import Footer from './Footer';
@@ -106,6 +107,7 @@ export default function Application({
         loading={loading}
       />
 
+      <IntroOverlay />
       <ImageOverlay />
       <FeedbackOverlay />
       <ContributeInfoOverlay />
