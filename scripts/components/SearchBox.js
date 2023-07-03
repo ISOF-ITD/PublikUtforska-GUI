@@ -9,7 +9,7 @@ import config from '../config';
 import { createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import SearchSuggestions from './SearchSuggestions';
-import { getPersonFetchLocation, getPlaceFetchLocation } from '../utils/helpers';
+import { getPersonFetchLocation, getPlaceFetchLocation, makeArchiveIdHumanReadable } from '../utils/helpers';
 
 export default function SearchBox({
   mode, params, recordsData, loading,
@@ -31,6 +31,7 @@ export default function SearchBox({
   const [personSuggestions, setPersonSuggestions] = useState([]);
   const [placeSuggestions, setPlaceSuggestions] = useState([]);
   const [provinceSuggestions, setProvinceSuggestions] = useState([]);
+  const [archiveIdSuggestions, setArchiveIdSuggestions] = useState([]);
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [person, setPerson] = useState(null);
@@ -136,6 +137,20 @@ export default function SearchBox({
     });
   };
 
+  const getArchiveIdAutocomplete = (keyword) => {
+    const path = config.apiUrl;
+    // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/archive_ids and add required params
+    fetch(`${path}autocomplete/archive_ids?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+      // for every row in data, add row["name"] to search suggestions
+      const suggestions = data.map((row) => ({
+        value: row.id,
+        label: makeArchiveIdHumanReadable(row.id),
+        secondaryLabel: `(${row.id})`,
+      }));
+      setArchiveIdSuggestions(suggestions);
+    });
+  };
+
   const openButtonClickHandler = () => {
     if (window.eventBus) {
       window.eventBus.dispatch('routePopup.show');
@@ -215,7 +230,6 @@ export default function SearchBox({
     suggestions
     // filter out suggestions that don't contain the search input value
     // why was this here?
-    // .filter((suggestion) => suggestion.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
     // sort the suggestions so that the ones that start with the search input value are first
       .sort((a, b) => {
         const aStartsWithSearch = a.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
@@ -243,12 +257,14 @@ export default function SearchBox({
   const filteredPersonSuggestions = () => filterAndSortSuggestions(personSuggestions);
   const filteredPlaceSuggestions = () => filterAndSortSuggestions(placeSuggestions);
   const filteredProvinceSuggestions = () => filterAndSortSuggestions(provinceSuggestions);
+  const filteredArchiveIdSuggestions = () => filterAndSortSuggestions(archiveIdSuggestions);
 
   const closeSuggestionsHandler = () => {
     searchInputRef.current.focus();
     setPersonSuggestions([]);
     setPlaceSuggestions([]);
     setProvinceSuggestions([]);
+    setArchiveIdSuggestions([]);
     setSuggestionsVisible(false);
   };
 
@@ -344,6 +360,13 @@ export default function SearchBox({
     executeSearch(provinceValue, 'place');
   };
 
+  const archiveIdClickHandler = ({ archiveidLabel, archiveidValue }) => {
+    setSuggestionsVisible(false);
+    // already change input field, before search results are returned
+    setSearch(archiveidValue);
+    executeSearch(archiveidValue);
+  };
+
   const suggestionClickHandler = ({ searchValue }) => {
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
@@ -392,11 +415,13 @@ export default function SearchBox({
         getPersonAutocomplete(value),
         getPlaceAutocomplete(value),
         getProvinceAutocomplete(value),
+        getArchiveIdAutocomplete(value),
       ]);
     } else {
       setPersonSuggestions([]);
       setPlaceSuggestions([]);
       setProvinceSuggestions([]);
+      setArchiveIdSuggestions([]);
     }
   };
 
@@ -404,6 +429,7 @@ export default function SearchBox({
     setPersonSuggestions([]);
     setPlaceSuggestions([]);
     setProvinceSuggestions([]);
+    setArchiveIdSuggestions([]);
     setPerson(null);
     setPlace(null);
     setSearch(
@@ -444,31 +470,6 @@ export default function SearchBox({
           ref={searchInputRef}
           type="text"
           value={search}
-          // defaultValue={search || ''}
-          // value={
-          //   // write out '' if search is falsy, otherwise do the following:
-          //   // write out the search value,
-          //   // but if the searchField is 'person', write out person.name
-          //   // and add " (född " and the birth year and ")"
-          //   // if the searchField is 'place', write out place.name
-          //   // and add " (" and the landskap and ")"
-          //   search && (
-          //     person
-          //       ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year || ''})` : ''}`
-          //       : place
-          //         ? `${place.name || search} ${place.landskap ? `(${place.landskap})`: ''}`
-          //         : search
-          //   )
-
-          //   // (search
-          //   //   && (person?.birth_year
-          //   //     ? `${person.name} (född ${person.birth_year})`
-          //   //     : (person?.name || search)
-          //   //   ))
-          //   //   || ('')
-
-          // }
-          // onChange={searchValueChangeHandler}
           onInput={searchValueChangeHandler}
           onKeyDown={inputKeyPressHandler}
           placeholder="Sök i Folke"
@@ -523,6 +524,7 @@ export default function SearchBox({
             || filteredPersonSuggestions().length > 0
             || filteredPlaceSuggestions().length > 0
             || filteredProvinceSuggestions().length > 0
+            || filteredArchiveIdSuggestions().length > 0
           )
           // if true, show suggestions
           && (
@@ -532,12 +534,14 @@ export default function SearchBox({
               filteredPersonSuggestions={filteredPersonSuggestions}
               filteredPlaceSuggestions={filteredPlaceSuggestions}
               filteredProvinceSuggestions={filteredProvinceSuggestions}
+              filteredArchiveIdSuggestions={filteredArchiveIdSuggestions}
               filteredSearchSuggestions={filteredSearchSuggestions}
               inputKeyPressHandler={inputKeyPressHandler}
               search={search}
               personClickHandler={personClickHandler}
               placeClickHandler={placeClickHandler}
               provinceClickHandler={provinceClickHandler}
+              archiveIdClickHandler={archiveIdClickHandler}
               suggestionClickHandler={suggestionClickHandler}
             />
           )
