@@ -5,7 +5,7 @@ function IntroOverlay() {
   const [showOverlay, setShowOverlay] = useState(true);
   // useState hook for managing the content fetched from the API
   const [content, setContent] = useState(`
-    Välkommen till Folke sök! Här kasn du söka i ISOFs arkiv och samlingar. 
+    Välkommen till Folke sök! Här kan du söka i ISOFs arkiv och samlingar. 
     Du kan söka på personer, platser, föremål, händelser och mycket mer.
     Du kan också söka i Folkebibeln, en samling av bibeltexter på svenska dialekter.
     Folke sök är en del av projektet Folke, som är ett samarbete mellan
@@ -83,6 +83,7 @@ function IntroOverlay() {
         </div>
         {content}
         {/* Checkbox to choose not to show the overlay again */}
+        <p/>
         <label htmlFor="hideOverlay">
           <input id="hideOverlay" type="checkbox" onChange={handleCheckboxChange} />
           Visa inte igen
