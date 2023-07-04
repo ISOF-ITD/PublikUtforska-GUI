@@ -10,11 +10,13 @@ const SearchSuggestions = forwardRef(
       filteredPlaceSuggestions,
       filteredSearchSuggestions,
       filteredProvinceSuggestions,
+      filteredArchiveIdSuggestions,
       inputKeyPressHandler,
       search,
       personClickHandler,
       placeClickHandler,
       provinceClickHandler,
+      archiveIdClickHandler,
       suggestionClickHandler,
     },
     ref,
@@ -25,11 +27,13 @@ const SearchSuggestions = forwardRef(
       filteredPlaceSuggestions: PropTypes.func.isRequired,
       filteredSearchSuggestions: PropTypes.func.isRequired,
       filteredProvinceSuggestions: PropTypes.func.isRequired,
+      filteredArchiveIdSuggestions: PropTypes.func.isRequired,
       inputKeyPressHandler: PropTypes.func.isRequired,
       search: PropTypes.string.isRequired,
       personClickHandler: PropTypes.func.isRequired,
       placeClickHandler: PropTypes.func.isRequired,
       provinceClickHandler: PropTypes.func.isRequired,
+      archiveIdClickHandler: PropTypes.func.isRequired,
       suggestionClickHandler: PropTypes.func.isRequired,
     };
 
@@ -69,6 +73,22 @@ const SearchSuggestions = forwardRef(
                     </span>
                 ))
               }
+              &nbsp;
+              {
+                item.secondaryLabel?.split(new RegExp(`(${search
+                  // put all special characters in a character class
+                  ? search.replace(/([.*+?^=!:${}()|[\\/\\])/g, '[$1]')
+                  : ''})`, 'gi')).map((part, i) => (
+                    <small
+                      key={i}
+                      style={{
+                        fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
+                      }}
+                    >
+                      {part}
+                    </small>
+                ))
+              }
               {/* make matching characters in item.comment bold. */}
               <br />
               {
@@ -100,6 +120,7 @@ const SearchSuggestions = forwardRef(
         >
           &times;
         </span>
+        {renderSuggestions('ArchiveId', 'Accessionsnummer', filteredArchiveIdSuggestions, archiveIdClickHandler, 'archiveId', 175)}
         {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler, 350)}
         {renderSuggestions('Person', 'Personer', filteredPersonSuggestions, personClickHandler, 'person', 175)}
         {renderSuggestions('Place', 'Orter', filteredPlaceSuggestions, placeClickHandler, 'place', 175)}
