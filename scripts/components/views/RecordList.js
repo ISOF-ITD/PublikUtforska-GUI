@@ -4,18 +4,18 @@ import { useNavigate } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileLines } from '@fortawesome/free-solid-svg-icons';
+
 import RecordsCollection from '../collections/RecordsCollection';
 import RecordListItem from './RecordListItem';
 
 import config from '../../config';
 import { createSearchRoute } from '../../utils/routeHelper';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import PdfGif from '../../../img/pdf.gif';
 
 import L from '../../lang/Lang';
-import _ from 'underscore';
 
 const l = L.get;
 
@@ -83,7 +83,7 @@ export default function RecordList({
   const [totalPrefix, setTotalPrefix] = useState('');
   const [filter, setFilter] = useState('');
 
-  const uniqueId = _.uniqueId();
+  const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value);

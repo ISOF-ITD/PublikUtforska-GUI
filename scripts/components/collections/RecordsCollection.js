@@ -1,5 +1,4 @@
 import 'whatwg-fetch';
-import _ from 'underscore';
 
 import config from '../../config';
 
@@ -15,7 +14,7 @@ export default class RecordsCollection {
     if (params.record_ids) { // Hämtar bara vissa sägner
       paramStrings.push(`documents=${params.record_ids}`);
     } else {
-      const queryParams = _.defaults(params, config.requiredParams);
+      const queryParams = { ...config.requiredParams, ...params };
 
       // Anpassa params till ES Djangi api
       if (queryParams.search) {

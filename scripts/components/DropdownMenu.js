@@ -3,7 +3,6 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
-import _ from 'underscore';
 
 function DropdownMenu({
   manuallyClose,

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import _ from 'underscore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFolderOpen, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -83,9 +82,9 @@ export default function RecordListItem({
   // used for fetching number of subrecords and transcribed subrecords
   // after the component has mounted
   // is called in the useEffect hook below
-  const fetchRecordCount = async (params, setValue) => {
+  const fetchRecordCount = async (functionScopeParams, setValue) => {
     try {
-      const queryParams = _.defaults(params, config.requiredParams);
+      const queryParams = { ...config.requiredParams, ...functionScopeParams };
       const queryParamsString = Object.entries(queryParams)
         .map(([key, value]) => `${key}=${value}`)
         .join('&');
@@ -197,7 +196,7 @@ export default function RecordListItem({
   };
 
   if (config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton) {
-    var audioItem = _.find(media, (mediaItem) => mediaItem.type === 'audio');
+    var audioItem = media.find((mediaItem) => mediaItem.type === 'audio');
   }
 
   const subrecordsElement = (
@@ -266,9 +265,9 @@ export default function RecordListItem({
 
   let displayTextSummary = false;
   if (highlightRecordsWithMetadataField) {
-    if (_.findWhere(metadata, { type: highlightRecordsWithMetadataField })) {
+    if (metadata.some((meta) => meta.type === highlightRecordsWithMetadataField)) {
       displayTextSummary = true;
-      var textSummary = text ? (text.length > 300 ? `${text.substr(0, 300)}...` : text) : '';
+      var textSummary = text ? (text.length > 300 ? `${text.slice(0, 300)}...` : text) : '';
     }
   }
 
@@ -290,44 +289,45 @@ export default function RecordListItem({
         taxonomyElement = l(taxonomy.name);
       }
     } else if (taxonomy.length > 0 && (!config.siteOptions.recordList || !config.siteOptions.recordList.hideCategories === true)) {
-      taxonomyElement = _.compact(_.map(taxonomy, (taxonomyItem, i) => {
+      const taxonomyElement = taxonomy.map((taxonomyItem, i) => {
         if (taxonomyItem.category) {
-          // const href = `#${mode === 'transcribe' ? '/transcribe' : ''}/places${createSearchRoute({
-          //   category: taxonomyItem.category.toLowerCase(),
-          //   search: searchParams.search,
-          //   search_field: searchParams.search_field,
-          // })}`;
           if (visibleCategories) {
-            if (visibleCategories.indexOf(taxonomyItem.type.toLowerCase()) > -1) {
-              // return <a href={href} key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</a>;
+            if (visibleCategories.includes(taxonomyItem.type.toLowerCase())) {
               // remove link to category
               return <span className="category" key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</span>;
             }
           } else {
-            // return <a href={href}>{l(taxonomyItem.name)}</a>;
             // remove link to category
             return <span className="category" key={`record-list-item-${id}-${i}`}>{l(taxonomyItem.name)}</span>;
           }
         }
-      }));
+        return null;
+      }).filter(Boolean); // Remove empty elements
     }
   }
 
   let collectorPersonElement;
   if (persons) {
-    if (config.siteOptions.recordList && config.siteOptions.recordList.visibleCollecorPersons === true) {
+    if (config?.siteOptions?.recordList?.visibleCollecorPersons === true) {
       if (persons.length > 0) {
-        collectorPersonElement = _.compact(_.map(persons, (collectorPersonItem, i) => {
-          if (collectorPersonItem.relation === 'c') {
-            const collectorParams = _.omit(searchParams, 'page');
-            const href = `#${mode === 'transcribe' ? '/transcribe' : ''}/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
-              search: collectorParams.search,
-              search_field: collectorParams.search_field,
-            })}`;
-            return <a href={href} key={`record-list-item-${id}-${i}`}>{l(collectorPersonItem.name)}</a>;
-          }
-          return '';
-        }));
+        collectorPersonElement = persons
+          .map((collectorPersonItem) => {
+            if (collectorPersonItem.relation === 'c') {
+              const collectorParams = { ...searchParams, page: undefined };
+              const href = `#${mode === 'transcribe' ? '/transcribe' : ''
+              }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
+                search: collectorParams.search,
+                search_field: collectorParams.search_field,
+              })}`;
+              return (
+                <a href={href} key={`record-list-item-${id}-${collectorPersonItem.id}`}>
+                  {l(collectorPersonItem.name)}
+                </a>
+              );
+            }
+            return null;
+          })
+          .filter(Boolean); // Remove empty elements
       }
     }
   }

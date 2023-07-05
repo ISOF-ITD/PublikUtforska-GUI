@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import _ from 'underscore';
 
+// const executeScripts = (scriptTags) => {
+//   scriptTags.forEach((script) => {
+//     Function(script.innerHTML)();
+//   });
+// };
+
+// considering no-eval and no-new-func, we use appendChild to execute scripts
 const executeScripts = (scriptTags) => {
-  _.each(scriptTags, (script) => {
-    Function(script.innerHTML)();
+  scriptTags.forEach((script) => {
+    const scriptElement = document.createElement('script');
+    scriptElement.innerHTML = script.innerHTML;
+    document.body.appendChild(scriptElement);
+    document.body.removeChild(scriptElement);
   });
 };
 

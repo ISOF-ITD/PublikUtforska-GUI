@@ -1,10 +1,10 @@
-import _ from 'underscore';
-
 export default {
   getCategoryName(categoryLetter, advancedCategories) {
     if (categoryLetter) {
       const lookupObject = advancedCategories ? this.categories_advanced : this.categories;
-      const categoryObj = _.find(lookupObject, (item) => item.letter.toLowerCase() == categoryLetter.toLowerCase());
+      const lowerCaseCategoryLetter = categoryLetter.toLowerCase();
+      const categoryObj = Object.values(lookupObject)
+        .find((item) => item.letter.toLowerCase() === lowerCaseCategoryLetter);
 
       return categoryObj.label;
     }

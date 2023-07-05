@@ -1,4 +1,3 @@
-import _ from 'underscore';
 import config from '../config';
 
 export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
@@ -50,7 +49,7 @@ export function getRecordsFetchLocation(params = {}) {
   if (params.record_ids) { // Hämtar bara vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
-    const queryParams = _.defaults(params, config.requiredParams);
+    const queryParams = { ...config.requiredParams, ...params };
 
     // Anpassa params till ES Djangi api
     if (queryParams.search) {
@@ -84,7 +83,7 @@ export function getRecordsCountLocation(params = {}) {
   if (params.record_ids) { // Hämtar bara vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
-    const queryParams = _.defaults(params, config.requiredParams);
+    const queryParams = { ...config.requiredParams, ...params };
 
     // Anpassa params till ES Djangi api
     if (queryParams.search) {
@@ -120,6 +119,15 @@ export function getPersonFetchLocation(personId) {
   return `${config.restApiUrl}persons/${personId}/`;
 }
 
+function cleanParams(params) {
+  // Remove empty values
+  const validEntries = Object
+    .entries(params)
+    .filter(([key, value]) => key && value !== null && value !== undefined);
+  const validParams = Object.fromEntries(validEntries);
+  return validParams;
+}
+
 export function getMapFetchLocation(params = {}) {
   const url = `${config.apiUrl}socken/`;
   const paramStrings = [];
@@ -127,8 +135,7 @@ export function getMapFetchLocation(params = {}) {
   if (params.record_ids) { // Hämtar bara platser för vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
-    const newParams = _.defaults(cleanParams(params), config.requiredParams);
-    // console.log(params);
+    const newParams = { ...config.requiredParams, ...cleanParams(params) };
 
     // Anpassa params till ES Djangi api
     if (newParams.search) {
@@ -158,15 +165,6 @@ export function getMapFetchLocation(params = {}) {
 
 export function getPlaceFetchLocation(placeId) {
   return `${config.restApiUrl}locations/${placeId}`;
-}
-
-function cleanParams(params) {
-  // Remove empty values
-  const validEntries = Object
-    .entries(params)
-    .filter(([key, value]) => key && value !== null && value !== undefined);
-  const validParams = Object.fromEntries(validEntries);
-  return validParams;
 }
 
 export const getPlaceString = (places) => {

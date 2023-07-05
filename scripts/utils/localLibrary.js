@@ -1,5 +1,3 @@
-import _ from 'underscore';
-
 import config from '../config';
 
 export default {
@@ -30,11 +28,12 @@ export default {
   remove(item) {
     let storageList = this._getList();
 
-    storageList = _.reject(storageList, (listItem) => {
+    // reject objects with id equal to item or the item id
+    storageList = storageList.filter((listItem) => {
       if (typeof item === 'object') {
-        return listItem.id == item.id;
+        return listItem.id !== item.id;
       }
-      return listItem.id == item;
+      return listItem.id !== item;
     });
 
     this._saveList(storageList);
@@ -43,9 +42,7 @@ export default {
   find(item) {
     const storageList = this._getList();
 
-    return _.findWhere(storageList, {
-      id: item.id,
-    });
+    return storageList.find((storageItem) => storageItem.id === item.id);
   },
 
   list() {
