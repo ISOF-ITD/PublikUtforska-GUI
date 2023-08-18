@@ -312,6 +312,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             places={data.places}
             images={data.media}
             transcriptionType={data.transcriptiontype}
+            random={false}
           />
         </div>
       );

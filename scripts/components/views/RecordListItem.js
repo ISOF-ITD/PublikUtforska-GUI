@@ -453,6 +453,7 @@ export default function RecordListItem({
                   places={places}
                   images={media}
                   transcriptionType={transcriptiontype}
+                  random={false}
                 />
               )}
           </td>
