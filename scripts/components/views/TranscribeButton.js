@@ -43,6 +43,8 @@ function TranscribeButton({
     }
   };
 
+  const effectiveOnClick = onClick || transcribeButtonClick;
+
   TranscribeButton.propTypes = {
     random: PropTypes.bool,
     recordId: PropTypes.string,
@@ -53,6 +55,14 @@ function TranscribeButton({
     transcriptionType: PropTypes.string,
     places: PropTypes.array,
     className: PropTypes.string,
+    // NOTE: We're intentionally not setting a default prop for `onClick`.
+    // The default behavior for the `onClick` action is encapsulated within
+    // the `transcribeButtonClick` function inside the component.
+    // If we set it as a default prop, the function would be bound during its declaration
+    // and wouldn't have access to the component's most recent props.
+    // By handling the default onClick directly in the component's render logic,
+    // we ensure that the function always has the latest props available to it.
+    // eslint-disable-next-line react/require-default-props
     onClick: PropTypes.func,
     label: PropTypes.string.isRequired,
   };
@@ -67,7 +77,6 @@ function TranscribeButton({
     transcriptionType: '',
     places: [],
     className: '',
-    onClick: transcribeButtonClick,
   };
 
   return (
@@ -76,7 +85,7 @@ function TranscribeButton({
     // or to the onClick prop if it's provided.
     <button
       className={`transcribe-button${className ? ` ${className}` : ''}`}
-      onClick={onClick}
+      onClick={effectiveOnClick}
       type="button"
     >
       {label}

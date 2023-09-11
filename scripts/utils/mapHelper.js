@@ -1,9 +1,9 @@
-import turfInside from '@turf/boolean-point-in-polygon';
+// import turfInside from '@turf/boolean-point-in-polygon';
 
 import L from 'leaflet';
-import Proj from 'proj4leaflet';
+// import Proj from 'proj4leaflet';
 
-import config from '../config';
+// import config from '../config';
 
 import mapMarkerBlueLocation from './../../img/map-marker-blue-location.png';
 import mapMarkerBlueHighlighted from './../../img/map-marker-blue-highlighted.png';

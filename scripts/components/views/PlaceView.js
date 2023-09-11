@@ -1,5 +1,4 @@
 /* eslint-disable no-shadow */
-import _ from 'underscore';
 import {
   Await, useLoaderData, useParams, useNavigate,
 } from 'react-router-dom';

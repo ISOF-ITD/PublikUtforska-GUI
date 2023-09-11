@@ -2,7 +2,6 @@ import React from 'react';
 
 import L from 'leaflet';
 import 'leaflet.markercluster';
-import _ from 'underscore';
 
 import MapBase from './MapBase';
 
@@ -41,9 +40,9 @@ export default class SimpleMap extends React.Component {
 
 	removeMarkers() {
 		if (this.markers) {
-			_.each(this.markers, function(marker) {
+			this.markers.forEach((marker) => {
 				this.mapView.current.map.removeLayer(marker);
-			}.bind(this));
+			});
 		}
 	}
 
@@ -52,9 +51,9 @@ export default class SimpleMap extends React.Component {
 
 		this.markers = [];
 
-		_.each(markers, function(marker) {
+		markers.forEach((marker) => {
 			this.addMarker(marker, true);
-		}.bind(this));
+		});
 	}
 
 	addMarker(markerData, allowMultiple) {
