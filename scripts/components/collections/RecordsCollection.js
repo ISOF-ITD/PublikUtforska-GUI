@@ -14,7 +14,10 @@ export default class RecordsCollection {
     if (params.record_ids) { // Hämtar bara vissa sägner
       paramStrings.push(`documents=${params.record_ids}`);
     } else {
-      const queryParams = { ...config.requiredParams, ...params };
+      const filteredParams = Object.fromEntries(
+        Object.entries(params).filter(([key, value]) => value !== null && value !== undefined),
+      );
+      const queryParams = { ...config.requiredParams, ...filteredParams };
 
       // Anpassa params till ES Djangi api
       if (queryParams.search) {
