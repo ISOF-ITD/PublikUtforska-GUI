@@ -15,7 +15,7 @@ export default class RecordsCollection {
       paramStrings.push(`documents=${params.record_ids}`);
     } else {
       const filteredParams = Object.fromEntries(
-        Object.entries(params).filter(([key, value]) => value !== null && value !== undefined),
+        Object.entries(params).filter(([, value]) => value !== null && value !== undefined),
       );
       const queryParams = { ...config.requiredParams, ...filteredParams };
 

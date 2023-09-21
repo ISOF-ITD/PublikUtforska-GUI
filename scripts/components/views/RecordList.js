@@ -9,6 +9,7 @@ import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 
 import RecordsCollection from '../collections/RecordsCollection';
 import RecordListItem from './RecordListItem';
+import Timeline from './Timeline';
 
 import config from '../../config';
 import { createSearchRoute } from '../../utils/routeHelper';
@@ -24,6 +25,7 @@ export default function RecordList({
   disableListPagination,
   disableRouterPagination,
   hasFilter,
+  hasTimeline,
   highlightRecordsWithMetadataField,
   interval,
   openSwitcherHelptext,
@@ -31,6 +33,7 @@ export default function RecordList({
   tableClass,
   params,
   mode,
+  containerRef,
   // useRouteParams: use the route params instead of the search params for the link
   // maybe this should be the default behaviour and search params via props should be optional?
   useRouteParams,
@@ -40,6 +43,7 @@ export default function RecordList({
     disableListPagination: PropTypes.bool,
     disableRouterPagination: PropTypes.bool,
     hasFilter: PropTypes.bool,
+    hasTimeline: PropTypes.bool,
     highlightRecordsWithMetadataField: PropTypes.string,
     interval: PropTypes.number,
     // searchParams: PropTypes.objectOf(PropTypes.any),
@@ -50,6 +54,7 @@ export default function RecordList({
     params: PropTypes.objectOf(PropTypes.any),
     mode: PropTypes.string,
     useRouteParams: PropTypes.bool,
+    containerRef: PropTypes.objectOf(PropTypes.any),
   };
 
   RecordList.defaultProps = {
@@ -57,6 +62,7 @@ export default function RecordList({
     disableListPagination: false,
     disableRouterPagination: true,
     hasFilter: true,
+    hasTimeline: true,
     highlightRecordsWithMetadataField: null,
     interval: null,
     // searchParams: null,
@@ -67,6 +73,7 @@ export default function RecordList({
     params: {},
     mode: 'material',
     useRouteParams: false,
+    containerRef: null,
   };
 
   const navigate = useNavigate();
@@ -261,6 +268,12 @@ export default function RecordList({
     )
   );
 
+  const handleYearFilter = (type, value) => {
+    // Update filter and trigger a new search
+    setFilter({ ...filter, [type]: value });
+    // Do your search logic here
+  };
+
   // render more records once, without pagination
   const renderMoreButton = () => (
     // return (
@@ -287,9 +300,9 @@ export default function RecordList({
     />
   )) : [];
 
-  
-    return (
-      <>{
+  return (
+    <>
+      {
         hasFilter
         && (
         <div className="filter-wrapper">
@@ -312,7 +325,14 @@ export default function RecordList({
         )
       }
       {
-        !fetchingPage &&
+        hasTimeline
+        && (
+          <Timeline containerRef={containerRef} params={params} filter={filter} mode={mode} onYearFilter={handleYearFilter} />
+        )
+      }
+      {
+        !fetchingPage
+      && (
       <div className={
         `${tableClass ?? ''
         } table-wrapper records-list list-container${records.length == 0 ? ' loading' : fetchingPage ? ' loading-page' : ''}`
@@ -433,18 +453,20 @@ export default function RecordList({
 
         }
       </div>
+      )
 }
-{
+      {
   fetchingPage && (
     <p className="page-info"><strong>Söker...</strong></p>
   )
 }
-{
+      {
   !fetchingPage && records.length === 0 && (
     <div className="table-wrapper list-container">
-       <h3>{l('Inga sökträffar.')}</h3>
-     </div>)
+      <h3>{l('Inga sökträffar.')}</h3>
+    </div>
+  )
 }
-      </>
-    );
+    </>
+  );
 }
