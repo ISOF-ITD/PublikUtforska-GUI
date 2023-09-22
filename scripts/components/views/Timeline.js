@@ -78,6 +78,7 @@ function Timeline({
   useEffect(() => {
     const newWidth = containerRef.current ? containerRef.current.offsetWidth : 800;
     setContainerWidth(newWidth);
+    // bandwidth is the width of each band
     const bandWidth = containerWidth / (data.length || 1); // Assuming fixed SVG width here
 
     const svg = d3.select(svgRef.current);
@@ -157,6 +158,91 @@ function Timeline({
       .attr('y1', 0)
       .attr('y2', svgHeight);
 
+    const otherVerticalLine = svg.append('line')
+      .style('display', 'none')
+      .style('stroke', 'black')
+      .style('stroke-dasharray', '3,3')
+      .attr('y1', 0)
+      .attr('y2', svgHeight + 15);
+
+    // Add drag functionality
+    let dragStart = null;
+    let dragEnd = null;
+    let dragStartYear = null;
+
+    const drag = d3.drag()
+      .on('start', (event) => {
+        const [x] = d3.pointer(event);
+        const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
+        const year = xScale.domain()[hoveredBand];
+        dragStartYear = year;
+        dragStart = xScale(year);
+        svg.selectAll('.selectionStartText').remove();
+        svg.selectAll('.selectionEndText').remove();
+
+        // Remove existing selection rectangle if any
+        svg.selectAll('.selectionRect').remove();
+      })
+      .on('drag', (event) => {
+        svg.selectAll('.selectionStartText').remove();
+        svg.selectAll('.selectionEndText').remove();
+        svg.append('text')
+          .attr('class', 'selectionStartText')
+          .attr('x', dragStart - 15)
+          .attr('y', 90)
+          .text(dragStartYear)
+          .style('font-size', '12px');
+
+        // -160 is needed for the drag event to work properly
+        const svgLeftOffset = svg.node().getBoundingClientRect().left;
+        const x = d3.pointer(event)[0] - svgLeftOffset;
+        // the following code does these steps:
+        const hoveredBand = Math.floor(
+          (x - xScale.range()[0]) / bandWidth,
+        );
+        const year = xScale.domain()[hoveredBand + 1];
+        dragEnd = xScale(year);
+
+        // increase the length of the vertical line
+        verticalLine.attr('y2', svgHeight + 15);
+
+        // Remove existing selection rectangle if any
+        svg.selectAll('.selectionRect').remove();
+        // Draw a new selection rectangle
+        svg.append('rect')
+          .attr('class', 'selectionRect')
+          .attr('x', Math.min(dragStart, dragEnd))
+          .attr('y', 0)
+          .attr('width', Math.abs(dragEnd - dragStart))
+          .attr('height', svgHeight)
+          .attr('fill', '#ddd')
+          .attr('opacity', 0.5);
+
+        otherVerticalLine.style('display', null).attr('x1', x).attr('x2', x);
+
+        if (Math.abs(dragStartYear - year) > 1) {
+          svg
+            .append('text')
+            .attr('class', 'selectionEndText')
+            .attr('x', dragEnd - 15)
+            .attr('y', 90)
+            .text(year - 1)
+            .style('font-size', '12px');
+          // add a border around the text
+        }
+      })
+      .on('end', () => {
+        // Use dragStart and dragEnd to determine the years that were selected
+        // Execute any filtering logic you may have here
+        // For example: onYearFilter(yearStart, yearEnd)
+        const hoveredBandStart = Math.floor((dragStart - xScale.range()[0]) / bandWidth);
+        const firstYear = xScale.domain()[hoveredBandStart];
+        const hoveredBandEnd = Math.floor((dragEnd - xScale.range()[0]) / bandWidth);
+        const lastYear = xScale.domain()[hoveredBandEnd] - 1;
+      });
+
+    svg.call(drag);
+
     const tooltip = svg.append('g')
       .style('display', 'none');
 
@@ -187,8 +273,9 @@ function Timeline({
       const tooltipWidth = 150; // Samma bredd som du har satt på din tooltip
       const tooltipHeight = 20; // Samma höjd som du har satt på din tooltip
 
+      // for tooltip:
       const xOffset = x + tooltipWidth > containerWidth ? -tooltipWidth - 10 : 10;
-      const yOffset = y + tooltipHeight > 200 ? -tooltipHeight - 10 : 10;
+      const yOffset = y + tooltipHeight > 200 ? -tooltipHeight - 1 : 1;
 
       // sticky vertical line:
       // const xPos = xScale(year);
@@ -200,6 +287,7 @@ function Timeline({
       // } else {
       verticalLine.style('display', null).attr('x1', x).attr('x2', x);
       // }
+      otherVerticalLine.style('display', 'none');
 
       tooltip.select('text')
         .text(`${year}: ${value} ${
