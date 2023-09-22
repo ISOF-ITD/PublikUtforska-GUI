@@ -4,14 +4,15 @@ import PropTypes from 'prop-types';
 import config from '../../config';
 
 function Timeline({
-  containerRef, params, filter, mode, onYearFilter,
+  containerRef, params, filter, mode, onYearFilter, resetOnYearFilter,
 }) {
   Timeline.propTypes = {
+    containerRef: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     filter: PropTypes.string.isRequired,
     mode: PropTypes.string.isRequired,
     onYearFilter: PropTypes.func.isRequired,
-    containerRef: PropTypes.object.isRequired,
+    resetOnYearFilter: PropTypes.func.isRequired,
   };
 
   const [containerWidth, setContainerWidth] = useState(800); // default value
@@ -24,8 +25,6 @@ function Timeline({
   useEffect(() => {
     const fetchParams = {
       search: params.search ? encodeURIComponent(params.search) : undefined,
-      year_from: params.year_from || undefined,
-      year_to: params.year_to || undefined,
       recordtype: params.recordtype || (mode === 'transcribe' ? 'one_accession_row' : (filter || null)),
       transcriptionstatus: 'published,accession',
     };
@@ -172,6 +171,7 @@ function Timeline({
 
     const drag = d3.drag()
       .on('start', (event) => {
+        dragEnd = null;
         const [x] = d3.pointer(event);
         const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
         const year = xScale.domain()[hoveredBand];
@@ -232,13 +232,19 @@ function Timeline({
         }
       })
       .on('end', () => {
-        // Use dragStart and dragEnd to determine the years that were selected
-        // Execute any filtering logic you may have here
-        // For example: onYearFilter(yearStart, yearEnd)
-        const hoveredBandStart = Math.floor((dragStart - xScale.range()[0]) / bandWidth);
-        const firstYear = xScale.domain()[hoveredBandStart];
-        const hoveredBandEnd = Math.floor((dragEnd - xScale.range()[0]) / bandWidth);
-        const lastYear = xScale.domain()[hoveredBandEnd] - 1;
+        if (dragEnd !== null) {
+          const hoveredBandStart = Math.floor((dragStart - xScale.range()[0]) / bandWidth);
+          const firstYear = xScale.domain()[hoveredBandStart];
+          const hoveredBandEnd = Math.floor((dragEnd - xScale.range()[0]) / bandWidth);
+          const lastYear = xScale.domain()[hoveredBandEnd] - 1;
+
+          onYearFilter(
+            Math.min(firstYear, lastYear),
+            Math.max(firstYear, lastYear),
+          );
+        } else {
+          resetOnYearFilter();
+        }
       });
 
     svg.call(drag);
@@ -310,7 +316,7 @@ function Timeline({
     });
 
     // Add sliders here, if you wish
-  }, [data, onYearFilter, containerRef.current, containerWidth]);
+  }, [data, containerRef.current, containerWidth]);
 
   useEffect(() => {
     const updateWidth = () => {

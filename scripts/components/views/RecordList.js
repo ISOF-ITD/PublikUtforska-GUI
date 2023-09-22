@@ -81,6 +81,7 @@ export default function RecordList({
   const [records, setRecords] = useState([]);
   const [fetchingPage, setFetchingPage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [yearFilter, setYearFilter] = useState(null);
   const [sort, setSort] = useState('archive.archive_id_row.keyword');
   const [order, setOrder] = useState('asc');
   const [loadedMore, setLoadedMore] = useState(false);
@@ -145,8 +146,7 @@ export default function RecordList({
       search_field: params.search_field || undefined,
       type: params.type,
       category: params.category && `${params.category}${params.subcategory ? `,${params.subcategory}` : ''}`, // subcategory for matkartan
-      year_from: params.year_from || undefined,
-      year_to: params.year_to || undefined,
+      collection_years: yearFilter?.join(',') || undefined,
       gender: params.gender ? (params.person_relation ? `${params.person_relation}:${params.gender}` : params.gender) : undefined,
       // gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : undefined,
       birth_years: params.birth_years ? (params.person_relation ? `${params.person_relation}:${params.gender ? `${params.gender}:` : ''}${params.birth_years}` : params.birth_years) : undefined,
@@ -193,7 +193,7 @@ export default function RecordList({
 
   useEffect(() => {
     fetchData(params);
-  }, [params, currentPage, sort, order, filter]);
+  }, [params, currentPage, sort, order, filter, yearFilter]);
 
   useEffect(() => {
     const newSearchParams = { ...params, size: sizeMore };
@@ -268,10 +268,12 @@ export default function RecordList({
     )
   );
 
-  const handleYearFilter = (type, value) => {
-    // Update filter and trigger a new search
-    setFilter({ ...filter, [type]: value });
-    // Do your search logic here
+  const handleYearFilter = (firstYear, lastYear) => {
+    setYearFilter([firstYear, lastYear]);
+  };
+
+  const resetOnYearFilter = () => {
+    setYearFilter(null);
   };
 
   // render more records once, without pagination
@@ -327,7 +329,14 @@ export default function RecordList({
       {
         hasTimeline
         && (
-          <Timeline containerRef={containerRef} params={params} filter={filter} mode={mode} onYearFilter={handleYearFilter} />
+          <Timeline
+            containerRef={containerRef}
+            params={params}
+            filter={filter}
+            mode={mode}
+            onYearFilter={handleYearFilter}
+            resetOnYearFilter={resetOnYearFilter}
+          />
         )
       }
       {
