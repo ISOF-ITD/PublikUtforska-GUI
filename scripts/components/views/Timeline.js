@@ -170,6 +170,7 @@ function Timeline({
     let dragStartYear = null;
 
     const drag = d3.drag()
+      .touchable(false) // disable touch events
       .on('start', (event) => {
         dragEnd = null;
         const [x] = d3.pointer(event);
