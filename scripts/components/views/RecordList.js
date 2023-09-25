@@ -62,7 +62,7 @@ export default function RecordList({
     disableListPagination: false,
     disableRouterPagination: true,
     hasFilter: true,
-    hasTimeline: true,
+    hasTimeline: false,
     highlightRecordsWithMetadataField: null,
     interval: null,
     // searchParams: null,
