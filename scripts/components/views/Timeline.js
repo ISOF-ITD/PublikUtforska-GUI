@@ -89,7 +89,6 @@ function Timeline({
       // följande gör att banden börjar vid 40px offset, men fungerar inte med tooltip just nu
       // .range([40, containerWidth])
       .range([0, containerWidth])
-      // följande gör att banden är 10px breda
       .padding(0.2);
 
     // Lägger till en x-axel
@@ -194,15 +193,21 @@ function Timeline({
           .text(dragStartYear)
           .style('font-size', '12px');
 
-        // -160 is needed for the drag event to work properly
         const svgLeftOffset = svg.node().getBoundingClientRect().left;
         const x = d3.pointer(event)[0] - svgLeftOffset;
-        // the following code does these steps:
         const hoveredBand = Math.floor(
           (x - xScale.range()[0]) / bandWidth,
         );
-        const year = xScale.domain()[hoveredBand + 1];
+        // offset i 1 if the selection is to the right of the start
+        // offset is 0 if the selection is to the left of the start
+        const dragEndOffset = x > dragStart ? 1 : 0;
+        const year = xScale.domain()[hoveredBand + dragEndOffset];
         dragEnd = xScale(year);
+
+        // if the selection is to the left of the start, increase startYear by 1
+        // const dragStartYearOffset = x > dragStart ? 0 : 1;
+        // we need this offset to make sure the selection rectangle is drawn correctly
+        const dragStartOffset = x > dragStart ? 0 : bandWidth;
 
         // increase the length of the vertical line
         verticalLine.attr('y2', svgHeight + 15);
@@ -214,7 +219,7 @@ function Timeline({
           .attr('class', 'selectionRect')
           .attr('x', Math.min(dragStart, dragEnd))
           .attr('y', 0)
-          .attr('width', Math.abs(dragEnd - dragStart))
+          .attr('width', Math.abs(dragEnd - (dragStart + dragStartOffset)))
           .attr('height', svgHeight)
           .attr('fill', '#ddd')
           .attr('opacity', 0.5);
@@ -222,12 +227,14 @@ function Timeline({
         otherVerticalLine.style('display', null).attr('x1', x).attr('x2', x);
 
         if (Math.abs(dragStartYear - year) > 1) {
+          // if the selection is to the right of the start, decrease endYear by 1
+          const offset = dragEnd > dragStart ? -1 : 0;
           svg
             .append('text')
             .attr('class', 'selectionEndText')
             .attr('x', dragEnd - 15)
             .attr('y', 90)
-            .text(year - 1)
+            .text(parseInt(year, 10) + offset)
             .style('font-size', '12px');
           // add a border around the text
         }
@@ -237,7 +244,9 @@ function Timeline({
           const hoveredBandStart = Math.floor((dragStart - xScale.range()[0]) / bandWidth);
           const firstYear = xScale.domain()[hoveredBandStart];
           const hoveredBandEnd = Math.floor((dragEnd - xScale.range()[0]) / bandWidth);
-          const lastYear = xScale.domain()[hoveredBandEnd] - 1;
+          // if the selection is to the right of the start, decrease endYear by 1
+          const offset = dragEnd > dragStart ? -1 : 0;
+          const lastYear = parseInt(xScale.domain()[hoveredBandEnd], 10) + offset;
 
           onYearFilter(
             Math.min(firstYear, lastYear),
