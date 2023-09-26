@@ -22,6 +22,40 @@ function Timeline({
 
   const svgHeight = 60;
 
+  function selectionTextPosition(dragStart, dragEnd) {
+    let dragStartOffset = 0;
+    let dragEndOffset = 0;
+    // dra till vänster
+    if (dragEnd < dragStart) {
+      // default offset for dragEnd is -10
+      dragEndOffset = -20;
+      // if dragStart is too close to the right edge, move the text position to the left
+      dragStartOffset = dragStart > containerWidth - 40 ? -15 : dragStartOffset;
+      // if same as above and dragEnd is to the left of dragStart,
+      // and dragEnd is only one label away from dragStart, move the text position to the left
+      dragEndOffset = dragStart > containerWidth - 40
+        && (dragStart - dragEnd) < 80 ? dragStartOffset * 2 : dragEndOffset;
+      // if dragStart is too close to the left edge, move the text position to the right
+      dragStartOffset = dragStart < 80 ? 15 : dragStartOffset;
+      // dra till höger eller bara en punkt
+    } else {
+      // default offset for dragEnd is 10
+      // dragEndOffset = 0;
+      // if dragEnd - dragStart is only one label away from dragStart, dragEndOffset should be 15
+      dragEndOffset = (dragEnd - dragStart) < 30 ? 15 : dragEndOffset;
+      // if dragEnd is too close to the left edge, move the text position to the right
+      dragEndOffset = dragEnd < 40 ? 15 : dragEndOffset;
+      // if dragEnd is close to the right edge, and dragStart is only one label away from dragEnd,
+      // move the text position of dragStart to the left
+      dragStartOffset = dragEnd > containerWidth - 40
+        && (dragEnd - dragStart) < 30 ? -30 : dragStartOffset;
+    }
+    return {
+      start: dragStart + dragStartOffset,
+      end: dragEnd + dragEndOffset,
+    };
+  }
+
   useEffect(() => {
     const fetchParams = {
       search: params.search ? encodeURIComponent(params.search) : undefined,
@@ -107,18 +141,6 @@ function Timeline({
       .domain([0, d3.max(data, (d) => d.doc_count)])
       .range([svgHeight, 0]);
 
-    // Lägger till en y-axel
-    // fungerar inte med tooltip just nu
-    // const yAxis = d3.axisLeft(yScale)
-    //   .ticks(5)
-    //   // use swe locale for thousands separator
-    //   .tickFormat((d) => d.toLocaleString('sv-SE'));
-
-    // svg.append('g')
-    //   // följande gör att y-axeln börjar vid 40px offset
-    //   .attr('transform', 'translate(40,0)')
-    //   .call(yAxis);
-
     // Lägger till horisontella linjer
     svg.selectAll('line.horizontal')
       .data(yScale.ticks(5)) // Samma antal ticks som du använde i yAxis
@@ -168,6 +190,8 @@ function Timeline({
     let dragEnd = null;
     let dragStartYear = null;
 
+    const svgLeftOffset = svg.node().getBoundingClientRect().left;
+
     const drag = d3.drag()
       .touchable(false) // disable touch events
       .on('start', (event) => {
@@ -186,28 +210,33 @@ function Timeline({
       .on('drag', (event) => {
         svg.selectAll('.selectionStartText').remove();
         svg.selectAll('.selectionEndText').remove();
+
+        // add text to the start of the selection
         svg.append('text')
           .attr('class', 'selectionStartText')
-          .attr('x', dragStart - 15)
+          .attr('x', selectionTextPosition(dragStart, dragEnd).start)
           .attr('y', 90)
           .text(dragStartYear)
+          // .attr('text-anchor', dragEnd > dragStart ? 'end' : 'start')
           .style('font-size', '12px');
 
-        const svgLeftOffset = svg.node().getBoundingClientRect().left;
         const x = d3.pointer(event)[0] - svgLeftOffset;
         const hoveredBand = Math.floor(
           (x - xScale.range()[0]) / bandWidth,
         );
-        // offset i 1 if the selection is to the right of the start
-        // offset is 0 if the selection is to the left of the start
-        const dragEndOffset = x > dragStart ? 1 : 0;
-        const year = xScale.domain()[hoveredBand + dragEndOffset];
+        const year = xScale.domain()[hoveredBand]
+        // or if we are outside the domain
+        || xScale.domain()[
+          // if selection is to the right of the start, use the last year
+          // otherwise use the first year
+          dragEnd > dragStart ? xScale.domain().length - 1 : 0
+        ];
         dragEnd = xScale(year);
 
-        // if the selection is to the left of the start, increase startYear by 1
-        // const dragStartYearOffset = x > dragStart ? 0 : 1;
         // we need this offset to make sure the selection rectangle is drawn correctly
-        const dragStartOffset = x > dragStart ? 0 : bandWidth;
+        const dragStartOffset = dragEnd > dragStart ? 0 : bandWidth;
+
+        const dragEndOffset = dragEnd > dragStart ? bandWidth : 0;
 
         // increase the length of the vertical line
         verticalLine.attr('y2', svgHeight + 15);
@@ -219,24 +248,34 @@ function Timeline({
           .attr('class', 'selectionRect')
           .attr('x', Math.min(dragStart, dragEnd))
           .attr('y', 0)
-          .attr('width', Math.abs(dragEnd - (dragStart + dragStartOffset)))
+          .attr('width', Math.abs(dragEnd + dragEndOffset - (dragStart + dragStartOffset)))
           .attr('height', svgHeight)
           .attr('fill', '#ddd')
           .attr('opacity', 0.5);
 
         otherVerticalLine.style('display', null).attr('x1', x).attr('x2', x);
 
-        if (Math.abs(dragStartYear - year) > 1) {
-          // if the selection is to the right of the start, decrease endYear by 1
-          const offset = dragEnd > dragStart ? -1 : 0;
-          svg
-            .append('text')
-            .attr('class', 'selectionEndText')
-            .attr('x', dragEnd - 15)
-            .attr('y', 90)
-            .text(parseInt(year, 10) + offset)
-            .style('font-size', '12px');
-          // add a border around the text
+        // add text to the end of the selection
+        const endSelectionTextElement = svg
+        // svg
+          .append('text')
+          .attr('class', 'selectionEndText')
+          .attr('x', selectionTextPosition(dragStart, dragEnd).end)
+          .attr('y', 90)
+          .text(dragEnd !== dragStart ? parseInt(year, 10) : '')
+          // .attr('text-anchor', dragEnd > dragStart ? 'start' : 'end')
+          .style('font-size', '12px');
+
+        // if the left edge of the selection text is outside the svg, move it inside
+        const selectionTextLeftEdge = endSelectionTextElement.node().getBoundingClientRect().left;
+        if (selectionTextLeftEdge < svgLeftOffset) {
+          endSelectionTextElement.attr('x', 0);
+          endSelectionTextElement.attr('text-anchor', 'start');
+        }
+        // if the right edge of the selection text is outside the svg, move it inside
+        const selectionTextRightEdge = endSelectionTextElement.node().getBoundingClientRect().right;
+        if (selectionTextRightEdge > containerWidth + svgLeftOffset) {
+          endSelectionTextElement.attr('x', containerWidth - 25);
         }
       })
       .on('end', () => {
@@ -245,8 +284,8 @@ function Timeline({
           const firstYear = xScale.domain()[hoveredBandStart];
           const hoveredBandEnd = Math.floor((dragEnd - xScale.range()[0]) / bandWidth);
           // if the selection is to the right of the start, decrease endYear by 1
-          const offset = dragEnd > dragStart ? -1 : 0;
-          const lastYear = parseInt(xScale.domain()[hoveredBandEnd], 10) + offset;
+          // const offset = dragEnd > dragStart ? -1 : 0;
+          const lastYear = parseInt(xScale.domain()[hoveredBandEnd], 10);
 
           onYearFilter(
             Math.min(firstYear, lastYear),
