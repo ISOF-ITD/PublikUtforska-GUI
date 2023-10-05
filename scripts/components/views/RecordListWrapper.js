@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 
+import { useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 
 import RecordList from './RecordList';
@@ -34,6 +35,7 @@ export default function RecordListWrapper({
 
   const params = useParams();
   const location = useLocation();
+  const containerRef = useRef();
 
   return (
     <div className="container">
@@ -48,7 +50,7 @@ export default function RecordListWrapper({
       </div>
 
       <div className="row">
-        <div className="records-list-wrapper">
+        <div className="records-list-wrapper" ref={containerRef}>
           <RecordList
             key={`RecordListWrapper-RecordList-${location.pathname}`}
             // searchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
@@ -61,8 +63,10 @@ export default function RecordListWrapper({
               transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
             }}
             mode={mode}
-            hasFilter={mode === 'transcribe' ? false : true}
+            hasFilter={mode !== 'transcribe'}
+            hasTimeline
             openSwitcherHelptext={openSwitcherHelptext}
+            containerRef={containerRef}
           />
         </div>
       </div>

@@ -14,6 +14,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@react-spring/web": "^9.7.2",
+    "d3": "^7.8.5",
     "eventbusjs": "^0.2.0",
     "html-webpack-plugin": "^5.5.3",
     "leaflet": "^1.9.4",
