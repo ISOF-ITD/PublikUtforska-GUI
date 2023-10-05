@@ -312,7 +312,7 @@ export default function RecordListItem({
       if (persons.length > 0) {
         collectorPersonElement = persons
           .map((collectorPersonItem) => {
-            if (collectorPersonItem.relation === 'c') {
+            if (collectorPersonItem.relation.includes('c', 'collector')) {
               const collectorParams = { ...searchParams, page: undefined };
               const href = `#${mode === 'transcribe' ? '/transcribe' : ''
               }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({

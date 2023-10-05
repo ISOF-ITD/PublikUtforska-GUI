@@ -252,8 +252,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     const personItems = data.persons?.length > 0 ? data.persons.map((person) => (
       <tr key={person.id}>
         <td data-title="">
-          {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && person.relation === 'i' && person.name}
-          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && person.relation === 'i') && <a href={`#/persons/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
+          {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && person.relation.includes('i', 'informant') && person.name}
+          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && person.relation.includes('i', 'informant')) && <a href={`#/persons/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
           {config.siteOptions.disablePersonLinks && person.name}
         </td>
         <td data-title="Födelseår">{person.birth_year && person.birth_year > 0 ? person.birth_year : ''}</td>
@@ -265,8 +265,18 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           {person.birthplace ? ` ${person.birthplace}` : ''}
         </td>
         <td data-title="Roll">
-          {person.relation === 'c' && l('Upptecknare')}
-          {person.relation === 'i' && l('Informant')}
+          {person.relation.includes('c', 'collector') && l('Insamlare')}
+          {person.relation.includes('i', 'informant') && l('Informant')}
+          {person.relation === 'excerpter' && l('Excerpist')}
+          {person.relation === 'author' && l('Författare')}
+          {person.relation === 'recorder' && l('Inspelad av')}
+          {person.relation === 'photographer' && l('Fotograf')}
+          {person.relation === 'interviewer' && l('Intervjuare')}
+          {person.relation === 'mentioned' && l('Omnämnd')}
+          {person.relation === 'artist' && l('Konstnär')}
+          {person.relation === 'illustrator' && l('Illustratör')}
+          {person.relation === 'sender' && l('Avsändare')}
+          {person.relation === 'receiver' && l('Mottagare')}
         </td>
       </tr>
     )) : [];
