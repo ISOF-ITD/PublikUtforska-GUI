@@ -252,8 +252,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     const personItems = data.persons?.length > 0 ? data.persons.map((person) => (
       <tr key={person.id}>
         <td data-title="">
-          {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && person.relation.includes('i', 'informant') && person.name}
-          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && person.relation.includes('i', 'informant')) && <a href={`#/persons/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
+          {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && ['i', 'informant'].includes(person.relation) && person.name}
+          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && ['i', 'informant'].includes(person.relation)) && <a href={`#/persons/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
           {config.siteOptions.disablePersonLinks && person.name}
         </td>
         <td data-title="Födelseår">{person.birth_year && person.birth_year > 0 ? person.birth_year : ''}</td>
@@ -265,8 +265,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           {person.birthplace ? ` ${person.birthplace}` : ''}
         </td>
         <td data-title="Roll">
-          {person.relation.includes('c', 'collector') && l('Insamlare')}
-          {person.relation.includes('i', 'informant') && l('Informant')}
+          {['c', 'collector'].includes(person.relation) && l('Insamlare')}
+          {['i', 'informant'].includes(person.relation) && l('Informant')}
           {person.relation === 'excerpter' && l('Excerpist')}
           {person.relation === 'author' && l('Författare')}
           {person.relation === 'recorder' && l('Inspelad av')}
