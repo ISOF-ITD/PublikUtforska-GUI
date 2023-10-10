@@ -34,9 +34,10 @@ export function makeArchiveIdHumanReadable(str) {
 
   if (letterPart === null || letterPart.trim().length === 0) {
     // Om ingen bokstavsdel i början av arkivid använd hela strängen som "numerisk" del
+    // och ta bort alla nollor i början av den andra delen
     parts = [
       letterPart.toUpperCase(),
-      str,
+      str.replace(/^0+/, ''),
     ];
   } else {
     // Stora bokstäver för den första delen och ta bort alla nollor i början av den andra delen
