@@ -30,12 +30,21 @@ export function makeArchiveIdHumanReadable(str) {
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
   // och andra delen som är en siffra (0 eller flera siffror)
   const [letterPart, numberPart = ''] = str.match(/^(\D*)([0-9:]+)?/).slice(1);
+  let parts = []
 
-  // Stora bokstäver för den första delen och ta bort alla nollor i början av den andra delen
-  const parts = [
-    letterPart.toUpperCase(),
-    numberPart.replace(/^0+/, ''),
-  ];
+  if (letterPart === null || letterPart.trim().length === 0) {
+    // Om ingen bokstavsdel i början av arkivid använd hela strängen som "numerisk" del
+    parts = [
+      letterPart.toUpperCase(),
+      str,
+    ];
+  } else {
+    // Stora bokstäver för den första delen och ta bort alla nollor i början av den andra delen
+    parts = [
+      letterPart.toUpperCase(),
+      numberPart.replace(/^0+/, ''),
+    ];
+  }
 
   // Returnera en sträng med båda delarna separerade med ett mellanslag
   return parts.join(' ');
