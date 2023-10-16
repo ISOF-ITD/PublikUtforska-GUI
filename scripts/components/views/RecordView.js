@@ -424,7 +424,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               <p />
             </i>
             {
-              data?.headwords || ''
+              data?.headwords?.replace(/(Sida|Sidor)/g, '\n$1') || ''
             }
           </div>
         </div>
