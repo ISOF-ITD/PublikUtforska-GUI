@@ -1,8 +1,22 @@
-// https://css-tricks.com/the-checkbox-hack/
+div.realkatalog-content {
+    &.show{
+        display: block;
+    }
 
-.realkatalog-content {
-    display: none;
+    &.hide{
+        display: none;
+    }
 }
+
+button.headwords-toggle {
+    border: none;
+    letter-spacing: inherit;
+    padding: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    margin-bottom: inherit;
+}
+
 #toggle:checked ~ .realkatalog-content {
     display: block;
 }

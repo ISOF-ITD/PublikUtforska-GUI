@@ -4,6 +4,8 @@ import {
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 // import localLibrary from '../../utils/localLibrary';
 
@@ -48,6 +50,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   // const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
+
+  const [expandedHeadwords, setExpandedHeadwords] = useState(false);
+  const toggleHeadwordsExpand = () => {
+    setExpandedHeadwords(!expandedHeadwords);
+  };
 
   const location = useLocation();
 
@@ -289,6 +296,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     )) : [];
 
     let textElement;
+    let headwordsElement;
 
     let forceFullWidth = false;
 
@@ -346,15 +354,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         // Set the forceFullWidth variable to true
         forceFullWidth = true;
       }
-      let text = (highlight && highlightedText) || data.text;
-      // create a button/label to hide and show text below "Uppslagsord"
-      if (text?.includes('<p>Uppslagsord:</p>')) {
-        const uppslagsordLink = '<p><label for="toggle">Uppslagsord</label></p>';
-        const parts = text.split('<p>Uppslagsord:</p>');
-        text = `${parts[0]
-          + uppslagsordLink
-        }<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">${parts[1]}</div>`;
-      }
+      const text = (highlight && highlightedText) || data.text;
       // If there is at least one PDF file, create a PdfViewer component for every PDF file
       if (pdfObjects?.length > 0) {
         pdfObjects.forEach((pdfObject) => {
@@ -386,6 +386,47 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             // If there is at least one PDF file, create a PdfViewer component for every PDF file
             pdfElements.length ? pdfElements : ''
           }
+        </div>
+      );
+
+      headwordsElement = (
+        <div>
+          <button
+            className="headwords-toggle"
+            type="button"
+            tabIndex={0}
+            style={{
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+            onClick={toggleHeadwordsExpand}
+            onKeyDown={(e) => {
+              // Aktiverar när "Enter" eller "Space" trycks ned
+              if (e.key === 'Enter' || e.key === ' ') {
+                toggleHeadwordsExpand();
+              }
+            }}
+          >
+            <FontAwesomeIcon icon={expandedHeadwords ? faChevronDown : faChevronRight} />
+            &nbsp;
+            Uppslagsord från det historiska arkivet
+          </button>
+          <div className={`record-text realkatalog-content display-line-breaks ${expandedHeadwords ? 'show' : 'hide'}`}>
+            <i>
+              Delar av Isofs äldre arkivmaterial kan vara svårt att närma
+              sig och använda eftersom det återspeglar fördomar, stereotyper,
+              rasism och sexism. Här finns också ett förlegat och nedsättande
+              språkbruk som vi inte använder i dag.
+              <br />
+              <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
+                Läs mer om fördomar och äldre språkbruk i samlingarna.
+              </a>
+              <p />
+            </i>
+            {
+              data?.headwords || ''
+            }
+          </div>
         </div>
       );
     }
@@ -610,7 +651,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         <div className="row">
 
           {
-            (data.text || textElement)
+            (data.text || textElement || data.headwords || headwordsElement)
             && (
               <div className={`${sitevisionUrl || imageItems.length === 0 || forceFullWidth || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
                 {
@@ -629,6 +670,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                         <span style={{ marginLeft: 10 }}>Markera sökord</span>
                       </label>
                     )}
+                    {data.headwords && headwordsElement}
                   </>
                 }
 
@@ -749,9 +791,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           <div className="six columns">
             <ShareButtons path={`${config.siteUrl}#/records/${data.id}`} title={l('Kopiera länk')} />
           </div>
-        {/* </div>
-        
-        <div className="row"> */}
+
           <div className="six columns">
             {/* copies the citation to the clipboard */}
             <ShareButtons
