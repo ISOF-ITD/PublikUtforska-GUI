@@ -5,7 +5,7 @@ import {
 import PropTypes from 'prop-types';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronRight, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 // import localLibrary from '../../utils/localLibrary';
 
@@ -420,6 +420,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               <br />
               <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
                 Läs mer om fördomar och äldre språkbruk i samlingarna.
+                &nbsp;
+                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
               </a>
               <p />
             </i>
