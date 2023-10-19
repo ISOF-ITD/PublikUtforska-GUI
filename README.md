@@ -68,6 +68,17 @@ https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-
 
 # Documentation
 
+## css 
+Uses less. Every component states its main css in a comment 
+Example:
+// Main CSS: ui-components/audio-player.less
+
+## Components
+Types:
+- scripts\components\collections
+- scripts\components\views
+- scripts\components\
+
 ## Routing
 
 ### Use cases
