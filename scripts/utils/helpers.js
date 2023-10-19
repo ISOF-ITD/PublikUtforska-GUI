@@ -27,14 +27,21 @@ export function getTitle(title, contents) {
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
 export function makeArchiveIdHumanReadable(str) {
+  // Kontrollera att str är definierad
+  if (!str) return '';
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
   // och andra delen som är minst en siffra (0 eller flera siffror)
   // och behåll alla tecken efter siffran/siffrorna i andra delen
-  const [letterPart = '', numberPart = ''] = str.match(/^(\D*)([0-9:]+.*)?/).slice(1);
+  const match = str.match(/^(\D*)([0-9:]+.*)?/);
 
+  // Om ingen matchning hittades, returnera en tom sträng
+  if (!match) return '';
+
+  const [letterPart = '', numberPart = ''] = match.slice(1);
+
+  // Omvandla bokstäver till versaler och ta bort inledande nollor
   const parts = [
     letterPart.toUpperCase(),
-    // Ta bort inledande nollor
     numberPart.replace(/^0+/, ''),
   ];
 
