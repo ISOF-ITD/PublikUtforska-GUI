@@ -10,6 +10,8 @@ This file is part of the leaflet locate control. It is licensed under the MIT li
 You can find the project at: https://github.com/domoritz/leaflet-locatecontrol
 */
 
+/*! nouislider - 14.7.0 - 4/6/2021 */
+
 /**
  * @license React
  * react-dom.production.min.js
