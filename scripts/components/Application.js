@@ -15,6 +15,7 @@ import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
+import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 
 import MapWrapper from './MapWrapper';
 import Footer from './Footer';
@@ -58,6 +59,12 @@ export default function Application({
     navigate(target);
   };
 
+  const audioPlayerVisibleHandler = () => {
+		// När GlobalAudioPlayer visas lägger vi till class till document.body för att
+		// få utrymme för ljudspelaren i gränssnittet
+		document.body.classList.add('has-docked-control');
+	}
+
   useEffect(() => {
     setLoading(true);
     results.then((data) => {
@@ -68,6 +75,9 @@ export default function Application({
   }, [results]);
 
   useEffect(() => {
+    // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
+    window.eventBus.addEventListener('audio.playervisible', audioPlayerVisibleHandler);
+
     document.title = config.siteTitle;
 
     setTimeout(() => {
@@ -106,6 +116,7 @@ export default function Application({
         loading={loading}
       />
 
+      <GlobalAudioPlayer />
       <ImageOverlay />
       <FeedbackOverlay />
       <ContributeInfoOverlay />
@@ -117,3 +128,4 @@ export default function Application({
     </div>
   );
 }
+
