@@ -22,7 +22,7 @@ import SitevisionContent from '../SitevisionContent';
 import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
-import { getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
+import { getTitle, makeArchiveIdHumanReadable, getAudioTitle } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
 
@@ -229,9 +229,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       audioItems = audioDataItems.map((mediaItem) => (
         <tr key={mediaItem.source}>
           <td data-title="Lyssna:" width="50px">
-          <ListPlayButton media={mediaItem} recordId={data.id} recordTitle={data.title ? data.title : mediaItem.title ? mediaItem.title : l("Ljud")} />
+          <ListPlayButton media={mediaItem} recordId={data.id} recordTitle={getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.persons, data.year)} />
           </td>
-          <td>{mediaItem.title ? mediaItem.title : data.title ? mediaItem.title : l("Ljud")}</td>
+          <td>{getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.persons, data.year)}</td>
         </tr>
       ));
 

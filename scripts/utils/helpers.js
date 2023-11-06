@@ -24,6 +24,96 @@ export function getTitle(title, contents) {
   }
 }
 
+/* Funktion för att skapa titel för ljudfil
+
+Mediafil Titel
+1.	Registrerad titel (records_media.title)
+2.	Om arkiv AFU: records.content (Bara om en fil på accessionsraden?)
+	Många eller alla?
+3.	Om arkiv AFG: Rad i innehåll (records.content) med match på filnamn
+-	ca 900 med detta mönster
+-	Första “ordet” med mönster (### ? R) där
+	# = Accessionsnummer med (optional prefix?) och siffror
+	? = Bokstav, t.ex. sida
+	Valfri siffra oftast i romersk form (I, II, III)
+4.	Om de finns: Informanter(er), insamlingsår
+5.	Inspelning?
+
+*/ 
+export function getAudioTitle(title, contents, archiveName, fileName, year, persons) {
+  console.log(title);
+  switch (!!title) {
+    case true:
+      return title;
+    default:
+      if (contents) {
+        if (contents.length > 0) {
+          if (archiveName.includes("AFU")) {
+            if (contents.length > 100) {
+              return `[${contents.substring(0, 84)} ${'(FÖRKORTAD TITEL)'}]`;
+            }
+            return `[${contents}]`;
+          }
+          if (archiveName.includes("AFG")) {
+            // Clean different row breaks:
+            let cleanContent = contents.replace(/\r\n/g,'\n').replace(/\n\n/g,'\n');
+            let contentRows = cleanContent.split('\n');
+            let i = 0;
+            while (i < contentRows.length) {
+              console.log(contentRows[i]);
+              // Get first element which is an archive id that often match the filename:
+              let elements = contentRows[i].split(')');
+              if (elements.length > 0) {
+                let fileId = elements[0]
+                if (fileId.length > 1) {
+                  // Clean unwanted characters:
+                  fileId = fileId.replace('(','').replace(' ','')
+                  let filenameParts = fileName.split('/');
+                  if (filenameParts) {
+                    let cleanFilename = filenameParts[filenameParts.length  -1].replace('.mp3','').replace('.MP3','');
+                    // How to identify and remove other existing extensions?
+                    cleanFilename = cleanFilename.replace('SK','');
+                    // Match archive id with filename:
+                    if (fileId === cleanFilename) {
+                      return contentRows[i]
+                    }
+                  }
+                }
+              }
+              i++;
+            }            
+          }
+        }
+      }
+      if (persons) {
+        let personbasedTitle = '';
+        let i = 0;
+        while (i < persons.length) {
+          if (['i', 'informant'].includes(person[i].relation)) {
+            let name = ""
+            let birth_year = ""
+            if (person[i].name) {
+              name = person[i].name;
+              if (person[i].birthyear) {
+                birth_year = ' född ' + person[i].birthyear
+              } 
+              personbasedTitle = personbasedTitle + name + birth_year;
+            }
+          }
+        }
+      }
+      if (personbasedTitle.length > 0) {
+        if (year) {
+          personbasedTitle = personbasedTitle + ' intervju ' + year.substring(0, 4);
+        }
+      }
+      if (personbasedTitle.length > 0) {
+        return personbasedTitle;
+      }
+      return l("Inspeling");
+  }
+}
+
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
 export function makeArchiveIdHumanReadable(str) {
