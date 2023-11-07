@@ -61,8 +61,11 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
             let i = 0;
             while (i < contentRows.length) {
               console.log(contentRows[i]);
-              // Get first element which is an archive id that often match the filename:
+              // Get first element delineated by () or [] which is an archive id that often match the filename:
               let elements = contentRows[i].split(')');
+              if (contentRows[i].charAt(0) === '[') {
+                let elements = contentRows[i].split(']');
+              }
               if (elements.length > 0) {
                 let fileId = elements[0]
                 if (fileId.length > 1) {
@@ -70,7 +73,8 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
                   fileId = fileId.replace('(','').replace(' ','')
                   let filenameParts = fileName.split('/');
                   if (filenameParts) {
-                    let cleanFilename = filenameParts[filenameParts.length  -1].replace('.mp3','').replace('.MP3','');
+                    // Clean filename accordning to pattern in content field:
+                    let cleanFilename = filenameParts[filenameParts.length  -1].replace('.mp3','').replace('.MP3','').replace('I','1').replace('II','2').replace('III','3');
                     // How to identify and remove other existing extensions?
                     cleanFilename = cleanFilename.replace('SK','');
                     // Match archive id with filename:
