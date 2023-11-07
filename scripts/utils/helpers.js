@@ -28,16 +28,22 @@ export function getTitle(title, contents) {
 
 Mediafil Titel
 1.	Registrerad titel (records_media.title)
-2.	Om arkiv AFU: records.content (Bara om en fil på accessionsraden?)
+2.a	Om arkiv AFU: records.content (Bara om en fil på accessionsraden?)
 	Många eller alla?
-3.	Om arkiv AFG: Rad i innehåll (records.content) med match på filnamn
+2.b	Om arkiv AFG: Rad i innehåll (records.content) med match på filnamn
 -	ca 900 med detta mönster
 -	Första “ordet” med mönster (### ? R) där
 	# = Accessionsnummer med (optional prefix?) och siffror
 	? = Bokstav, t.ex. sida
 	Valfri siffra oftast i romersk form (I, II, III)
-4.	Om de finns: Informanter(er), insamlingsår
-5.	Inspelning?
+2.c Om arkiv DAL: Textsegment i innehåll (records.content) med match på filnamn
+ - Ca 6400?
+ - Tag bort " ", "_m" i filnamn
+ Exempel acc_nr_ny: "s00023 ; s00024 ;"
+ Exempel filnamn: "S 24A_m.MP3"
+ Exempel innehåll: S17A: Malt. Mara och varulv. S17B: Bäckahästen. Brygd. S18A: Brygd
+  3.	Om de finns: Informanter(er), insamlingsår
+4.	Text: "Inspelning"
 
 */ 
 export function getAudioTitle(title, contents, archiveName, fileName, year, persons) {
