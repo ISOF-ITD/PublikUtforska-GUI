@@ -3,6 +3,21 @@ Public crowdsource map based interface
 
 [Accessibility](Accessibility.md)
 
+## Code style and conventions
+
+* Use [ES6](http://es6-features.org/) syntax.
+* Use [React](https://reactjs.org/) [functional components](https://react.dev/learn/your-first-component) with [hooks](https://reactjs.org/docs/hooks-intro.html) rather than class components. When making changes to an existing class component, consider [refactoring it to a functional component](https://react.dev/reference/react/Component#alternatives). Make use of [generative AI tools](https://chat.openai.com/share/1574d01c-0b6e-43e3-82a4-a0de8d5ac955) to help you with the refactoring.
+* Use [PropTypes](https://reactjs.org/docs/typechecking-with-proptypes.html) to document the props of a component.
+* Use [Airbnb's JavaScript Style Guide](https://github.com/airbnb/javascript) with [ESLint](https://eslint.org/).
+
+## Development with Visual Studio Code
+
+Recommended extensions:
+
+* Code style: We use [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) to enforce a consistent code style. The rules are defined in [.eslintrc.js](.eslintrc.js) and are based on [Airbnb's JavaScript Style Guide](https://github.com/airbnb/javascript). With ESLint you 
+get code style warnings and errors while you type. You can run "Fix all auto-fixable Problems" (`Ctrl+Shift+P`) to fix most of the code style issues
+* (optional) [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode): with Prettier you can run "Format Document" (`Shift+Alt+F`) to format the code
+
 ## Start watching code with webpack
 
 ```bash
