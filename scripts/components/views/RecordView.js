@@ -229,9 +229,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       audioItems = audioDataItems.map((mediaItem) => (
         <tr key={mediaItem.source}>
           <td data-title="Lyssna:" width="50px">
-          <ListPlayButton media={mediaItem} recordId={data.id} recordTitle={getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.persons, data.year)} />
+          <ListPlayButton media={mediaItem} recordId={data.id} recordTitle={getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.year, data.persons)} />
           </td>
-          <td>{getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.persons, data.year)}</td>
+          <td>{getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.year, data.persons)}</td>
         </tr>
       ));
 
@@ -745,7 +745,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           {
             !sitevisionUrl && !forceFullWidth && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right' || !config.siteOptions.recordView.pdfIconsPosition || config.siteOptions.recordView.pdfIconsPosition === 'right' || !config.siteOptions.recordView.audioPlayerPosition || config.siteOptions.recordView.audioPlayerPosition === 'right') && (imageItems.length > 0 || audioItems.length > 0 || pdfItems.length > 0)
             && (
-              <div className="DISABLE-columns four u-pull-right">
+              <div className="DISABLE-columns four u-pull-left">
 
                 {
                   (!config.siteOptions.recordView || !config.siteOptions.recordView.audioPlayerPosition || config.siteOptions.recordView.audioPlayerPosition === 'right') && audioItems.length > 0
