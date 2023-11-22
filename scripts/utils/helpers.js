@@ -39,15 +39,19 @@ Mediafil Titel
 2.c Om arkiv DAL: Textsegment i innehåll (records.content) med match på filnamn
  - Ca 6400?
  - Tag bort " ", "_m" i filnamn
+ - Behåll bara två första ord om fler ord än 2 i filnamn
+ Annars:
+ a. informant?
+ b. titel = titel_allt[1-80]?
  Exempel acc_nr_ny: "s00023 ; s00024 ;"
- Exempel filnamn: "S 24A_m.MP3"
+ Exempel filnamn: "S 24A_m.MP3", "s 1000a ålem smål.mp3"
  Exempel innehåll: S17A: Malt. Mara och varulv. S17B: Bäckahästen. Brygd. S18A: Brygd
   3.	Om de finns: Informanter(er), insamlingsår
 4.	Text: "Inspelning"
 
 */ 
 export function getAudioTitle(title, contents, archiveName, fileName, year, persons) {
-  console.log(title);
+  //console.log(title);
   switch (!!title) {
     case true:
       return title;
@@ -60,13 +64,14 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
             }
             return `[${contents}]`;
           }
+          // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
+          // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
           if (archiveName.includes("AFG")) {
             // Clean different row breaks:
             let cleanContent = contents.replace(/\r\n/g,'\n').replace(/\n\n/g,'\n');
             let contentRows = cleanContent.split('\n');
-            let i = 0;
-            while (i < contentRows.length) {
-              console.log(contentRows[i]);
+            for(let i = 0; i < contentRows.length; i++) {
+              // console.log(contentRows[i]);
               // Get first element delineated by () or [] which is an archive id that often match the filename:
               let elements = contentRows[i].split(')');
               if (contentRows[i].charAt(0) === '[') {
@@ -90,37 +95,66 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
                   }
                 }
               }
-              i++;
             }            
+          }
+          // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
+          // -- Find titel_allt types by DAL acc_nr_ny_prefix "s"+ one character (to compare hits with number as second character to letters as second character):
+          if (archiveName.includes("Lund") || archiveName.includes("DAL")) {
+            // Clean different row breaks:
+            let cleanContent = contents.replace(/\r\n/g,'\n').replace(/\n\n/g,'\n');
+            let contentRows = cleanContent.split(':');
+            let i = 0;
+            // Loop until next last segment
+            for(let i = 0; i < contentRows.length - 1; i++) {
+              console.log(contentRows[i]);
+              // Get all words from next element except first element delineated by " ":
+              let this_segment = contentRows[i].split(' ');
+              let next_segment = contentRows[i+1].split(' ');
+              // Last word in segment + all but last word in next segment
+              let this_segment_file_id =  this_segment[this_segment.length - 1]
+              let this_segment_content =  next_segment.slice(0,-1).join(" ")
+              if (this_segment_file_id.length > 0) {
+                let fileId = this_segment_file_id
+                // Clean unwanted characters:
+                let cleanFilename = fileName.replace(' ','');
+                // Match archive id with filename:
+                if (cleanFilename.includes(fileId)) {
+                  let file_title = this_segment_file_id + ": " + this_segment_content
+                  return file_title
+                }
+              }
+            }
           }
         }
       }
       if (persons) {
         let personbasedTitle = '';
         let i = 0;
-        while (i < persons.length) {
-          if (['i', 'informant'].includes(person[i].relation)) {
+        for(let i = 0; i < contentRows.length; i++) {
+          if (['i', 'informant'].includes(persons[i].relation)) {
             let name = ""
             let birth_year = ""
-            if (person[i].name) {
-              name = person[i].name;
+            if (persons[i].name) {
+              name = persons[i].name;
               if (person[i].birthyear) {
-                birth_year = ' född ' + person[i].birthyear
+                birth_year = ' född ' + persons[i].birthyear
               } 
               personbasedTitle = personbasedTitle + name + birth_year;
             }
           }
         }
-      }
-      if (personbasedTitle.length > 0) {
-        if (year) {
-          personbasedTitle = personbasedTitle + ' intervju ' + year.substring(0, 4);
+        if (personbasedTitle) {
+          if (personbasedTitle.length > 0) {
+            if (year) {
+              personbasedTitle = personbasedTitle + ' intervju ' + year.substring(0, 4);
+            }
+          }
+          if (personbasedTitle.length > 0) {
+            return personbasedTitle;
+          }
         }
       }
-      if (personbasedTitle.length > 0) {
-        return personbasedTitle;
-      }
-      return l("Inspeling");
+      return l("Inspelning");
   }
 }
 
