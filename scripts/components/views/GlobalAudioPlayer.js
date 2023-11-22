@@ -1,16 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Slider from '../Slider';
-import config from '../../config';
 import PlayerButtons from './PlayerButtons';
+import { AudioContext } from '../../contexts/AudioContext';
 
 export default function GlobalAudioPlayer() {
-  const [currentTime, setCurrentTime] = useState(0);
-  const [durationTime, setDurationTime] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const [playerLabelText, setPlayerLabelText] = useState('');
   const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
-  const audioRef = useRef(new Audio());
+  const {
+    playing,
+    audioRef,
+    setPlaying,
+    togglePlay,
+    currentTime,
+    setCurrentTime,
+    durationTime,
+    setDurationTime,
+    playerLabelText,
+    visible,
+    setVisible,
+    setCurrentAudio,
+  } = React.useContext(AudioContext);
 
   const msToTimeStr = (ms) => {
     const minutes = Math.floor(ms / 60000);
@@ -20,27 +28,12 @@ export default function GlobalAudioPlayer() {
 
   // once after first render
   useEffect(() => {
-    const audio = audioRef.current;
-
-    const playAudio = (event) => {
-      const audioSrc = config.audioUrl + event.target.audio.source;
-      audio.src = audioSrc;
-      audio.label = event.target.record.title;
-      setPlayerLabelText(event.target.record.title);
-      audio.load();
-      setPlaying(true);
-      setVisible(true);
-      audio.play();
-    };
-
-    window.eventBus.addEventListener('audio.playaudio', playAudio);
     // add listener for when size of the viewport changes
     window.addEventListener('resize', () => {
       setViewportWidth(window.innerWidth);
     });
 
     return () => {
-      window.eventBus.removeEventListener('audio.playaudio', playAudio);
       window.removeEventListener('resize', () => {
         setViewportWidth(window.innerWidth);
       });
@@ -100,18 +93,6 @@ export default function GlobalAudioPlayer() {
     setCurrentTime(value);
   };
 
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (audio) {
-      if (playing) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setPlaying(!playing);
-    }
-  };
-
   return (
     <div className={`global-audio-player-wrapper${visible ? ' visible' : ''}`}>
       <div className="global-audio-player">
@@ -153,6 +134,8 @@ export default function GlobalAudioPlayer() {
           audio.pause();
           setPlaying(false);
           setVisible(false);
+          setCurrentTime(0);
+          setCurrentAudio(null);
           // send audioplayer.invisible event
           window.eventBus.dispatch('audio.playerhidden');
         }}

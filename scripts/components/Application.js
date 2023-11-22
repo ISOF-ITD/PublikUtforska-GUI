@@ -6,6 +6,7 @@ import {
 import EventBus from 'eventbusjs';
 
 import PropTypes from 'prop-types';
+import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
 import RecordListWrapper from './views/RecordListWrapper';
 import StatisticsOverlay from './StatisticsOverlay';
@@ -59,12 +60,6 @@ export default function Application({
     navigate(target);
   };
 
-  const audioPlayerVisibleHandler = () => {
-		// När GlobalAudioPlayer visas lägger vi till class till document.body för att
-		// få utrymme för ljudspelaren i gränssnittet
-		document.body.classList.add('has-docked-control');
-	}
-
   useEffect(() => {
     setLoading(true);
     results.then((data) => {
@@ -76,7 +71,11 @@ export default function Application({
 
   useEffect(() => {
     // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
-    window.eventBus.addEventListener('audio.playervisible', audioPlayerVisibleHandler);
+    window.eventBus.addEventListener('audio.playervisible', () => {
+      // När GlobalAudioPlayer visas lägger vi till class till document.body för att
+      // få utrymme för ljudspelaren i gränssnittet
+      document.body.classList.add('has-docked-control');
+    });
     // lyssna på när ljudspelaren stängs, ta bort .has-docked-control från body class
     window.eventBus.addEventListener('audio.playerhidden', () => {
       document.body.classList.remove('has-docked-control');
@@ -95,46 +94,47 @@ export default function Application({
     });
 
     return () => {
-      window.eventBus.removeEventListener('audio.playervisible', audioPlayerVisibleHandler);
+      window.eventBus.removeEventListener('audio.playervisible');
       window.eventBus.removeEventListener('audio.playerhidden');
     };
   }, []);
 
   return (
-    <div className="app" id="app">
-      <RoutePopupWindow manuallyOpenPopup>
-        <RecordListWrapper
-          openButtonLabel="Visa sökträffar som lista"
-          disableRouterPagination
+    <AudioProvider>
+      <div className="app" id="app">
+        <RoutePopupWindow manuallyOpenPopup>
+          <RecordListWrapper
+            openButtonLabel="Visa sökträffar som lista"
+            disableRouterPagination
+            mode={mode}
+            openSwitcherHelptext={openSwitcherHelptext}
+          />
+        </RoutePopupWindow>
+
+        <Outlet />
+        {
+          children
+        }
+
+        <MapWrapper
+          mapMarkerClick={mapMarkerClick}
           mode={mode}
-          openSwitcherHelptext={openSwitcherHelptext}
+          params={params}
+          mapData={mapData}
+          recordsData={recordsData}
+          loading={loading}
         />
-      </RoutePopupWindow>
 
-      <Outlet />
-      {
-        children
-      }
-
-      <MapWrapper
-        mapMarkerClick={mapMarkerClick}
-        mode={mode}
-        params={params}
-        mapData={mapData}
-        recordsData={recordsData}
-        loading={loading}
-      />
-
-      <GlobalAudioPlayer />
-      <ImageOverlay />
-      <FeedbackOverlay />
-      <ContributeInfoOverlay />
-      <TranscriptionOverlay />
-      <TranscriptionHelpOverlay />
-      <SwitcherHelpTextOverlay />
-      <StatisticsOverlay />
-      <Footer />
-    </div>
+        <GlobalAudioPlayer />
+        <ImageOverlay />
+        <FeedbackOverlay />
+        <ContributeInfoOverlay />
+        <TranscriptionOverlay />
+        <TranscriptionHelpOverlay />
+        <SwitcherHelpTextOverlay />
+        <StatisticsOverlay />
+        <Footer />
+      </div>
+    </AudioProvider>
   );
 }
-
