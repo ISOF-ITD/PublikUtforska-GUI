@@ -167,6 +167,7 @@ export default {
   // imageUrl: 'https://www4.isof.se/NAU/bilder/',
   personImageUrl: 'https://frigg.isof.se/media/',
   // audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
+  audioUrl: 'https://sok.folke.isof.se/arkivfiler/publik/',
 
   appUrl: appUrlObject[ENV],
   siteUrl: siteUrlObject[ENV],
