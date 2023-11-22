@@ -818,7 +818,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-              `${makeArchiveIdHumanReadable(data.archive.archive_id_row)}, ${pages ? `s. ${pages}, ` : ''}${data.archive.archive}`
+              `${makeArchiveIdHumanReadable(data.archive.archive_id)}, ${pages ? `s. ${pages}, ` : ''}${data.archive.archive}`
             )}
               title={l('Källhänvisning')}
             />
