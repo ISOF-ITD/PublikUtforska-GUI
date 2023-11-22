@@ -229,9 +229,22 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       audioItems = audioDataItems.map((mediaItem) => (
         <tr key={mediaItem.source}>
           <td data-title="Lyssna:" width="50px">
-          <ListPlayButton media={mediaItem} recordId={data.id} recordTitle={getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.persons, data.year)} />
+            <ListPlayButton
+              media={mediaItem}
+              recordId={data.id}
+              recordTitle={getAudioTitle(
+                data.title,
+                data.contents,
+                data.archive.archive,
+                mediaItem.source,
+                data.persons,
+                data.year,
+              )}
+            />
           </td>
-          <td>{getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.persons, data.year)}</td>
+          <td>
+            {getAudioTitle(data.title, data.contents, data.archive.archive, mediaItem.source, data.persons, data.year)}
+          </td>
         </tr>
       ));
 

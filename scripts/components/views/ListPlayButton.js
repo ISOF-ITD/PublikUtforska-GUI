@@ -59,6 +59,8 @@ function ListPlayButton({
       event.preventDefault();
 
       if (window.eventBus) {
+        // send audioplayer.visible event
+        window.eventBus.dispatch('audio.playervisible');
         if (checkIsPlaying()) {
           window.eventBus.dispatch('audio.pauseaudio');
         } else {

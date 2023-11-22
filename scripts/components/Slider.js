@@ -1,101 +1,53 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import noUiSlider from 'nouislider';
 
-// Main CSS: ui-components/slider.less
-// Slider CSS: nouislider.min.less
+export default function Slider({
+  behaviour, start, currentTime, playing, rangeMin, rangeMax, onChange,
+}) {
+  // create a ref to the slider DOM node
+  const sliderRef = useRef(null);
 
-export default class Slider extends React.Component {
-	constructor(props) {
-		super(props);
+  // every time the range, behaviour or start changes, we need to recreate the slider
+  useEffect(() => {
+    const slider = noUiSlider.create(sliderRef.current, {
+      start,
+      behaviour,
+      range: {
+        min: [0],
+        max: [rangeMax],
+      },
+    });
 
-		this.sliderChangeHandler = this.sliderChangeHandler.bind(this);
-		this.sliderSlideHandler = this.sliderSlideHandler.bind(this);
-	}
+    // listen to slider events
+    slider.on('slide', (values, handle) => {
+      if (handle === 0) {
+        onChange(values[handle]);
+      }
+    });
 
-	componentDidMount() {
-		var sliderStart = !isNaN(this.props.start) ? this.props.start : this.props.rangeMin && this.props.rangeMax ? [this.props.rangeMin, this.props.rangeMax] : [0, 10];
+    return () => slider.destroy(); // Clean up the slider on component unmount
+  }, [rangeMin, rangeMax, behaviour, start]);
 
-		this.slider = noUiSlider.create(this.refs.sliderContainer, {
-			start: sliderStart,
-			behaviour: this.props.behaviour || 'drag',
-			connect: true,
-			tooltips: true,
-			format: {
-				to: function ( value ) {
-					return Math.round(value);
-				},
-				from: function ( value ) {
-					return Math.round(value);
-				}
-			},
-			range: !isNaN(this.props.rangeMin) && !isNaN(this.props.rangeMax) && this.props.rangeMin < this.props.rangeMax ? {
-				min: this.props.rangeMin,
-				max: this.props.rangeMax
-			} : {
-				min: 0,
-				max: 10
-			}
-		});
+  useEffect(() => {
+    if (sliderRef.current && sliderRef.current.noUiSlider) {
+      sliderRef.current.noUiSlider.set(currentTime);
+    }
+  }, [playing]);
 
-		this.slider.on('change', this.sliderChangeHandler)
-		this.slider.on('set', this.sliderChangeHandler)
-		this.slider.on('slide', this.sliderSlideHandler)
-	}
-
-	UNSAFE_componentWillReceiveProps(props) {
-		if (props.enabled && props.enabled == true) {
-			this.refs.sliderContainer.removeAttribute('disabled');
-		}
-		else if (props.enabled == false) {
-			this.refs.sliderContainer.setAttribute('disabled', true);
-		}
-
-		if ((!isNaN(props.rangeMin) && !isNaN(props.rangeMax)) && (props.rangeMin != this.slider.options.range.min || props.rangeMax != this.slider.options.range.max) && props.rangeMin < props.rangeMax) {
-			var range = {
-				min: Number(props.rangeMin),
-				max: Number(props.rangeMax)
-			};
-			this.slider.updateOptions({
-				range: range,
-				start: props.start || [range.min, range.max]
-			});
-		}
-	}
-
-	sliderChangeHandler(event) {
-		this.value = event;
-
-		if (this.props.onChange) {
-			this.props.onChange({
-				target: {
-					name: this.props.inputName || '',
-					type: 'slider',
-					value: event
-				}
-			});
-		}
-	}
-
-	set(value) {
-		this.slider.set(value, false);
-	}
-
-	sliderSlideHandler(event) {
-		if (this.props.onSlide) {
-			this.props.onSlide({
-				target: {
-					name: this.props.inputName || '',
-					type: 'slider',
-					value: event
-				}
-			});
-		}
-	}
-
-	render() {
-		return <div className={'slider-container'+(this.props.className ? ' '+this.props.className : '')}>
-			<div ref="sliderContainer"></div>
-		</div>;
-	}
+  return (
+    <div className="audio-seek-slider">
+      <div className="slider-container" ref={sliderRef} />
+    </div>
+  );
 }
+
+Slider.propTypes = {
+  behaviour: PropTypes.string.isRequired,
+  start: PropTypes.number.isRequired,
+  currentTime: PropTypes.number.isRequired,
+  playing: PropTypes.bool.isRequired,
+  rangeMin: PropTypes.number.isRequired,
+  rangeMax: PropTypes.number.isRequired,
+  onChange: PropTypes.func.isRequired,
+};

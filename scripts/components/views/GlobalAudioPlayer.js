@@ -1,247 +1,165 @@
-import React from 'react';
-import config from './../../../scripts/config.js';
-import Slider from '../Slider.js';
+import React, { useEffect, useRef, useState } from 'react';
+import Slider from '../Slider';
+import config from '../../config';
+import PlayerButtons from './PlayerButtons';
 
-// Main CSS: ui-components/audio-player.less
+export default function GlobalAudioPlayer() {
+  const [currentTime, setCurrentTime] = useState(0);
+  const [durationTime, setDurationTime] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [playerLabelText, setPlayerLabelText] = useState('');
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const audioRef = useRef(new Audio());
 
-export default class GlobalAudioPlayer extends React.Component {
-	constructor(props) {
-		super(props);
+  const msToTimeStr = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${(minutes < 10 ? '0' : '') + minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
 
-		window.isofAudioPlayer = {
-			player: this,
-			currentAudio: {
-				record: null,
-				media: null,
-				playing: false,
-				paused: false
-			}
-		};
+  // once after first render
+  useEffect(() => {
+    const audio = audioRef.current;
 
-		this.audioCanPlayHandler = this.audioCanPlayHandler.bind(this);
-		this.audioEndedHandler = this.audioEndedHandler.bind(this);
-		this.audioPlayHandler = this.audioPlayHandler.bind(this);
-		this.audioPauseHandler = this.audioPauseHandler.bind(this);
-		this.durationSliderChangeHandler = this.durationSliderChangeHandler.bind(this);
-		this.togglePlay = this.togglePlay.bind(this);
+    const playAudio = (event) => {
+      const audioSrc = config.audioUrl + event.target.audio.source;
+      audio.src = audioSrc;
+      audio.label = event.target.record.title;
+      setPlayerLabelText(event.target.record.title);
+      audio.load();
+      setPlaying(true);
+      setVisible(true);
+      audio.play();
+    };
 
-		this.audio = new Audio();
+    window.eventBus.addEventListener('audio.playaudio', playAudio);
+    // add listener for when size of the viewport changes
+    window.addEventListener('resize', () => {
+      setViewportWidth(window.innerWidth);
+    });
 
-		this.audio.addEventListener('canplay', this.audioCanPlayHandler);
-		this.audio.addEventListener('ended', this.audioEndedHandler);
-		this.audio.addEventListener('play', this.audioPlayHandler);
-		this.audio.addEventListener('pause', this.audioPauseHandler);
-		this.audio.addEventListener('error', this.audioErrorHandler);
+    return () => {
+      window.eventBus.removeEventListener('audio.playaudio', playAudio);
+      window.removeEventListener('resize', () => {
+        setViewportWidth(window.innerWidth);
+      });
+    };
+  }, []);
 
-		this.state = {
-			audio: null,
-			loaded: false,
-			playing: false,
-			paused: false,
-			audio: null,
-			record: null,
-			durationTime: 0,
-			currentTime: 0
-		};
+  // every time playerLabelText or viewportWidth changes
+  useEffect(() => {
+    // den här effekten körs när playerLabelText ändras eller viewportWidth ändras
+    // kolla om .player-label är mindre än .player-label-text
+    const playerLabelEl = document.querySelector('.player-label');
+    const playerLabelTextEl = document.querySelector('.player-label-text');
+    if (playerLabelEl && playerLabelTextEl) {
+      if (playerLabelTextEl.offsetWidth > playerLabelEl.offsetWidth) {
+        // lägg till class för att få texten att scrolla
+        playerLabelTextEl.classList.add('animate');
+        playerLabelTextEl.classList.add(playerLabelTextEl.offsetWidth);
+        playerLabelTextEl.classList.add(playerLabelEl.offsetWidth);
+        // anpassa animationshastigheten till textlängden i
+        // förhållande till bredden på .player-label
+        const difference = playerLabelTextEl.offsetWidth - playerLabelEl.offsetWidth;
+        const animationDuration = difference / 20;
+        playerLabelTextEl.style.animationDuration = `${animationDuration}s`;
+      } else {
+        // ta bort class för att få texten att scrolla
+        playerLabelTextEl.classList.remove('animate');
+      }
+    }
+  }, [playerLabelText, viewportWidth]);
 
-		if (window.eventBus) {
-			window.eventBus.addEventListener('audio.playaudio', function(event) {
-				this.playAudio(event.target);
-			}.bind(this));
-			window.eventBus.addEventListener('audio.pauseaudio', function(event) {
-				this.pauseAudio();
-			}.bind(this));
-		}
-	}
+  // once after first render
+  useEffect(() => {
+    const audio = audioRef.current;
 
-	msToTimeStr(ms) {
-		ms = ms*1000;
-		var minutes = Math.floor(ms / 60000);
-		var seconds = ((ms % 60000) / 1000).toFixed(0);
-		return (minutes < 10 ? '0' : '')+minutes+":"+(seconds < 10 ? '0' : '')+seconds;
-	}
+    const setAudioData = () => {
+      setDurationTime(audio.duration * 1000);
+      setCurrentTime(audio.currentTime * 1000);
+    };
 
-	componentWillUnmount() {
-		this.audio.pause();
-		clearInterval(this.durationInterval);
-	}
+    const setAudioTime = () => {
+      setCurrentTime(audio.currentTime * 1000);
+    };
 
-	audioCanPlayHandler(event) {
-		this.setState({
-			loaded: true
-		});
+    audio.addEventListener('loadedmetadata', setAudioData);
+    audio.addEventListener('timeupdate', setAudioTime);
 
-		if (window.eventBus) {
-			window.eventBus.dispatch('audio.playervisible');
-		}
+    return () => {
+      audio.removeEventListener('loadedmetadata', setAudioData);
+      audio.removeEventListener('timeupdate', setAudioTime);
+    };
+  }, []);
 
-		this.audio.play();
+  const durationSliderChangeHandler = (_value) => {
+    const audio = audioRef.current;
+    const value = parseInt(_value, 10);
+    audio.currentTime = value / 1000;
+    setCurrentTime(value);
+  };
 
-		this.durationInterval = setInterval(function() {
-			this.setState({
-				currentTime: this.audio.currentTime,
-				durationTime: this.audio.duration
-			});
-			this.refs.slider.set(this.audio.currentTime);
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (playing) {
+        audio.pause();
+      } else {
+        audio.play();
+      }
+      setPlaying(!playing);
+    }
+  };
 
-			if (this.props.signalDurationInterval) {
-				window.eventBus.dispatch('audio.duration', {
-					duration: this.audio.currentTime,
-					record: this.state.record
-				});
-			}
-		}.bind(this), 100);
+  return (
+    <div className={`global-audio-player-wrapper${visible ? ' visible' : ''}`}>
+      <div className="global-audio-player">
 
-		setTimeout(function() {
-			if (typeof this.seekOnCanPlay !== 'undefined') {
-				this.audio.currentTime = this.seekOnCanPlay;
-				this.seekOnCanPlay = undefined;
-			}
-		}.bind(this), 200);
-	}
+        <PlayerButtons
+          audioRef={audioRef}
+          playing={playing}
+          togglePlay={togglePlay}
+        />
+        <div className="player-time">
+          {msToTimeStr(currentTime)}
+          <div className="duration">{msToTimeStr(durationTime)}</div>
+        </div>
 
-	audioEndedHandler(event) {
-		isofAudioPlayer.currentAudio.playing = false;
-		isofAudioPlayer.currentAudio.paused = false;
+        <div className="player-content">
+          {/* Your player content here */}
+          <div className="player-label">
+            <div className="player-label-text">
+              {audioRef.current && audioRef.current.label}
+            </div>
+          </div>
+          <Slider
+            behaviour="tap-drag"
+            start={currentTime}
+            playing={playing}
+            rangeMin={0}
+            // currentTime={currentTime}
+            rangeMax={durationTime || 1}
+            onChange={durationSliderChangeHandler}
+          />
+        </div>
 
-		if (window.eventBus) {
-			window.eventBus.dispatch('audio.stop', {
-				paused: false
-			});
-		}
+      </div>
+      {/* add a button close the player */}
+      <button
+        className="close-button"
+        onClick={() => {
+          const audio = audioRef.current;
+          audio.pause();
+          setPlaying(false);
+          setVisible(false);
+          // send audioplayer.invisible event
+          window.eventBus.dispatch('audio.playerhidden');
+        }}
+        aria-label="Stäng"
+        type="button"
+      />
 
-		this.setState({
-			paused: false,
-			playing: false
-		});
-
-		clearInterval(this.durationInterval);
-	}
-
-	audioPlayHandler(event) {
-		isofAudioPlayer.currentAudio.playing = true;
-		isofAudioPlayer.currentAudio.paused = false;
-
-		if (window.eventBus) {
-			window.eventBus.dispatch('audio.play');
-		}
-
-		this.setState({
-			playing: true,
-			paused: false
-		});
-	}
-
-	audioPauseHandler(event) {
-		isofAudioPlayer.currentAudio.playing = false;
-		isofAudioPlayer.currentAudio.paused = true;
-
-		if (window.eventBus) {
-			window.eventBus.dispatch('audio.stop', {
-				paused: true
-			});
-		}
-
-		this.setState({
-			playing: false,
-			paused: true
-		});
-	}
-
-	audioErrorHandler(event) {
-		if (window.eventBus) {
-			window.eventBus.dispatch('popup-notification.notify', null, l('Kan inte spela den här ljudfilen'));
-		}
-	}
-
-	togglePlay() {
-		if (this.state.loaded) {
-			if (this.state.playing) {
-				this.audio.pause();
-			}
-			else {
-				this.audio.play();
-			}
-		}
-	}
-
-	pauseAudio() {
-		if (this.state.loaded && this.state.playing) {
-			this.audio.pause();
-		}
-	}
-
-	resumeAudio() {
-		if (this.state.loaded && this.state.paused) {
-			this.audio.play();
-		}
-	}
-
-	seek(seconds) {
-		this.audio.currentTime = seconds;
-	}
-
-	durationSliderChangeHandler(event) {
-		this.audio.currentTime = event.target.value[0];
-	}
-
-	playAudio(data) {
-		if (isofAudioPlayer.currentAudio.record == data.record.id &&
-			isofAudioPlayer.currentAudio.media == data.audio.source
-		) {
-			if (this.state.paused) {
-				this.resumeAudio();
-			}
-
-			if (typeof data.seek !== 'undefined') {
-				this.seek(data.seek);
-			}
-		}
-		else {
-			isofAudioPlayer.currentAudio.record = data.record.id;
-			isofAudioPlayer.currentAudio.media = data.audio.source;
-
-			this.setState({
-				playing: false,
-				audio: data.audio,
-				record: data.record
-			});
-
-			if (typeof data.seek !== 'undefined') {
-				this.seekOnCanPlay = data.seek;
-			}
-
-			this.audio.src = config.audioUrl+data.audio.source;
-			this.audio.load();
-		}
-	}
-
-	render() {
-		return <div className={'global-audio-player-wrapper map-bottom-control'+(this.state.loaded ? ' visible' : '')}>
-			<div className={'global-audio-player'} disabled={!this.state.loaded}>
-
-				<div className="player-time">
-					{this.msToTimeStr(this.state.currentTime)}
-					<div className="duration">{this.msToTimeStr(this.state.durationTime)}</div>
-				</div>
-
-				<div className="player-content">
-					{
-						this.state.record &&
-						<div className="player-label"><a href={'#'+(this.props.baseRecordsUrl || 'records/')+this.state.record.id}>{this.state.record.title}</a></div>
-					}
-					{
-						/*
-						this.state.audio &&
-						<div className="player-label">{this.state.record.title != this.state.audio.title ? this.state.audio.title : this.state.audio.source}</div>
-						*/
-					}
-					<Slider className="audio-seek-slider" ref="slider" behaviour="tap-drag" start={0} rangeMin={0} rangeMax={this.state.durationTime} onChange={this.durationSliderChangeHandler} />
-				</div>
-
-				<button className={'play-button large'+(this.state.playing ? ' playing' : '')} onClick={this.togglePlay}></button>
-
-			</div>
-		</div>;
-	}
+    </div>
+  );
 }

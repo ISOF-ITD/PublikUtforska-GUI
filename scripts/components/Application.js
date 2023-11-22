@@ -77,6 +77,10 @@ export default function Application({
   useEffect(() => {
     // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
     window.eventBus.addEventListener('audio.playervisible', audioPlayerVisibleHandler);
+    // lyssna på när ljudspelaren stängs, ta bort .has-docked-control från body class
+    window.eventBus.addEventListener('audio.playerhidden', () => {
+      document.body.classList.remove('has-docked-control');
+    });
 
     document.title = config.siteTitle;
 
@@ -89,6 +93,11 @@ export default function Application({
       setRecordsData(data[1]);
       setLoading(false);
     });
+
+    return () => {
+      window.eventBus.removeEventListener('audio.playervisible', audioPlayerVisibleHandler);
+      window.eventBus.removeEventListener('audio.playerhidden');
+    };
   }, []);
 
   return (
