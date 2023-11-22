@@ -49,16 +49,16 @@ Mediafil Titel
   3.	Om de finns: Informanter(er), insamlingsår
 4.	Text: "Inspelning"
 
-*/ 
+*/
 export function getAudioTitle(title, contents, archiveName, fileName, year, persons) {
-  //console.log(title);
+  // console.log(title);
   switch (!!title) {
     case true:
       return title;
     default:
       if (contents) {
         if (contents.length > 0) {
-          if (archiveName.includes("AFU")) {
+          if (archiveName.includes('AFU')) {
             if (contents.length > 100) {
               return `[${contents.substring(0, 84)} ${'(FÖRKORTAD TITEL)'}]`;
             }
@@ -66,61 +66,61 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
           }
           // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
           // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
-          if (archiveName.includes("AFG")) {
+          if (archiveName.includes('AFG')) {
             // Clean different row breaks:
-            let cleanContent = contents.replace(/\r\n/g,'\n').replace(/\n\n/g,'\n');
-            let contentRows = cleanContent.split('\n');
-            for(let i = 0; i < contentRows.length; i++) {
+            const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const contentRows = cleanContent.split('\n');
+            for (let i = 0; i < contentRows.length; i++) {
               // console.log(contentRows[i]);
               // Get first element delineated by () or [] which is an archive id that often match the filename:
-              let elements = contentRows[i].split(')');
+              const elements = contentRows[i].split(')');
               if (contentRows[i].charAt(0) === '[') {
-                let elements = contentRows[i].split(']');
+                const elements = contentRows[i].split(']');
               }
               if (elements.length > 0) {
-                let fileId = elements[0]
+                let fileId = elements[0];
                 if (fileId.length > 1) {
                   // Clean unwanted characters:
-                  fileId = fileId.replace('(','').replace(' ','')
-                  let filenameParts = fileName.split('/');
+                  fileId = fileId.replace('(', '').replace(' ', '');
+                  const filenameParts = fileName.split('/');
                   if (filenameParts) {
                     // Clean filename accordning to pattern in content field:
-                    let cleanFilename = filenameParts[filenameParts.length  -1].replace('.mp3','').replace('.MP3','').replace('I','1').replace('II','2').replace('III','3');
+                    let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '').replace('I', '1').replace('II', '2')
+                      .replace('III', '3');
                     // How to identify and remove other existing extensions?
-                    cleanFilename = cleanFilename.replace('SK','');
+                    cleanFilename = cleanFilename.replace('SK', '');
                     // Match archive id with filename:
                     if (fileId === cleanFilename) {
-                      return contentRows[i]
+                      return contentRows[i];
                     }
                   }
                 }
               }
-            }            
+            }
           }
           // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
           // -- Find titel_allt types by DAL acc_nr_ny_prefix "s"+ one character (to compare hits with number as second character to letters as second character):
-          if (archiveName.includes("Lund") || archiveName.includes("DAL")) {
+          if (archiveName.includes('Lund') || archiveName.includes('DAL')) {
             // Clean different row breaks:
-            let cleanContent = contents.replace(/\r\n/g,'\n').replace(/\n\n/g,'\n');
-            let contentRows = cleanContent.split(':');
-            let i = 0;
+            const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const contentRows = cleanContent.split(':');
+
             // Loop until next last segment
-            for(let i = 0; i < contentRows.length - 1; i++) {
-              console.log(contentRows[i]);
+            for (let i = 0; i < contentRows.length - 1; i += 1) {
               // Get all words from next element except first element delineated by " ":
-              let this_segment = contentRows[i].split(' ');
-              let next_segment = contentRows[i+1].split(' ');
+              const thisSegment = contentRows[i].split(' ');
+              const nextSegment = contentRows[i + 1].split(' ');
               // Last word in segment + all but last word in next segment
-              let this_segment_file_id =  this_segment[this_segment.length - 1]
-              let this_segment_content =  next_segment.slice(0,-1).join(" ")
-              if (this_segment_file_id.length > 0) {
-                let fileId = this_segment_file_id
+              const thisSegmentFileId = thisSegment[thisSegment.length - 1];
+              const thisSegmentContent = nextSegment.slice(0, -1).join(' ');
+              if (thisSegmentFileId.length > 0) {
+                const fileId = thisSegmentFileId;
                 // Clean unwanted characters:
-                let cleanFilename = fileName.replace(' ','');
+                const cleanFilename = fileName.replace(' ', '');
                 // Match archive id with filename:
                 if (cleanFilename.includes(fileId)) {
-                  let file_title = this_segment_file_id + ": " + this_segment_content
-                  return file_title
+                  const fileTitle = `${thisSegmentFileId}: ${thisSegmentContent}`;
+                  return fileTitle;
                 }
               }
             }
@@ -129,24 +129,23 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
       }
       if (persons) {
         let personbasedTitle = '';
-        let i = 0;
-        for(let i = 0; i < contentRows.length; i++) {
+        for (let i = 0; i < persons.length; i += 1) {
           if (['i', 'informant'].includes(persons[i].relation)) {
-            let name = ""
-            let birth_year = ""
+            let name = '';
+            let birthYear = '';
             if (persons[i].name) {
               name = persons[i].name;
               if (person[i].birthyear) {
-                birth_year = ' född ' + persons[i].birthyear
-              } 
-              personbasedTitle = personbasedTitle + name + birth_year;
+                birthYear = ` född ${persons[i].birthyear}`;
+              }
+              personbasedTitle = personbasedTitle + name + birthYear;
             }
           }
         }
         if (personbasedTitle) {
           if (personbasedTitle.length > 0) {
             if (year) {
-              personbasedTitle = personbasedTitle + ' intervju ' + year.substring(0, 4);
+              personbasedTitle = `${personbasedTitle} intervju ${year.substring(0, 4)}`;
             }
           }
           if (personbasedTitle.length > 0) {
@@ -154,7 +153,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
           }
         }
       }
-      return l("Inspelning");
+      return l('Inspelning');
   }
 }
 
@@ -251,9 +250,9 @@ export function getRecordsCountLocation(params = {}) {
     });
   }
 
-    const paramString = paramStrings.join('&');
+  const paramString = paramStrings.join('&');
 
-    return `${url}?${paramString}`;
+  return `${url}?${paramString}`;
 }
 
 export function getRecordFetchLocation(recordId) {
@@ -325,7 +324,7 @@ export const getPlaceString = (places) => {
   // Check if either `landskap` or `fylke` is truthy
   if (landskap || fylke) {
     // If so, add a comma followed by the value of either `landskap` or `fylke` to `placeString`
-    placeString += ', ' + (landskap || fylke);
+    placeString += `, ${landskap || fylke}`;
   }
 
   // Return the final value of `placeString`
