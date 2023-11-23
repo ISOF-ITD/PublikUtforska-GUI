@@ -342,7 +342,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {l('Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!')}
           </p>
           <TranscribeButton
-            className="button-primary"
+            className="button button-primary"
             label={l('Skriv av')}
             title={data.title}
             recordId={data.id}

@@ -1,14 +1,97 @@
 .menu-wrapper {
+	// overflow-y: auto;
+	// overflow-x: hidden;
+	// box-sizing: border-box;
+
 	position: absolute;
+	background-image: url('../img/header-back.gif');
+	background-color: #005462;
+	// border-right: 2px solid #1c3f49;
+	border-width: 0 2px 0 0;
+	border-style: solid;
+	// border-color: #1c3f49;
+	border-color: white;
+
+	z-index: 401;
 
 	// top: 92px;
-	top: 20px;
-	bottom: 95px;
-	left: 20px;
+	// top: 20px;
+	// bottom: 95px;
+	// left: 20px;
+	bottom: 0;
+	padding-top: 20px;
+	padding-right: 20px;
+	padding-left: 20px;
+	top: 0;
+	left: 0;
+	width: 380px;
 
-	width: 350px;
-	
+	display: flex;
+	flex-direction: column;
+
+	// Add this for transition
+	transition: all 0.3s ease;
+
+	&.menu-collapsed {
+		// width: 30px;
+		left: -420px;
+	}
+
 	pointer-events: none;
+
+	.mapmenu-trigger-button {
+		cursor: pointer;
+		left: 422px;
+		position: absolute;
+
+		a {
+			pointer-events: all;
+			box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+			padding: 0;
+			background-color: #fff;
+			width: 25px;
+			height: 45px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border-radius: 0 4px 4px 0;
+		}
+	}
+
+	.puffar {
+		flex-grow: 1;
+		overflow-y: auto;
+		padding-bottom: 20px;
+		
+
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		height: 100%;
+
+		.puff {
+			flex-grow: 1;
+			/* Allows each .puff to grow and fill the container */
+			opacity: 0;
+			overflow-y: scroll;
+			border-radius: 13px;
+			padding: 20px;
+			margin-bottom: 15px;
+			background: white;
+
+			/* Remove fixed height to allow dynamic sizing */
+			/* height: 250px; */
+
+			.app-initialized & {
+				opacity: 1;
+			}
+
+			/* Remove margin-bottom for the last child to avoid extra space */
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
 
 	@media print {
 		display: none;
@@ -22,7 +105,7 @@
 		width: auto;
 	}
 
-	> * {
+	>* {
 		pointer-events: all;
 	}
 
@@ -32,7 +115,7 @@
 		position: relative;
 		height: 48px;
 
-		padding: 0;
+		padding: 0 0 0 12px;
 
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
@@ -68,16 +151,17 @@
 			float: left;
 			height: 48px;
 			// width: 37.5%; //38%; //44%; //50%;
-			width: 133px;
+			// width: 133px;
+			width: 178px;
 
 			@media screen and (max-width: 550px) {
 				// the with is 100% - 80 px, divided by two
 				width: calc(50% - 40px);
 			}
-			
+
 			// margin-right: 0.5%;
 			// make so that the border is inside the element
-			
+
 
 
 
@@ -95,14 +179,14 @@
 
 			.transition(all 200ms ease-in-out);
 
-			&:focus {
+			body.tab-navigation &:focus {
 				outline: none !important;
 				border: 2px solid black !important;
 			}
 
 			&.selected {
 				color: #000;
-				
+
 				background: @color-gray;
 				border: 2px solid @color-gray;
 			}
@@ -111,7 +195,11 @@
 				text-decoration: underline;
 			}
 
-			&:visited, &:active, &:focus, &:hover, &:link {
+			&:visited,
+			&:active,
+			&:focus,
+			&:hover,
+			&:link {
 				color: #000 !important;
 			}
 
@@ -123,11 +211,13 @@
 	}
 
 	.search-box {
-		position: absolute;
+		// position: relative;
+		// position: relative;
 
-		top: 48px;
-		right: 0;
+		// top: 68px;
+		// margin-right: 20px;
 		left: 0;
+		margin-bottom: 15px;
 
 		z-index: 1000;
 
@@ -168,10 +258,12 @@
 
 			// .transition(all 200ms ease-in-out);
 
-			&.person, &.place {
+			&.person,
+			&.place {
 				// deactivate mouse interaction, make it impossible to add a cursor that can edit the input field
 				pointer-events: none !important;
 				opacity: 0 !important;
+
 				.search-button {
 					visibility: hidden;
 				}
@@ -179,7 +271,8 @@
 			}
 		}
 
-		.search-label.person, .search-label.place {
+		.search-label.person,
+		.search-label.place {
 			opacity: 1 !important;
 		}
 
@@ -201,11 +294,13 @@
 			list-style-type: none;
 			margin-bottom: 0;
 			margin-top: 5px;
+
 			.suggestions-label {
 				padding: 0.5rem 1rem;
 				font-size: 0.8rem;
 				color: #999;
 			}
+
 			.suggestions-close {
 				position: absolute;
 				right: 1rem;
@@ -214,10 +309,14 @@
 				color: #999;
 				font-size: 1.2rem;
 			}
+
 			li {
 				padding: 0.5rem 1rem;
 				cursor: pointer;
-				&:hover, &.selected, &:focus {
+
+				&:hover,
+				&.selected,
+				&:focus {
 					background-color: #f5f5f5;
 				}
 			}
@@ -251,7 +350,7 @@
 
 			padding: 0;
 			margin: 0;
-			
+
 			@media (max-width: 550px) {
 				top: 15px;
 				right: 16px;
@@ -285,11 +384,12 @@
 				// animate spinner, rotate it
 				animation: spin 1s infinite linear;
 			}
-			
+
 			@keyframes spin {
 				from {
 					transform: rotate(0deg);
 				}
+
 				to {
 					transform: rotate(360deg);
 				}
@@ -328,13 +428,13 @@
 			border-color: #ccc;
 		}
 
-		hr + button {
+		hr+button {
 			margin-top: 5px;
 		}
 
 		.advanced-button {
 			display: block;
-			
+
 			margin: 0 -12px -25px -12px;
 			padding: 10px 10px 10px 15px;
 
@@ -372,8 +472,10 @@
 		}
 
 		&.expanded {
-			left: -10px;
-			right: -10px;
+			// left: -10px;
+			// right: -10px;
+			// left: 20px;
+			// right: 20px;
 
 			cursor: auto;
 
@@ -391,7 +493,9 @@
 				opacity: 0;
 			}
 
-			.search-button, .clear-button, .search-spinner {
+			.search-button,
+			.clear-button,
+			.search-spinner {
 				pointer-events: all;
 
 				// @media (min-width: 550px) {

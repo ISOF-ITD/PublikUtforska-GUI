@@ -53,12 +53,18 @@ export default class MapBase extends React.Component {
       }
     }
 
+    const SWEDEN = L.latLngBounds(
+      [55.34267812700013, 11.108164910000113],
+      [69.03635569300009, 24.163413534000114],
+    );
+
     const mapOptions = {
-      center: this.props.center || [63.5, 16.7211],
+      center: this.props.center || SWEDEN.getCenter(),
+      // [63.5, 16.7211],
       // For epsg3857 webmercator:
-      zoom: parseInt(this.props.zoom) || 5,
-      minZoom: parseInt(this.props.minZoom) || 5,
-      maxZoom: parseInt(this.props.maxZoom) || 17,
+      zoom: parseInt(this.props.zoom, 10) || 5,
+      minZoom: parseInt(this.props.minZoom, 10) || 5,
+      maxZoom: parseInt(this.props.maxZoom, 10) || 17,
       // For SWEREF 99:
       // zoom: parseInt(this.props.zoom) || 4,
       // minZoom: parseInt(this.props.minZoom) || 4,
@@ -78,8 +84,11 @@ export default class MapBase extends React.Component {
         mapOptions.minZoom = 1;
       }
     }
-
-    this.map = L.map(this.mapView.current, mapOptions);
+    // when initializing the map, set zoom and center, so that the bounds of the constant SWEDEN are visible. use fitTobounds or similar
+    // use an offset of 360px to the left, so that the bounds are not hidden by the sidebar
+    this.map = L.map(this.mapView.current, mapOptions).fitBounds(SWEDEN, {
+      paddingTopLeft: [400, 0],
+    });
 
     L.control.zoom({
       position: this.props.zoomControlPosition || 'topright',

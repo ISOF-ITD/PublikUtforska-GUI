@@ -61,7 +61,7 @@ export default function StatisticsList({
       )}
       {!loading && !fetchError && <h3>{label}</h3>}
       {!loading && !fetchError && visible && data && (
-      <ul>
+      <ol>
         {data.map((item) => (
           <li key={`${item.key}-${item.value}`}>
             <span className="key">
@@ -74,7 +74,7 @@ export default function StatisticsList({
             {item.value === 1 ? 'sida' : 'sidor'}
           </li>
         ))}
-      </ul>
+      </ol>
       )}
     </div>
   );

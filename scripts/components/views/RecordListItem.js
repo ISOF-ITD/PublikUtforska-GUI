@@ -445,7 +445,7 @@ export default function RecordListItem({
             {transcriptionstatus === 'readytotranscribe' && media.length > 0
               && (
                 <TranscribeButton
-                  className="button-primary"
+                  className="button button-primary"
                   label={l('Skriv av')}
                   title={title}
                   recordId={recordId}

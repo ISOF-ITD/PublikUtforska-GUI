@@ -90,15 +90,15 @@ export default function SearchBox({
       }));
       const filteredSuggestions = suggestions
         .filter(
-        // filter out "p-personer"
-        // checks if the value starts with "p" and then a number
-        // and if it does, it returns false, otherwise true
+          // filter out "p-personer"
+          // checks if the value starts with "p" and then a number
+          // and if it does, it returns false, otherwise true
           (suggestion) => !suggestion.value.match(/^p\d+$/),
         ).filter(
-        // filter duplicates from suggestions
-        // for every suggestion, check if the value of the suggestion
-        // is the same as the value of any other suggestion
-        // if it is, return false, otherwise true
+          // filter duplicates from suggestions
+          // for every suggestion, check if the value of the suggestion
+          // is the same as the value of any other suggestion
+          // if it is, return false, otherwise true
           (suggestion, index, self) => self.findIndex(
             (s) => s.value === suggestion.value,
           ) === index,
@@ -228,9 +228,9 @@ export default function SearchBox({
 
   const filterAndSortSuggestions = (suggestions) => (
     suggestions
-    // filter out suggestions that don't contain the search input value
-    // why was this here?
-    // sort the suggestions so that the ones that start with the search input value are first
+      // filter out suggestions that don't contain the search input value
+      // why was this here?
+      // sort the suggestions so that the ones that start with the search input value are first
       .sort((a, b) => {
         const aStartsWithSearch = a.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
         const bStartsWithSearch = b.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
@@ -456,144 +456,131 @@ export default function SearchBox({
   };
 
   return (
-    <div
-      className={
-        // `search-box map-floating-control${expanded ? ' expanded' : ''}
-        // ${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
-        'search-box map-floating-control expanded'
-      }
-    >
-      <div>
-        <input
-          className={(person && 'person') || (place && 'place') || 'keyword'}
-          id="searchInputMapMenu"
-          ref={searchInputRef}
-          type="text"
-          value={search}
-          onInput={searchValueChangeHandler}
-          onKeyDown={inputKeyPressHandler}
-          placeholder="Sök i Folke"
-          onFocus={searchInputFocusHandler}
-          onBlur={searchInputBlurHandler}
-          aria-autocomplete="both"
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck="false"
-          tabIndex={0}
-        />
+    <>
+      <div
+        className={
+          // `search-box map-floating-control${expanded ? ' expanded' : ''}
+          // ${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
+          'search-box map-floating-control expanded'
+        }
+      >
+        <div>
+          <input
+            className={(person && 'person') || (place && 'place') || 'keyword'}
+            id="searchInputMapMenu"
+            ref={searchInputRef}
+            type="text"
+            value={search}
+            onInput={searchValueChangeHandler}
+            onKeyDown={inputKeyPressHandler}
+            placeholder="Sök i Folke"
+            onFocus={searchInputFocusHandler}
+            onBlur={searchInputBlurHandler}
+            aria-autocomplete="both"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            tabIndex={0}
+          />
 
-        <div
-          className={`search-label ${(person && 'person') || (place && 'place') || 'keyword'}`}
-          style={{
-            fontSize: '0.9rem',
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            maxWidth: 227,
-            display: 'block',
-          }}
-        >
-          {
-            searchLabelText()
-          }
-          <strong>
+          <div
+            className={`search-label ${(person && 'person') || (place && 'place') || 'keyword'}`}
+            style={{
+              fontSize: '0.9rem',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              maxWidth: 227,
+              display: 'block',
+            }}
+          >
             {
-              person
-                ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year})` : ''}`
-                : place
-                  ? `${place.name || search} ${place.landskap ? `(${place.landskap})` : ''}`
-                  : search
+              searchLabelText()
             }
-          </strong>
-          <br />
-          <small>
-            {/* {
+            <strong>
+              {
+                person
+                  ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year})` : ''}`
+                  : place
+                    ? `${place.name || search} ${place.landskap ? `(${place.landskap})` : ''}`
+                    : search
+              }
+            </strong>
+            <br />
+            <small>
+              {/* {
               searchParamsState.category
                 ? searchParamsState.category.split(',').map(
                   (c) => categories.getCategoryName(c),
                 ).join(', ') : ''
             } */}
-          </small>
-        </div>
-        {
-          suggestionsVisible // && searchSuggestions.length > 0
-          // check if keywords filtered by search input value is not empty
-          && (
-            filteredSearchSuggestions().length > 0
-            || filteredPersonSuggestions().length > 0
-            || filteredPlaceSuggestions().length > 0
-            || filteredProvinceSuggestions().length > 0
-            || filteredArchiveIdSuggestions().length > 0
-          )
-          // if true, show suggestions
-          && (
-            <SearchSuggestions
-              ref={suggestionsRef}
-              closeSuggestionsHandler={closeSuggestionsHandler}
-              filteredPersonSuggestions={filteredPersonSuggestions}
-              filteredPlaceSuggestions={filteredPlaceSuggestions}
-              filteredProvinceSuggestions={filteredProvinceSuggestions}
-              filteredArchiveIdSuggestions={filteredArchiveIdSuggestions}
-              filteredSearchSuggestions={filteredSearchSuggestions}
-              inputKeyPressHandler={inputKeyPressHandler}
-              search={search}
-              personClickHandler={personClickHandler}
-              placeClickHandler={placeClickHandler}
-              provinceClickHandler={provinceClickHandler}
-              archiveIdClickHandler={archiveIdClickHandler}
-              suggestionClickHandler={suggestionClickHandler}
-            />
-          )
-}
-      </div>
-      <div className="search-field-buttons">
-        {/* only show clear button when there is text to clear or if there is text in the input field */}
-        {
-          (search || document.getElementById('searchInputMapMenu')?.value)
-          && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
-        }
-        {
-          !loading
-          && (
-            <button
-              className="search-button"
-              onClick={executeSearch}
-              type="button"
-              aria-label="Sök"
-              style={{
-                visibility: person || place ? 'hidden' : 'unset',
-              }}
-            />
-          )
-        }
-        {
-          loading
-          && (
-            <button
-              className="search-spinner"
-              style={{
-                visibility: person || place ? 'hidden' : 'unset',
-              }}
-            />
-          )
-        }
-      </div>
-
-      {/* <div className="expanded-content">
-
-        <div className="advanced-content">
-          <h4>Kategorier</h4>
-          <div tabIndex={-1} className="list-container minimal-scrollbar">
-
-            <CategoryList
-              multipleSelect="true"
-              itemClickHandler={categoryItemClickHandler}
-            />
-
+            </small>
           </div>
+          {
+            suggestionsVisible // && searchSuggestions.length > 0
+            // check if keywords filtered by search input value is not empty
+            && (
+              filteredSearchSuggestions().length > 0
+              || filteredPersonSuggestions().length > 0
+              || filteredPlaceSuggestions().length > 0
+              || filteredProvinceSuggestions().length > 0
+              || filteredArchiveIdSuggestions().length > 0
+            )
+            // if true, show suggestions
+            && (
+              <SearchSuggestions
+                ref={suggestionsRef}
+                closeSuggestionsHandler={closeSuggestionsHandler}
+                filteredPersonSuggestions={filteredPersonSuggestions}
+                filteredPlaceSuggestions={filteredPlaceSuggestions}
+                filteredProvinceSuggestions={filteredProvinceSuggestions}
+                filteredArchiveIdSuggestions={filteredArchiveIdSuggestions}
+                filteredSearchSuggestions={filteredSearchSuggestions}
+                inputKeyPressHandler={inputKeyPressHandler}
+                search={search}
+                personClickHandler={personClickHandler}
+                placeClickHandler={placeClickHandler}
+                provinceClickHandler={provinceClickHandler}
+                archiveIdClickHandler={archiveIdClickHandler}
+                suggestionClickHandler={suggestionClickHandler}
+              />
+            )
+          }
         </div>
-      </div> */}
+        <div className="search-field-buttons">
+          {/* only show clear button when there is text to clear or if there is text in the input field */}
+          {
+            (search || document.getElementById('searchInputMapMenu')?.value)
+            && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
+          }
+          {
+            !loading
+            && (
+              <button
+                className="search-button"
+                onClick={executeSearch}
+                type="button"
+                aria-label="Sök"
+                style={{
+                  visibility: person || place ? 'hidden' : 'unset',
+                }}
+              />
+            )
+          }
+          {
+            loading
+            && (
+              <button
+                className="search-spinner"
+                style={{
+                  visibility: person || place ? 'hidden' : 'unset',
+                }}
+              />
+            )
+          }
+        </div>
+      </div>
       {
         total//! fetchingPage
         && (
@@ -602,11 +589,9 @@ export default function SearchBox({
               total.value > 0
               && !loading
               && (
-                <button
+                <div
                   className={[
                     'popup-open-button',
-                    'map-floating-control',
-                    'map-right-control',
                     'visible',
                     'ignore-expand-menu',
                   ].join(' ')}
@@ -615,7 +600,7 @@ export default function SearchBox({
                   tabIndex={0}
                   type="button"
                 >
-                  <strong className="ignore-expand-menu">
+                  <span className="ignore-expand-menu">
                     <FontAwesomeIcon icon={faList} />
                     {' '}
                     Visa
@@ -624,28 +609,28 @@ export default function SearchBox({
                     {total.relation === 'gte' ? '+' : ''}
                     {' '}
                     sökträffar som lista
-                  </strong>
-                </button>
+                  </span>
+                </div>
               )
             }
-            { loading
+            {loading
               && (
-                <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
-                  <strong className="ignore-expand-menu">Söker...</strong>
+                <div className="popup-open-button visible ignore-expand-menu" style={{ cursor: 'unset' }}>
+                  <span className="ignore-expand-menu">Söker...</span>
                 </div>
               )}
             {
               total.value === 0
               && !loading
               && (
-                <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
-                  <strong className="ignore-expand-menu">0 sökträffar</strong>
+                <div className="popup-open-button visible ignore-expand-menu" style={{ cursor: 'unset' }}>
+                  <span className="ignore-expand-menu">0 sökträffar</span>
                 </div>
               )
             }
           </div>
         )
       }
-    </div>
+    </>
   );
 }

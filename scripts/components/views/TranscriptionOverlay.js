@@ -322,7 +322,7 @@ export default class TranscriptionOverlay extends React.Component {
 			var overlayContent = <div>
 				<p>{l(message)}</p>
 				<p><br/>
-				<TranscribeButton className='button-primary' random={true} label={
+				<TranscribeButton className='button button-primary' random={true} label={
 					this.state.random ? l('Skriv av en till slumpmässig uppteckning') : l('Skriv av en slumpmässigt utvald uppteckning')
 				} />
 				&nbsp;
@@ -390,7 +390,7 @@ export default class TranscriptionOverlay extends React.Component {
 								label={l('Skriv av annan slumpmässig uppteckning')}
 								random={true}
 								onClick={this.randomButtonClickHandler}
-								className="button-primary next-random-record-button"
+								className="button button-primary next-random-record-button"
 							/>
 						</div>
 					}

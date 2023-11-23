@@ -32,7 +32,7 @@ export default function MapWrapper({
         <div className="indicator" />
       </div>
 
-      <MapBottomWrapper />
+      {/* <MapBottomWrapper /> */}
 
       <MapView
         onMarkerClick={mapMarkerClick}
