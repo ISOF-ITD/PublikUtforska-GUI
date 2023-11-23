@@ -30,6 +30,9 @@ function PlayerButtons({ audioRef, playing, togglePlay }) {
         type="button"
       >
         <FontAwesomeIcon icon={faRotateLeft} />
+        <span>
+          15
+        </span>
       </button>
 
       <button
@@ -53,6 +56,9 @@ function PlayerButtons({ audioRef, playing, togglePlay }) {
         type="button"
       >
         <FontAwesomeIcon icon={faRotateRight} />
+        <span>
+          15
+        </span>
       </button>
 
       <SpeedSelector audioRef={audioRef} />
