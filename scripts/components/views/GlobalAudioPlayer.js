@@ -50,12 +50,12 @@ export default function GlobalAudioPlayer() {
       if (playerLabelTextEl.offsetWidth > playerLabelEl.offsetWidth) {
         // lägg till class för att få texten att scrolla
         playerLabelTextEl.classList.add('animate');
-        playerLabelTextEl.classList.add(playerLabelTextEl.offsetWidth);
-        playerLabelTextEl.classList.add(playerLabelEl.offsetWidth);
+        // playerLabelTextEl.classList.add(playerLabelTextEl.offsetWidth);
+        // playerLabelTextEl.classList.add(playerLabelEl.offsetWidth);
         // anpassa animationshastigheten till textlängden i
         // förhållande till bredden på .player-label
         const difference = playerLabelTextEl.offsetWidth - playerLabelEl.offsetWidth;
-        const animationDuration = difference / 20;
+        const animationDuration = difference / 10;
         playerLabelTextEl.style.animationDuration = `${animationDuration}s`;
       } else {
         // ta bort class för att få texten att scrolla
