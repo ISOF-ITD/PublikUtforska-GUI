@@ -237,8 +237,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 data.contents,
                 data.archive.archive,
                 mediaItem.source,
-                data.persons,
                 data.year,
+                data.persons,
               )}
             />
           </td>
@@ -248,8 +248,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               data.contents,
               data.archive.archive,
               mediaItem.source,
-              data.persons,
               data.year,
+              data.persons,
             )}
           </td>
         </tr>

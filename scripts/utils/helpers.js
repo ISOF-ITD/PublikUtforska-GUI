@@ -68,7 +68,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
           // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
           if (archiveName.includes('AFG')) {
             // Clean different row breaks:
-            const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const cleanContent = contents.replace(/\r\r/g, '\n').replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
             const contentRows = cleanContent.split('\n');
             for (let i = 0; i < contentRows.length; i++) {
               // console.log(contentRows[i]);
@@ -135,7 +135,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
             let birthYear = '';
             if (persons[i].name) {
               name = persons[i].name;
-              if (person[i].birthyear) {
+              if (persons[i].birthyear) {
                 birthYear = ` född ${persons[i].birthyear}`;
               }
               personbasedTitle = personbasedTitle + name + birthYear;
