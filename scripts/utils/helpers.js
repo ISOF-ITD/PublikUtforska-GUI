@@ -160,14 +160,6 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
 export function makeArchiveIdHumanReadable(str, archive_org) {
-  //Vid behov lägg till prefix för arkiv
-  let prefix = ""
-  if (archive_org) {
-    if (archive_org == 'Uppsala') {
-      prefix = "ULMA"
-    }
-  }
-
   // Kontrollera att str är definierad
   if (!str) return '';
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
@@ -179,6 +171,16 @@ export function makeArchiveIdHumanReadable(str, archive_org) {
   if (!match) return '';
 
   const [letterPart = '', numberPart = ''] = match.slice(1);
+
+  //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
+  let prefix = ""
+  if (letterPart == '') {
+    if (archive_org) {
+      if (archive_org == 'Uppsala') {
+        prefix = "ULMA"
+      }
+    }
+  }
 
   // Omvandla bokstäver till versaler och ta bort inledande nollor
   const parts = [
