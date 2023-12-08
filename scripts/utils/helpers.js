@@ -73,9 +73,9 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
             for (let i = 0; i < contentRows.length; i++) {
               // console.log(contentRows[i]);
               // Get first element delineated by () or [] which is an archive id that often match the filename:
-              const elements = contentRows[i].split(')');
+              let elements = contentRows[i].split(')');
               if (contentRows[i].charAt(0) === '[') {
-                const elements = contentRows[i].split(']');
+                elements = contentRows[i].split(']');
               }
               if (elements.length > 0) {
                 let fileId = elements[0];
@@ -159,7 +159,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
-export function makeArchiveIdHumanReadable(str, archive_org) {
+export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
   // Kontrollera att str är definierad
   if (!str) return '';
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
@@ -173,12 +173,11 @@ export function makeArchiveIdHumanReadable(str, archive_org) {
   const [letterPart = '', numberPart = ''] = match.slice(1);
 
   //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
-  let prefix = ""
-  if (letterPart == '') {
-    if (archive_org) {
-      if (archive_org == 'Uppsala') {
-        prefix = "ULMA"
-      }
+  let prefix = '';
+  // inga dubbla bokstasvsprefix (prefix + letterPart)
+  if (letterPart === '') {
+    if (archiveOrg === 'Uppsala') {
+      prefix = 'ULMA';
     }
   }
 
