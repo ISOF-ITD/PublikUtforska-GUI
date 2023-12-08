@@ -25,7 +25,8 @@ export default function MapMenu({
     recordsData: { data: [], metadata: {} },
   };
 
-  const [menuExpanded, setMenuExpanded] = useState(true);
+  const isMobile = window.innerWidth < 700;
+  const [menuExpanded, setMenuExpanded] = useState(!isMobile);
   const [currentMonth, setCurrentMonth] = useState('');
   const visible = true;
 

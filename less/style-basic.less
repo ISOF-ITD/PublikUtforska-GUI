@@ -39,7 +39,6 @@ body.tab-navigation *:focus {
     outline: 2px solid #01535d !important;
 }
 
-// @import "sitevision.less";
 
 //TODO: @color parameters in less files based basic less parameters named on either:
 // 1) color intensity perspective or 
@@ -512,7 +511,7 @@ footer, header {
 
 		pointer-events: all;
 
-		z-index: 1100;
+		z-index: 1000;
 
 		.transition(top 300ms ease-in-out);
 
@@ -523,7 +522,7 @@ footer, header {
 
 
 		.has-docked-control & {
-			top: 65px;
+			bottom: 65px;
 		}
 	}
 
@@ -626,7 +625,7 @@ footer, header {
 		}
 
 		.has-docked-control & {
-			top: 80px;
+			bottom: 80px;
 		}
 
 		@media (max-width: 650px) {

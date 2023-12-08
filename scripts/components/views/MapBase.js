@@ -87,7 +87,9 @@ export default class MapBase extends React.Component {
     // when initializing the map, set zoom and center, so that the bounds of the constant SWEDEN are visible. use fitTobounds or similar
     // use an offset of 360px to the left, so that the bounds are not hidden by the sidebar
     this.map = L.map(this.mapView.current, mapOptions).fitBounds(SWEDEN, {
-      paddingTopLeft: [400, 0],
+      // if in desktop mode, use a padding of 400px to the left, so that the bounds are not hidden by the sidebar,
+      // but when in mobile mode, use a top padding of 60px, so that the bounds are not hidden by the top bar
+      paddingTopLeft: window.innerWidth >= 550 ? [400, 0] : [0, 100],
     });
 
     L.control.zoom({
