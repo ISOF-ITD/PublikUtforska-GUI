@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faFolderOpen, faFileLines } from '@fortawesome/free-solid-svg-icons';
+import {
+  faFolder, faFolderOpen, faFileLines, faVolumeHigh,
+} from '@fortawesome/free-solid-svg-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from './ListPlayButton';
@@ -430,6 +432,10 @@ export default function RecordListItem({
               {
                 media?.filter((m) => m.source && m.source.includes('.jpg'))[0]
                 && <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
+              }
+              {
+                media?.filter((m) => m.source && m.source.includes('.MP3'))[0]
+                && <FontAwesomeIcon icon={faVolumeHigh} style={{ marginRight: 5 }} alt="jpg" title="Inspelning" />
               }
               {titleText && titleText !== '[]' ? titleText : ''}
             </a>
