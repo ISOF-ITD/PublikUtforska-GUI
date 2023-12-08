@@ -237,8 +237,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 data.contents,
                 data.archive.archive,
                 mediaItem.source,
-                data.persons,
                 data.year,
+                data.persons,
               )}
             />
           </td>
@@ -248,8 +248,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               data.contents,
               data.archive.archive,
               mediaItem.source,
-              data.persons,
               data.year,
+              data.persons,
             )}
           </td>
         </tr>
@@ -818,7 +818,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-              `${makeArchiveIdHumanReadable(data.archive.archive_id)}, ${pages ? `s. ${pages}, ` : ''}${data.archive.archive}`
+              `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${data.archive.archive}`
             )}
               title={l('Källhänvisning')}
             />

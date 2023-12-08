@@ -68,7 +68,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
           // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
           if (archiveName.includes('AFG')) {
             // Clean different row breaks:
-            const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const cleanContent = contents.replace(/\r\r/g, '\n').replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
             const contentRows = cleanContent.split('\n');
             for (let i = 0; i < contentRows.length; i++) {
               // console.log(contentRows[i]);
@@ -135,7 +135,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
             let birthYear = '';
             if (persons[i].name) {
               name = persons[i].name;
-              if (person[i].birthyear) {
+              if (persons[i].birthyear) {
                 birthYear = ` född ${persons[i].birthyear}`;
               }
               personbasedTitle = personbasedTitle + name + birthYear;
@@ -159,7 +159,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
-export function makeArchiveIdHumanReadable(str) {
+export function makeArchiveIdHumanReadable(str, archive_org) {
   // Kontrollera att str är definierad
   if (!str) return '';
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
@@ -172,8 +172,19 @@ export function makeArchiveIdHumanReadable(str) {
 
   const [letterPart = '', numberPart = ''] = match.slice(1);
 
+  //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
+  let prefix = ""
+  if (letterPart == '') {
+    if (archive_org) {
+      if (archive_org == 'Uppsala') {
+        prefix = "ULMA"
+      }
+    }
+  }
+
   // Omvandla bokstäver till versaler och ta bort inledande nollor
   const parts = [
+    prefix,
     letterPart.toUpperCase(),
     numberPart.replace(/^0+/, ''),
   ];
