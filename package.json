@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "start": "webpack serve --open --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "create-sitemap": "node create-sitemap.js"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@react-spring/web": "^9.7.2",
+    "axios": "^1.6.2",
     "d3": "^7.8.5",
     "eventbusjs": "^0.2.0",
     "html-webpack-plugin": "^5.5.3",
@@ -28,7 +30,8 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.14.1",
     "route-parser": "0.0.5",
-    "whatwg-fetch": "^3.6.2"
+    "whatwg-fetch": "^3.6.2",
+    "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.5",
