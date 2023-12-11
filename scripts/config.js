@@ -21,14 +21,13 @@ const apiUrlObject = {
   dev: 'https://garm-test.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
   // 'dev': 'http://localhost:5001/api/es/', //feel free to change according to your local environment
   test: 'https://garm-test.isof.se/folkeservice/api/es/',
-  prod: 'https://frigg.isof.se/sagendatabas/api/es/',
+  prod: 'https://garm.isof.se/folkeservice/api/es/',
 };
 
 const restApiUrlObject = {
-  // 'dev': 'https://frigg.isof.se/sagendatabas/api/', //feel free to change according to your local environment
   dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
   test: 'https://garm-test.isof.se/folkeservice/api/',
-  prod: 'https://frigg.isof.se/sagendatabas/api/',
+  prod: 'https://garm.isof.se/folkeservice/api/',
 };
 
 const appUrlObject = {
