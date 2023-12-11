@@ -132,7 +132,7 @@ export default function Application({
         <TranscriptionOverlay />
         <TranscriptionHelpOverlay />
         <SwitcherHelpTextOverlay />
-        <StatisticsOverlay />
+        {/* <StatisticsOverlay /> */}
         <Footer />
       </div>
     </AudioProvider>

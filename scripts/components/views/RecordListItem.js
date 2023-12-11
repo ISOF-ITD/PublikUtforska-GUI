@@ -52,6 +52,7 @@ export default function RecordListItem({
   shouldRenderColumn,
   highlightRecordsWithMetadataField,
   mode,
+  smallTitle,
 }) {
   RecordListItem.propTypes = {
     id: PropTypes.string.isRequired,
@@ -63,6 +64,7 @@ export default function RecordListItem({
     highlightRecordsWithMetadataField: PropTypes.string,
     mode: PropTypes.string,
     useRouteParams: PropTypes.bool,
+    smallTitle: PropTypes.bool,
   };
 
   RecordListItem.defaultProps = {
@@ -70,6 +72,7 @@ export default function RecordListItem({
     mode: 'material',
     columns: null,
     useRouteParams: false,
+    smallTitle: false,
   };
 
   const [subrecords, setSubrecords] = useState([]);
@@ -419,7 +422,7 @@ export default function RecordListItem({
       {
         shouldRenderColumn('title', columns)
         && (
-          <td className="text-larger">
+          <td className={smallTitle ? 'table-buttons' : 'text-larger'}>
             <a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={recordHref}>
               {
                 config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined

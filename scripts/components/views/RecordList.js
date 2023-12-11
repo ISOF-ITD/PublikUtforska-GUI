@@ -37,6 +37,7 @@ export default function RecordList({
   // useRouteParams: use the route params instead of the search params for the link
   // maybe this should be the default behaviour and search params via props should be optional?
   useRouteParams,
+  smallTitle,
 }) {
   RecordList.propTypes = {
     columns: PropTypes.arrayOf(PropTypes.string),
@@ -55,6 +56,7 @@ export default function RecordList({
     mode: PropTypes.string,
     useRouteParams: PropTypes.bool,
     containerRef: PropTypes.objectOf(PropTypes.any),
+    smallTitle: PropTypes.bool,
   };
 
   RecordList.defaultProps = {
@@ -74,6 +76,7 @@ export default function RecordList({
     mode: 'material',
     useRouteParams: false,
     containerRef: null,
+    smallTitle: false,
   };
 
   const navigate = useNavigate();
@@ -299,6 +302,7 @@ export default function RecordList({
       columns={columns}
       mode={mode}
       useRouteParams={useRouteParams}
+      smallTitle={smallTitle}
     />
   )) : [];
 

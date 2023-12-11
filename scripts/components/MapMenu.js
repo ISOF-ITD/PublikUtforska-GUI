@@ -9,6 +9,7 @@ import StatisticsList from './StatisticsList';
 import config from '../config';
 import Folkelogga from '../../img/folke-white.svg';
 import TranscribeButton from './views/TranscribeButton';
+import RecordList from './views/RecordList';
 
 export default function MapMenu({
   mode, params, recordsData, loading,
@@ -29,6 +30,14 @@ export default function MapMenu({
   const [menuExpanded, setMenuExpanded] = useState(!isMobile);
   const [currentMonth, setCurrentMonth] = useState('');
   const visible = true;
+
+  const paramsLatest = {
+    size: 10,
+    recordtype: 'one_record',
+    transcriptionstatus: 'published',
+    sort: 'changedate', // 'transcriptiondate', // 'approvedate',
+    order: 'desc',
+  };
 
   useEffect(() => {
     // fetch "current_month" from server.
@@ -178,6 +187,24 @@ export default function MapMenu({
             label="Topplista transkriberare totalt"
             visible={visible}
           />
+
+          <h3>Senast avskrivna uppteckningar</h3>
+          <div className="statistics-table">
+            <RecordList
+              key="latest-RecordList"
+              disableRouterPagination
+              params={paramsLatest}
+              disableListPagination
+              columns={['title', 'year', 'place', 'transcribedby']}
+              tableClass="table-compressed"
+                // möjliggör att visa 50 poster efter en klick på "visa fler"
+              sizeMore={50}
+                // interval is 60 sec, if visible is true and the web browser is in focus
+              interval={visible ? 60000 : null}
+              hasFilter={false}
+              smallTitle
+            />
+          </div>
         </div>
 
         {/* <div className="puff news">
