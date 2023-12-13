@@ -22,7 +22,7 @@ import SitevisionContent from '../SitevisionContent';
 import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
-import { getTitle, makeArchiveIdHumanReadable, getAudioTitle } from '../../utils/helpers';
+import { getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
 
@@ -818,7 +818,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-              `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${data.archive.archive}`
+              `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${getArchiveName(data.archive.archive_org)}`
             )}
               title={l('Källhänvisning')}
             />
@@ -943,7 +943,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 <p>
                   <strong>{l('Arkiv')}</strong>
                   <br />
-                  {data.archive.archive}
+                  {getArchiveName(data.archive.archive_org)}
                 </p>
               )
             }

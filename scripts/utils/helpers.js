@@ -159,6 +159,36 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
+export function getArchiveName(archiveOrg) {
+  // Standard är Göteborg då Göteborgsposter skapades då archive_org inte fanns
+  let archiveName = 'Institutet för språk och folkminnen, Göteborg'
+
+  if (archiveOrg === 'Lund') {
+    archiveName = 'Institutet för språk och folkminnen, Lund'
+  }
+  if (archiveOrg === 'Göteborg') {
+    archiveName = 'Institutet för språk och folkminnen, Göteborg'
+  }
+  if (archiveOrg === 'Umeå') {
+    archiveName = 'Institutet för språk och folkminnen, Umeå'
+  }
+  if (archiveOrg === 'Uppsala') {
+    archiveName = 'Institutet för språk och folkminnen, Uppsala'
+  }
+  // Icke isof
+  // OBS: Har ännu inte archive_org!
+  if (archiveOrg === 'NFS') {
+    archiveName = 'Norsk folkeminnesamling'
+  }
+  if (archiveOrg === 'SLS') {
+    archiveName = 'Svenska litteratursällskapet i Finland (SLS)'
+  }
+    
+  return archiveName;
+}
+
+// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
+// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
 export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
   // Kontrollera att str är definierad
   if (!str) return '';
