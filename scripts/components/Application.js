@@ -45,9 +45,10 @@ export default function Application({
   window.eventBus = EventBus;
 
   const navigate = useNavigate();
-  const { results } = useLoaderData();
+  const { results, audioResults } = useLoaderData();
   const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: { } });
+  const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: { } });
   const [loading, setLoading] = useState(true);
 
   const params = useParams();
@@ -68,6 +69,14 @@ export default function Application({
       setLoading(false);
     });
   }, [results]);
+
+  useEffect(() => {
+    audioResults.then((data) => {
+      console.log("data")
+      console.log(data)
+      setAudioRecordsData(data[1]);
+    });
+  }, [audioResults]);
 
   useEffect(() => {
     // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
@@ -122,6 +131,7 @@ export default function Application({
           params={params}
           mapData={mapData}
           recordsData={recordsData}
+          audioRecordsData={audioRecordsData}
           loading={loading}
         />
 

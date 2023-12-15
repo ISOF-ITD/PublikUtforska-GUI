@@ -12,13 +12,14 @@ import SearchSuggestions from './SearchSuggestions';
 import { getPersonFetchLocation, getPlaceFetchLocation, makeArchiveIdHumanReadable } from '../utils/helpers';
 
 export default function SearchBox({
-  mode, params, recordsData, loading,
+  mode, params, recordsData, audioRecordsData, loading,
 }) {
   SearchBox.propTypes = {
     // expanded: PropTypes.bool.isRequired,
     mode: PropTypes.string.isRequired,
     params: PropTypes.object.isRequired,
     recordsData: PropTypes.object.isRequired,
+    audioRecordsData: PropTypes.object.isRequired,
     loading: PropTypes.bool.isRequired,
   };
 
@@ -47,6 +48,7 @@ export default function SearchBox({
 
   // const total = mode === 'transcribe'
   const { metadata: { total } } = recordsData;
+  const { metadata: { total: audioTotal } } = audioRecordsData;
   // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
   const executeSearch = (keyword, searchFieldValue = null) => {
@@ -581,6 +583,40 @@ export default function SearchBox({
           }
         </div>
       </div>
+      {
+        audioTotal
+        &&
+        <span
+          className="audioTotal"
+          // position: relative;
+    // border-width: 0;
+    // height: 60px;
+    // left: 20px;
+    // letter-spacing: normal;
+    // line-height: normal;
+    // margin-bottom: 0;
+    // text-decoration: none;
+    // color: #005462;
+    // color: white;
+    // cursor: pointer;
+    // opacity: 0;
+          style={{
+            position: 'relative',
+            borderWidth: 0,
+            height: 60,
+            left: 20,
+            letterSpacing: 'normal',
+            lineHeight: 'normal',
+            marginBottom: 0,
+            textDecoration: 'none',
+            color: 'white',
+            cursor: 'pointer',
+            // opacity: 0,
+          }}
+          >
+          {audioTotal.value} Inspelningar
+        </span>
+      }
       {
         total//! fetchingPage
         && (
