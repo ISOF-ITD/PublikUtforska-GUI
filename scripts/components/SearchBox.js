@@ -583,40 +583,35 @@ export default function SearchBox({
           }
         </div>
       </div>
-      {
+      <div
+        className={`totals${loading ? ' loading' : ' visible'}`}
+      >
+        {
+          total
+          && (
+          <span
+            className="total"
+          >
+            {total.value}
+            {' '}
+            poster
+          </span>
+          )
+        }
+        {
         audioTotal
-        &&
+        && (
         <span
           className="audioTotal"
-          // position: relative;
-    // border-width: 0;
-    // height: 60px;
-    // left: 20px;
-    // letter-spacing: normal;
-    // line-height: normal;
-    // margin-bottom: 0;
-    // text-decoration: none;
-    // color: #005462;
-    // color: white;
-    // cursor: pointer;
-    // opacity: 0;
-          style={{
-            position: 'relative',
-            borderWidth: 0,
-            height: 60,
-            left: 20,
-            letterSpacing: 'normal',
-            lineHeight: 'normal',
-            marginBottom: 0,
-            textDecoration: 'none',
-            color: 'white',
-            cursor: 'pointer',
-            // opacity: 0,
-          }}
-          >
-          {audioTotal.value} Inspelningar
+
+        >
+          {audioTotal.value}
+          {' '}
+          Inspelningar
         </span>
+        )
       }
+      </div>
       {
         total//! fetchingPage
         && (

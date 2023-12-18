@@ -49,6 +49,27 @@
 		}
 	}
 
+	.totals {
+		position: relative;
+		border-width: 0;
+		height: 60px;
+		left: 20px;
+		letter-spacing: normal;
+		line-height: normal;
+		margin-bottom: 0;
+		text-decoration: none;
+		color: white;
+		cursor: pointer;
+		display: flex;
+		opacity: 0;
+		&.visible {
+			opacity: 1;
+		}
+		span {
+			padding-right: 5px;
+		}
+	}
+
 	.puffar {
 		flex-grow: 1;
 		overflow-y: auto;
