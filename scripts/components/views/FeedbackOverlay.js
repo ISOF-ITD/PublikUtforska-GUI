@@ -10,6 +10,7 @@ export default function FeedbackOverlay() {
   const [nameInputValue, setNameInputValue] = useState('');
   const [emailInputValue, setEmailInputValue] = useState('');
   const [messageSent, setMessageSent] = useState(false);
+  const [messageSentError, setMessageSentError] = useState(false);
   const [type, setType] = useState(null);
   const [title, setTitle] = useState(null);
   const [appUrl, setAppUrl] = useState(null);
@@ -45,6 +46,7 @@ export default function FeedbackOverlay() {
   const closeButtonClickHandler = () => {
     setVisible(false);
     setMessageSent(false);
+    setMessageSentError(false);
     setMessageInputValue('');
     setNameInputValue('');
     setEmailInputValue('');
@@ -83,20 +85,34 @@ export default function FeedbackOverlay() {
       body: formData,
     })
       .then((response) => response.json()).then((json) => {
-        if (json.success) {
+        if (json.success === true || json.success === 'true') {
           setMessageSent(true);
+          setMessageSentError(false);
+        } else {
+          setMessageSent(true);
+          setMessageSentError(true);
         }
       });
   };
 
   let overlayContent;
-  if (messageSent) {
+  if (messageSent === true && messageSentError === false) {
     overlayContent = (
       <div>
         <p>{l('Vi återkommer så fort vi kan. Tack.')}</p>
         <p>
           <br />
-          <button className="button-primary" onClick={closeButtonClickHandler}>Stäng</button>
+          <button className="button-primary" onClick={closeButtonClickHandler} type="button">Stäng</button>
+        </p>
+      </div>
+    );
+  } else if (messageSent === true && messageSentError === true) {
+    overlayContent = (
+      <div>
+        <p>{l('Något gick fel. Meddelande kunde inte skickas. Vänligen försök senare, eller kontakta oss på karttjanster@isof.se')}</p>
+        <p>
+          <br />
+          <button className="button-primary" onClick={closeButtonClickHandler} type="button">Stäng</button>
         </p>
       </div>
     );
@@ -128,7 +144,7 @@ export default function FeedbackOverlay() {
       <div className="overlay-window">
         <div className="overlay-header">
           {l('Frågor och synpunkter')}
-          <button title="stäng" className="close-button white" onClick={closeButtonClickHandler} />
+          <button title="stäng" className="close-button white" type="button" onClick={closeButtonClickHandler} />
         </div>
         {overlayContent}
       </div>
