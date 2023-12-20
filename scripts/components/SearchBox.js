@@ -389,7 +389,6 @@ export default function SearchBox({
     setSearch(provinceLabel);
     setCategories([]);
     setPlace(provinceLabel);
-    debugger;
     executeSearch(provinceValue, 'place');
   };
 
