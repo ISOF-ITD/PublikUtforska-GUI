@@ -37,6 +37,7 @@ export default function SearchBox({
   const [search, setSearch] = useState('');
   const [person, setPerson] = useState(null);
   const [place, setPlace] = useState(null);
+  const [categories, setCategories] = useState([]);
   // const [province, setProvince] = useState(null);
 
   const { search: searchParam, search_field: searchFieldParam } = createParamsFromSearchRoute(params['*']);
@@ -57,12 +58,22 @@ export default function SearchBox({
     const searchPhrase = typeof keyword === 'string' ? encodeURIComponent(keyword) : encodeURIComponent(searchInputRef.current.value);
     const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
     const searchFieldPart = searchFieldValue ? `/search_field/${searchFieldValue}` : '';
+    const categoryValue = categories.join(',');
+    const categoryPart = categoryValue ? `/category/${categoryValue}` : '';
     const searchPart = searchPhrase
-      ? `search/${searchPhrase}${searchFieldPart}?s=${searchFieldValue ? `${searchFieldValue}:` : ''}${searchPhrase}`
-      : '';
+      ? `search/${searchPhrase}${searchFieldPart}${categoryPart}?s=${searchFieldValue ? `${searchFieldValue}:` : ''}${searchPhrase}`
+      : categoryPart.replace(/^\//, '');
     navigate(
       `/${transcribePrefix}${searchPart}`,
     );
+  };
+
+  const handleFilterChange = (e) => {
+    // add the e.target.dataset.filter to the filter array if it is not already there, otherwise remove it
+    const newFilter = categories.includes(e.target.dataset.filter)
+      ? categories.filter((f) => f !== e.target.dataset.filter)
+      : [...categories, e.target.dataset.filter];
+    setCategories(newFilter);
   };
 
   const getSearchSuggestions = () => {
@@ -159,6 +170,13 @@ export default function SearchBox({
     }
   };
 
+  // // when audioTotal changes and is 0, set categories to empty array
+  // useEffect(() => {
+  //   if (audioTotal && audioTotal.value === 0) {
+  //     setCategories([]);
+  //   }
+  // }, [audioTotal]);
+
   useEffect(() => {
     // document.getElementById('app').addEventListener('click', windowClickHandler);
     if (window.eventBus) {
@@ -220,7 +238,14 @@ export default function SearchBox({
       setSearch(searchParam);
       setPerson(null);
     }
+
+    // also, set categories to empty array
+    // setCategories([]);
   }, [searchParam, searchFieldParam]);
+
+  useEffect(() => {
+    executeSearch();
+  }, [categories]);
 
   const openButtonKeyUpHandler = (e) => {
     if (e.keyCode === 13) {
@@ -275,12 +300,14 @@ export default function SearchBox({
     if (e.key === 'Enter' && (e.target === searchInputRef.current)) {
       // navigate(`/search/${searchInputRef.current.value}`);
       setSuggestionsVisible(false);
+      setCategories([]);
       executeSearch();
     }
     if (e.key === 'Enter'
       && suggestionsRef.current && suggestionsRef.current.contains(e.target)) {
       setSuggestionsVisible(false);
       // navigate(`/search/${e.target.dataset.value}`);
+      setCategories([]);
       executeSearch(e.target.dataset.value, e.target.dataset.field);
     }
     if (e.key === 'Escape') {
@@ -342,6 +369,7 @@ export default function SearchBox({
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
     setSearch(personLabel);
+    setCategories([]);
     setPerson(true);
     executeSearch(personValue, 'person');
   };
@@ -350,6 +378,7 @@ export default function SearchBox({
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
     setSearch(placeLabel);
+    setCategories([]);
     setPlace(placeLabel);
     executeSearch(placeValue, 'place');
   };
@@ -358,7 +387,9 @@ export default function SearchBox({
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
     setSearch(provinceLabel);
+    setCategories([]);
     setPlace(provinceLabel);
+    debugger;
     executeSearch(provinceValue, 'place');
   };
 
@@ -366,6 +397,7 @@ export default function SearchBox({
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
     setSearch(archiveidValue);
+    setCategories([]);
     executeSearch(archiveidValue);
   };
 
@@ -373,6 +405,7 @@ export default function SearchBox({
     setSuggestionsVisible(false);
     // already change input field, before search results are returned
     setSearch(searchValue);
+    setCategories([]);
     // setSearch(keyword);
     executeSearch(searchValue);
   };
@@ -574,6 +607,7 @@ export default function SearchBox({
             loading
             && (
               <button
+                type="button"
                 className="search-spinner"
                 style={{
                   visibility: person || place ? 'hidden' : 'unset',
@@ -584,33 +618,57 @@ export default function SearchBox({
         </div>
       </div>
       <div
-        className={`totals${loading ? ' loading' : ' visible'}`}
+        className={`totals${loading ? ' visible' : ' visible'}`}
       >
-        {
+        { audioTotal?.value > 0 && l('Begränsa sökningen till: ')}
+        {/* {
           total
           && (
-          <span
-            className="total"
-          >
-            {total.value}
-            {' '}
-            poster
-          </span>
+            <label
+              className='search-filter-label'
+              >
+              <input
+                type="checkbox"
+                checked={filter?.length === 0}
+                onChange={handleFilterChange}
+                data-filter="all"
+              />
+              {total.value} sökträffar
+            </label>
+          )
+        } */}
+        {/* add no breaking space */}
+        <span>&nbsp;</span>
+        {
+          audioTotal?.value > 0
+          && (
+            <div
+              className={`search-filter${categories?.includes('contentG5') ? ' checked' : ''}`}
+            >
+              <div className="input-wrapper">
+                <input
+                  type="checkbox"
+                  checked={categories?.includes('contentG5')}
+                  onChange={handleFilterChange}
+                  data-filter="contentG5"
+                  aria-checked={categories?.includes('contentG5')}
+                />
+                <svg viewBox="0 0 200 200" width="1.25em" height="1.25em" xmlns="http://www.w3.org/2000/svg" className="icon" role="img" aria-hidden="true">
+                  <path d="M132.639 63.231l-48.974 53.26l-17.569-13.51l-12.191 15.855c22.199 17.07 30.128 26.802 38.284 17.932l55.172-60l-14.722-13.537z" />
+                </svg>
+              </div>
+              <label
+                className="search-filter-label"
+                htmlFor="contentG5"
+              >
+                
+                {l('Ljudinspelningar')}
+                {' '}
+                {`(${audioTotal.value})`}
+              </label>
+            </div>
           )
         }
-        {
-        audioTotal
-        && (
-        <span
-          className="audioTotal"
-
-        >
-          {audioTotal.value}
-          {' '}
-          Inspelningar
-        </span>
-        )
-      }
       </div>
       {
         total//! fetchingPage

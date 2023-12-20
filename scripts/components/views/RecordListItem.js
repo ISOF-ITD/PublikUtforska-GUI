@@ -412,6 +412,7 @@ export default function RecordListItem({
     useRouteParams
       ? createParamsFromSearchRoute(params['*'])
       : {
+        category: searchParams.category,
         search: searchParams.search,
         search_field: searchParams.search_field,
       },
@@ -493,6 +494,7 @@ export default function RecordListItem({
                   target={config.embeddedApp ? '_parent' : '_self'}
                   href={`#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}${createSearchRoute(
                     {
+                      category: searchParams.category,
                       search: searchParams.search,
                       search_field: searchParams.search_field,
                     },
