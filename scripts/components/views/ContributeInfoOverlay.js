@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import config from '../../config';
 import { useLocation } from 'react-router-dom';
+import config from '../../config';
 
 export default function ContributeinfoOverlay() {
   const [state, setState] = useState({
@@ -9,6 +9,7 @@ export default function ContributeinfoOverlay() {
     nameInputValue: '',
     emailInputValue: '',
     messageSent: false,
+    messageSentError: false,
     type: '',
     title: '',
     country: '',
@@ -51,6 +52,7 @@ export default function ContributeinfoOverlay() {
       ...state,
       visible: false,
       messageSent: false,
+      messageSentError: false,
       messageInputValue: '',
       nameInputValue: '',
       emailInputValue: '',
@@ -100,10 +102,17 @@ export default function ContributeinfoOverlay() {
       body: formData,
     })
       .then((response) => response.json()).then((json) => {
-        if (json.success) {
+        if (json.success === true || json.success === 'true') {
           setState({
             ...state,
             messageSent: true,
+            messageSentError: false,
+          });
+        } else {
+          setState({
+            ...state,
+            messageSent: true,
+            messageSentError: true,
           });
         }
       });
@@ -112,13 +121,36 @@ export default function ContributeinfoOverlay() {
   // Rendering logic
   let overlayContent;
 
-  if (state.messageSent) {
+  if (state.messageSent === true && state.messageSentError === false) {
     overlayContent = (
       <div>
         <p>{l('Tack för ditt bidrag. Meddelande skickat.')}</p>
         <p>
           <br />
-          <button className="button-primary" onClick={closeButtonClickHandler}>Stäng</button>
+          <button
+            className="button-primary"
+            onClick={closeButtonClickHandler}
+            type="button"
+          >
+            Stäng
+          </button>
+        </p>
+      </div>
+    );
+  }
+    else if (state.messageSent === true && state.messageSentError === true) {
+    overlayContent = (
+      <div>
+        <p>{l('Något gick fel. Meddelande kunde inte skickas. Vänligen försök senare, eller kontakta oss på karttjanster@isof.se')}</p>
+        <p>
+          <br />
+          <button
+            className="button-primary"
+            onClick={closeButtonClickHandler}
+            type="button"
+          >
+            Stäng
+          </button>
         </p>
       </div>
     );
