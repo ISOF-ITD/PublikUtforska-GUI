@@ -33,6 +33,7 @@ function SurveyLink() {
         borderRadius: '13px',
         marginBottom: '10px',
         cursor: 'pointer',
+        textDecoration: 'underline',
       }}
       onClick={handleAction}
       onKeyDown={handleKeyDown}
