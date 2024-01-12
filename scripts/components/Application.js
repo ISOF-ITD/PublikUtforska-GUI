@@ -72,8 +72,6 @@ export default function Application({
 
   useEffect(() => {
     audioResults.then((data) => {
-      console.log("data")
-      console.log(data)
       setAudioRecordsData(data[1]);
     });
   }, [audioResults]);
