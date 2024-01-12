@@ -63,7 +63,7 @@ cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
 Bash script to upgrade all node modules:
 
 ```bash
-npm outdated; npm install $(npm outdated | egrep '^[a-z@/-]*' -o | tr '\r\n' ' ') && npm outdated
+npm outdated; npm install $(npm outdated | egrep '^[a-z0-9@/-]*' -o | tr '\r\n' ' ') && npm outdated
 ```
 
 PowerShell script to upgrade all node modules:
