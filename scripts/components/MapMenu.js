@@ -11,6 +11,30 @@ import Folkelogga from '../../img/folke-white.svg';
 import TranscribeButton from './views/TranscribeButton';
 import RecordList from './views/RecordList';
 
+// bara tillfälligt, för att visa en länk till enkäten
+function SurveyLink() {
+  return (
+    <div
+      style={{
+        backgroundColor: '#3ed494',
+        padding: '1.2rem 1rem 1.1rem',
+        textAlign: 'center',
+        borderRadius: '13px',
+        marginBottom: '10px',
+      }}
+    >
+      <a
+        href="https://www.isof.se/enkat-folke"
+        style={{ color: 'black' }}
+        target="_blank"
+        rel="noreferrer"
+      >
+        Användarenkät Folke 2023
+      </a>
+    </div>
+  );
+}
+
 export default function MapMenu({
   mode, params, recordsData, audioRecordsData, loading,
 }) {
@@ -56,6 +80,7 @@ export default function MapMenu({
 
   return (
     <div className={`menu-wrapper ${menuExpanded ? 'menu-expanded' : 'menu-collapsed'}`}>
+      <SurveyLink />
       <img src={Folkelogga} alt="Folkelogga" style={{ height: 80, width: '100%' }} />
       <FilterSwitch
         mode={mode}
