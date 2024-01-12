@@ -12,13 +12,14 @@ import SearchSuggestions from './SearchSuggestions';
 import { getPersonFetchLocation, getPlaceFetchLocation, makeArchiveIdHumanReadable } from '../utils/helpers';
 
 export default function SearchBox({
-  mode, params, recordsData, loading,
+  mode, params, recordsData, audioRecordsData, loading,
 }) {
   SearchBox.propTypes = {
     // expanded: PropTypes.bool.isRequired,
     mode: PropTypes.string.isRequired,
     params: PropTypes.object.isRequired,
     recordsData: PropTypes.object.isRequired,
+    audioRecordsData: PropTypes.object.isRequired,
     loading: PropTypes.bool.isRequired,
   };
 
@@ -36,7 +37,13 @@ export default function SearchBox({
   const [search, setSearch] = useState('');
   const [person, setPerson] = useState(null);
   const [place, setPlace] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [keyword, setKeyword] = useState(null);
+  const [searchFieldValue, setSearchFieldValue] = useState(null);
   // const [province, setProvince] = useState(null);
+
+  // if we want to keep track of the previous value of categories:
+  // const prevCategoriesRef = useRef(categories);
 
   const { search: searchParam, search_field: searchFieldParam } = createParamsFromSearchRoute(params['*']);
   const navigate = useNavigate();
@@ -47,20 +54,40 @@ export default function SearchBox({
 
   // const total = mode === 'transcribe'
   const { metadata: { total } } = recordsData;
+  const { metadata: { total: audioTotal } } = audioRecordsData;
   // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
-  const executeSearch = (keyword, searchFieldValue = null) => {
+  const executeSearch = (keywordParam, searchFieldValueParam = null) => {
     // if keyword is a string, use it as search phrase
     // otherwise use the value of the search input field
-    const searchPhrase = typeof keyword === 'string' ? encodeURIComponent(keyword) : encodeURIComponent(searchInputRef.current.value);
+    setKeyword(keywordParam); // keep track of the keyword
+    setSearchFieldValue(searchFieldValueParam); // keep track of the search field value
+    const searchPhrase = typeof keywordParam === 'string' ? encodeURIComponent(keywordParam) : encodeURIComponent(searchInputRef.current.value);
     const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
-    const searchFieldPart = searchFieldValue ? `/search_field/${searchFieldValue}` : '';
+    const searchFieldPart = searchFieldValueParam ? `/search_field/${searchFieldValueParam}` : '';
+    const categoryValue = categories.join(',');
+    const categoryPart = categoryValue ? `/category/${categoryValue}` : '';
     const searchPart = searchPhrase
-      ? `search/${searchPhrase}${searchFieldPart}?s=${searchFieldValue ? `${searchFieldValue}:` : ''}${searchPhrase}`
-      : '';
+      ? `search/${searchPhrase}${searchFieldPart}${categoryPart}?s=${searchFieldValueParam ? `${searchFieldValueParam}:` : ''}${searchPhrase}`
+      : categoryPart.replace(/^\//, '');
     navigate(
       `/${transcribePrefix}${searchPart}`,
     );
+  };
+
+  const handleFilterChange = (e) => {
+    const { filter } = e.target.dataset;
+    // if we want to keep track of the previous value of categories:
+    // update prevCategoriesRef with the current value before it changes
+    // prevCategoriesRef.current = categories;
+
+    // add the e.target.dataset.filter to the filter array if it is not already there
+    // otherwise remove it
+    setCategories((prevCategories) => (
+      prevCategories.includes(filter)
+        ? prevCategories.filter((f) => f !== filter)
+        : [...prevCategories, filter]
+    ));
   };
 
   const getSearchSuggestions = () => {
@@ -78,10 +105,10 @@ export default function SearchBox({
     });
   };
 
-  const getPersonAutocomplete = (keyword) => {
+  const getPersonAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/person
-    fetch(`${path}autocomplete/persons?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/persons?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         // label is the attribute "name", if there is an attribute "birth_year" add it to the label
@@ -108,10 +135,10 @@ export default function SearchBox({
     });
   };
 
-  const getPlaceAutocomplete = (keyword) => {
+  const getPlaceAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/socken
-    fetch(`${path}autocomplete/socken?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/socken?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         // label is the attribute "name"
@@ -123,10 +150,10 @@ export default function SearchBox({
     });
   };
 
-  const getProvinceAutocomplete = (keyword) => {
+  const getProvinceAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/landskap
-    fetch(`${path}autocomplete/landskap?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/landskap?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         // label is the attribute "name"
@@ -137,10 +164,10 @@ export default function SearchBox({
     });
   };
 
-  const getArchiveIdAutocomplete = (keyword) => {
+  const getArchiveIdAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/archive_ids and add required params
-    fetch(`${path}autocomplete/archive_ids?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/archive_ids?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         value: row.id,
@@ -156,6 +183,13 @@ export default function SearchBox({
       window.eventBus.dispatch('routePopup.show');
     }
   };
+
+  // // when audioTotal changes and is 0, set categories to empty array
+  // useEffect(() => {
+  //   if (audioTotal && audioTotal.value === 0) {
+  //     setCategories([]);
+  //   }
+  // }, [audioTotal]);
 
   useEffect(() => {
     // document.getElementById('app').addEventListener('click', windowClickHandler);
@@ -218,7 +252,15 @@ export default function SearchBox({
       setSearch(searchParam);
       setPerson(null);
     }
+
+    // also, set categories to empty array
+    // setCategories([]);
   }, [searchParam, searchFieldParam]);
+
+  useEffect(() => {
+    executeSearch(keyword, searchFieldValue);
+  }, [categories]); // Detta kommer att köras efter att `categories` state ändras
+
 
   const openButtonKeyUpHandler = (e) => {
     if (e.keyCode === 13) {
@@ -247,7 +289,7 @@ export default function SearchBox({
   // filter keywords by search input value
   const filteredSearchSuggestions = () => searchSuggestions
     // filter out keywords that don't contain the search input value
-    .filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
+    .filter((k) => k.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
     // remove out keywords that are duplicates, but only different in case
     .filter((item, index, arr) => {
       const label = item.label.toLowerCase();
@@ -572,6 +614,7 @@ export default function SearchBox({
             loading
             && (
               <button
+                type="button"
                 className="search-spinner"
                 style={{
                   visibility: person || place ? 'hidden' : 'unset',
@@ -580,6 +623,62 @@ export default function SearchBox({
             )
           }
         </div>
+      </div>
+      <div
+        className={`totals${loading ? ' visible' : ' visible'}`}
+      >
+        {
+          true // audioTotal?.value > 0
+          && l('Begränsa sökningen till: ')
+        }
+        {/* {
+          total
+          && (
+            <label
+              className='search-filter-label'
+              >
+              <input
+                type="checkbox"
+                checked={filter?.length === 0}
+                onChange={handleFilterChange}
+                data-filter="all"
+              />
+              {total.value} sökträffar
+            </label>
+          )
+        } */}
+        {/* add no breaking space */}
+        <span>&nbsp;</span>
+        {
+          true // || audioTotal?.value > 0
+          && (
+            <div
+              className={`search-filter${categories?.includes('contentG5') ? ' checked' : ''}`}
+            >
+              <div className="input-wrapper">
+                <input
+                  type="checkbox"
+                  id="contentG5"
+                  checked={categories?.includes('contentG5')}
+                  onChange={handleFilterChange}
+                  data-filter="contentG5"
+                  aria-checked={categories?.includes('contentG5')}
+                />
+                <svg viewBox="0 0 200 200" width="1.25em" height="1.25em" xmlns="http://www.w3.org/2000/svg" className="icon" role="img" aria-hidden="true">
+                  <path d="M132.639 63.231l-48.974 53.26l-17.569-13.51l-12.191 15.855c22.199 17.07 30.128 26.802 38.284 17.932l55.172-60l-14.722-13.537z" />
+                </svg>
+              </div>
+              <label
+                className="search-filter-label"
+                htmlFor="contentG5"
+              >
+                {l('Ljudinspelningar')}
+                {' '}
+                {`(${audioTotal?.value || 0})`}
+              </label>
+            </div>
+          )
+        }
       </div>
       {
         total//! fetchingPage

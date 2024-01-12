@@ -12,18 +12,20 @@ import TranscribeButton from './views/TranscribeButton';
 import RecordList from './views/RecordList';
 
 export default function MapMenu({
-  mode, params, recordsData, loading,
+  mode, params, recordsData, audioRecordsData, loading,
 }) {
   MapMenu.propTypes = {
     mode: PropTypes.string,
     params: PropTypes.object.isRequired,
     recordsData: PropTypes.object,
+    audioRecordsData: PropTypes.object,
     loading: PropTypes.bool.isRequired,
   };
 
   MapMenu.defaultProps = {
     mode: 'material',
     recordsData: { data: [], metadata: {} },
+    audioRecordsData: { data: [], metadata: {} },
   };
 
   const isMobile = window.innerWidth < 700;
@@ -62,6 +64,7 @@ export default function MapMenu({
         params={params}
         mode={mode}
         recordsData={recordsData}
+        audioRecordsData={audioRecordsData}
         loading={loading}
       />
 

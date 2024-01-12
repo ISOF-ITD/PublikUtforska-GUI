@@ -49,6 +49,84 @@
 		}
 	}
 
+	.totals {
+		position: relative;
+		border-width: 0;
+		height: 60px;
+		left: 20px;
+		letter-spacing: normal;
+		line-height: normal;
+		margin-bottom: 0;
+		text-decoration: none;
+		color: white;
+		cursor: pointer;
+		display: flex;
+		opacity: 0;
+
+		&.visible {
+			opacity: 1;
+		}
+
+		span {
+			padding-right: 5px;
+		}
+
+		.search-filter {
+			margin-bottom: 1rem;
+			display: inline-flex;
+			flex-shrink: 0;
+			outline: 0;
+			padding: 0;
+			align-items: center;
+			user-select: none;
+			vertical-align: middle;
+			text-decoration: none;
+			overflow: hidden;
+
+			label {
+				color: #fff;
+				padding-left: 8px;
+				font-weight: normal;
+				margin-bottom: 0;
+			}
+
+			&.checked .icon {
+				fill: #005462;
+			}
+		}
+
+		.input-wrapper {
+			background-color: #fff;
+			border-color: #9ba0b0;
+			transition: border 200ms ease-in-out;
+
+			position: relative;
+			display: flex;
+			align-items: inherit;
+			justify-content: inherit;
+			border-width: 1px;
+			border-style: solid;
+			border-radius: 4px;
+
+			input {
+				cursor: pointer;
+				margin: 0;
+				opacity: 0;
+				padding: 0;
+				position: absolute;
+				width: 100%;
+				height: 100%;
+			}
+
+			.icon {
+				fill: #fff;
+				height: 14px;
+				width: 14px;
+				min-width: 14px;
+			}
+		}
+	}
+
 	.puffar {
 		flex-grow: 1;
 		overflow-y: auto;
