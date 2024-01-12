@@ -13,6 +13,17 @@ import RecordList from './views/RecordList';
 
 // bara tillfälligt, för att visa en länk till enkäten
 function SurveyLink() {
+  const handleAction = () => {
+    window.open('https://www.isof.se/enkat-folke', '_blank');
+  };
+
+  const handleKeyDown = (event) => {
+    // Aktivera länken när användaren trycker på Enter eller mellanslag
+    if (event.key === 'Enter' || event.key === ' ') {
+      handleAction();
+    }
+  };
+
   return (
     <div
       style={{
@@ -21,16 +32,15 @@ function SurveyLink() {
         textAlign: 'center',
         borderRadius: '13px',
         marginBottom: '10px',
+        cursor: 'pointer',
       }}
+      onClick={handleAction}
+      onKeyDown={handleKeyDown}
+      role="button" // Lägger till rollen "button"
+      tabIndex="0" // Gör elementet fokuserbart
+      aria-label="Användarenkät Folke 2023" // Lägger till en tillgänglig etikett
     >
-      <a
-        href="https://www.isof.se/enkat-folke"
-        style={{ color: 'black' }}
-        target="_blank"
-        rel="noreferrer"
-      >
-        Användarenkät Folke 2023
-      </a>
+      Användarenkät Folke 2023
     </div>
   );
 }
