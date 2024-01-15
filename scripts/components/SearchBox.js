@@ -45,7 +45,12 @@ export default function SearchBox({
   // if we want to keep track of the previous value of categories:
   // const prevCategoriesRef = useRef(categories);
 
-  const { search: searchParam, search_field: searchFieldParam } = createParamsFromSearchRoute(params['*']);
+  // extract search params from route
+  const {
+    search: searchParam,
+    search_field: searchFieldParam,
+    category: categoryParam,
+  } = createParamsFromSearchRoute(params['*']);
   const navigate = useNavigate();
 
   // const dataFromRecordsRoute = useRouteLoaderData('records');
@@ -57,7 +62,23 @@ export default function SearchBox({
   const { metadata: { total: audioTotal } } = audioRecordsData;
   // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
-  const executeSearch = (keywordParam, searchFieldValueParam = null) => {
+  const executeSearch = (keywordParam, searchFieldValueParam = null, categoryToToggle = null) => {
+    // Initialize newCategories with the current categories
+    let newCategories = categories;
+    // If there's a category to toggle
+    if (categoryToToggle) {
+      // Check if the category is already in the list
+      newCategories = categories.includes(categoryToToggle)
+        // If it is, remove it from the list
+        ? categories.filter((f) => f !== categoryToToggle)
+        // If it's not, add it to the list
+        : [...categories, categoryToToggle];
+    }
+    // Update the categories state with the new list
+    setCategories(newCategories);
+    // Convert the list of categories into a string, with each category separated by a comma
+    const categoryValue = newCategories.join(',');
+
     // if keyword is a string, use it as search phrase
     // otherwise use the value of the search input field
     setKeyword(keywordParam); // keep track of the keyword
@@ -65,7 +86,7 @@ export default function SearchBox({
     const searchPhrase = typeof keywordParam === 'string' ? encodeURIComponent(keywordParam) : encodeURIComponent(searchInputRef.current.value);
     const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
     const searchFieldPart = searchFieldValueParam ? `/search_field/${searchFieldValueParam}` : '';
-    const categoryValue = categories.join(',');
+    // const categoryValue = categories.join(',');
     const categoryPart = categoryValue ? `/category/${categoryValue}` : '';
     const searchPart = searchPhrase
       ? `search/${searchPhrase}${searchFieldPart}${categoryPart}?s=${searchFieldValueParam ? `${searchFieldValueParam}:` : ''}${searchPhrase}`
@@ -76,18 +97,9 @@ export default function SearchBox({
   };
 
   const handleFilterChange = (e) => {
-    const { filter } = e.target.dataset;
-    // if we want to keep track of the previous value of categories:
-    // update prevCategoriesRef with the current value before it changes
-    // prevCategoriesRef.current = categories;
-
-    // add the e.target.dataset.filter to the filter array if it is not already there
-    // otherwise remove it
-    setCategories((prevCategories) => (
-      prevCategories.includes(filter)
-        ? prevCategories.filter((f) => f !== filter)
-        : [...prevCategories, filter]
-    ));
+    const { filter: categoryToToggle } = e.target.dataset;
+    // anropa samma url, fast med nytt filter
+    executeSearch(keyword, searchFieldValue, categoryToToggle);
   };
 
   const getSearchSuggestions = () => {
@@ -202,6 +214,7 @@ export default function SearchBox({
     getSearchSuggestions();
     // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
     setSearch(searchParam);
+    setCategories(categoryParam ? categoryParam.split(',') : []);
     // setSearchField(searchFieldParam);
     if (searchFieldParam === 'person') {
       const personFetchLocation = getPersonFetchLocation(searchParam);
@@ -256,11 +269,6 @@ export default function SearchBox({
     // also, set categories to empty array
     // setCategories([]);
   }, [searchParam, searchFieldParam]);
-
-  useEffect(() => {
-    executeSearch(keyword, searchFieldValue);
-  }, [categories]); // Detta kommer att köras efter att `categories` state ändras
-
 
   const openButtonKeyUpHandler = (e) => {
     if (e.keyCode === 13) {
