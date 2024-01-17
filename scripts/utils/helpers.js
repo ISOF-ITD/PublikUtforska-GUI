@@ -50,7 +50,7 @@ Mediafil Titel
 4.	Text: "Inspelning"
 
 */
-export function getAudioTitle(title, contents, archiveName, fileName, year, persons) {
+export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName, year, persons) {
   // console.log(title);
   switch (!!title) {
     case true:
@@ -58,7 +58,23 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
     default:
       if (contents) {
         if (contents.length > 0) {
-          if (archiveName.includes('AFU')) {
+          // If no archiveOrg use archive name 
+          if (!archiveOrg) {
+            if (archiveName.includes('AFG')) {
+              archiveOrg = 'Göteborg';
+            }
+            if (archiveName.includes('Lund') || archiveName.includes('DAL')) {
+              archiveOrg = 'Lund';
+            }
+            if (archiveName.includes('AFU')) {
+              archiveOrg = 'Uppsala';
+            }
+            if (archiveName.includes('Umeå')) {
+              archiveOrg = 'Umeå';
+            }
+          }
+          // Set audio title according to archive patterns using archiveOrg
+          if (archiveOrg === 'Uppsala') {
             if (contents.length > 100) {
               return `[${contents.substring(0, 84)} ${'(FÖRKORTAD TITEL)'}]`;
             }
@@ -66,7 +82,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
           }
           // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
           // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
-          if (archiveName.includes('AFG')) {
+          if (archiveOrg === 'Göteborg') {
             // Clean different row breaks:
             const cleanContent = contents.replace(/\r\r/g, '\n').replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
             const contentRows = cleanContent.split('\n');
@@ -81,12 +97,14 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
                 let fileId = elements[0];
                 if (fileId.length > 1) {
                   // Clean unwanted characters:
-                  fileId = fileId.replace('(', '').replace(' ', '');
+                  fileId = fileId.replaceAll('[', '').replaceAll('(', '').replaceAll(' ', '');
+                  // Clean filename accordning to pattern in content field:
+                  fileId = fileId.replace('III', '3').replace('II', '2').replace('I', '1');
                   const filenameParts = fileName.split('/');
                   if (filenameParts) {
                     // Clean filename accordning to pattern in content field:
-                    let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '').replace('I', '1').replace('II', '2')
-                      .replace('III', '3');
+                    let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '').replace('III', '3').replace('II', '2')
+                      .replace('I', '1');
                     // How to identify and remove other existing extensions?
                     cleanFilename = cleanFilename.replace('SK', '');
                     // Match archive id with filename:
@@ -100,7 +118,7 @@ export function getAudioTitle(title, contents, archiveName, fileName, year, pers
           }
           // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
           // -- Find titel_allt types by DAL acc_nr_ny_prefix "s"+ one character (to compare hits with number as second character to letters as second character):
-          if (archiveName.includes('Lund') || archiveName.includes('DAL')) {
+          if (archiveOrg === 'Lund') {
             // Clean different row breaks:
             const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
             const contentRows = cleanContent.split(':');
@@ -176,7 +194,6 @@ export function getArchiveName(archiveOrg) {
     archiveName = 'Institutet för språk och folkminnen, Uppsala'
   }
   // Icke isof
-  // OBS: Har ännu inte archive_org!
   if (archiveOrg === 'NFS') {
     archiveName = 'Norsk folkeminnesamling'
   }

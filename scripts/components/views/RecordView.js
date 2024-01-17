@@ -235,6 +235,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               recordTitle={getAudioTitle(
                 data.title,
                 data.contents,
+                data.archive.archive_org,
                 data.archive.archive,
                 mediaItem.source,
                 data.year,
@@ -246,6 +247,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {getAudioTitle(
               data.title,
               data.contents,
+              data.archive.archive_org,
               data.archive.archive,
               mediaItem.source,
               data.year,
