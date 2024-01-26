@@ -430,15 +430,15 @@ export default function RecordListItem({
                 && <ListPlayButton disablePlayback media={audioItem} recordId={recordId} recordTitle={title && title != '' ? title : l('(Utan titel)')} />
               }
               {
-                media?.filter((m) => m.source && m.source.includes('.pdf'))[0]
+                media?.filter((m) => m.source && m.source.toLowerCase().includes('.pdf'))[0]
                 && <sub><img src={PdfGif} style={{ marginRight: 5 }} alt="pdf" title="Accession" /></sub>
               }
               {
-                media?.filter((m) => m.source && m.source.includes('.jpg'))[0]
+                media?.filter((m) => m.source && m.source.toLowerCase().includes('.jpg'))[0]
                 && <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
               }
               {
-                media?.filter((m) => m.source && m.source.includes('.MP3'))[0]
+                media?.filter((m) => m.source && m.source.toLowerCase().includes('.mp3'))[0]
                 && <FontAwesomeIcon icon={faVolumeHigh} style={{ marginRight: 5 }} alt="jpg" title="Inspelning" />
               }
               {titleText && titleText !== '[]' ? titleText : ''}
