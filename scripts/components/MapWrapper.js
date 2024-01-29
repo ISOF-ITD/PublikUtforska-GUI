@@ -4,7 +4,7 @@ import MapView from './views/MapView';
 import MapBottomWrapper from './MapBottomWrapper';
 
 export default function MapWrapper({
-  mapMarkerClick, mode, params, mapData, loading, recordsData, audioRecordsData,
+  mapMarkerClick, mode, params, mapData, loading, recordsData, audioRecordsData, pictureRecordsData,
 }) {
   MapWrapper.propTypes = {
     mapMarkerClick: PropTypes.func.isRequired,
@@ -14,6 +14,7 @@ export default function MapWrapper({
     loading: PropTypes.bool,
     recordsData: PropTypes.object.isRequired,
     audioRecordsData: PropTypes.object.isRequired,
+    pictureRecordsData: PropTypes.object.isRequired,
   };
 
   MapWrapper.defaultProps = {
@@ -27,6 +28,7 @@ export default function MapWrapper({
         params={params}
         recordsData={recordsData}
         audioRecordsData={audioRecordsData}
+        pictureRecordsData={pictureRecordsData}
         loading={loading}
       />
 

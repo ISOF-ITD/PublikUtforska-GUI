@@ -10,9 +10,10 @@ import { createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import SearchSuggestions from './SearchSuggestions';
 import { getPersonFetchLocation, getPlaceFetchLocation, makeArchiveIdHumanReadable } from '../utils/helpers';
+import SearchFilterButton from './views/SearchFilterButton';
 
 export default function SearchBox({
-  mode, params, recordsData, audioRecordsData, loading,
+  mode, params, recordsData, audioRecordsData, pictureRecordsData, loading,
 }) {
   SearchBox.propTypes = {
     // expanded: PropTypes.bool.isRequired,
@@ -20,6 +21,7 @@ export default function SearchBox({
     params: PropTypes.object.isRequired,
     recordsData: PropTypes.object.isRequired,
     audioRecordsData: PropTypes.object.isRequired,
+    pictureRecordsData: PropTypes.object.isRequired,
     loading: PropTypes.bool.isRequired,
   };
 
@@ -60,6 +62,7 @@ export default function SearchBox({
   // const total = mode === 'transcribe'
   const { metadata: { total } } = recordsData;
   const { metadata: { total: audioTotal } } = audioRecordsData;
+  const { metadata: { total: pictureTotal } } = pictureRecordsData;
   // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
   const executeSearch = (keywordParam, searchFieldValueParam = null, categoryToToggle = null) => {
@@ -660,33 +663,11 @@ export default function SearchBox({
         {
           true // || audioTotal?.value > 0
           && (
-            <div
-              className={`search-filter${categories?.includes('contentG5') ? ' checked' : ''}`}
-            >
-              <div className="input-wrapper">
-                <input
-                  type="checkbox"
-                  id="contentG5"
-                  checked={categories?.includes('contentG5')}
-                  onChange={handleFilterChange}
-                  data-filter="contentG5"
-                  aria-checked={categories?.includes('contentG5')}
-                />
-                <svg viewBox="0 0 200 200" width="1.25em" height="1.25em" xmlns="http://www.w3.org/2000/svg" className="icon" role="img" aria-hidden="true">
-                  <path d="M132.639 63.231l-48.974 53.26l-17.569-13.51l-12.191 15.855c22.199 17.07 30.128 26.802 38.284 17.932l55.172-60l-14.722-13.537z" />
-                </svg>
-              </div>
-              <label
-                className="search-filter-label"
-                htmlFor="contentG5"
-              >
-                {l('Ljudinspelningar')}
-                {' '}
-                {`(${audioTotal?.value || 0})`}
-              </label>
-            </div>
-          )
+            <SearchFilterButton handleFilterChange={handleFilterChange} text="Ljud" categories={categories} categoryId={"contentG5"} pictureTotal={audioTotal}/>
+            )
         }
+        <span>&nbsp;</span>
+        <SearchFilterButton handleFilterChange={handleFilterChange} text="Bild" categories={categories} categoryId={"contentG2"} pictureTotal={pictureTotal}/>
       </div>
       {
         total//! fetchingPage

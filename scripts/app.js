@@ -131,6 +131,7 @@ function createRootRoute() {
       return defer({
         results: fetchMapAndRecords(queryParams),
         audioResults: fetchMapAndRecords({ ...queryParams, category: 'contentG5' }),
+        pictureResults: fetchMapAndRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
     id: 'root',
@@ -151,6 +152,7 @@ function createTranscribeRoute() {
       return defer({
         results: fetchMapAndRecords(queryParams),
         audioResults: fetchMapAndRecords({ ...queryParams, category: 'contentG5' }),
+        pictureResults: fetchMapAndRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
     id: 'transcribe-root',

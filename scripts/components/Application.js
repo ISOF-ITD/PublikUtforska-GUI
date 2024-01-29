@@ -45,10 +45,11 @@ export default function Application({
   window.eventBus = EventBus;
 
   const navigate = useNavigate();
-  const { results, audioResults } = useLoaderData();
+  const { results, audioResults, pictureResults } = useLoaderData();
   const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: { } });
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: { } });
+  const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: { } });
   const [loading, setLoading] = useState(true);
 
   const params = useParams();
@@ -75,6 +76,12 @@ export default function Application({
       setAudioRecordsData(data[1]);
     });
   }, [audioResults]);
+
+  useEffect(() => {
+    pictureResults.then((data) => {
+      setPictureRecordsData(data[1]);
+    });
+  }, [pictureResults]);
 
   useEffect(() => {
     // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
@@ -130,6 +137,7 @@ export default function Application({
           mapData={mapData}
           recordsData={recordsData}
           audioRecordsData={audioRecordsData}
+          pictureRecordsData={pictureRecordsData}
           loading={loading}
         />
 

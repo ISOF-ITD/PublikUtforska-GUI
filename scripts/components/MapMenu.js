@@ -47,13 +47,14 @@ function SurveyLink() {
 }
 
 export default function MapMenu({
-  mode, params, recordsData, audioRecordsData, loading,
+  mode, params, recordsData, audioRecordsData, pictureRecordsData, loading,
 }) {
   MapMenu.propTypes = {
     mode: PropTypes.string,
     params: PropTypes.object.isRequired,
     recordsData: PropTypes.object,
     audioRecordsData: PropTypes.object,
+    pictureRecordsData: PropTypes.object,
     loading: PropTypes.bool.isRequired,
   };
 
@@ -61,6 +62,7 @@ export default function MapMenu({
     mode: 'material',
     recordsData: { data: [], metadata: {} },
     audioRecordsData: { data: [], metadata: {} },
+    pictureRecordsData: { data: [], metadata: {} },
   };
 
   const isMobile = window.innerWidth < 700;
@@ -101,6 +103,7 @@ export default function MapMenu({
         mode={mode}
         recordsData={recordsData}
         audioRecordsData={audioRecordsData}
+        pictureRecordsData={pictureRecordsData}
         loading={loading}
       />
 
