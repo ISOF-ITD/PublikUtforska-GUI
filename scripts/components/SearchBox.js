@@ -658,16 +658,8 @@ export default function SearchBox({
             </label>
           )
         } */}
-        {/* add no breaking space */}
-        <span>&nbsp;</span>
-        {
-          true // || audioTotal?.value > 0
-          && (
-            <SearchFilterButton handleFilterChange={handleFilterChange} text="Ljud" categories={categories} categoryId={"contentG5"} pictureTotal={audioTotal}/>
-            )
-        }
-        <span>&nbsp;</span>
-        <SearchFilterButton handleFilterChange={handleFilterChange} text="Bild" categories={categories} categoryId={"contentG2"} pictureTotal={pictureTotal}/>
+        <SearchFilterButton handleFilterChange={handleFilterChange} label="Ljud" categoryId="contentG5" total={audioTotal} checked={categories?.includes('contentG5')} />
+        <SearchFilterButton handleFilterChange={handleFilterChange} label="Bild" categoryId="contentG2" total={pictureTotal} checked={categories?.includes('contentG2')} />
       </div>
       {
         total//! fetchingPage
