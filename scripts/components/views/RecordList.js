@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { l } from '../../lang/Lang';
 
 import RecordsCollection from '../collections/RecordsCollection';
 import RecordListItem from './RecordListItem';
@@ -15,10 +16,6 @@ import config from '../../config';
 import { createSearchRoute } from '../../utils/routeHelper';
 
 import PdfGif from '../../../img/pdf.gif';
-
-import L from '../../lang/Lang';
-
-const l = L.get;
 
 export default function RecordList({
   columns,

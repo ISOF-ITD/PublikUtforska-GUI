@@ -1,6 +1,7 @@
 import React from 'react';
 import config from '../../config';
 import ImageMap from './ImageMap';
+import { l } from '../../lang/Lang';
 
 import ContributeInfoButton from './ContributeInfoButton';
 import FeedbackButton from './FeedbackButton';

@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import config from '../../config';
+import { l } from '../../lang/Lang';
 
 // Main CSS: /ui-components/feedback-buttons.less
 

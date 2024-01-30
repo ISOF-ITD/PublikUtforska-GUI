@@ -1,4 +1,5 @@
 import config from '../config';
+import { l } from '../lang/Lang';
 
 export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
   let text = `${page}`;

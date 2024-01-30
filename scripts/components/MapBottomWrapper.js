@@ -1,5 +1,6 @@
 // import LocalLibraryView from './views/LocalLibraryView';
 import TranscribeButton from './views/TranscribeButton';
+import { l } from '../lang/Lang';
 
 export default function MapBottomWrapper() {
   return (

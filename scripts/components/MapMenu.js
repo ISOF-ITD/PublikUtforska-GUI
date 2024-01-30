@@ -10,6 +10,7 @@ import config from '../config';
 import Folkelogga from '../../img/folke-white.svg';
 import TranscribeButton from './views/TranscribeButton';
 import RecordList from './views/RecordList';
+import { l } from '../lang/Lang';
 
 // bara tillfälligt, för att visa en länk till enkäten
 function SurveyLink() {

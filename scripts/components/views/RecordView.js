@@ -29,10 +29,8 @@ import RecordsCollection from '../collections/RecordsCollection';
 import archiveLogoIsof from '../../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../../img/archive-logo-ikos.png';
 
-import Lang from '../../lang/Lang';
+import { l } from '../../lang/Lang';
 import RecordList from './RecordList';
-
-const l = Lang.get;
 
 export default function RecordView({ mode, openSwitcherHelptext }) {
   RecordView.propTypes = {

@@ -5,6 +5,7 @@ import ContributeInfoButton from './ContributeInfoButton';
 import SimpleMap from './SimpleMap';
 import RecordList from './RecordList';
 import FeedbackButton from './FeedbackButton';
+import { l } from '../../lang/Lang';
 
 import config from '../../config';
 

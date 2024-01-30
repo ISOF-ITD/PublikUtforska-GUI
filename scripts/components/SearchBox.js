@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { l } from '../lang/Lang';
 
 import config from '../config';
 
@@ -208,11 +209,6 @@ export default function SearchBox({
 
   useEffect(() => {
     // document.getElementById('app').addEventListener('click', windowClickHandler);
-    if (window.eventBus) {
-      // window.eventBus.addEventListener('Lang.setCurrentLang', languageChangedHandler);
-      // window.eventBus.addEventListener('recordList.totalRecords', totalRecordsHandler);
-      // window.eventBus.addEventListener('recordList.fetchingPage', fetchingPageHandler);
-    }
     // populate search suggestions from matomo api
     getSearchSuggestions();
     // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));

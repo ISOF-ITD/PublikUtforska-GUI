@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useParams, Link } from 'react-router-dom';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
+import { l } from '../lang/Lang';
 
 export default function FilterSwitch({ mode }) {
   FilterSwitch.propTypes = {

@@ -6,9 +6,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import RecordList from './RecordList';
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 
-import L from '../../lang/Lang';
-
-const l = L.get;
+import { l } from '../../lang/Lang';
 
 export default function RecordListWrapper({
   disableListPagination,

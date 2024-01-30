@@ -10,6 +10,7 @@ import TranscribeButton from './TranscribeButton';
 import HighlightedText from '../HighlightedText';
 
 import config from '../../config';
+import { l } from '../../lang/Lang';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/routeHelper';
 import {

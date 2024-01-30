@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import config from '../../config';
+import { l } from '../../lang/Lang';
 
 export default function ContributeinfoOverlay() {
   const [state, setState] = useState({

@@ -17,15 +17,7 @@ import {
 
 import '../less/style-basic.less';
 import { createParamsFromSearchRoute } from './utils/routeHelper';
-import Lang from './lang/Lang';
 import NavigationContextProvider from './NavigationContext';
-
-function initializeLanguage() {
-  Lang.setCurrentLang('sv');
-  window.Lang = Lang;
-  window.l = Lang.get;
-}
-initializeLanguage();
 
 const container = document.getElementById('app');
 const root = Client.createRoot(container);

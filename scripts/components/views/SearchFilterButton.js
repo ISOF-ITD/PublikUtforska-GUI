@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import CheckboxIcon from '../CheckboxIcon';
+import { l } from '../../lang/Lang';
 
 export default function SearchFilterButton({
   handleFilterChange, label, categoryId, total, checked,
@@ -39,6 +40,10 @@ SearchFilterButton.propTypes = {
   handleFilterChange: PropTypes.func.isRequired,
   label: PropTypes.string.isRequired,
   categoryId: PropTypes.string.isRequired,
-  total: PropTypes.object.isRequired,
+  total: PropTypes.object,
   checked: PropTypes.bool.isRequired,
+};
+
+SearchFilterButton.defaultProps = {
+  total: null,
 };

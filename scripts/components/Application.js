@@ -25,10 +25,6 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 
 import config from '../config';
 
-import Lang from '../lang/Lang';
-
-const l = Lang.get;
-
 export default function Application({
   children, mode, openSwitcherHelptext,
 }) {

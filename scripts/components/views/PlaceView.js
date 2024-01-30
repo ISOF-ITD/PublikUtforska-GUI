@@ -10,6 +10,7 @@ import SimpleMap from './SimpleMap';
 
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 import config from '../../config';
+import { l } from '../../lang/Lang';
 
 export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
   PlaceView.propTypes = {
