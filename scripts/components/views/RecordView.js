@@ -3,6 +3,7 @@ import {
   useNavigate, useLocation, useParams, useLoaderData,
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import sanitizeHtml from 'sanitize-html';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronRight, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
@@ -409,6 +410,22 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         </div>
       );
 
+      let cleanHTMLheadwords = ""
+      if (data) {
+        if (data.headwords) {
+          cleanHTMLheadwords = data?.headwords?.trim().replace(/( Sida| Sidor)/g, '\n$1')
+          if (data.archive.archive_org === "Uppsala") {
+            // https://www.npmjs.com/package/sanitize-html-react
+            cleanHTMLheadwords = sanitizeHtml(data?.headwords?.trim().replace(/( Sida| Sidor)/g, '\n$1').replaceAll('[[', '<a href="https://www5.sprakochfolkminnen.se/Realkatalogen/').replaceAll(']]', '" target="_blank">Visa indexkort</a>') || '', {
+              allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+              allowedAttributes: {
+                'a': ['href', 'target']
+              },
+            });
+          }
+        }
+      }
+
       headwordsElement = (
         <div>
           <button
@@ -445,9 +462,13 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               </a>
               <p />
             </i>
-            {
-              data?.headwords?.replace(/( Sida| Sidor)/g, '\n$1') || ''
-            }
+            <div
+            // Lösning med säkerhetsbrist! Fundera på bättre lösning!
+            dangerouslySetInnerHTML={{
+              __html: cleanHTMLheadwords
+            }}
+            >
+            </div>
           </div>
         </div>
       );
