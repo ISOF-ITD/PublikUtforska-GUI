@@ -94,7 +94,7 @@ export default function MapMenu({
 
   return (
     <div className={`menu-wrapper ${menuExpanded ? 'menu-expanded' : 'menu-collapsed'}`}>
-      <SurveyLink />
+      {/* <SurveyLink /> */}
       <img src={Folkelogga} alt="Folkelogga" style={{ height: 80, width: '100%' }} />
       <FilterSwitch
         mode={mode}
