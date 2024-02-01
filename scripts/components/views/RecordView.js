@@ -415,15 +415,22 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       let cleanHTMLheadwords = '';
       if (data && data.headwords) {
         const formattedHeadwords = data.headwords.trim().replace(/( Sida| Sidor)/g, '\n$1');
-        cleanHTMLheadwords = formattedHeadwords;
-
+        // Om arkivet är 'Uppsala' och det finns headwords, då formaterar vi huvudorden
         if (data.archive.archive_org === 'Uppsala') {
-          cleanHTMLheadwords = sanitizeHtml(formattedHeadwords.replaceAll('[[', '<a href="https://www5.sprakochfolkminnen.se/Realkatalogen/').replaceAll(']]', '" target="_blank">Visa indexkort</a>') || '', {
-            allowedTags: ['b', 'i', 'em', 'strong', 'a'],
-            allowedAttributes: {
-              a: ['href', 'target'],
+          const anchorStart = '<a href="https://www5.sprakochfolkminnen.se/Realkatalogen/';
+          const anchorEnd = '" target="_blank">Visa indexkort</a>';
+          cleanHTMLheadwords = sanitizeHtml(
+            formattedHeadwords.replaceAll('[[', anchorStart).replaceAll(']]', anchorEnd),
+            {
+              allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+              allowedAttributes: {
+                a: ['href', 'target'],
+              },
             },
-          });
+          );
+        } else {
+          // Behåll de formaterade huvudorden oförändrade om arkivet inte är 'Uppsala'
+          cleanHTMLheadwords = formattedHeadwords;
         }
       }
 
@@ -464,7 +471,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               <p />
             </i>
             <div
-            // Lösning med säkerhetsbrist! Fundera på bättre lösning!
+              // Lösning med säkerhetsbrist! Fundera på bättre lösning!
               dangerouslySetInnerHTML={{
                 __html: cleanHTMLheadwords,
               }}
@@ -702,17 +709,17 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                     {textElement}
                     {/* add a switch that toggles the state variable highlight */}
                     {highlightedText
-                    && (
-                      <label htmlFor="highlight">
-                        <input
-                          type="checkbox"
-                          id="highlight"
-                          checked={highlight}
-                          onChange={() => setHighlight(!highlight)}
-                        />
-                        <span style={{ marginLeft: 10 }}>Markera sökord</span>
-                      </label>
-                    )}
+                      && (
+                        <label htmlFor="highlight">
+                          <input
+                            type="checkbox"
+                            id="highlight"
+                            checked={highlight}
+                            onChange={() => setHighlight(!highlight)}
+                          />
+                          <span style={{ marginLeft: 10 }}>Markera sökord</span>
+                        </label>
+                      )}
                     {data.headwords && headwordsElement}
                   </>
                 }
@@ -839,8 +846,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-              `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${getArchiveName(data.archive.archive_org)}`
-            )}
+                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${getArchiveName(data.archive.archive_org)}`
+              )}
               title={l('Källhänvisning')}
             />
           </div>
