@@ -446,7 +446,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           >
             <FontAwesomeIcon icon={expandedHeadwords ? faChevronDown : faChevronRight} />
             &nbsp;
-            Uppslagsord från det historiska arkivet
+            Uppgifter från  äldre innehållsregister
           </button>
           <div className={`record-text realkatalog-content display-line-breaks ${expandedHeadwords ? 'show' : 'hide'}`}>
             <i>
