@@ -23,7 +23,9 @@ import SitevisionContent from '../SitevisionContent';
 import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
-import { getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName } from '../../utils/helpers';
+import {
+  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName,
+} from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
 
@@ -410,19 +412,18 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         </div>
       );
 
-      let cleanHTMLheadwords = ""
-      if (data) {
-        if (data.headwords) {
-          cleanHTMLheadwords = data?.headwords?.trim().replace(/( Sida| Sidor)/g, '\n$1')
-          if (data.archive.archive_org === "Uppsala") {
-            // https://www.npmjs.com/package/sanitize-html-react
-            cleanHTMLheadwords = sanitizeHtml(data?.headwords?.trim().replace(/( Sida| Sidor)/g, '\n$1').replaceAll('[[', '<a href="https://www5.sprakochfolkminnen.se/Realkatalogen/').replaceAll(']]', '" target="_blank">Visa indexkort</a>') || '', {
-              allowedTags: ['b', 'i', 'em', 'strong', 'a'],
-              allowedAttributes: {
-                'a': ['href', 'target']
-              },
-            });
-          }
+      let cleanHTMLheadwords = '';
+      if (data && data.headwords) {
+        const formattedHeadwords = data.headwords.trim().replace(/( Sida| Sidor)/g, '\n$1');
+        cleanHTMLheadwords = formattedHeadwords;
+
+        if (data.archive.archive_org === 'Uppsala') {
+          cleanHTMLheadwords = sanitizeHtml(formattedHeadwords.replaceAll('[[', '<a href="https://www5.sprakochfolkminnen.se/Realkatalogen/').replaceAll(']]', '" target="_blank">Visa indexkort</a>') || '', {
+            allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+            allowedAttributes: {
+              a: ['href', 'target'],
+            },
+          });
         }
       }
 
@@ -464,11 +465,10 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             </i>
             <div
             // Lösning med säkerhetsbrist! Fundera på bättre lösning!
-            dangerouslySetInnerHTML={{
-              __html: cleanHTMLheadwords
-            }}
-            >
-            </div>
+              dangerouslySetInnerHTML={{
+                __html: cleanHTMLheadwords,
+              }}
+            />
           </div>
         </div>
       );
