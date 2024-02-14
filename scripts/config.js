@@ -71,6 +71,7 @@ export default {
     categorytypes: 'tradark',
     publishstatus: 'published',
     has_media: 'true', // TODO: Bekräfta att vi ska använda detta
+    add_aggregations: 'false', // default: 'true'. when false, saves transferred data
     // For test with ortnamn data in index only use:
     // Also add utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
     // type: 'ortnamn',
