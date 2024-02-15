@@ -69,13 +69,13 @@ export default function Application({
 
   useEffect(() => {
     audioResults.then((data) => {
-      setAudioRecordsData(data[1]);
+      setAudioRecordsData(data);
     });
   }, [audioResults]);
 
   useEffect(() => {
     pictureResults.then((data) => {
-      setPictureRecordsData(data[1]);
+      setPictureRecordsData(data);
     });
   }, [pictureResults]);
 
