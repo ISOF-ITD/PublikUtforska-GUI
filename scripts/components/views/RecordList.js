@@ -193,11 +193,13 @@ export default function RecordList({
 
   useEffect(() => {
     fetchData(params);
-  }, [params, currentPage, sort, order, filter, yearFilter]);
+  }, [currentPage, sort, order, filter, yearFilter]);
 
   useEffect(() => {
-    const newSearchParams = { ...params, size: sizeMore };
-    fetchData(newSearchParams);
+    if (loadedMore) {
+      const newSearchParams = { ...params, size: sizeMore };
+      fetchData(newSearchParams);
+    }
   }, [loadedMore]);
 
   const shouldRenderColumn = (columnName, columnsArg) => {
