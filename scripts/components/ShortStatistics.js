@@ -43,7 +43,7 @@ export default function ShortStatistics({ visible, params, label }) {
       return () => clearInterval(timer);
     }
     return () => {}; // return a no-op function if no cleanup is necessary
-  }, [visible, params]);
+  }, [visible]);
 
   return (
     <div className="short-statistics">

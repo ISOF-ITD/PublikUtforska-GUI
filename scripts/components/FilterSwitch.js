@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
-
-import Folkelogga from '../../img/folke-white.svg';
+import { l } from '../lang/Lang';
 
 export default function FilterSwitch({ mode }) {
   FilterSwitch.propTypes = {
@@ -17,11 +16,11 @@ export default function FilterSwitch({ mode }) {
 
   // const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
 
-  const openSideMenu = () => {
-    if (window.eventBus) {
-      window.eventBus.dispatch('overlay.sideMenu', 'visible');
-    }
-  };
+  //const openSideMenu = () => {
+  //  if (window.eventBus) {
+  //    window.eventBus.dispatch('overlay.sideMenu', 'visible');
+  //  }
+  //};
 
   // const menuButtonClick = (e) => {
   //   const { value } = e.currentTarget.dataset;
@@ -47,9 +46,6 @@ export default function FilterSwitch({ mode }) {
 
   return (
     <div className="nordic-switch-wrapper map-floating-control">
-      <span onClick={openSideMenu} className="open-sidemenu-button" title="Öppna statistik">
-        <img src={Folkelogga} alt="Folkelogga" />
-      </span>
       <Link
         to={
           `/${createSearchRoute(createParamsFromSearchRoute(params['*']))

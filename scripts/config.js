@@ -18,17 +18,16 @@ if (ENV !== 'prod') {
 }
 
 const apiUrlObject = {
-  dev: 'https://frigg.isof.se/sagendatabas/api/es/', // feel free to change according to your local environment
+  dev: 'https://garm-test.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
   // 'dev': 'http://localhost:5001/api/es/', //feel free to change according to your local environment
-  test: 'https://frigg-test.isof.se/sagendatabas/api/es/',
-  prod: 'https://frigg.isof.se/sagendatabas/api/es/',
+  test: 'https://garm-test.isof.se/folkeservice/api/es/',
+  prod: 'https://garm.isof.se/folkeservice/api/es/',
 };
 
 const restApiUrlObject = {
-  // 'dev': 'https://frigg.isof.se/sagendatabas/api/', //feel free to change according to your local environment
   dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
-  test: 'https://frigg-test.isof.se/sagendatabas/api/',
-  prod: 'https://frigg.isof.se/sagendatabas/api/',
+  test: 'https://garm-test.isof.se/folkeservice/api/',
+  prod: 'https://garm.isof.se/folkeservice/api/',
 };
 
 const appUrlObject = {
@@ -72,6 +71,7 @@ export default {
     categorytypes: 'tradark',
     publishstatus: 'published',
     has_media: 'true', // TODO: Bekräfta att vi ska använda detta
+    add_aggregations: 'false', // default: 'true'. when false, saves transferred data
     // For test with ortnamn data in index only use:
     // Also add utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
     // type: 'ortnamn',
@@ -166,7 +166,8 @@ export default {
   // For test with ortnamn data in index:
   // imageUrl: 'https://www4.isof.se/NAU/bilder/',
   personImageUrl: 'https://frigg.isof.se/media/',
-  audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
+  // audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
+  audioUrl: 'https://sok.folke.isof.se/arkivfiler/publik/',
 
   appUrl: appUrlObject[ENV],
   siteUrl: siteUrlObject[ENV],

@@ -2,39 +2,34 @@ import langData from './langData';
 
 const defaultLang = 'sv';
 
-export default {
-  collect: false,
-
-  setCurrentLang(lang) {
-    window.currentLang = lang;
-
-    if (window.eventBus) {
-      window.eventBus.dispatch('Lang.setCurrentLang');
-    }
-  },
+const Lang = {
+  currentLang: defaultLang,
 
   get(phrase) {
-    if (window.traceLangGet) {
-      console.log(`Lang.get: ${phrase}`);
+    const langPhrases = langData[this.currentLang];
+    if (!langPhrases) {
+      return phrase;
     }
 
-    if (!window.currentLang) {
-      window.currentLang = defaultLang;
+    const value = langPhrases[phrase];
+    if (value || value === '') {
+      return value;
     }
 
-    if (Lang.collect) {
-      if (!Lang.notFound) {
-        Lang.notFound = [];
-      }
+    return phrase;
+  },
 
-      if (!langData[window.currentLang][phrase]) {
-        if (Lang.notFound.indexOf(phrase) == -1) {
-          Lang.notFound.push(phrase);
-          console.log(`Did not find translation for "${phrase}"`);
-        }
-      }
+  // Exempel för att ändra språk i en komponent:
+  // import Lang from './lang/Lang';
+  // Lang.setCurrentLang('no');
+  setCurrentLang(language) {
+    // Kontrollerar om det nya språket finns i langData
+    if (langData[language]) {
+      this.currentLang = language; // Uppdaterar det aktuella språket om det finns
+    } else {
+      console.warn(`Språket '${language}' finns inte i datan, kvarstår vid '${this.currentLang}'.`);
     }
-
-    return !langData[window.currentLang] || !langData[window.currentLang][phrase] ? phrase : langData[window.currentLang][phrase];
   },
 };
+export default Lang;
+export const l = (key) => Lang.get(key);

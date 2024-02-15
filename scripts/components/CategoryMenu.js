@@ -4,6 +4,7 @@ import { Route } from 'react-router-dom';
 import CategoryList from './CategoryList';
 import categories from '../utils/utforskaCategories';
 import routeHelper from '../utils/routeHelper';
+import { l } from '../lang/Lang';
 
 export default class CategoryMenu extends React.Component {
 	constructor(props) {

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { l } from '../../lang/Lang';
 
 function TranscriptionHelpOverlay() {
   const [state, setState] = useState({

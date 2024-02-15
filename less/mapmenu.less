@@ -1,28 +1,172 @@
 .menu-wrapper {
+
 	position: absolute;
+	background-image: url('../img/header-back.gif');
+	background-color: #005462;
+	border-width: 0 2px 0 0;
+	border-style: solid;
+	border-color: white;
 
-	// top: 92px;
-	top: 20px;
-	bottom: 95px;
-	left: 20px;
+	z-index: 401;
 
-	width: 350px;
-	
+	bottom: 0;
+	padding-top: 20px;
+	padding-right: 20px;
+	padding-left: 20px;
+	top: 0;
+	left: 0;
+	width: 380px;
+
+	display: flex;
+	flex-direction: column;
+
+	// Add this for transition
+	transition: all 0.3s ease;
+
+	&.menu-collapsed {
+		// width: 30px;
+		left: -420px;
+	}
+
 	pointer-events: none;
+
+	.mapmenu-trigger-button {
+		cursor: pointer;
+		left: 422px;
+		position: absolute;
+
+		a {
+			pointer-events: all;
+			box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+			padding: 0;
+			background-color: #fff;
+			width: 25px;
+			height: 45px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border-radius: 0 4px 4px 0;
+		}
+	}
+
+	.totals {
+		position: relative;
+		border-width: 0;
+		height: 60px;
+		left: 20px;
+		letter-spacing: normal;
+		line-height: normal;
+		margin-bottom: 0;
+		text-decoration: none;
+		color: white;
+		cursor: pointer;
+		display: flex;
+		opacity: 0;
+
+		&.visible {
+			opacity: 1;
+		}
+
+		span {
+			padding-right: 5px;
+		}
+
+		.search-filter {
+			margin-bottom: 1rem;
+			display: inline-flex;
+			flex-shrink: 0;
+			outline: 0;
+			padding: 0;
+			align-items: center;
+			user-select: none;
+			vertical-align: middle;
+			text-decoration: none;
+			overflow: hidden;
+
+			label {
+				color: #fff;
+				padding-left: 8px;
+				font-weight: normal;
+				margin-bottom: 0;
+			}
+
+			&.checked .icon {
+				fill: #005462;
+			}
+		}
+
+		.input-wrapper {
+			background-color: #fff;
+			border-color: #9ba0b0;
+			transition: border 200ms ease-in-out;
+
+			position: relative;
+			display: flex;
+			align-items: inherit;
+			justify-content: inherit;
+			border-width: 1px;
+			border-style: solid;
+			border-radius: 4px;
+
+			input {
+				cursor: pointer;
+				margin: 0;
+				opacity: 0;
+				padding: 0;
+				position: absolute;
+				width: 100%;
+				height: 100%;
+			}
+
+			.icon {
+				fill: #fff;
+				height: 14px;
+				width: 14px;
+				min-width: 14px;
+			}
+		}
+	}
+
+	.puffar {
+		flex-grow: 1;
+		overflow-y: auto;
+		padding-bottom: 20px;
+
+
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		height: 100%;
+
+		.puff {
+			flex-grow: 1;
+			/* Allows each .puff to grow and fill the container */
+			opacity: 0;
+			overflow-y: scroll;
+			border-radius: 13px;
+			padding: 20px;
+			margin-bottom: 15px;
+			background: white;
+
+			/* Remove fixed height to allow dynamic sizing */
+			/* height: 250px; */
+
+			.app-initialized & {
+				opacity: 1;
+			}
+
+			/* Remove margin-bottom for the last child to avoid extra space */
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
 
 	@media print {
 		display: none;
 	}
 
-	@media (max-width: 550px) {
-		left: 10px;
-		right: 10px;
-		top: 10px;
-
-		width: auto;
-	}
-
-	> * {
+	>* {
 		pointer-events: all;
 	}
 
@@ -32,7 +176,7 @@
 		position: relative;
 		height: 48px;
 
-		padding: 0;
+		padding: 0 12px 0 12px;
 
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
@@ -41,25 +185,14 @@
 
 		z-index: 1400;
 
-		.transition(all 400ms ease-in-out);
-
 		opacity: 0;
-		.transform(translateY(50px));
-
-		@media (max-width: 550px) {
-			position: fixed;
-
-			top: 0;
-			left: 0;
-			right: 0;
-		}
 
 		.app-initialized & {
 			opacity: 1;
 
-			.transform(translateY(0));
+			// .transform(translateY(0));
 
-			.transition-delay(900ms);
+			// .transition-delay(900ms);
 		}
 
 
@@ -68,16 +201,18 @@
 			float: left;
 			height: 48px;
 			// width: 37.5%; //38%; //44%; //50%;
-			width: 133px;
+			// width: 133px;
+			width: 178px;
 
 			@media screen and (max-width: 550px) {
 				// the with is 100% - 80 px, divided by two
-				width: calc(50% - 40px);
+				// width: calc(50% - 40px);
+				width: 50%;
 			}
-			
+
 			// margin-right: 0.5%;
 			// make so that the border is inside the element
-			
+
 
 
 
@@ -95,14 +230,14 @@
 
 			.transition(all 200ms ease-in-out);
 
-			&:focus {
+			body.tab-navigation &:focus {
 				outline: none !important;
 				border: 2px solid black !important;
 			}
 
 			&.selected {
 				color: #000;
-				
+
 				background: @color-gray;
 				border: 2px solid @color-gray;
 			}
@@ -111,7 +246,11 @@
 				text-decoration: underline;
 			}
 
-			&:visited, &:active, &:focus, &:hover, &:link {
+			&:visited,
+			&:active,
+			&:focus,
+			&:hover,
+			&:link {
 				color: #000 !important;
 			}
 
@@ -123,11 +262,13 @@
 	}
 
 	.search-box {
-		position: absolute;
+		// position: relative;
+		// position: relative;
 
-		top: 48px;
-		right: 0;
+		// top: 68px;
+		// margin-right: 20px;
 		left: 0;
+		margin-bottom: 15px;
 
 		z-index: 1000;
 
@@ -135,21 +276,12 @@
 
 		opacity: 0;
 
-		.transform(translateY(-50px));
-
-		.transition(all 400ms ease-in-out);
-		.transition-delay(0ms);
-
 		@media (max-width: 550px) {
 			top: 0;
 		}
 
 		.app-initialized & {
 			opacity: 1;
-
-			.transform(translateY(0));
-
-			.transition-delay(300ms);
 		}
 
 		@media (max-width: 550px) {
@@ -168,10 +300,12 @@
 
 			// .transition(all 200ms ease-in-out);
 
-			&.person, &.place {
+			&.person,
+			&.place {
 				// deactivate mouse interaction, make it impossible to add a cursor that can edit the input field
 				pointer-events: none !important;
 				opacity: 0 !important;
+
 				.search-button {
 					visibility: hidden;
 				}
@@ -179,7 +313,8 @@
 			}
 		}
 
-		.search-label.person, .search-label.place {
+		.search-label.person,
+		.search-label.place {
 			opacity: 1 !important;
 		}
 
@@ -201,11 +336,13 @@
 			list-style-type: none;
 			margin-bottom: 0;
 			margin-top: 5px;
+
 			.suggestions-label {
 				padding: 0.5rem 1rem;
 				font-size: 0.8rem;
 				color: #999;
 			}
+
 			.suggestions-close {
 				position: absolute;
 				right: 1rem;
@@ -214,10 +351,14 @@
 				color: #999;
 				font-size: 1.2rem;
 			}
+
 			li {
 				padding: 0.5rem 1rem;
 				cursor: pointer;
-				&:hover, &.selected, &:focus {
+
+				&:hover,
+				&.selected,
+				&:focus {
 					background-color: #f5f5f5;
 				}
 			}
@@ -251,7 +392,7 @@
 
 			padding: 0;
 			margin: 0;
-			
+
 			@media (max-width: 550px) {
 				top: 15px;
 				right: 16px;
@@ -285,11 +426,12 @@
 				// animate spinner, rotate it
 				animation: spin 1s infinite linear;
 			}
-			
+
 			@keyframes spin {
 				from {
 					transform: rotate(0deg);
 				}
+
 				to {
 					transform: rotate(360deg);
 				}
@@ -328,13 +470,13 @@
 			border-color: #ccc;
 		}
 
-		hr + button {
+		hr+button {
 			margin-top: 5px;
 		}
 
 		.advanced-button {
 			display: block;
-			
+
 			margin: 0 -12px -25px -12px;
 			padding: 10px 10px 10px 15px;
 
@@ -372,14 +514,13 @@
 		}
 
 		&.expanded {
-			left: -10px;
-			right: -10px;
+			// left: -10px;
+			// right: -10px;
+			// left: 20px;
+			// right: 20px;
 
 			cursor: auto;
-
-			@media (max-width: 550px) {
-				top: 38px;
-			}
+			position: relative;
 
 			input[type="text"] {
 				opacity: 1;
@@ -391,7 +532,9 @@
 				opacity: 0;
 			}
 
-			.search-button, .clear-button, .search-spinner {
+			.search-button,
+			.clear-button,
+			.search-spinner {
 				pointer-events: all;
 
 				// @media (min-width: 550px) {
@@ -563,4 +706,61 @@
 		height: 250px;
 	}
 
+	.has-docked-control & {
+		bottom: 60px;
+	}
+}
+
+@media (max-width: 550px) {
+	.menu-wrapper {
+		box-sizing: border-box;
+		width: 100%;
+		padding: 10px;
+		z-index: 1001;
+
+		.mapmenu-trigger-button {
+			left: auto;
+			right: 0;
+			top: 0;
+
+			a {
+				border-radius: 4px 0 0 4px;
+			}
+		}
+	}
+
+	.menu-wrapper.menu-collapsed {
+		position: relative;
+		left: -500px;
+
+		.nordic-switch-wrapper,
+		.search-box {
+			position: fixed;
+			left: 0;
+			right: 0;
+			z-index: 1000;
+			/* eller ett annat passande z-index-värde */
+			width: 100%;
+		}
+
+		.search-box {
+			top: 48px;
+		}
+
+		.mapmenu-trigger-button {
+			left: 500px;
+			right: auto;
+
+			a {
+				border-radius: 0 4px 4px 0;
+
+			}
+		}
+
+		.nordic-switch-wrapper {
+			left: 15px;
+			top: 0;
+		}
+
+	}
 }

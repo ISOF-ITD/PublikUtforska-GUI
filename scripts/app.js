@@ -17,23 +17,19 @@ import {
 
 import '../less/style-basic.less';
 import { createParamsFromSearchRoute } from './utils/routeHelper';
-import Lang from './lang/Lang';
 import NavigationContextProvider from './NavigationContext';
-
-function initializeLanguage() {
-  Lang.setCurrentLang('sv');
-  window.Lang = Lang;
-  window.l = Lang.get;
-}
-initializeLanguage();
 
 const container = document.getElementById('app');
 const root = Client.createRoot(container);
 
-function fetchMapAndRecords(params) {
+function fetchMapAndCountRecords(params) {
   const mapPromise = fetch(getMapFetchLocation(params)).then((resp) => resp.json());
   const recordsPromise = fetch(getRecordsCountLocation(params)).then((resp) => resp.json());
   return Promise.all([mapPromise, recordsPromise]);
+}
+
+function countRecords(params) {
+  return fetch(getRecordsCountLocation(params)).then((resp) => resp.json());
 }
 
 function fetchPlace(placeId) {
@@ -129,7 +125,9 @@ function createRootRoute() {
         transcriptionstatus: 'published,accession',
       };
       return defer({
-        results: fetchMapAndRecords(queryParams),
+        results: fetchMapAndCountRecords(queryParams),
+        audioResults: countRecords({ ...queryParams, category: 'contentG5' }),
+        pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
     id: 'root',
@@ -148,7 +146,9 @@ function createTranscribeRoute() {
         has_untranscribed_records: true,
       };
       return defer({
-        results: fetchMapAndRecords(queryParams),
+        results: fetchMapAndCountRecords(queryParams),
+        audioResults: countRecords({ ...queryParams, category: 'contentG5' }),
+        pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
     id: 'transcribe-root',

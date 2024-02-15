@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { l } from '../lang/Lang';
 
 import config from '../config';
 
@@ -10,15 +11,18 @@ import { createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import SearchSuggestions from './SearchSuggestions';
 import { getPersonFetchLocation, getPlaceFetchLocation, makeArchiveIdHumanReadable } from '../utils/helpers';
+import SearchFilterButton from './views/SearchFilterButton';
 
 export default function SearchBox({
-  mode, params, recordsData, loading,
+  mode, params, recordsData, audioRecordsData, pictureRecordsData, loading,
 }) {
   SearchBox.propTypes = {
     // expanded: PropTypes.bool.isRequired,
     mode: PropTypes.string.isRequired,
     params: PropTypes.object.isRequired,
     recordsData: PropTypes.object.isRequired,
+    audioRecordsData: PropTypes.object.isRequired,
+    pictureRecordsData: PropTypes.object.isRequired,
     loading: PropTypes.bool.isRequired,
   };
 
@@ -36,9 +40,20 @@ export default function SearchBox({
   const [search, setSearch] = useState('');
   const [person, setPerson] = useState(null);
   const [place, setPlace] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [keyword, setKeyword] = useState(null);
+  const [searchFieldValue, setSearchFieldValue] = useState(null);
   // const [province, setProvince] = useState(null);
 
-  const { search: searchParam, search_field: searchFieldParam } = createParamsFromSearchRoute(params['*']);
+  // if we want to keep track of the previous value of categories:
+  // const prevCategoriesRef = useRef(categories);
+
+  // extract search params from route
+  const {
+    search: searchParam,
+    search_field: searchFieldParam,
+    category: categoryParam,
+  } = createParamsFromSearchRoute(params['*']);
   const navigate = useNavigate();
 
   // const dataFromRecordsRoute = useRouteLoaderData('records');
@@ -47,20 +62,48 @@ export default function SearchBox({
 
   // const total = mode === 'transcribe'
   const { metadata: { total } } = recordsData;
+  const { metadata: { total: audioTotal } } = audioRecordsData;
+  const { metadata: { total: pictureTotal } } = pictureRecordsData;
   // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
-  const executeSearch = (keyword, searchFieldValue = null) => {
+  const executeSearch = (keywordParam, searchFieldValueParam = null, categoryToToggle = null) => {
+    // Initialize newCategories with the current categories
+    let newCategories = categories;
+    // If there's a category to toggle
+    if (categoryToToggle) {
+      // Check if the category is already in the list
+      newCategories = categories.includes(categoryToToggle)
+        // If it is, remove it from the list
+        ? categories.filter((f) => f !== categoryToToggle)
+        // If it's not, add it to the list
+        : [...categories, categoryToToggle];
+    }
+    // Update the categories state with the new list
+    setCategories(newCategories);
+    // Convert the list of categories into a string, with each category separated by a comma
+    const categoryValue = newCategories.join(',');
+
     // if keyword is a string, use it as search phrase
     // otherwise use the value of the search input field
-    const searchPhrase = typeof keyword === 'string' ? encodeURIComponent(keyword) : encodeURIComponent(searchInputRef.current.value);
+    setKeyword(keywordParam); // keep track of the keyword
+    setSearchFieldValue(searchFieldValueParam); // keep track of the search field value
+    const searchPhrase = typeof keywordParam === 'string' ? encodeURIComponent(keywordParam) : encodeURIComponent(searchInputRef.current.value);
     const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
-    const searchFieldPart = searchFieldValue ? `/search_field/${searchFieldValue}` : '';
+    const searchFieldPart = searchFieldValueParam ? `/search_field/${searchFieldValueParam}` : '';
+    // const categoryValue = categories.join(',');
+    const categoryPart = categoryValue ? `/category/${categoryValue}` : '';
     const searchPart = searchPhrase
-      ? `search/${searchPhrase}${searchFieldPart}?s=${searchFieldValue ? `${searchFieldValue}:` : ''}${searchPhrase}`
-      : '';
+      ? `search/${searchPhrase}${searchFieldPart}${categoryPart}?s=${searchFieldValueParam ? `${searchFieldValueParam}:` : ''}${searchPhrase}`
+      : categoryPart.replace(/^\//, '');
     navigate(
       `/${transcribePrefix}${searchPart}`,
     );
+  };
+
+  const handleFilterChange = (e) => {
+    const { filter: categoryToToggle } = e.target.dataset;
+    // anropa samma url, fast med nytt filter
+    executeSearch(keyword, searchFieldValue, categoryToToggle);
   };
 
   const getSearchSuggestions = () => {
@@ -78,10 +121,10 @@ export default function SearchBox({
     });
   };
 
-  const getPersonAutocomplete = (keyword) => {
+  const getPersonAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/person
-    fetch(`${path}autocomplete/persons?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/persons?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         // label is the attribute "name", if there is an attribute "birth_year" add it to the label
@@ -90,15 +133,15 @@ export default function SearchBox({
       }));
       const filteredSuggestions = suggestions
         .filter(
-        // filter out "p-personer"
-        // checks if the value starts with "p" and then a number
-        // and if it does, it returns false, otherwise true
+          // filter out "p-personer"
+          // checks if the value starts with "p" and then a number
+          // and if it does, it returns false, otherwise true
           (suggestion) => !suggestion.value.match(/^p\d+$/),
         ).filter(
-        // filter duplicates from suggestions
-        // for every suggestion, check if the value of the suggestion
-        // is the same as the value of any other suggestion
-        // if it is, return false, otherwise true
+          // filter duplicates from suggestions
+          // for every suggestion, check if the value of the suggestion
+          // is the same as the value of any other suggestion
+          // if it is, return false, otherwise true
           (suggestion, index, self) => self.findIndex(
             (s) => s.value === suggestion.value,
           ) === index,
@@ -108,10 +151,10 @@ export default function SearchBox({
     });
   };
 
-  const getPlaceAutocomplete = (keyword) => {
+  const getPlaceAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/socken
-    fetch(`${path}autocomplete/socken?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/socken?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         // label is the attribute "name"
@@ -123,10 +166,10 @@ export default function SearchBox({
     });
   };
 
-  const getProvinceAutocomplete = (keyword) => {
+  const getProvinceAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/landskap
-    fetch(`${path}autocomplete/landskap?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/landskap?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         // label is the attribute "name"
@@ -137,10 +180,10 @@ export default function SearchBox({
     });
   };
 
-  const getArchiveIdAutocomplete = (keyword) => {
+  const getArchiveIdAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
     // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/archive_ids and add required params
-    fetch(`${path}autocomplete/archive_ids?search=${keyword}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
+    fetch(`${path}autocomplete/archive_ids?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
         value: row.id,
@@ -157,17 +200,20 @@ export default function SearchBox({
     }
   };
 
+  // // when audioTotal changes and is 0, set categories to empty array
+  // useEffect(() => {
+  //   if (audioTotal && audioTotal.value === 0) {
+  //     setCategories([]);
+  //   }
+  // }, [audioTotal]);
+
   useEffect(() => {
     // document.getElementById('app').addEventListener('click', windowClickHandler);
-    if (window.eventBus) {
-      // window.eventBus.addEventListener('Lang.setCurrentLang', languageChangedHandler);
-      // window.eventBus.addEventListener('recordList.totalRecords', totalRecordsHandler);
-      // window.eventBus.addEventListener('recordList.fetchingPage', fetchingPageHandler);
-    }
     // populate search suggestions from matomo api
     getSearchSuggestions();
     // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
     setSearch(searchParam);
+    setCategories(categoryParam ? categoryParam.split(',') : []);
     // setSearchField(searchFieldParam);
     if (searchFieldParam === 'person') {
       const personFetchLocation = getPersonFetchLocation(searchParam);
@@ -218,6 +264,9 @@ export default function SearchBox({
       setSearch(searchParam);
       setPerson(null);
     }
+
+    // also, set categories to empty array
+    // setCategories([]);
   }, [searchParam, searchFieldParam]);
 
   const openButtonKeyUpHandler = (e) => {
@@ -228,9 +277,9 @@ export default function SearchBox({
 
   const filterAndSortSuggestions = (suggestions) => (
     suggestions
-    // filter out suggestions that don't contain the search input value
-    // why was this here?
-    // sort the suggestions so that the ones that start with the search input value are first
+      // filter out suggestions that don't contain the search input value
+      // why was this here?
+      // sort the suggestions so that the ones that start with the search input value are first
       .sort((a, b) => {
         const aStartsWithSearch = a.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
         const bStartsWithSearch = b.label.toLowerCase().indexOf(search?.toLowerCase() || '') === 0;
@@ -247,7 +296,7 @@ export default function SearchBox({
   // filter keywords by search input value
   const filteredSearchSuggestions = () => searchSuggestions
     // filter out keywords that don't contain the search input value
-    .filter((keyword) => keyword.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
+    .filter((k) => k.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
     // remove out keywords that are duplicates, but only different in case
     .filter((item, index, arr) => {
       const label = item.label.toLowerCase();
@@ -456,144 +505,158 @@ export default function SearchBox({
   };
 
   return (
-    <div
-      className={
-        // `search-box map-floating-control${expanded ? ' expanded' : ''}
-        // ${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
-        'search-box map-floating-control expanded'
-      }
-    >
-      <div>
-        <input
-          className={(person && 'person') || (place && 'place') || 'keyword'}
-          id="searchInputMapMenu"
-          ref={searchInputRef}
-          type="text"
-          value={search}
-          onInput={searchValueChangeHandler}
-          onKeyDown={inputKeyPressHandler}
-          placeholder="Sök i Folke"
-          onFocus={searchInputFocusHandler}
-          onBlur={searchInputBlurHandler}
-          aria-autocomplete="both"
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck="false"
-          tabIndex={0}
-        />
+    <>
+      <div
+        className={
+          // `search-box map-floating-control${expanded ? ' expanded' : ''}
+          // ${searchParamsState.recordtype === 'one_record' ? ' advanced' : ''}`}>
+          'search-box map-floating-control expanded'
+        }
+      >
+        <div>
+          <input
+            className={(person && 'person') || (place && 'place') || 'keyword'}
+            id="searchInputMapMenu"
+            ref={searchInputRef}
+            type="text"
+            value={search}
+            onInput={searchValueChangeHandler}
+            onKeyDown={inputKeyPressHandler}
+            placeholder="Sök i Folke"
+            onFocus={searchInputFocusHandler}
+            onBlur={searchInputBlurHandler}
+            aria-autocomplete="both"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            tabIndex={0}
+          />
 
-        <div
-          className={`search-label ${(person && 'person') || (place && 'place') || 'keyword'}`}
-          style={{
-            fontSize: '0.9rem',
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            maxWidth: 227,
-            display: 'block',
-          }}
-        >
-          {
-            searchLabelText()
-          }
-          <strong>
+          <div
+            className={`search-label ${(person && 'person') || (place && 'place') || 'keyword'}`}
+            style={{
+              fontSize: '0.9rem',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              maxWidth: 227,
+              display: 'block',
+            }}
+          >
             {
-              person
-                ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year})` : ''}`
-                : place
-                  ? `${place.name || search} ${place.landskap ? `(${place.landskap})` : ''}`
-                  : search
+              searchLabelText()
             }
-          </strong>
-          <br />
-          <small>
-            {/* {
+            <strong>
+              {
+                person
+                  ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year})` : ''}`
+                  : place
+                    ? `${place.name || search} ${place.landskap ? `(${place.landskap})` : ''}`
+                    : search
+              }
+            </strong>
+            <br />
+            <small>
+              {/* {
               searchParamsState.category
                 ? searchParamsState.category.split(',').map(
                   (c) => categories.getCategoryName(c),
                 ).join(', ') : ''
             } */}
-          </small>
-        </div>
-        {
-          suggestionsVisible // && searchSuggestions.length > 0
-          // check if keywords filtered by search input value is not empty
-          && (
-            filteredSearchSuggestions().length > 0
-            || filteredPersonSuggestions().length > 0
-            || filteredPlaceSuggestions().length > 0
-            || filteredProvinceSuggestions().length > 0
-            || filteredArchiveIdSuggestions().length > 0
-          )
-          // if true, show suggestions
-          && (
-            <SearchSuggestions
-              ref={suggestionsRef}
-              closeSuggestionsHandler={closeSuggestionsHandler}
-              filteredPersonSuggestions={filteredPersonSuggestions}
-              filteredPlaceSuggestions={filteredPlaceSuggestions}
-              filteredProvinceSuggestions={filteredProvinceSuggestions}
-              filteredArchiveIdSuggestions={filteredArchiveIdSuggestions}
-              filteredSearchSuggestions={filteredSearchSuggestions}
-              inputKeyPressHandler={inputKeyPressHandler}
-              search={search}
-              personClickHandler={personClickHandler}
-              placeClickHandler={placeClickHandler}
-              provinceClickHandler={provinceClickHandler}
-              archiveIdClickHandler={archiveIdClickHandler}
-              suggestionClickHandler={suggestionClickHandler}
-            />
-          )
-}
-      </div>
-      <div className="search-field-buttons">
-        {/* only show clear button when there is text to clear or if there is text in the input field */}
-        {
-          (search || document.getElementById('searchInputMapMenu')?.value)
-          && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
-        }
-        {
-          !loading
-          && (
-            <button
-              className="search-button"
-              onClick={executeSearch}
-              type="button"
-              aria-label="Sök"
-              style={{
-                visibility: person || place ? 'hidden' : 'unset',
-              }}
-            />
-          )
-        }
-        {
-          loading
-          && (
-            <button
-              className="search-spinner"
-              style={{
-                visibility: person || place ? 'hidden' : 'unset',
-              }}
-            />
-          )
-        }
-      </div>
-
-      {/* <div className="expanded-content">
-
-        <div className="advanced-content">
-          <h4>Kategorier</h4>
-          <div tabIndex={-1} className="list-container minimal-scrollbar">
-
-            <CategoryList
-              multipleSelect="true"
-              itemClickHandler={categoryItemClickHandler}
-            />
-
+            </small>
           </div>
+          {
+            suggestionsVisible // && searchSuggestions.length > 0
+            // check if keywords filtered by search input value is not empty
+            && (
+              filteredSearchSuggestions().length > 0
+              || filteredPersonSuggestions().length > 0
+              || filteredPlaceSuggestions().length > 0
+              || filteredProvinceSuggestions().length > 0
+              || filteredArchiveIdSuggestions().length > 0
+            )
+            // if true, show suggestions
+            && (
+              <SearchSuggestions
+                ref={suggestionsRef}
+                closeSuggestionsHandler={closeSuggestionsHandler}
+                filteredPersonSuggestions={filteredPersonSuggestions}
+                filteredPlaceSuggestions={filteredPlaceSuggestions}
+                filteredProvinceSuggestions={filteredProvinceSuggestions}
+                filteredArchiveIdSuggestions={filteredArchiveIdSuggestions}
+                filteredSearchSuggestions={filteredSearchSuggestions}
+                inputKeyPressHandler={inputKeyPressHandler}
+                search={search}
+                personClickHandler={personClickHandler}
+                placeClickHandler={placeClickHandler}
+                provinceClickHandler={provinceClickHandler}
+                archiveIdClickHandler={archiveIdClickHandler}
+                suggestionClickHandler={suggestionClickHandler}
+              />
+            )
+          }
         </div>
-      </div> */}
+        <div className="search-field-buttons">
+          {/* only show clear button when there is text to clear or if there is text in the input field */}
+          {
+            (search || document.getElementById('searchInputMapMenu')?.value)
+            && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
+          }
+          {
+            !loading
+            && (
+              <button
+                className="search-button"
+                onClick={executeSearch}
+                type="button"
+                aria-label="Sök"
+                style={{
+                  visibility: person || place ? 'hidden' : 'unset',
+                }}
+              />
+            )
+          }
+          {
+            loading
+            && (
+              <button
+                type="button"
+                className="search-spinner"
+                style={{
+                  visibility: person || place ? 'hidden' : 'unset',
+                }}
+              />
+            )
+          }
+        </div>
+      </div>
+      <div
+        className={`totals${loading ? ' visible' : ' visible'}`}
+      >
+        {
+          true // audioTotal?.value > 0
+          && l('Begränsa sökningen till: ')
+        }
+        {/* {
+          total
+          && (
+            <label
+              className='search-filter-label'
+              >
+              <input
+                type="checkbox"
+                checked={filter?.length === 0}
+                onChange={handleFilterChange}
+                data-filter="all"
+              />
+              {total.value} sökträffar
+            </label>
+          )
+        } */}
+        <SearchFilterButton handleFilterChange={handleFilterChange} label="Ljud" categoryId="contentG5" total={audioTotal} checked={categories?.includes('contentG5')} />
+        <SearchFilterButton handleFilterChange={handleFilterChange} label="Bild" categoryId="contentG2" total={pictureTotal} checked={categories?.includes('contentG2')} />
+      </div>
       {
         total//! fetchingPage
         && (
@@ -602,11 +665,9 @@ export default function SearchBox({
               total.value > 0
               && !loading
               && (
-                <button
+                <div
                   className={[
                     'popup-open-button',
-                    'map-floating-control',
-                    'map-right-control',
                     'visible',
                     'ignore-expand-menu',
                   ].join(' ')}
@@ -615,7 +676,7 @@ export default function SearchBox({
                   tabIndex={0}
                   type="button"
                 >
-                  <strong className="ignore-expand-menu">
+                  <span className="ignore-expand-menu">
                     <FontAwesomeIcon icon={faList} />
                     {' '}
                     Visa
@@ -624,28 +685,28 @@ export default function SearchBox({
                     {total.relation === 'gte' ? '+' : ''}
                     {' '}
                     sökträffar som lista
-                  </strong>
-                </button>
+                  </span>
+                </div>
               )
             }
-            { loading
+            {loading
               && (
-                <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
-                  <strong className="ignore-expand-menu">Söker...</strong>
+                <div className="popup-open-button visible ignore-expand-menu" style={{ cursor: 'unset' }}>
+                  <span className="ignore-expand-menu">Söker...</span>
                 </div>
               )}
             {
               total.value === 0
               && !loading
               && (
-                <div className="popup-open-button map-floating-control map-right-control visible ignore-expand-menu" style={{ cursor: 'unset' }}>
-                  <strong className="ignore-expand-menu">0 sökträffar</strong>
+                <div className="popup-open-button visible ignore-expand-menu" style={{ cursor: 'unset' }}>
+                  <span className="ignore-expand-menu">0 sökträffar</span>
                 </div>
               )
             }
           </div>
         )
       }
-    </div>
+    </>
   );
 }

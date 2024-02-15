@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faFolderOpen, faFileLines } from '@fortawesome/free-solid-svg-icons';
+import {
+  faFolder, faFolderOpen, faFileLines, faVolumeHigh,
+} from '@fortawesome/free-solid-svg-icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from './ListPlayButton';
@@ -8,6 +10,7 @@ import TranscribeButton from './TranscribeButton';
 import HighlightedText from '../HighlightedText';
 
 import config from '../../config';
+import { l } from '../../lang/Lang';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/routeHelper';
 import {
@@ -50,6 +53,7 @@ export default function RecordListItem({
   shouldRenderColumn,
   highlightRecordsWithMetadataField,
   mode,
+  smallTitle,
 }) {
   RecordListItem.propTypes = {
     id: PropTypes.string.isRequired,
@@ -61,6 +65,7 @@ export default function RecordListItem({
     highlightRecordsWithMetadataField: PropTypes.string,
     mode: PropTypes.string,
     useRouteParams: PropTypes.bool,
+    smallTitle: PropTypes.bool,
   };
 
   RecordListItem.defaultProps = {
@@ -68,6 +73,7 @@ export default function RecordListItem({
     mode: 'material',
     columns: null,
     useRouteParams: false,
+    smallTitle: false,
   };
 
   const [subrecords, setSubrecords] = useState([]);
@@ -312,7 +318,7 @@ export default function RecordListItem({
       if (persons.length > 0) {
         collectorPersonElement = persons
           .map((collectorPersonItem) => {
-            if (collectorPersonItem.relation === 'c') {
+            if (['c', 'collector', 'interviewer', 'recorder'].includes(collectorPersonItem.relation)) {
               const collectorParams = { ...searchParams, page: undefined };
               const href = `#${mode === 'transcribe' ? '/transcribe' : ''
               }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
@@ -407,6 +413,7 @@ export default function RecordListItem({
     useRouteParams
       ? createParamsFromSearchRoute(params['*'])
       : {
+        category: searchParams.category,
         search: searchParams.search,
         search_field: searchParams.search_field,
       },
@@ -417,19 +424,23 @@ export default function RecordListItem({
       {
         shouldRenderColumn('title', columns)
         && (
-          <td className="text-larger">
+          <td className={smallTitle ? 'table-buttons' : 'text-larger'}>
             <a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={recordHref}>
               {
                 config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined
                 && <ListPlayButton disablePlayback media={audioItem} recordId={recordId} recordTitle={title && title != '' ? title : l('(Utan titel)')} />
               }
               {
-                media?.filter((m) => m.source && m.source.includes('.pdf'))[0]
+                media?.filter((m) => m.source && m.source.toLowerCase().includes('.pdf'))[0]
                 && <sub><img src={PdfGif} style={{ marginRight: 5 }} alt="pdf" title="Accession" /></sub>
               }
               {
-                media?.filter((m) => m.source && m.source.includes('.jpg'))[0]
+                media?.filter((m) => m.source && m.source.toLowerCase().includes('.jpg'))[0]
                 && <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
+              }
+              {
+                media?.filter((m) => m.source && m.source.toLowerCase().includes('.mp3'))[0]
+                && <FontAwesomeIcon icon={faVolumeHigh} style={{ marginRight: 5 }} alt="jpg" title="Inspelning" />
               }
               {titleText && titleText !== '[]' ? titleText : ''}
             </a>
@@ -445,7 +456,7 @@ export default function RecordListItem({
             {transcriptionstatus === 'readytotranscribe' && media.length > 0
               && (
                 <TranscribeButton
-                  className="button-primary"
+                  className="button button-primary"
                   label={l('Skriv av')}
                   title={title}
                   recordId={recordId}
@@ -484,6 +495,7 @@ export default function RecordListItem({
                   target={config.embeddedApp ? '_parent' : '_self'}
                   href={`#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}${createSearchRoute(
                     {
+                      category: searchParams.category,
                       search: searchParams.search,
                       search_field: searchParams.search_field,
                     },

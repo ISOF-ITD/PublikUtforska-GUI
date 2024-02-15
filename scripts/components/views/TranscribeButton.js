@@ -83,13 +83,13 @@ function TranscribeButton({
     // Render a button with a dynamic class name based on the passed-in props.
     // The button's click event is tied to the transcribeButtonClick function,
     // or to the onClick prop if it's provided.
-    <button
+    <div
       className={`transcribe-button${className ? ` ${className}` : ''}`}
       onClick={effectiveOnClick}
       type="button"
     >
       {label}
-    </button>
+    </div>
   );
 }
 
