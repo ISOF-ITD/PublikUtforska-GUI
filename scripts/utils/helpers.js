@@ -106,8 +106,9 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
                     // Clean filename accordning to pattern in content field:
                     let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '').replace('III', '3').replace('II', '2')
                       .replace('I', '1');
+                    // Remove letter prefix and leading zeros
                     // How to identify and remove other existing extensions?
-                    cleanFilename = cleanFilename.replace('SK', '');
+                    cleanFilename = cleanFilename.replace('SK', '').replace(/^0+/, "");
                     // Match archive id with filename:
                     if (fileId === cleanFilename) {
                       return contentRows[i];
