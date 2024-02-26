@@ -26,6 +26,7 @@ const apiUrlObject = {
 
 const restApiUrlObject = {
   dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
+  // dev: 'https://garm-test.isof.se/folkeservice/api/',
   test: 'https://garm-test.isof.se/folkeservice/api/',
   prod: 'https://garm.isof.se/folkeservice/api/',
 };
@@ -165,7 +166,7 @@ export default {
   pdfUrl: pdfUrlObject[ENV],
   // For test with ortnamn data in index:
   // imageUrl: 'https://www4.isof.se/NAU/bilder/',
-  personImageUrl: 'https://frigg.isof.se/media/',
+  personImageUrl: 'https://garm.isof.se/media/',
   // audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
   audioUrl: 'https://sok.folke.isof.se/arkivfiler/publik/',
 
@@ -174,9 +175,9 @@ export default {
 
   // Url till Django/Elasticsearch API
   apiUrl: apiUrlObject[ENV],
-  // apiUrl: 'https://frigg-test.isof.se/sagendatabas/api/es/',
+  // apiUrl: 'https://garm-test.isof.se/folkeservice/api/es/',
   // For test with ortnamn data in index:
-  // apiUrl: 'https://frigg-test.isof.se/TradarkSearchService/api/es/',
+  // apiUrl: 'https://garm-test.isof.se/TradarkSearchService/api/es/',
 
   // Url till Django Rest API
   restApiUrl: restApiUrlObject[ENV],
