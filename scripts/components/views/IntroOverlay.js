@@ -6,14 +6,16 @@ function IntroOverlay() {
   const [iframeSrc, setIframeSrc] = useState('https://www.isof.se/folke-kontext/sida-1');
 
   useEffect(() => {
+    // Kolla efter urlparam iframeSrc och sätt iframeSrc till det värdet
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlIframeSrc = urlParams.get('iframeSrc');
+    if (urlIframeSrc) {
+      setIframeSrc(urlIframeSrc);
+    }
+    // Kontrollera om overlayen ska döljas baserat på localStorage
     const hideIntroOverlay = localStorage.getItem('hideIntroOverlay');
-
     if (hideIntroOverlay) {
       setShowOverlay(false);
-    } else {
-      // kolla efter urlparam iframeSrc och sätt iframeSrc till det värdet
-      const urlParams = new URLSearchParams(window.location.search);
-      setIframeSrc(urlParams.get('iframeSrc') || iframeSrc);
     }
   }, []);
 
