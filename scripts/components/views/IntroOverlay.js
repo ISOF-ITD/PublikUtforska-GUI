@@ -3,26 +3,39 @@ import React, { useState, useEffect } from 'react';
 function IntroOverlay() {
   // useState hook for managing visibility of the overlay
   const [showOverlay, setShowOverlay] = useState(true);
-  // useState hook for managing the content fetched from the API
-  const [content, setContent] = useState('');
+  const [iframeSrc, setIframeSrc] = useState('');
 
   useEffect(() => {
     const hideIntroOverlay = localStorage.getItem('hideIntroOverlay');
-    
+
     if (hideIntroOverlay) {
       setShowOverlay(false);
     } else {
-      fetch('https://www.isof.se/rest-api/folke-context/start', {
-        method: 'GET',
-      })
-      .then((response) => response.json())
-      .then((data) => {
-        setContent(data.content);
-      })
-      .catch((err) => console.error('Något gick fel:', err));
+      // kolla efter urlparam "iframepath" och sätt dess värde som state "iframepath"
+      const urlParams = new URLSearchParams(window.location.search);
+      const iframeSrcVar = urlParams.get('iframeSrc');
+      setIframeSrc(iframeSrcVar);
     }
   }, []);
-  
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // Säkerhetskontroll: Verifiera `event.origin` för att se till
+      // att det är isof.se som skickat meddelandet
+      if (event.origin !== 'https://www.isof.se') return;
+
+      if (event.data.newSrc) {
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('iframeSrc', event.data.newSrc);
+        window.history.pushState({}, '', newUrl); // Uppdaterar URL utan att ladda om
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Rensa upp
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   // Function to handle checkbox change
   const handleCheckboxChange = () => {
@@ -51,16 +64,24 @@ function IntroOverlay() {
       <div className="overlay-window">
         <div className="overlay-header">
           {/* Close button. On click, it hides the overlay */}
-          <button className="close-button white" onClick={handleCloseButtonClick} />
+          <button
+            className="close-button white"
+            onClick={handleCloseButtonClick}
+            type="button"
+          />
           <h2>Välkommen till Folke sök!</h2>
         </div>
-        <div>
-          {/* The content fetched from the API */}
-        </div>
-        <div>
-          {/* Här använder vi 'dangerouslySetInnerHTML' för att injicera den HTML-formaterade texten */}
-          <div dangerouslySetInnerHTML={{ __html: content }} />
-        </div>
+        <iframe
+          id="iframe"
+          title="iframe"
+          src={iframeSrc}
+          style={{
+            border: 'none',
+            width: '100%',
+            height: '100%',
+
+          }}
+        />
         {/* Checkbox to choose not to show the overlay again */}
         <p />
         <label htmlFor="hideOverlay">
@@ -68,7 +89,12 @@ function IntroOverlay() {
           Visa inte igen
         </label>
         {/* Adding the Close button here */}
-        <button onClick={handleCloseButtonClick}>Stäng</button>
+        <button
+          onClick={handleCloseButtonClick}
+          type="button"
+        >
+          Stäng
+        </button>
       </div>
     </div>
   );
