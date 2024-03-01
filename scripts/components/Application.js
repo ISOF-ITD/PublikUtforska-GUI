@@ -146,6 +146,7 @@ export default function Application({
         <TranscriptionHelpOverlay />
         <SwitcherHelpTextOverlay />
         {/* <StatisticsOverlay /> */}
+        <IntroOverlay />
         <Footer />
       </div>
     </AudioProvider>

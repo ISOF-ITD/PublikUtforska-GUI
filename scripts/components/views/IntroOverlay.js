@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 function IntroOverlay() {
   // useState hook for managing visibility of the overlay
   const [showOverlay, setShowOverlay] = useState(true);
-  const [iframeSrc, setIframeSrc] = useState('');
+  const [iframeSrc, setIframeSrc] = useState('https://www.isof.se/folke-kontext/sida-1');
 
   useEffect(() => {
     const hideIntroOverlay = localStorage.getItem('hideIntroOverlay');
@@ -13,8 +13,7 @@ function IntroOverlay() {
     } else {
       // kolla efter urlparam "iframepath" och sätt dess värde som state "iframepath"
       const urlParams = new URLSearchParams(window.location.search);
-      const iframeSrcVar = urlParams.get('iframeSrc');
-      setIframeSrc(iframeSrcVar);
+      setIframeSrc(urlParams.get('iframeSrc') || iframeSrc);
     }
   }, []);
 
