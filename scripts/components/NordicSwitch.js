@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { l } from '../lang/Lang';
 
 export default class NordicSwitch extends React.Component {
 	constructor(props) {

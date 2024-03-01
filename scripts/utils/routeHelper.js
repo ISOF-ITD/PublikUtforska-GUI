@@ -13,7 +13,8 @@ export function createPlacePathFromPlaces(placeId, placesPath) {
 
   routeParams.place_id = placeId;
   // decode and re-encode the search param to make sure it's encoded properly
-  routeParams.search = routeParams.search ? encodeURIComponent(decodeURIComponent(routeParams.search)) : undefined;
+  routeParams.search = routeParams.search
+    ? encodeURIComponent(decodeURIComponent(routeParams.search)) : undefined;
   return router.reverse(routeParams) || '';
 }
 

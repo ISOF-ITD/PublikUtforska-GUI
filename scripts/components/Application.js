@@ -6,6 +6,7 @@ import {
 import EventBus from 'eventbusjs';
 
 import PropTypes from 'prop-types';
+import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
 import RecordListWrapper from './views/RecordListWrapper';
 import StatisticsOverlay from './StatisticsOverlay';
@@ -16,6 +17,7 @@ import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import IntroOverlay from './views/IntroOverlay';
+import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 
 import MapWrapper from './MapWrapper';
 import Footer from './Footer';
@@ -23,10 +25,6 @@ import Footer from './Footer';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import config from '../config';
-
-import Lang from '../lang/Lang';
-
-const l = Lang.get;
 
 export default function Application({
   children, mode, openSwitcherHelptext,
@@ -44,9 +42,11 @@ export default function Application({
   window.eventBus = EventBus;
 
   const navigate = useNavigate();
-  const { results } = useLoaderData();
+  const { results, audioResults, pictureResults } = useLoaderData();
   const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: { } });
+  const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: { } });
+  const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: { } });
   const [loading, setLoading] = useState(true);
 
   const params = useParams();
@@ -69,6 +69,29 @@ export default function Application({
   }, [results]);
 
   useEffect(() => {
+    audioResults.then((data) => {
+      setAudioRecordsData(data);
+    });
+  }, [audioResults]);
+
+  useEffect(() => {
+    pictureResults.then((data) => {
+      setPictureRecordsData(data);
+    });
+  }, [pictureResults]);
+
+  useEffect(() => {
+    // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
+    window.eventBus.addEventListener('audio.playervisible', () => {
+      // När GlobalAudioPlayer visas lägger vi till class till document.body för att
+      // få utrymme för ljudspelaren i gränssnittet
+      document.body.classList.add('has-docked-control');
+    });
+    // lyssna på när ljudspelaren stängs, ta bort .has-docked-control från body class
+    window.eventBus.addEventListener('audio.playerhidden', () => {
+      document.body.classList.remove('has-docked-control');
+    });
+
     document.title = config.siteTitle;
 
     setTimeout(() => {
@@ -80,42 +103,51 @@ export default function Application({
       setRecordsData(data[1]);
       setLoading(false);
     });
+
+    return () => {
+      window.eventBus.removeEventListener('audio.playervisible');
+      window.eventBus.removeEventListener('audio.playerhidden');
+    };
   }, []);
 
   return (
-    <div className="app" id="app">
-      <RoutePopupWindow manuallyOpenPopup>
-        <RecordListWrapper
-          openButtonLabel="Visa sökträffar som lista"
-          disableRouterPagination
+    <AudioProvider>
+      <div className="app" id="app">
+        <RoutePopupWindow manuallyOpenPopup>
+          <RecordListWrapper
+            openButtonLabel="Visa sökträffar som lista"
+            disableRouterPagination
+            mode={mode}
+            openSwitcherHelptext={openSwitcherHelptext}
+          />
+        </RoutePopupWindow>
+
+        <Outlet />
+        {
+          children
+        }
+
+        <MapWrapper
+          mapMarkerClick={mapMarkerClick}
           mode={mode}
-          openSwitcherHelptext={openSwitcherHelptext}
+          params={params}
+          mapData={mapData}
+          recordsData={recordsData}
+          audioRecordsData={audioRecordsData}
+          pictureRecordsData={pictureRecordsData}
+          loading={loading}
         />
-      </RoutePopupWindow>
 
-      <Outlet />
-      {
-        children
-      }
-
-      <MapWrapper
-        mapMarkerClick={mapMarkerClick}
-        mode={mode}
-        params={params}
-        mapData={mapData}
-        recordsData={recordsData}
-        loading={loading}
-      />
-
-      <IntroOverlay />
-      <ImageOverlay />
-      <FeedbackOverlay />
-      <ContributeInfoOverlay />
-      <TranscriptionOverlay />
-      <TranscriptionHelpOverlay />
-      <SwitcherHelpTextOverlay />
-      <StatisticsOverlay />
-      <Footer />
-    </div>
+        <GlobalAudioPlayer />
+        <ImageOverlay />
+        <FeedbackOverlay />
+        <ContributeInfoOverlay />
+        <TranscriptionOverlay />
+        <TranscriptionHelpOverlay />
+        <SwitcherHelpTextOverlay />
+        {/* <StatisticsOverlay /> */}
+        <Footer />
+      </div>
+    </AudioProvider>
   );
 }

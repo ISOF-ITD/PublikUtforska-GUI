@@ -1,5 +1,5 @@
 import React from 'react';
-import config from './../../../scripts/config.js';
+import { l } from '../../lang/Lang';
 
 export default class SwitcherHelpTextOverlay extends React.Component {
 	constructor(props) {

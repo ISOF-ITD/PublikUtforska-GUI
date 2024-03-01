@@ -6,24 +6,23 @@ import PropTypes from 'prop-types';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { l } from '../../lang/Lang';
 
 import RecordsCollection from '../collections/RecordsCollection';
 import RecordListItem from './RecordListItem';
+import Timeline from './Timeline';
 
 import config from '../../config';
 import { createSearchRoute } from '../../utils/routeHelper';
 
 import PdfGif from '../../../img/pdf.gif';
 
-import L from '../../lang/Lang';
-
-const l = L.get;
-
 export default function RecordList({
   columns,
   disableListPagination,
   disableRouterPagination,
   hasFilter,
+  hasTimeline,
   highlightRecordsWithMetadataField,
   interval,
   openSwitcherHelptext,
@@ -31,15 +30,18 @@ export default function RecordList({
   tableClass,
   params,
   mode,
+  containerRef,
   // useRouteParams: use the route params instead of the search params for the link
   // maybe this should be the default behaviour and search params via props should be optional?
   useRouteParams,
+  smallTitle,
 }) {
   RecordList.propTypes = {
     columns: PropTypes.arrayOf(PropTypes.string),
     disableListPagination: PropTypes.bool,
     disableRouterPagination: PropTypes.bool,
     hasFilter: PropTypes.bool,
+    hasTimeline: PropTypes.bool,
     highlightRecordsWithMetadataField: PropTypes.string,
     interval: PropTypes.number,
     // searchParams: PropTypes.objectOf(PropTypes.any),
@@ -50,6 +52,8 @@ export default function RecordList({
     params: PropTypes.objectOf(PropTypes.any),
     mode: PropTypes.string,
     useRouteParams: PropTypes.bool,
+    containerRef: PropTypes.objectOf(PropTypes.any),
+    smallTitle: PropTypes.bool,
   };
 
   RecordList.defaultProps = {
@@ -57,6 +61,7 @@ export default function RecordList({
     disableListPagination: false,
     disableRouterPagination: true,
     hasFilter: true,
+    hasTimeline: false,
     highlightRecordsWithMetadataField: null,
     interval: null,
     // searchParams: null,
@@ -67,6 +72,8 @@ export default function RecordList({
     params: {},
     mode: 'material',
     useRouteParams: false,
+    containerRef: null,
+    smallTitle: false,
   };
 
   const navigate = useNavigate();
@@ -74,6 +81,7 @@ export default function RecordList({
   const [records, setRecords] = useState([]);
   const [fetchingPage, setFetchingPage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [yearFilter, setYearFilter] = useState(null);
   const [sort, setSort] = useState('archive.archive_id_row.keyword');
   const [order, setOrder] = useState('asc');
   const [loadedMore, setLoadedMore] = useState(false);
@@ -138,8 +146,7 @@ export default function RecordList({
       search_field: params.search_field || undefined,
       type: params.type,
       category: params.category && `${params.category}${params.subcategory ? `,${params.subcategory}` : ''}`, // subcategory for matkartan
-      year_from: params.year_from || undefined,
-      year_to: params.year_to || undefined,
+      collection_years: yearFilter?.join(',') || undefined,
       gender: params.gender ? (params.person_relation ? `${params.person_relation}:${params.gender}` : params.gender) : undefined,
       // gender: params.gender && params.person_relation ? params.person_relation+':'+params.gender : undefined,
       birth_years: params.birth_years ? (params.person_relation ? `${params.person_relation}:${params.gender ? `${params.gender}:` : ''}${params.birth_years}` : params.birth_years) : undefined,
@@ -186,11 +193,13 @@ export default function RecordList({
 
   useEffect(() => {
     fetchData(params);
-  }, [params, currentPage, sort, order, filter]);
+  }, [currentPage, sort, order, filter, yearFilter]);
 
   useEffect(() => {
-    const newSearchParams = { ...params, size: sizeMore };
-    fetchData(newSearchParams);
+    if (loadedMore) {
+      const newSearchParams = { ...params, size: sizeMore };
+      fetchData(newSearchParams);
+    }
   }, [loadedMore]);
 
   const shouldRenderColumn = (columnName, columnsArg) => {
@@ -261,6 +270,14 @@ export default function RecordList({
     )
   );
 
+  const handleYearFilter = (firstYear, lastYear) => {
+    setYearFilter([firstYear, lastYear]);
+  };
+
+  const resetOnYearFilter = () => {
+    setYearFilter(null);
+  };
+
   // render more records once, without pagination
   const renderMoreButton = () => (
     // return (
@@ -284,12 +301,13 @@ export default function RecordList({
       columns={columns}
       mode={mode}
       useRouteParams={useRouteParams}
+      smallTitle={smallTitle}
     />
   )) : [];
 
-  
-    return (
-      <>{
+  return (
+    <>
+      {
         hasFilter
         && (
         <div className="filter-wrapper">
@@ -312,7 +330,21 @@ export default function RecordList({
         )
       }
       {
-        !fetchingPage &&
+        hasTimeline
+        && (
+          <Timeline
+            containerRef={containerRef}
+            params={params}
+            filter={filter}
+            mode={mode}
+            onYearFilter={handleYearFilter}
+            resetOnYearFilter={resetOnYearFilter}
+          />
+        )
+      }
+      {
+        !fetchingPage
+      && (
       <div className={
         `${tableClass ?? ''
         } table-wrapper records-list list-container${records.length == 0 ? ' loading' : fetchingPage ? ' loading-page' : ''}`
@@ -433,18 +465,20 @@ export default function RecordList({
 
         }
       </div>
+      )
 }
-{
+      {
   fetchingPage && (
     <p className="page-info"><strong>Söker...</strong></p>
   )
 }
-{
+      {
   !fetchingPage && records.length === 0 && (
     <div className="table-wrapper list-container">
-       <h3>{l('Inga sökträffar.')}</h3>
-     </div>)
+      <h3>{l('Inga sökträffar.')}</h3>
+    </div>
+  )
 }
-      </>
-    );
+    </>
+  );
 }

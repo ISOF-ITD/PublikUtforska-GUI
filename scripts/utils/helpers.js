@@ -1,4 +1,5 @@
 import config from '../config';
+import { l } from '../lang/Lang';
 
 export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
   let text = `${page}`;
@@ -24,15 +25,214 @@ export function getTitle(title, contents) {
   }
 }
 
+/* Funktion för att skapa titel för ljudfil
+
+Mediafil Titel
+1.	Registrerad titel (records_media.title)
+2.a	Om arkiv AFU: records.content (Bara om en fil på accessionsraden?)
+	Många eller alla?
+2.b	Om arkiv AFG: Rad i innehåll (records.content) med match på filnamn
+-	ca 900 med detta mönster
+-	Första “ordet” med mönster (### ? R) där
+	# = Accessionsnummer med (optional prefix?) och siffror
+	? = Bokstav, t.ex. sida
+	Valfri siffra oftast i romersk form (I, II, III)
+2.c Om arkiv DAL: Textsegment i innehåll (records.content) med match på filnamn
+ - Ca 6400?
+ - Tag bort " ", "_m" i filnamn
+ - Behåll bara två första ord om fler ord än 2 i filnamn
+ Annars:
+ a. informant?
+ b. titel = titel_allt[1-80]?
+ Exempel acc_nr_ny: "s00023 ; s00024 ;"
+ Exempel filnamn: "S 24A_m.MP3", "s 1000a ålem smål.mp3"
+ Exempel innehåll: S17A: Malt. Mara och varulv. S17B: Bäckahästen. Brygd. S18A: Brygd
+  3.	Om de finns: Informanter(er), insamlingsår
+4.	Text: "Inspelning"
+
+*/
+export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName, year, persons) {
+  // console.log(title);
+  switch (!!title) {
+    case true:
+      return title;
+    default:
+      if (contents) {
+        if (contents.length > 0) {
+          // If no archiveOrg use archive name 
+          if (!archiveOrg) {
+            if (archiveName.includes('AFG')) {
+              archiveOrg = 'Göteborg';
+            }
+            if (archiveName.includes('Lund') || archiveName.includes('DAL')) {
+              archiveOrg = 'Lund';
+            }
+            if (archiveName.includes('AFU')) {
+              archiveOrg = 'Uppsala';
+            }
+            if (archiveName.includes('Umeå')) {
+              archiveOrg = 'Umeå';
+            }
+          }
+          // Set audio title according to archive patterns using archiveOrg
+          if (archiveOrg === 'Uppsala') {
+            if (contents.length > 100) {
+              return `[${contents.substring(0, 84)} ${'(FÖRKORTAD TITEL)'}]`;
+            }
+            return `[${contents}]`;
+          }
+          // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
+          // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
+          if (archiveOrg === 'Göteborg') {
+            // Clean different row breaks:
+            const cleanContent = contents.replace(/\r\r/g, '\n').replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const contentRows = cleanContent.split('\n');
+            for (let i = 0; i < contentRows.length; i++) {
+              // console.log(contentRows[i]);
+              // Get first element delineated by () or [] which is an archive id that often match the filename:
+              let elements = contentRows[i].split(')');
+              if (contentRows[i].charAt(0) === '[') {
+                elements = contentRows[i].split(']');
+              }
+              if (elements.length > 0) {
+                let fileId = elements[0];
+                if (fileId.length > 1) {
+                  // Clean unwanted characters:
+                  fileId = fileId.replaceAll('[', '').replaceAll('(', '').replaceAll(' ', '');
+                  // Clean filename accordning to pattern in content field:
+                  fileId = fileId.replace('III', '3').replace('II', '2').replace('I', '1');
+                  const filenameParts = fileName.split('/');
+                  if (filenameParts) {
+                    // Clean filename accordning to pattern in content field:
+                    let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '').replace('III', '3').replace('II', '2')
+                      .replace('I', '1');
+                    // Remove letter prefix and leading zeros
+                    // How to identify and remove other existing extensions?
+                    cleanFilename = cleanFilename.replace('SK', '').replace(/^0+/, "");
+                    // Match archive id with filename:
+                    if (fileId === cleanFilename) {
+                      return contentRows[i];
+                    }
+                  }
+                }
+              }
+            }
+          }
+          // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
+          // -- Find titel_allt types by DAL acc_nr_ny_prefix "s"+ one character (to compare hits with number as second character to letters as second character):
+          if (archiveOrg === 'Lund') {
+            // Clean different row breaks:
+            const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const contentRows = cleanContent.split(':');
+
+            // Loop until next last segment
+            for (let i = 0; i < contentRows.length - 1; i += 1) {
+              // Get all words from next element except first element delineated by " ":
+              const thisSegment = contentRows[i].split(' ');
+              const nextSegment = contentRows[i + 1].split(' ');
+              // Last word in segment + all but last word in next segment
+              const thisSegmentFileId = thisSegment[thisSegment.length - 1];
+              const thisSegmentContent = nextSegment.slice(0, -1).join(' ');
+              if (thisSegmentFileId.length > 0) {
+                const fileId = thisSegmentFileId;
+                // Clean unwanted characters:
+                const cleanFilename = fileName.replace(' ', '');
+                // Match archive id with filename:
+                if (cleanFilename.includes(fileId)) {
+                  const fileTitle = `${thisSegmentFileId}: ${thisSegmentContent}`;
+                  return fileTitle;
+                }
+              }
+            }
+          }
+        }
+      }
+      if (persons) {
+        let personbasedTitle = '';
+        for (let i = 0; i < persons.length; i += 1) {
+          if (['i', 'informant'].includes(persons[i].relation)) {
+            let name = '';
+            let birthYear = '';
+            if (persons[i].name) {
+              name = persons[i].name;
+              if (persons[i].birthyear) {
+                birthYear = ` född ${persons[i].birthyear}`;
+              }
+              personbasedTitle = personbasedTitle + name + birthYear;
+            }
+          }
+        }
+        if (personbasedTitle) {
+          if (personbasedTitle.length > 0) {
+            if (year) {
+              personbasedTitle = `${personbasedTitle} intervju ${year.substring(0, 4)}`;
+            }
+          }
+          if (personbasedTitle.length > 0) {
+            return personbasedTitle;
+          }
+        }
+      }
+      return l('Inspelning');
+  }
+}
+
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
-export function makeArchiveIdHumanReadable(str) {
-  // Matcha första delen av strängen som inte är en siffra (bokstäver)
-  // och andra delen som är en siffra (0 eller flera siffror)
-  const [letterPart, numberPart = ''] = str.match(/^(\D*)([0-9:]+)?/).slice(1);
+export function getArchiveName(archiveOrg) {
+  // Standard är Göteborg då Göteborgsposter skapades då archive_org inte fanns
+  let archiveName = 'Institutet för språk och folkminnen, Göteborg'
 
-  // Stora bokstäver för den första delen och ta bort alla nollor i början av den andra delen
+  if (archiveOrg === 'Lund') {
+    archiveName = 'Institutet för språk och folkminnen, Lund'
+  }
+  if (archiveOrg === 'Göteborg') {
+    archiveName = 'Institutet för språk och folkminnen, Göteborg'
+  }
+  if (archiveOrg === 'Umeå') {
+    archiveName = 'Institutet för språk och folkminnen, Umeå'
+  }
+  if (archiveOrg === 'Uppsala') {
+    archiveName = 'Institutet för språk och folkminnen, Uppsala'
+  }
+  // Icke isof
+  if (archiveOrg === 'NFS') {
+    archiveName = 'Norsk folkeminnesamling'
+  }
+  if (archiveOrg === 'SLS') {
+    archiveName = 'Svenska litteratursällskapet i Finland (SLS)'
+  }
+    
+  return archiveName;
+}
+
+// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
+// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
+export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
+  // Kontrollera att str är definierad
+  if (!str) return '';
+  // Matcha första delen av strängen som inte är en siffra (bokstäver)
+  // och andra delen som är minst en siffra (0 eller flera siffror)
+  // och behåll alla tecken efter siffran/siffrorna i andra delen
+  const match = str.match(/^(\D*)([0-9:]+.*)?/);
+
+  // Om ingen matchning hittades, returnera en tom sträng
+  if (!match) return '';
+
+  const [letterPart = '', numberPart = ''] = match.slice(1);
+
+  //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
+  let prefix = '';
+  // inga dubbla bokstasvsprefix (prefix + letterPart)
+  if (letterPart === '') {
+    if (archiveOrg === 'Uppsala') {
+      prefix = 'ULMA';
+    }
+  }
+
+  // Omvandla bokstäver till versaler och ta bort inledande nollor
   const parts = [
+    prefix,
     letterPart.toUpperCase(),
     numberPart.replace(/^0+/, ''),
   ];
@@ -83,7 +283,10 @@ export function getRecordsCountLocation(params = {}) {
   if (params.record_ids) { // Hämtar bara vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
-    const queryParams = { ...config.requiredParams, ...params };
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== null && value !== undefined),
+    );
+    const queryParams = { ...config.requiredParams, ...filteredParams };
 
     // Anpassa params till ES Djangi api
     if (queryParams.search) {
@@ -106,9 +309,9 @@ export function getRecordsCountLocation(params = {}) {
     });
   }
 
-    const paramString = paramStrings.join('&');
+  const paramString = paramStrings.join('&');
 
-    return `${url}?${paramString}`;
+  return `${url}?${paramString}`;
 }
 
 export function getRecordFetchLocation(recordId) {
@@ -180,7 +383,7 @@ export const getPlaceString = (places) => {
   // Check if either `landskap` or `fylke` is truthy
   if (landskap || fylke) {
     // If so, add a comma followed by the value of either `landskap` or `fylke` to `placeString`
-    placeString += ', ' + (landskap || fylke);
+    placeString += `, ${landskap || fylke}`;
   }
 
   // Return the final value of `placeString`

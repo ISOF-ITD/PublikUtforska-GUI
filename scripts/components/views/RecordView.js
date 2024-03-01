@@ -3,7 +3,10 @@ import {
   useNavigate, useLocation, useParams, useLoaderData,
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import sanitizeHtml from 'sanitize-html';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown, faChevronRight, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 // import localLibrary from '../../utils/localLibrary';
 
@@ -20,17 +23,17 @@ import SitevisionContent from '../SitevisionContent';
 import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
-import { getTitle, makeArchiveIdHumanReadable } from '../../utils/helpers';
+import {
+  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName,
+} from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
 
 import archiveLogoIsof from '../../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../../img/archive-logo-ikos.png';
 
-import Lang from '../../lang/Lang';
+import { l } from '../../lang/Lang';
 import RecordList from './RecordList';
-
-const l = Lang.get;
 
 export default function RecordView({ mode, openSwitcherHelptext }) {
   RecordView.propTypes = {
@@ -48,6 +51,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   // const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
+
+  const [expandedHeadwords, setExpandedHeadwords] = useState(false);
+  const toggleHeadwordsExpand = () => {
+    setExpandedHeadwords(!expandedHeadwords);
+  };
 
   const location = useLocation();
 
@@ -222,9 +230,31 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       audioItems = audioDataItems.map((mediaItem) => (
         <tr key={mediaItem.source}>
           <td data-title="Lyssna:" width="50px">
-            <ListPlayButton media={mediaItem} recordId={data.id} recordTitle={data.title} />
+            <ListPlayButton
+              media={mediaItem}
+              recordId={data.id}
+              recordTitle={getAudioTitle(
+                data.title,
+                data.contents,
+                data.archive.archive_org,
+                data.archive.archive,
+                mediaItem.source,
+                data.year,
+                data.persons,
+              )}
+            />
           </td>
-          <td>{mediaItem.title.length > 0 ? mediaItem.title : data.title}</td>
+          <td>
+            {getAudioTitle(
+              data.title,
+              data.contents,
+              data.archive.archive_org,
+              data.archive.archive,
+              mediaItem.source,
+              data.year,
+              data.persons,
+            )}
+          </td>
         </tr>
       ));
 
@@ -252,8 +282,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     const personItems = data.persons?.length > 0 ? data.persons.map((person) => (
       <tr key={person.id}>
         <td data-title="">
-          {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && person.relation === 'i' && person.name}
-          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && person.relation === 'i') && <a href={`#/persons/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
+          {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && ['i', 'informant'].includes(person.relation) && person.name}
+          {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && ['i', 'informant'].includes(person.relation)) && <a href={`#/persons/${person.id}${routeParams || ''}`}>{person.name ? person.name : ''}</a>}
           {config.siteOptions.disablePersonLinks && person.name}
         </td>
         <td data-title="Födelseår">{person.birth_year && person.birth_year > 0 ? person.birth_year : ''}</td>
@@ -265,8 +295,18 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           {person.birthplace ? ` ${person.birthplace}` : ''}
         </td>
         <td data-title="Roll">
-          {person.relation === 'c' && l('Upptecknare')}
-          {person.relation === 'i' && l('Informant')}
+          {['c', 'collector'].includes(person.relation) && l('Insamlare')}
+          {['i', 'informant'].includes(person.relation) && l('Informant')}
+          {person.relation === 'excerpter' && l('Excerpist')}
+          {person.relation === 'author' && l('Författare')}
+          {person.relation === 'recorder' && l('Inspelad av')}
+          {person.relation === 'photographer' && l('Fotograf')}
+          {person.relation === 'interviewer' && l('Intervjuare')}
+          {person.relation === 'mentioned' && l('Omnämnd')}
+          {person.relation === 'artist' && l('Konstnär')}
+          {person.relation === 'illustrator' && l('Illustratör')}
+          {person.relation === 'sender' && l('Avsändare')}
+          {person.relation === 'receiver' && l('Mottagare')}
         </td>
       </tr>
     )) : [];
@@ -279,6 +319,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     )) : [];
 
     let textElement;
+    let headwordsElement;
 
     let forceFullWidth = false;
 
@@ -304,7 +345,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {l('Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!')}
           </p>
           <TranscribeButton
-            className="button-primary"
+            className="button button-primary"
             label={l('Skriv av')}
             title={data.title}
             recordId={data.id}
@@ -336,15 +377,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         // Set the forceFullWidth variable to true
         forceFullWidth = true;
       }
-      let text = (highlight && highlightedText) || data.text;
-      // create a button/label to hide and show text below "Uppslagsord"
-      if (text?.includes('<p>Uppslagsord:</p>')) {
-        const uppslagsordLink = '<p><label for="toggle">Uppslagsord</label></p>';
-        const parts = text.split('<p>Uppslagsord:</p>');
-        text = `${parts[0]
-          + uppslagsordLink
-        }<input type="checkbox" id="toggle" class="visually-hidden"/ ><div class="realkatalog-content">${parts[1]}</div>`;
-      }
+      const text = (highlight && highlightedText) || data.text;
       // If there is at least one PDF file, create a PdfViewer component for every PDF file
       if (pdfObjects?.length > 0) {
         pdfObjects.forEach((pdfObject) => {
@@ -376,6 +409,74 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             // If there is at least one PDF file, create a PdfViewer component for every PDF file
             pdfElements.length ? pdfElements : ''
           }
+        </div>
+      );
+
+      let cleanHTMLheadwords = '';
+      if (data && data.headwords) {
+        const formattedHeadwords = data.headwords.trim().replace(/( Sida| Sidor)/g, '\n$1');
+        // Om arkivet är 'Uppsala' och det finns headwords, då formaterar vi huvudorden
+        if (data.archive.archive_org === 'Uppsala') {
+          const anchorStart = '<a href="https://www5.sprakochfolkminnen.se/Realkatalogen/';
+          const anchorEnd = '" target="_blank">Visa indexkort</a>';
+          cleanHTMLheadwords = sanitizeHtml(
+            formattedHeadwords.replaceAll('[[', anchorStart).replaceAll(']]', anchorEnd),
+            {
+              allowedTags: ['b', 'i', 'em', 'strong', 'a'],
+              allowedAttributes: {
+                a: ['href', 'target'],
+              },
+            },
+          );
+        } else {
+          // Behåll de formaterade huvudorden oförändrade om arkivet inte är 'Uppsala'
+          cleanHTMLheadwords = formattedHeadwords;
+        }
+      }
+
+      headwordsElement = (
+        <div>
+          <button
+            className="headwords-toggle"
+            type="button"
+            tabIndex={0}
+            style={{
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+            onClick={toggleHeadwordsExpand}
+            onKeyDown={(e) => {
+              // Aktiverar när "Enter" eller "Space" trycks ned
+              if (e.key === 'Enter' || e.key === ' ') {
+                toggleHeadwordsExpand();
+              }
+            }}
+          >
+            <FontAwesomeIcon icon={expandedHeadwords ? faChevronDown : faChevronRight} />
+            &nbsp;
+            Uppgifter från  äldre innehållsregister
+          </button>
+          <div className={`record-text realkatalog-content display-line-breaks ${expandedHeadwords ? 'show' : 'hide'}`}>
+            <i>
+              Delar av Isofs äldre arkivmaterial kan vara svårt att närma
+              sig och använda eftersom det återspeglar fördomar, stereotyper,
+              rasism och sexism. Här finns också ett förlegat och nedsättande
+              språkbruk som vi inte använder i dag.
+              <br />
+              <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
+                Läs mer om fördomar och äldre språkbruk i samlingarna.
+                &nbsp;
+                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+              </a>
+              <p />
+            </i>
+            <div
+              // Lösning med säkerhetsbrist! Fundera på bättre lösning!
+              dangerouslySetInnerHTML={{
+                __html: cleanHTMLheadwords,
+              }}
+            />
+          </div>
         </div>
       );
     }
@@ -600,7 +701,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         <div className="row">
 
           {
-            (data.text || textElement)
+            (data.text || textElement || data.headwords || headwordsElement)
             && (
               <div className={`${sitevisionUrl || imageItems.length === 0 || forceFullWidth || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
                 {
@@ -608,17 +709,18 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                     {textElement}
                     {/* add a switch that toggles the state variable highlight */}
                     {highlightedText
-                    && (
-                      <label htmlFor="highlight">
-                        <input
-                          type="checkbox"
-                          id="highlight"
-                          checked={highlight}
-                          onChange={() => setHighlight(!highlight)}
-                        />
-                        <span style={{ marginLeft: 10 }}>Markera sökord</span>
-                      </label>
-                    )}
+                      && (
+                        <label htmlFor="highlight">
+                          <input
+                            type="checkbox"
+                            id="highlight"
+                            checked={highlight}
+                            onChange={() => setHighlight(!highlight)}
+                          />
+                          <span style={{ marginLeft: 10 }}>Markera sökord</span>
+                        </label>
+                      )}
+                    {data.headwords && headwordsElement}
                   </>
                 }
 
@@ -691,7 +793,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           {
             !sitevisionUrl && !forceFullWidth && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right' || !config.siteOptions.recordView.pdfIconsPosition || config.siteOptions.recordView.pdfIconsPosition === 'right' || !config.siteOptions.recordView.audioPlayerPosition || config.siteOptions.recordView.audioPlayerPosition === 'right') && (imageItems.length > 0 || audioItems.length > 0 || pdfItems.length > 0)
             && (
-              <div className="columns four u-pull-right">
+              <div className={`columns ${audioItems.length > 0 ? 'twelve' : 'four'} u-pull-left`}>
 
                 {
                   (!config.siteOptions.recordView || !config.siteOptions.recordView.audioPlayerPosition || config.siteOptions.recordView.audioPlayerPosition === 'right') && audioItems.length > 0
@@ -739,15 +841,13 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           <div className="six columns">
             <ShareButtons path={`${config.siteUrl}#/records/${data.id}`} title={l('Kopiera länk')} />
           </div>
-        {/* </div>
-        
-        <div className="row"> */}
+
           <div className="six columns">
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-              `${makeArchiveIdHumanReadable(data.archive.archive_id_row)}, ${pages ? `s. ${pages}, ` : ''}${data.archive.archive}`
-            )}
+                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${getArchiveName(data.archive.archive_org)}`
+              )}
               title={l('Källhänvisning')}
             />
           </div>
@@ -871,7 +971,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 <p>
                   <strong>{l('Arkiv')}</strong>
                   <br />
-                  {data.archive.archive}
+                  {getArchiveName(data.archive.archive_org)}
                 </p>
               )
             }

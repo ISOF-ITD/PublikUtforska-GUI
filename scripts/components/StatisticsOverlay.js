@@ -132,7 +132,7 @@ export default function StatisticsOverlay() {
             range: 'transcriptiondate,now/M,now+2h',
           }}
           type="topTranscribersByPages"
-          label={`Flest avskrivna sidor i ${currentMonth}`}
+          label={`Topplista transkriberare i ${currentMonth}`}
           visible={visible}
         />
 
@@ -143,7 +143,7 @@ export default function StatisticsOverlay() {
             transcriptionstatus: 'published',
           }}
           type="topTranscribersByPages"
-          label="Flest avskrivna sidor totalt"
+          label="Topplista transkriberare totalt"
           visible={visible}
         />
 

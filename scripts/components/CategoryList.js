@@ -1,9 +1,7 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import categories from '../utils/utforskaCategories';
 
-import routeHelper from './../utils/routeHelper'
 
 export default class CategoryList extends React.Component {
 	constructor(props) {

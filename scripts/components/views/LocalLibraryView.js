@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 import config from '../../config';
+import { l } from '../../lang/Lang';
 
 // TODO: enter correct paths
 import DropdownMenu from '../DropdownMenu';

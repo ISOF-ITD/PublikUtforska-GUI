@@ -67,6 +67,24 @@
         });
     </script>
     <!-- End Matomo Code -->
+    <script type="text/javascript">
+        // This script toggles the 'tab-navigation' class on the body element.
+        // It adds the class when the Tab key is pressed for better keyboard navigation,
+        // and removes it when the mouse is clicked or touch event is fired.
+
+        // We need this because we want to show the focus outline only when the user
+        // is navigating with the keyboard, not when they are using the mouse or touch.
+
+        document.addEventListener('keydown', function (event) {
+            if (event.keyCode === 9) {
+                document.body.classList.add('tab-navigation');
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            document.body.classList.remove('tab-navigation');
+        });
+    </script>
 </head>
 
 <body>
