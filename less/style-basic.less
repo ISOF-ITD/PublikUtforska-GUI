@@ -98,10 +98,6 @@ body.tab-navigation *:focus {
 	zoom: 0.75;
 }
 
-// Sitevision hack, remove #Publiceringsdatum
-#Publiceringsdatum + span {
-	display: none;
-}
 html, body {
 	height: 100vh;
 	width: 100vw;
@@ -392,8 +388,16 @@ div.display-line-breaks {
 }
 
 .record-text-container {
-	display: inline-flex;
-	flex-direction: column;
+	display: flex;
+	flex-wrap: wrap;
+	// width: 100%;
+	> div {
+		flex: 1 1 45%;
+		display: flex;
+		img {
+			max-width: 100%;
+		}
+	}
 }
 
 .record-text {
@@ -558,7 +562,7 @@ footer, header {
 
 		.transform(translateY(50px));
 
-		.app-initialized & {
+			pp-initialized & {
 			opacity: 1;
 
 			.transform(translateY(0));
