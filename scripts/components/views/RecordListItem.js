@@ -81,6 +81,8 @@ export default function RecordListItem({
   const [visibleSubrecords, setVisibleSubrecords] = useState(false);
   const [numberOfSubrecords, setNumberOfSubrecords] = useState(0);
   const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] = useState(0);
+  const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
+  const [numberOfTranscribedSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia] = useState(0);
 
   const navigate = useNavigate();
   const params = useParams();
@@ -106,6 +108,27 @@ export default function RecordListItem({
     }
   };
 
+  // used for fetching number of subrecordmedias and transcribed subrecordmedias
+  // after the component has mounted
+  // is called in the useEffect hook below
+  const fetchRecordMediaCount = async (functionScopeParams, setValue) => {
+    try {
+      const queryParams = { ...functionScopeParams };
+      const queryParamsString = Object.entries(queryParams)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('&');
+      const response = await fetch(`${config.apiUrl}mediacount?${queryParamsString}`);
+      if (response.ok) {
+        const json = await response.json();
+        setValue(json.data.value);
+      } else {
+        throw new Error('Fel vid hämtning av antal sidor/filer');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (recordtype === 'one_accession_row') {
       const oneRecordParams = {
@@ -117,8 +140,18 @@ export default function RecordListItem({
         recordtype: 'one_record',
         transcriptionstatus: 'published,transcribed',
       };
+      const oneRecordPagesParams = {
+        search: id,
+      };
+      const transcribedOneRecordPagesParams = {
+        search: id,
+        transcriptionstatus: 'published,transcribed',
+      };
+      // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord 
       fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
       fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
+      fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia);
+      fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
     }
   }, []);
 
@@ -362,6 +395,34 @@ export default function RecordListItem({
   let transcriptionStatusElement = <span className="transcriptionstatus empty" />;
   if (transcriptionstatus && transcriptionstatus !== 'accession') {
     transcriptionStatusElement = <span className={`transcriptionstatus ${transcriptionstatus}`}>{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
+  } else if (transcriptionstatus === 'accession' && transcriptiontype === 'sida' && numberOfSubrecordsMedia && Number.isInteger(numberOfTranscribedSubrecordsMedia)) {
+    const transcribedPercent = numberOfSubrecordsMedia === 0 ? 0 : Math.round(numberOfTranscribedSubrecordsMedia / numberOfSubrecordsMedia * 100);
+    transcriptionStatusElement = (
+      <div style={{ marginRight: 10 }}>
+        {`${numberOfTranscribedSubrecordsMedia} av ${numberOfSubrecordsMedia} sidor`}
+        <br />
+        <div
+          title={`${transcribedPercent}%`}
+          style={{
+            display: numberOfSubrecordsMedia === 0 ? 'none' : 'inline-block',
+            width: '100%',
+            maxWidth: 200,
+            backgroundColor: '#fff',
+            height: 10,
+            border: '1px solid #01535d',
+            borderRadius: 3,
+          }}
+        >
+          <span style={{
+            width: `${transcribedPercent}%`,
+            display: 'block',
+            background: '#01535d',
+            height: 10,
+          }}
+          />
+        </div>
+      </div>
+    );
   } else if (transcriptionstatus === 'accession' && numberOfSubrecords && Number.isInteger(numberOfTranscribedSubrecords)) {
     const transcribedPercent = numberOfSubrecords === 0 ? 0 : Math.round(numberOfTranscribedSubrecords / numberOfSubrecords * 100);
     transcriptionStatusElement = (
