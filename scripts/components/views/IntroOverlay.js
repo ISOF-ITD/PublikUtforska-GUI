@@ -11,7 +11,7 @@ function IntroOverlay() {
     if (hideIntroOverlay) {
       setShowOverlay(false);
     } else {
-      // kolla efter urlparam "iframepath" och sätt dess värde som state "iframepath"
+      // kolla efter urlparam iframeSrc och sätt iframeSrc till det värdet
       const urlParams = new URLSearchParams(window.location.search);
       setIframeSrc(urlParams.get('iframeSrc') || iframeSrc);
     }
