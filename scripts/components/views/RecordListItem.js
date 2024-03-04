@@ -148,10 +148,12 @@ export default function RecordListItem({
         transcriptionstatus: 'published,transcribed',
       };
       // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord 
+      if (transcriptiontype === 'sida') {
+        fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia);
+        fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
+      }
       fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
       fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
-      fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia);
-      fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
     }
   }, []);
 
