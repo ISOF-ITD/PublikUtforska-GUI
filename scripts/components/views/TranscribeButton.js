@@ -29,16 +29,30 @@ function TranscribeButton({
           random: true,
         });
       } else {
-        window.eventBus.dispatch('overlay.transcribe', {
-          url: `${config.siteUrl}#/records/${recordId}`,
-          id: recordId,
-          archiveId,
-          title,
-          type,
-          images,
-          transcriptionType,
-          placeString: getPlaceString(places),
-        });
+        if (transcriptionType === "sida") {
+          window.eventBus.dispatch('overlay.transcribePageByPage', {
+            url: `${config.siteUrl}#/records/${recordId}`,
+            id: recordId,
+            archiveId,
+            title,
+            type,
+            images,
+            transcriptionType,
+            placeString: getPlaceString(places),
+         });
+        }
+        else {
+          window.eventBus.dispatch('overlay.transcribe', {
+            url: `${config.siteUrl}#/records/${recordId}`,
+            id: recordId,
+            archiveId,
+            title,
+            type,
+            images,
+            transcriptionType,
+            placeString: getPlaceString(places),
+         });
+        }
       }
     }
   };
