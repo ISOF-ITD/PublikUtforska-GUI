@@ -94,6 +94,43 @@ Types:
 - scripts\components\views
 - scripts\components\
 
+### Props
+
+### PropTypes
+See "Code style and conventions" and
+https://react.dev/reference/react/Component#static-proptypes
+
+```javascript
+import PropTypes from 'prop-types';
+```
+
+### State
+
+State as individual state-values or array
+Anything to think about???
+
+Example State as individual state-values in FeedbackOverlay:
+```javascript
+const [visible, setVisible] = useState(false);
+const [messageInputValue, setMessageInputValue] = useState('');
+  
+..
+setVisible(false);
+```
+
+Example State as array in TranscriptionHelpOverlay:
+```javascript
+const [state, setState] = useState({
+visible: false,
+messageInputValue: '',
+nameInputValue: '',
+emailInputValue: '',
+messageSent: false,
+});
+..
+setState((prevState) => ({ ...prevState, visible: false }));
+```
+
 ## Routing
 
 ### Use cases
@@ -143,3 +180,7 @@ Since, in the above example, the searchParams are a part of the component's **pr
 ### What is not controlled by the routes?
 
 Some states of the application are not in the scope of the routing. This affects all events that are triggered by eventBus, especially popups, overlays and `resize` events.
+
+## EventBus
+
+TODO
