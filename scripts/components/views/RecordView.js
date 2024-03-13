@@ -329,13 +329,14 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     // vi SitevisionContent modulen för att visa sidans innehåll
     if (sitevisionUrl) {
       textElement = <SitevisionContent url={sitevisionUrl.value} />;
-    } else if (data.transcriptionstatus === 'readytotranscribe' && data.media.length > 0) {
+    } else if (((data.transcriptionstatus === 'readytotranscribe') || (data.transcriptiontype === 'sida' && !['published','autopublished'].includes(data.transcriptionstatus))) && data.media.length > 0) {
       // Gammal regel: Om "transkriberad" finns i texten lägger vi till
       // transkriberings knappen istället för att visa textan
       // else if (data.text && data.text.indexOf('transkriberad') > -1
       // && data.text.length < 25 && data.media.length > 0) {
       // Ny regel Om transcriptionstatus = readytotranscribe lägger vi till
       // transkriberings knappen istället för att visa texten
+      // Två fall: Om 1) readytotranscribe eller 2) transcriptiontype = 'sida' och inte 'published','autopublished'
       textElement = (
         <div>
           <p>
