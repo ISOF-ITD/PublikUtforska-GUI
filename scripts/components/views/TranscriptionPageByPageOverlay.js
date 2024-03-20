@@ -27,7 +27,7 @@ export default function TranscriptionPageByPageOverlay() {
 		//title: '',
 	  };
 	
-	const [state, setState] = useState({
+/* 	const [state, setState] = useState({
 		visible: false,
 		informantNameInput: '',
 		informantBirthDateInput: '',
@@ -53,14 +53,15 @@ export default function TranscriptionPageByPageOverlay() {
 		transcriptionType: null,
 		imageIndex: 0,
 		placeString: null,
+		sessionStateChanged: false,
 	});
-	// Session parameters
-/* 	const [url, setUrl] = useState(null);
+ */	// Session parameters
+ 	const [url, setUrl] = useState(null);
 	const [id, setId] = useState(null);
 	const [archiveId, setArchiveId] = useState(null);
 	const [title, setTitle] = useState(null);
-	const [images, setImages] = useState(null);
-	const [imageIndex, setImageIndex] = useState(null);
+	const [images, setImages] = useState(null); // images is all pages to transcribe
+	const [imageIndex, setImageIndex] = useState(null); // imageIndex is current page to transcribe
 	const [placeString, setPlaceString] = useState(null);
 	const [type, setType] = useState(null);
 
@@ -79,18 +80,6 @@ export default function TranscriptionPageByPageOverlay() {
 	const [currentImage, setCurrentImage] = useState(null);
 	const [transcriptionType, setTranscriptionType] = useState('');
 	const [random, setRandom] = useState(false);
- 				setVisible(true);
-				setType(event.target.type);
-				setTitle(event.target.title);
-				setId(event.target.id);
-				seetArchiveId(event.target.archiveId || null);
-				setUrl(event.target.url);
-				stImages(event.target.images);
-				setTranscriptionType(event.target.transcriptionType);
-				setImageIndex(0);
-				setPlaceString(event.target.placeString || null);
-				setRandom(event.target.random);
- */	
 
 	useEffect(() => {
 		// Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
@@ -103,54 +92,57 @@ export default function TranscriptionPageByPageOverlay() {
 				})
 				.then(function(json) {
 					const randomDocument = json.hits.hits[0]._source;
-					this.setState({
-						visible: true,
-						url: config.siteUrl+'#/records/'+randomDocument.id,
-						id: randomDocument.id,
-						archiveId: randomDocument.archive.archive_id,
-						title: randomDocument.title,
-						images: randomDocument.media,
-						transcriptionType: randomDocument.transcriptiontype,
-						imageIndex: 0,
-						placeString: getPlaceString(randomDocument.places),
-						random: true,
-					});
+					setVisible(true);
+					// setType(event.target.type);
+					setTitle(randomDocument.title);
+					setId(randomDocument.id);
+					setArchiveId(randomDocument.archive.archive_id);
+					setUrl(config.siteUrl+'#/records/'+randomDocument.id);
+					stImages(randomDocument.media);
+					setTranscriptionType(randomDocument.transcriptiontype);
+					setImageIndex(0);
+					setPlaceString(getPlaceString(randomDocument.places));
+					setRandom(event.target.random);
 					transcribeStart(randomDocument.id);
 				});
 			} else {
-				setState({
-					visible: true,
-					// Session
-					type: event.target.type,
-					title: event.target.title,
-					id: event.target.id,
-					archiveId: event.target.archiveId || null,
-					url: event.target.url,
-					images: event.target.images,
-					transcriptionType: event.target.transcriptionType,
-					imageIndex: 0,
-					placeString: event.target.placeString || null,
-					random: event.target.random,
-				});
-				var images = state.images;
-				var currentImage = images[state.imageIndex];
-				var currentImageSource = currentImage.source;
-				if (currentImage.transcriptionstatus === "readytotranscribe") {
-					transcribeStart(event.target.id, currentImageSource);
-				}
+				setVisible(true);
+				setType(event.target.type);
+				setTitle(event.target.title);
+				setId(event.target.id);
+				setArchiveId(event.target.archiveId || null);
+				setUrl(event.target.url);
+				setImages(event.target.images);
+				setTranscriptionType(event.target.transcriptionType);
+				setImageIndex(0);
+				setPlaceString(event.target.placeString || null);
+				setRandom(event.target.random);
 			}
 		});
 		window.eventBus.addEventListener('overlay.hide', function(event) {
-			setState({
-				visible: false
-			});
+			setVisible(false)
 		});
 	});
-	
+
+	// useEffect hook with state of id, imageIndex state as a dependency
+	useEffect(() => {
+		// This function will be called whenever state of id, imageIndex changes
+		// console.log("state-array has been updated:", state);
+		// When transcribe session state, id, imageIndex, is changed
+		if (images) {
+			var images = images;
+			var currentImage = images[imageIndex];
+			var currentImageSource = currentImage.source;
+			if (currentImage.transcriptionstatus === "readytotranscribe") {
+				transcribeStart(id, currentImageSource);
+			};
+		}
+	}, [id, imageIndex]); // state of id, imageIndex is specified as a dependency
+
 	const transcribeStart = (recordid, page) => {
 		var data = {
-			recordid: state.recordid,
-			page: state.page,
+			recordid: recordid,
+			page: page,
 		};
 
 		var formData = new FormData();
@@ -172,11 +164,9 @@ export default function TranscriptionPageByPageOverlay() {
 					};
 					responseSuccess = true;
 					// localStorage.setItem(`transcribesession ${recordid}`, transcribesession);
-					setState({
-						// Do not show any message:
-						messageSent: false,
-						transcribesession: transcribesession
-					})
+					// Do not show any message:
+					setMessageSent(false);
+					setTranscribesession(transcribesession);
 				}
 			}
 			if (!responseSuccess) {
@@ -184,34 +174,30 @@ export default function TranscriptionPageByPageOverlay() {
 				if (json.message) {
 					messageOnFailure = json.message;
 				}
-				setState({
-					// show message:
-					messageSent: true,
-					messageOnFailure: messageOnFailure
-				})
+				// show message:
+				setMessageSent(true);
+				setMessageOnFailure(messageOnFailure);
 			}
 		});
 	};
 
 	const transcribeCancel = (keepOverlayVisible = false) => {
-		setState({
-			visible: keepOverlayVisible,
-			informantName: '',
-			informantBirthDate: '',
-			informantBirthPlace: '',
-			informantInformation: '',
-			title: '',
-			messageInput: '',
-			messageComment: '',
-			messageOnFailure: '',
-		});
+		setVisible(keepOverlayVisible);
+		// Clear transcribe fields:
+		setInformantName('');
+		setInformantBirthDate('');
+		setInformantBirthPlace('');
+		setInformantInformation('');
+		setTitle('');
+		setMessageComment('');
+		setMessageOnFailure(json.message);
 
-		if(!state.messageSent) {
-			// localStorage.removeItem(`transcribesession ${state.id}`);
+		if(!messageSent) {
+			// localStorage.removeItem(`transcribesession ${id}`);
 			
 			var data = {
-				recordid: state.id,
-				transcribesession: state.transcribesession,
+				recordid: id,
+				transcribesession: transcribesession,
 			};
 			
 			var formData = new FormData();
@@ -240,9 +226,7 @@ export default function TranscriptionPageByPageOverlay() {
 	};
 
 	const mediaImageClickHandler = () => {
-		setState({
-			imageIndex: event.currentTarget.dataset.index
-		});
+		imageIndex: event.currentTarget.dataset.index
 	};
 
 	const inputChangeHandler = () =>  {
@@ -253,26 +237,26 @@ export default function TranscriptionPageByPageOverlay() {
 
 	const sendButtonClickHandler = () =>  {
 		//console.log(this.state);
-		let text = state.messageInput;
+		let text = messageInput;
 		let isMinimum2Words = text.trim().indexOf(' ') != -1;
 		if (!isMinimum2Words) {
 			alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
 		}
 		else {
 			var data = {
-				transcribesession: state.transcribesession,
-				url: state.url,
-				recordid: state.id,
-				recordtitle: state.title,
-				from_email: state.emailInput,
-				from_name: state.nameInput,
+				transcribesession: transcribesession,
+				url: url,
+				recordid: id,
+				recordtitle: title,
+				from_email: emailInput,
+				from_name: nameInput,
 				subject: "Crowdsource: Transkribering",
-				informantName: state.informantNameInput,
-				informantBirthDate: state.informantBirthDateInput,
-				informantBirthPlace: state.informantBirthPlaceInput,
-				informantInformation: state.informantInformationInput,
-				message: state.messageInput,
-				messageComment: state.messageCommentInput,
+				informantName: informantNameInput,
+				informantBirthDate: informantBirthDateInput,
+				informantBirthPlace: informantBirthPlaceInput,
+				informantInformation: informantInformationInput,
+				message: messageInput,
+				messageComment: messageCommentInput,
 			};	
 
 			var formData = new FormData();
@@ -290,27 +274,25 @@ export default function TranscriptionPageByPageOverlay() {
 					if(window.eventBus) {
 						window.eventBus.dispatch('overlay.transcribe.sent');
 					}
-					setState({
-						// Show thank you message:
-						messageSent: true,
-						// Clear transcribe fields:
-						informantName: '',
-						informantNameInput: '',
-						informantBirthDate: '',
-						informantBirthDateInput: '',
-						informantBirthPlace: '',
-						informantBirthPlaceInput: '',
-						informantInformation: '',
-						informantInformationInput: '',
-						title: '',
-						messageInput: '',
-						messageComment: '',
-						messageCommentInput: '',
-						messageOnFailure: json.message,
-					})
+					// Show thank you message:
+					setMessageSent(true);
+					// Clear transcribe fields:
+					setInformantName('');
+					setInformantNameInput('');
+					setInformantBirthDate('');
+					setInformantBirthDateInput('');
+					setInformantBirthPlace('');
+					setInformantBirthPlaceInput('');
+					setInformantInformation('');
+					setInformantInformationInput('');
+					setTitle('');
+					setMessageInput('');
+					setMessageComment('');
+					setMessageCommentInput('');
+					setMessageOnFailure(json.message);
 				} else {
 						// Show message:
-						console.log('Server does not repond for: ' + state.url);
+						console.log('Server does not repond for: ' + url);
 				}
 			});
 		}
@@ -319,30 +301,30 @@ export default function TranscriptionPageByPageOverlay() {
 	const renderTranscribeForm = () =>  {
 		// write a switch-statement for the different transcription types
 		// and return the correct form
-		switch (state.transcriptionType) {
+		switch (transcriptionType) {
 			case 'uppteckningsblankett':
 				return (
 					<Uppteckningsblankett 
-						informantNameInput={state.informantNameInput}
-						informantBirthDateInput={state.informantBirthDateInput}
-						informantBirthPlaceInput={state.informantBirthPlaceInput}
-						informantInformationInput={state.informantInformationInput}
-						title={state.title}
-						messageInput={state.messageInput}
+						informantNameInput={informantNameInput}
+						informantBirthDateInput={informantBirthDateInput}
+						informantBirthPlaceInput={informantBirthPlaceInput}
+						informantInformationInput={informantInformationInput}
+						title={title}
+						messageInput={messageInput}
 						inputChangeHandler={inputChangeHandler} 
 						/>
 				);
 			case 'fritext':
 				return (
 					<Fritext 
-						messageInput={state.messageInput}
+						messageInput={messageInput}
 						inputChangeHandler={inputChangeHandler} 
 					/>
 				);
 			default:
 				return (
 					<Fritext 
-						messageInput={state.messageInput}
+						messageInput={messageInput}
 						inputChangeHandler={inputChangeHandler} 
 					/>
 				);
@@ -351,24 +333,24 @@ export default function TranscriptionPageByPageOverlay() {
 		
 	// let _props = props;
 
-	if (state.messageSent) {
+	if (messageSent) {
 		let message = 'Tack för din avskrift som nu skickats till Institutet för språk och folkminnen. Efter granskning kommer den att publiceras.'
-		if (state.messageOnFailure) {
-			message = state.messageOnFailure;
+		if (messageOnFailure) {
+			message = messageOnFailure;
 		}
 		var overlayContent = <div>
 			<p>{l(message)}</p>
 			<p><br/>
 			<TranscribeButton className='button button-primary' random={true} label={
-				state.random ? l('Skriv av en till slumpmässig uppteckning') : l('Skriv av en slumpmässigt utvald uppteckning')
+				random ? l('Skriv av en till slumpmässig uppteckning') : l('Skriv av en slumpmässigt utvald uppteckning')
 			} />
 			&nbsp;
 			<button className="button-primary" onClick={closeButtonClickHandler}>Stäng</button></p>
 		</div>;
 	}
 	else {
-		if (state.images && state.images.length > 0) {
-			var imageItems = state.images.map(function(mediaItem, index) {
+		if (images && images.length > 0) {
+			var imageItems = images.map(function(mediaItem, index) {
 				if (mediaItem.source && mediaItem.source.indexOf('.pdf') == -1) {
 					return <img data-index={index} key={index} className="image-item" data-image={mediaItem.source} onClick={mediaImageClickHandler} src={config.imageUrl+mediaItem.source} alt="" />;
 				}
@@ -387,21 +369,21 @@ export default function TranscriptionPageByPageOverlay() {
 				{renderTranscribeForm()}
 
 				<label htmlFor="transcription_comment" className="u-full-width margin-bottom-zero">{l('Kommentar till avskriften:')}</label>
-				<textarea lang="sv" spellCheck="false" id="transcription_comment" name="messageCommentInput" className="u-full-width margin-bottom-minimal" type="text" value={state.messageCommentInput} onChange={inputChangeHandler} />
+				<textarea lang="sv" spellCheck="false" id="transcription_comment" name="messageCommentInput" className="u-full-width margin-bottom-minimal" type="text" value={messageCommentInput} onChange={inputChangeHandler} />
 				<p>{l('Vill du att vi anger att det är du som har skrivit av uppteckningen? Ange i så fall ditt namn och din e-postadress nedan. E-postadressen publiceras inte.')}
 				<br/>{l('Vi hanterar personuppgifter enligt dataskyddsförordningen. ')}<a href="https://www.isof.se/om-oss/behandling-av-personuppgifter.html" target={"_blank"}><strong>{l('Läs mer.')}</strong></a></p>
 
 				<label htmlFor="transcription_name">Ditt namn (frivilligt):</label>
-				<input id="transcription_name" autoComplete="name" name="nameInput" className="u-full-width" type="text" value={state.nameInput} onChange={inputChangeHandler} />
+				<input id="transcription_name" autoComplete="name" name="nameInput" className="u-full-width" type="text" value={nameInput} onChange={inputChangeHandler} />
 				<label htmlFor="transcription_email">Din e-post adress (frivilligt):</label>
-				<input id="transcription_email" autoComplete="" name="emailInput" className="u-full-width" type="email" value={state.emailInput} onChange={inputChangeHandler} />
+				<input id="transcription_email" autoComplete="" name="emailInput" className="u-full-width" type="email" value={emailInput} onChange={inputChangeHandler} />
 
 				<button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
 			</div>
 
 			<div className="eight columns">
 
-				<ImageMap image={state.images ? config.imageUrl+state.images[state.imageIndex].source : null} />
+				<ImageMap image={images ? config.imageUrl+images[imageIndex].source : null} />
 
 				<div className="image-list">
 					{imageItems}
@@ -411,17 +393,17 @@ export default function TranscriptionPageByPageOverlay() {
 		</div>;
 	}
 
-return (<div className={'overlay-container'+(state.visible ? ' visible' : '')}>
+return (<div className={'overlay-container'+(visible ? ' visible' : '')}>
 	<div className="overlay-window large">
 
 		<div className="overlay-header">
-			{l('Skriv av')} {state.title ? `"${state.title}"` : 'uppteckning'}
-			{ state.archiveId &&
-				<small>&nbsp;(ur {state.archiveId}{state.placeString ? ` ${state.placeString}` : ''})</small>
+			{l('Skriv av')} {title ? `"${title}"` : 'uppteckning'}
+			{ archiveId &&
+				<small>&nbsp;(ur {archiveId}{placeString ? ` ${placeString}` : ''})</small>
 				
 			}
 			{/* om detta är en slumpmässig uppteckning, visa en knapp som heter "skriv av annan slumpmässig uppteckning" */}
-			{ state.random && !state.messageSent &&
+			{ random && !messageSent &&
 				<div className={'next-random-record-button-container'}>
 					<TranscribeButton
 						label={l('Skriv av annan slumpmässig uppteckning')}
@@ -434,16 +416,16 @@ return (<div className={'overlay-container'+(state.visible ? ' visible' : '')}>
 			<button title="stäng" className="close-button white" onClick={closeButtonClickHandler}></button>
 			{
 				!config.siteOptions.hideContactButton &&
-				<FeedbackButton title={state.title} type="Uppteckning" />
+				<FeedbackButton title={title} type="Uppteckning" />
 			}
 			{
 				!config.siteOptions.hideContactButton &&
-				<ContributeInfoButton title={state.title} type="Uppteckning" />
+				<ContributeInfoButton title={title} type="Uppteckning" />
 			}
 			{
 				!config.siteOptions.hideContactButton &&
-				<TranscriptionHelpButton title={state.title} type="Uppteckning" />
-				// <TranscriptionHelpButton title={state.title} type="Uppteckning" {..._props}/>
+				<TranscriptionHelpButton title={title} type="Uppteckning" />
+				// <TranscriptionHelpButton title={title} type="Uppteckning" {..._props}/>
 			}
 		</div>
 
