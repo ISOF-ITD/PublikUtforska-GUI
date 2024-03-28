@@ -79,6 +79,7 @@ export default function TranscriptionPageByPageOverlay() {
 	const [messageOnFailure, setMessageOnFailure] = useState('');
 	const [currentImage, setCurrentImage] = useState(null);
 	const [transcriptionType, setTranscriptionType] = useState('');
+	const [transcribesession, setTranscribesession] = useState('');
 	const [random, setRandom] = useState(false);
 
 	useEffect(() => {
@@ -117,12 +118,13 @@ export default function TranscriptionPageByPageOverlay() {
 				setImageIndex(0);
 				setPlaceString(event.target.placeString || null);
 				setRandom(event.target.random);
+				transcribeStart(event.target.id,event.target.images[0].source);
 			}
 		});
 		window.eventBus.addEventListener('overlay.hide', function(event) {
 			setVisible(false)
 		});
-	});
+	}, []); // Empty list: Only at mount
 
 	// useEffect hook with state of id, imageIndex state as a dependency
 	useEffect(() => {
@@ -139,10 +141,11 @@ export default function TranscriptionPageByPageOverlay() {
 		}
 	}, [id, imageIndex]); // state of id, imageIndex is specified as a dependency
 
-	const transcribeStart = (recordid, page) => {
+	const transcribeStart = (recordid, imageSource) => {
+		//if (page.transcriptionstatus === 'readytotranscribe') {
 		var data = {
 			recordid: recordid,
-			page: page,
+			page: imageSource,
 		};
 
 		var formData = new FormData();
@@ -179,6 +182,7 @@ export default function TranscriptionPageByPageOverlay() {
 				setMessageOnFailure(messageOnFailure);
 			}
 		});
+		// }
 	};
 
 	const transcribeCancel = (keepOverlayVisible = false) => {
