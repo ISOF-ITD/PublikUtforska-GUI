@@ -23,6 +23,11 @@ function IntroOverlay() {
     const handleMessage = (event) => {
       // Säkerhetskontroll: Verifiera `event.origin` för att se till
       // att det är isof.se som skickat meddelandet
+      // ***TODO:***
+      // Förbättra säkerhetskontrollerna:
+      // När du hanterar postMessage, kan det vara bra att lägga till
+      // ytterligare säkerhetskontroller beroende på innehållet i meddelandet,
+      // för att säkerställa att det inte innehåller någon skadlig kod.
       if (event.origin !== 'https://www.isof.se') return;
 
       if (event.data.newSrc) {
