@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 
 function IntroOverlay() {
   // useState hook for managing visibility of the overlay
   const [showOverlay, setShowOverlay] = useState(true);
-  const [iframeSrc, setIframeSrc] = useState('https://www.isof.se/folke-kontext/sida-1');
+  const [iframeSrc, setIframeSrc] = useState(`${config.folkeKontextApiUrl}?path=folke-kontext/sida-1`);
 
   useEffect(() => {
     // Kolla efter urlparam iframeSrc och sätt iframeSrc till det värdet
@@ -21,14 +22,6 @@ function IntroOverlay() {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      // Säkerhetskontroll: Verifiera `event.origin` för att se till
-      // att det är isof.se som skickat meddelandet
-      // ***TODO:***
-      // Förbättra säkerhetskontrollerna:
-      // När du hanterar postMessage, kan det vara bra att lägga till
-      // ytterligare säkerhetskontroller beroende på innehållet i meddelandet,
-      // för att säkerställa att det inte innehåller någon skadlig kod.
-      if (event.origin !== 'https://www.isof.se') return;
 
       if (event.data.newSrc) {
         const newUrl = new URL(window.location);

@@ -56,6 +56,12 @@ const matomoApiUrlObject = {
   prod: 'https://djangoproxy.isof.se/matomo_api/',
 };
 
+const folkeKontextApiUrlObject = {
+  dev: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
+  test: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
+  prod: 'https://djangoproxy.isof.se/folke_kontext_api/',
+};
+
 export default {
   siteTitle: 'Folke sök - Institutet för språk och folkminnen',
 
@@ -184,6 +190,7 @@ export default {
 
   // Url till Matomo API
   matomoApiUrl: matomoApiUrlObject[ENV],
+  folkeKontextApiUrl: folkeKontextApiUrlObject[ENV],
   // link to matomo api docs: https://developer.matomo.org/api-reference/reporting-api
   searchSuggestionsParams: {
     module: 'API',
