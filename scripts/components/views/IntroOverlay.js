@@ -48,6 +48,10 @@ function IntroOverlay() {
   const handleCloseButtonClick = () => {
     // When the close button is clicked, we hide the overlay
     setShowOverlay(false);
+    // Remove search param "iframeSrc":
+    const url = new URL(window.location);
+    url.searchParams.delete('iframeSrc');
+    window.history.pushState({}, '', url);
   };
 
   // If 'showOverlay' is false, we don't render anything
