@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function IntroOverlay() {
   // useState hook for managing visibility of the overlay
@@ -23,11 +23,6 @@ function IntroOverlay() {
     const handleMessage = (event) => {
       // Säkerhetskontroll: Verifiera `event.origin` för att se till
       // att det är isof.se som skickat meddelandet
-      // ***TODO:***
-      // Förbättra säkerhetskontrollerna:
-      // När du hanterar postMessage, kan det vara bra att lägga till
-      // ytterligare säkerhetskontroller beroende på innehållet i meddelandet,
-      // för att säkerställa att det inte innehåller någon skadlig kod.
       if (event.origin !== 'https://www.isof.se') return;
 
       if (event.data.newSrc) {
@@ -43,20 +38,19 @@ function IntroOverlay() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // Använd useCallback för handleCheckboxChange för att undvika att den skapas om och om igen
-  const handleCheckboxChange = useCallback(() => {
+  // Function to handle checkbox change
+  const handleCheckboxChange = () => {
     // When the checkbox is checked, we set 'hideIntroOverlay' in localStorage and hide the overlay
     // As we are using localStorage, this value will persist indefinitely (until manually cleared)
     localStorage.setItem('hideIntroOverlay', 'true');
     setShowOverlay(false);
-  // Empty dependency list means this callback will never be recreated after the initial rendering
-  }, []);
+  };
 
   // Function to handle close button click
-  const handleCloseButtonClick = useCallback(() => {
+  const handleCloseButtonClick = () => {
     // When the close button is clicked, we hide the overlay
     setShowOverlay(false);
-  }, []);
+  };
 
   // If 'showOverlay' is false, we don't render anything
   if (!showOverlay) {
