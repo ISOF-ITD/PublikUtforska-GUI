@@ -42,7 +42,7 @@ async function createTextSitemap() {
         from += size;
     }
 
-    fs.writeFileSync('sitemap.txt', sitemapText);
+    fs.writeFileSync('www/sitemap.txt', sitemapText);
     console.log('Text sitemap created successfully.');
 }
 
