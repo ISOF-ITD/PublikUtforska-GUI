@@ -75,12 +75,14 @@ export default function TranscriptionPageByPageOverlay() {
 	const [messageCommentInput, setMessageCommentInput] = useState('');
 	const [nameInput, setNameInput] = useState('');
 	const [emailInput, setMailInput] = useState('');
+	// Probably if message should be/has been shown, like: Error, Show thank you message
 	const [messageSent, setMessageSent] = useState(false);
 	const [messageOnFailure, setMessageOnFailure] = useState('');
 	const [currentImage, setCurrentImage] = useState(null);
 	const [transcriptionType, setTranscriptionType] = useState('');
 	const [transcribesession, setTranscribesession] = useState('');
 	const [random, setRandom] = useState(false);
+	const [readytotranscribe, setReadytotranscribe] = useState(false);
 
 	useEffect(() => {
 		// Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
@@ -99,7 +101,7 @@ export default function TranscriptionPageByPageOverlay() {
 					setId(randomDocument.id);
 					setArchiveId(randomDocument.archive.archive_id);
 					setUrl(config.siteUrl+'#/records/'+randomDocument.id);
-					stImages(randomDocument.media);
+					setImages(randomDocument.media);
 					setTranscriptionType(randomDocument.transcriptiontype);
 					setImageIndex(0);
 					setPlaceString(getPlaceString(randomDocument.places));
@@ -131,12 +133,18 @@ export default function TranscriptionPageByPageOverlay() {
 		// This function will be called whenever state of id, imageIndex changes
 		// console.log("state-array has been updated:", state);
 		// When transcribe session state, id, imageIndex, is changed
+		console.log("images)")
+		console.log(images)
 		if (images) {
 			var images = images;
 			var currentImage = images[imageIndex];
 			var currentImageSource = currentImage.source;
 			if (currentImage.transcriptionstatus === "readytotranscribe") {
 				transcribeStart(id, currentImageSource);
+			};
+			if (currentImage.transcriptionstatus === "undertranscription") {
+				console.log("currentImage")
+				setMessageInput(currentImage.text);
 			};
 		}
 	}, [id, imageIndex]); // state of id, imageIndex is specified as a dependency
@@ -170,16 +178,13 @@ export default function TranscriptionPageByPageOverlay() {
 					// Do not show any message:
 					setMessageSent(false);
 					setTranscribesession(transcribesession);
+					setReadytotranscribe(true);
 				}
 			}
 			if (!responseSuccess) {
-				var messageOnFailure = 'Failure!';
-				if (json.message) {
-					messageOnFailure = json.message;
-				}
-				// show message:
-				setMessageSent(true);
-				setMessageOnFailure(messageOnFailure);
+				setMessageSent(false);
+				// Inactivate "Skicka in"-button
+				setReadytotranscribe(false);
 			}
 		});
 		// }
@@ -382,7 +387,7 @@ export default function TranscriptionPageByPageOverlay() {
 				<label htmlFor="transcription_email">Din e-post adress (frivilligt):</label>
 				<input id="transcription_email" autoComplete="" name="emailInput" className="u-full-width" type="email" value={emailInput} onChange={inputChangeHandler} />
 
-				<button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
+				{readytotranscribe && <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button> }
 			</div>
 
 			<div className="eight columns">
