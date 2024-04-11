@@ -29,7 +29,7 @@ function TranscribeButton({
           random: true,
         });
       } else {
-        if (transcriptionType === "sida") {
+        if (true || transcriptionType === "sida") {
           window.eventBus.dispatch('overlay.transcribePageByPage', {
             url: `${config.siteUrl}#/records/${recordId}`,
             id: recordId,
