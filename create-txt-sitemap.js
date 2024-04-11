@@ -1,8 +1,17 @@
+// TODO: indexera allt och inte bara one_records. det finns contents och headwords som kan vara intressanta
+// one_accession_row: alla
+// one_records: bara de transkriberade
+
+// men då måste vi börja använda:
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#search-after
+// för att inte höja index_max_result_window (https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-max-result-window) ännu mer, som nu är inställt på 50000
+// den ändringen bör då göras 
 const axios = require('axios');
 const fs = require('fs');
 
 // Bas-URL för att hämta dokumenten
 const BASE_URL = 'https://garm.isof.se/folkeservice/api/es/documents/?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_record&transcriptionstatus=published';
+// const BASE_URL = 'https://garm.isof.se/folkeservice/api/es/documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false';
 // Bas-URL för sitemap-länkarna
 const SITEMAP_BASE_URL = 'https://sok.folke.isof.se/#/records/';
 
