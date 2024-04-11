@@ -2,7 +2,6 @@ const axios = require('axios');
 const fs = require('fs');
 
 // Bas-URL för att hämta dokumenten
-// const BASE_URL = 'https://frigg.isof.se/sagendatabas/api/es/documents/?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&transcriptionstatus=published,accession&sort=archive.archive_id_row.keyword&order=asc';
 const BASE_URL = 'https://garm.isof.se/folkeservice/api/es/documents/?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_record&transcriptionstatus=published';
 // Bas-URL för sitemap-länkarna
 const SITEMAP_BASE_URL = 'https://sok.folke.isof.se/#/records/';
@@ -24,7 +23,13 @@ async function fetchDocuments(size, from = 0) {
 async function createTextSitemap() {
     let from = 0;
     const size = 500;
-    let sitemapText = '';
+    const filePath = 'www/sitemap.txt';
+
+    // Tömmer eller tar bort filen om den finns
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath); // Alternativt, använd fs.writeFileSync(filePath, '') för att bara tömma filen
+        console.log('Existing sitemap file removed.');
+    }
 
     while (true) {
         const documents = await fetchDocuments(size, from);
@@ -35,14 +40,14 @@ async function createTextSitemap() {
 
         documents.forEach(doc => {
             if (doc._source.id) {
-                sitemapText += `${SITEMAP_BASE_URL}${doc._source.id}\n`;
+                // Lägger till varje URL i filen en i taget
+                fs.appendFileSync(filePath, `${SITEMAP_BASE_URL}${doc._source.id}\n`);
             }
         });
 
         from += size;
     }
 
-    fs.writeFileSync('www/sitemap.txt', sitemapText);
     console.log('Text sitemap created successfully.');
 }
 
