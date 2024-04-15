@@ -223,10 +223,32 @@ export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
 
   //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
   let prefix = '';
-  // inga dubbla bokstasvsprefix (prefix + letterPart)
+  // inga dubbla bokstavsprefix (prefix + letterPart)
   if (letterPart === '') {
     if (archiveOrg === 'Uppsala') {
+      // ULMA -> 39080
+      // SOFI 39081 – 39383
+      // DFU 39384 ->      
       prefix = 'ULMA';
+      i = str.length
+      // getFirstNonAlpha(str) {
+      for (var i = 0; i<str.length;i++) {
+          if (!isNaN(str[i])) {
+            break;
+          }
+      }
+      // return false;
+      if ((i - 1) < str.length) {
+        // Non numeric exists
+        var numericPart = str.substring(i);
+        var numericId = parseInt(numericPart)
+        if (numericId >= 39081 && numericId <= 39383) {
+          prefix = 'SOFI';
+        }
+        if (numericId > 39383) {
+          prefix = 'DFU';
+        }
+      }
     }
   }
 

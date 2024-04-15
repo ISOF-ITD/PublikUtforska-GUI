@@ -150,7 +150,7 @@ export default function RecordListItem({
       return (
         <td className="table-buttons" data-title={`${l('Arkivnummer')}:`}>
           <span>
-            {makeArchiveIdHumanReadable(archive.archive_id)}
+            {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
             {
               archive.page && (`:${archive.page}`)
             }
