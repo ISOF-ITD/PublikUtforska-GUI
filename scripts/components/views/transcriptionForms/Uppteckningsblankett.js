@@ -9,6 +9,7 @@ export default function Uppteckningsblankett({
   title,
   messageInput,
   inputChangeHandler,
+  pageIndex,
 }) {
     Uppteckningsblankett.propTypes = {
         informantNameInput: PropTypes.string,
@@ -18,6 +19,7 @@ export default function Uppteckningsblankett({
         title: PropTypes.string,
         messageInput: PropTypes.string,
         inputChangeHandler: PropTypes.func.isRequired,
+        pageIndex: PropTypes.number,
       };
       
       Uppteckningsblankett.defaultProps = {
@@ -27,6 +29,7 @@ export default function Uppteckningsblankett({
         informantInformationInput: '',
         title: '',
         messageInput: '',
+        pageIndex: null,
       };
       
   return (
@@ -60,8 +63,8 @@ export default function Uppteckningsblankett({
       </div>
 
       <div className="mark-above-img">
-        <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">Text:</label>
-        <textarea lang="sv" spellCheck="false" id="transcription_text" name="messageInput" className="u-full-width margin-bottom-minimal" defaultValue={messageInput} onChange={inputChangeHandler} />
+        <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">Text{pageIndex !== undefined ? ` på sidan ${pageIndex + 1}` : ''}:</label>
+        <textarea lang="sv" spellCheck="false" id="transcription_text" name="messageInput" className="u-full-width margin-bottom-minimal" value={messageInput} onChange={inputChangeHandler} />
       </div>
     </div>
   );

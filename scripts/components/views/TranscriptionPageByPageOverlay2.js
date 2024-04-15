@@ -118,13 +118,13 @@ function TranscriptionPageComponent() {
 
     const handleHideOverlay = () => {
       // Clear transcribe fields:
-      setInformantName('');
-      setInformantBirthDate('');
-      setInformantBirthPlace('');
-      setInformantInformation('');
-      setTitle('');
-      setMessageComment('');
-      setMessageOnFailure(json.message);
+      setInformantNameInput('');
+      setInformantBirthDateInput('');
+      setInformantBirthPlaceInput('');
+      setInformantInformationInput('');
+      setNameInput('');
+      setMessage('');
+      setComment('');
       setIsVisible(false);
       transcribeCancel();
     };
@@ -138,29 +138,20 @@ function TranscriptionPageComponent() {
     };
   }, []);
 
-  /* Viktiga punkter att notera om navigatePages():
-Dynamisk Textladdning: Den nya sidans transcriptionText laddas dynamiskt baserat på pages
-arrayen. Det är viktigt att varje objekt i pages innehåller relevant transkriptionstext
-om detta är avsett. Om inte, behöver du implementera en metod för att ladda denna text
-när en sida visas.
-
-Bibehåll Konstant Information: Eftersom title och informant-informationen inte förändras
-per sida, rörs dessa inte i navigatePages funktionen. De ska initieras och hanteras separat
-så att de inte återställs eller ändras när en ny sida visas.
-
-Testning och Anpassning: Det är viktigt att testa denna implementering i din miljö för att
-säkerställa att det fungerar som förväntat med din nuvarande datastruktur och applikationslogik.
-https://chat.openai.com/g/g-x4U0ey6jN-react-mentor/c/5cb791e3-9e25-45d0-bab8-2356dedc8f24
- */
   const navigatePages = (index) => {
-    // Avbryter nuvarande transkription innan sidbyte
-    transcribeCancel(); // Denna funktion bör anpassas om den behöver hantera specifika uppgifter vid avbrytande
+    // Avbryter nuvarande transkription innan sidbyte för att undvika att pågående arbete går förlorat
+    transcribeCancel(true); // Denna funktion bör anpassas om den behöver hantera specifika uppgifter vid avbrytande
 
+    // Uppdaterar index för den aktuella sidan
     setCurrentPageIndex(index);
-    const newPageTranscriptionText = pages[index]?.transcriptionText || '';
+
+    // Laddar den nya sidans transkriptionstext dynamiskt från 'pages' arrayen
+    // Om ytterligare dynamisk laddning krävs från en extern källa, bör detta implementeras här
+    const newPageTranscriptionText = pages[index]?.text || '';
     setTranscriptionText(newPageTranscriptionText);
 
-    // Fortsätt med att initiera transkriptionen för den nya sidan
+    // Fortsätter med att initiera transkriptionen för den nya sidan
+    // Detta steg kan behöva anpassas baserat på hur din applikation hanterar transkriptionssessioner
     if (pages[index] && pages[index].source) {
       transcribeStart(recordDetails.id, pages[index].source);
     }
@@ -219,7 +210,44 @@ https://chat.openai.com/g/g-x4U0ey6jN-react-mentor/c/5cb791e3-9e25-45d0-bab8-235
   if (!isVisible) return null;
 
   const inputChangeHandler = (event) => {
-    debugger;
+    const { name, value } = event.target;
+    switch (name) {
+      case 'transcriptionText':
+        setTranscriptionText(value);
+        break;
+      case 'informantNameInput':
+        setInformantNameInput(value);
+        break;
+      case 'informantBirthDateInput':
+        setInformantBirthDateInput(value);
+        break;
+      case 'informantBirthPlaceInput':
+        setInformantBirthPlaceInput(value);
+        break;
+      case 'informantInformationInput':
+        setInformantInformationInput(value);
+        break;
+      case 'title': // Uppdatera titeln inom recordDetails
+        setRecordDetails(prevDetails => ({
+          ...prevDetails,
+          title: value
+        }));
+        break;
+      case 'nameInput':
+        setNameInput(value);
+        break;
+      case 'emailInput':
+        setEmailInput(value);
+        break;
+      case 'messageCommentInput':
+        setComment(value);
+        break;
+      case 'messageInput':
+        setTranscriptionText(value);
+        break;
+      default:
+        console.log(`Okänt fält: ${name}`);
+    }
   };
 
   const renderTranscribeForm = () => {
@@ -236,6 +264,7 @@ https://chat.openai.com/g/g-x4U0ey6jN-react-mentor/c/5cb791e3-9e25-45d0-bab8-235
             title={recordDetails.title}
             messageInput={transcriptionText}
             inputChangeHandler={inputChangeHandler}
+            pageIndex={currentPageIndex}
           />
         );
       case 'fritext':
@@ -243,6 +272,7 @@ https://chat.openai.com/g/g-x4U0ey6jN-react-mentor/c/5cb791e3-9e25-45d0-bab8-235
           <Fritext
             messageInput={transcriptionText}
             inputChangeHandler={inputChangeHandler}
+            pageIndex={currentPageIndex}
           />
         );
       default:
