@@ -164,6 +164,22 @@ function TranscriptionPageComponent() {
     if (!isMinimum2Words) {
       alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
     } else {
+      // fråga: ska övergripande dokumentegenskapen skickas in separat?
+      // med andra ord: när skickas page-id till servern?
+      // annan idé/fråga: är bara sida 1 uppteckningsblankett, och de andra är fritext? dvs transcriptionType på sidnivå?
+
+      // på one_record är transcriptiontype "sidaforsida".
+      // sidorna har egna transcriptiontypes.
+      // det finns en django eaction som skapar one records sida för sida
+      // som default får alla media "fritext"
+      // men de kan byta senare. t ex "uppteckning"
+      // så: fältet som "berättat av" etc ligger på sida/media-nivå
+      // transcriptionstatus för själva sida_för_sida är 
+      // - så länge det finns undertranscription sidor så är den undertranscription
+      // - one_record blir "published" när alla undersidor är published (sker inte automatiskt, kan senare
+      //   läggas till med ny kod i djangoadmin model save.)
+
+      // transcriptiontype på one_record är: "transcriptiontype": "sida",
       const data = {
         transcribeSession,
         url: recordDetails.url,
@@ -251,42 +267,32 @@ function TranscriptionPageComponent() {
   };
 
   const renderTranscribeForm = () => {
-    // write a switch-statement for the different transcription types
-    // and return the correct form
+    const commonProps = {
+      messageInput: transcriptionText,
+      inputChangeHandler,
+      pageIndex: currentPageIndex
+    };
+
+    const fritextProps = {
+      ...commonProps
+    };
+
+    const uppteckningsblankettProps = {
+      informantNameInput,
+      informantBirthDateInput,
+      informantBirthPlaceInput,
+      informantInformationInput,
+      title: recordDetails.title,
+      ...commonProps
+    };
+
     switch (recordDetails.transcriptionType) {
       case 'uppteckningsblankett':
-        return (
-          <Uppteckningsblankett
-            informantNameInput={informantNameInput}
-            informantBirthDateInput={informantBirthDateInput}
-            informantBirthPlaceInput={informantBirthPlaceInput}
-            informantInformationInput={informantInformationInput}
-            title={recordDetails.title}
-            messageInput={transcriptionText}
-            inputChangeHandler={inputChangeHandler}
-            pageIndex={currentPageIndex}
-          />
-        );
+        return <Uppteckningsblankett {...uppteckningsblankettProps} />;
       case 'fritext':
-        return (
-          <Fritext
-            messageInput={transcriptionText}
-            inputChangeHandler={inputChangeHandler}
-            pageIndex={currentPageIndex}
-          />
-        );
+        return <Fritext {...fritextProps} />;
       default:
-        return (
-          <Uppteckningsblankett
-            informantNameInput={informantNameInput}
-            informantBirthDateInput={informantBirthDateInput}
-            informantBirthPlaceInput={informantBirthPlaceInput}
-            informantInformationInput={informantInformationInput}
-            title={recordDetails.title}
-            messageInput={transcriptionText}
-            inputChangeHandler={inputChangeHandler}
-          />
-        );
+        return <Uppteckningsblankett {...uppteckningsblankettProps} />;
     }
   };
 
@@ -327,7 +333,7 @@ function TranscriptionPageComponent() {
             <label htmlFor="transcription_email">Din e-post adress (frivilligt):</label>
             <input id="transcription_email" autoComplete="" name="emailInput" className="u-full-width" type="email" value={emailInput} onChange={inputChangeHandler} />
 
-            <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
+            <button className="button-primary" onClick={sendButtonClickHandler}>Skicka sida {currentPageIndex + 1}</button>
           </div>
           <div className="eight columns">
             {pages.length > 0 && (
