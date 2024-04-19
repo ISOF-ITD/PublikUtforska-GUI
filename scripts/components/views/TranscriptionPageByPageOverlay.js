@@ -1,446 +1,372 @@
-import { useEffect, useState } from 'react';
-//import PropTypes from 'prop-types';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import config from '../../config';
-import ImageMap from './ImageMap';
 import { l } from '../../lang/Lang';
-
-import ContributeInfoButton from './ContributeInfoButton';
-import FeedbackButton from './FeedbackButton';
-import TranscriptionHelpButton from './TranscriptionHelpButton';
-
 import Uppteckningsblankett from './transcriptionForms/Uppteckningsblankett';
 import Fritext from './transcriptionForms/Fritext';
 
-import { getPlaceString } from '../../utils/helpers';
-import TranscribeButton from './TranscribeButton';
+function TranscriptionPageByPageOverlay() {
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [transcriptionText, setTranscriptionText] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageSent, setMessageSent] = useState(false);
+  const [comment, setComment] = useState('');
+  const [pages, setPages] = useState([]);
+  const [informantNameInput, setInformantNameInput] = useState('');
+  const [informantBirthDateInput, setInformantBirthDateInput] = useState('');
+  const [informantBirthPlaceInput, setInformantBirthPlaceInput] = useState('');
+  const [informantInformationInput, setInformantInformationInput] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
+  const [transcribeSession, setTranscribesession] = useState('');
+  const [readytotranscribe, setReadytotranscribe] = useState(false);
+  const [recordDetails, setRecordDetails] = useState({
+    url: '',
+    id: '', // Kontrollera att detta värde hanteras korrekt
+    archiveId: '',
+    title: '',
+    type: '',
+    transcriptionType: '',
+    placeString: '',
+  });
 
-// Main CSS: ui-components/overlay.less
-// ImageMap CSS: ui-components/image-map.less
+  const transcribeStart = (recordid, imageSource) => {
+    // if (page.transcriptionstatus === 'readytotranscribe') {
+    const data = {
+      recordid,
+      page: imageSource,
+    };
 
-export default function TranscriptionPageByPageOverlay() {
-	//TranscriptionPageByPageOverlay.propTypes = {
-	//	title: PropTypes.string,
-	//	type: PropTypes.string.isRequired,
-	//  };
-	
-	  TranscriptionPageByPageOverlay.defaultProps = {
-		//title: '',
-	  };
-	
-/* 	const [state, setState] = useState({
-		visible: false,
-		informantNameInput: '',
-		informantBirthDateInput: '',
-		informantBirthPlaceInput: '',
-		informantInformationInput: '',
-		messageInput: '',
-		messageCommentInput: '',
-		nameInput: '',
-		emailInput: '',
-		messageSent: false,
-		messageOnFailure: '',
-		currentImage: null,
-		transcriptionType: '',
-		random: false,
-		visible: false,
-		// Session
-		type: null,
-		title: '',
-		id: null,
-		archiveId: null,
-		url: null,
-		images: null,
-		transcriptionType: null,
-		imageIndex: 0,
-		placeString: null,
-		sessionStateChanged: false,
-	});
- */	// Session parameters
- 	const [url, setUrl] = useState(null);
-	const [id, setId] = useState(null);
-	const [archiveId, setArchiveId] = useState(null);
-	const [title, setTitle] = useState(null);
-	const [images, setImages] = useState(null); // images is all pages to transcribe
-	const [imageIndex, setImageIndex] = useState(null); // imageIndex is current page to transcribe
-	const [placeString, setPlaceString] = useState(null);
-	const [type, setType] = useState(null);
+    const formData = new FormData();
+    formData.append('json', JSON.stringify(data));
 
-	// Transcribe parameters
-	const [visible, setVisible] = useState(false);
-	const [informantNameInput, setInformantNameInput] = useState('');
-	const [informantBirthDateInput, setInformantBirthDateInput] = useState('');
-	const [informantBirthPlaceInput, setInformantBirthPlaceInput] = useState('');
-	const [informantInformationInput, setInformantInformationInput] = useState('');
-	const [messageInput, setMessageInput] = useState('',);
-	const [messageCommentInput, setMessageCommentInput] = useState('');
-	const [nameInput, setNameInput] = useState('');
-	const [emailInput, setMailInput] = useState('');
-	// Probably if message should be/has been shown, like: Error, Show thank you message
-	const [messageSent, setMessageSent] = useState(false);
-	const [messageOnFailure, setMessageOnFailure] = useState('');
-	const [currentImage, setCurrentImage] = useState(null);
-	const [transcriptionType, setTranscriptionType] = useState('');
-	const [transcribesession, setTranscribesession] = useState('');
-	const [random, setRandom] = useState(false);
-	const [readytotranscribe, setReadytotranscribe] = useState(false);
+    fetch(`${config.restApiUrl}transcribestart/`, {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => response.json()).then((json) => {
+        let responseSuccess = false;
+        if (json.success) {
+          if (json.success === 'true') {
+            let transcribesession = false;
+            if (json.data) {
+              transcribesession = json.data.transcribesession;
+            }
+            responseSuccess = true;
+            // localStorage.setItem(`transcribesession ${recordid}`, transcribesession);
+            // Do not show any message:
+            setMessageSent(false);
+            setTranscribesession(transcribesession);
+            setReadytotranscribe(true);
+          }
+        }
+        if (!responseSuccess) {
+          setMessageSent(false);
+          // Inactivate "Skicka in"-button
+          setReadytotranscribe(false);
+        }
+      });
+    // }
+  };
 
-	useEffect(() => {
-		// Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
-		//console.log('TranscriptionPageByPageOverlay window.eventBus');
-		window.eventBus.addEventListener('overlay.transcribePageByPage', function(event) {
-			if(event.target.random){
-				fetch(`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&mark_metadata=transcriptionstatus&categorytypes=tradark&publishstatus=published`)
-				.then(function(response) {
-					return response.json()
-				})
-				.then(function(json) {
-					const randomDocument = json.hits.hits[0]._source;
-					setVisible(true);
-					// setType(event.target.type);
-					setTitle(randomDocument.title);
-					setId(randomDocument.id);
-					setArchiveId(randomDocument.archive.archive_id);
-					setUrl(config.siteUrl+'#/records/'+randomDocument.id);
-					setImages(randomDocument.media);
-					setTranscriptionType(randomDocument.transcriptiontype);
-					setImageIndex(0);
-					setPlaceString(getPlaceString(randomDocument.places));
-					setRandom(event.target.random);
-					transcribeStart(randomDocument.id);
-				});
-			} else {
-				setVisible(true);
-				setType(event.target.type);
-				setTitle(event.target.title);
-				setId(event.target.id);
-				setArchiveId(event.target.archiveId || null);
-				setUrl(event.target.url);
-				setImages(event.target.images);
-				setTranscriptionType(event.target.transcriptionType);
-				setImageIndex(0);
-				setPlaceString(event.target.placeString || null);
-				setRandom(event.target.random);
-				transcribeStart(event.target.id,event.target.images[0].source);
-			}
-		});
-		window.eventBus.addEventListener('overlay.hide', function(event) {
-			setVisible(false)
-		});
-	}, []); // Empty list: Only at mount
+  const transcribeCancel = (keepOverlayVisible = false) => {
+    setIsVisible(keepOverlayVisible);
 
-	// useEffect hook with state of id, imageIndex state as a dependency
-	useEffect(() => {
-		// This function will be called whenever state of id, imageIndex changes
-		// console.log("state-array has been updated:", state);
-		// When transcribe session state, id, imageIndex, is changed
-		console.log("images)")
-		console.log(images)
-		if (images) {
-			var images = images;
-			var currentImage = images[imageIndex];
-			var currentImageSource = currentImage.source;
-			if (currentImage.transcriptionstatus === "readytotranscribe") {
-				transcribeStart(id, currentImageSource);
-			};
-			if (currentImage.transcriptionstatus === "undertranscription") {
-				console.log("currentImage")
-				setMessageInput(currentImage.text);
-			};
-		}
-	}, [id, imageIndex]); // state of id, imageIndex is specified as a dependency
+    if (!messageSent) {
+      // Supposing the `transcribesession` and `recordDetails.id` contain the necessary details.
+      const data = {
+        recordid: recordDetails.id,
+        transcribesession: transcribeSession,
+        // The following assumes `pages` stores the current pages' data
+        // and `currentPageIndex` is the index of the current page:
+        page: pages[currentPageIndex]?.source,
+      };
 
-	const transcribeStart = (recordid, imageSource) => {
-		//if (page.transcriptionstatus === 'readytotranscribe') {
-		var data = {
-			recordid: recordid,
-			page: imageSource,
-		};
+      const formData = new FormData();
+      formData.append('json', JSON.stringify(data));
 
-		var formData = new FormData();
-		formData.append("json", JSON.stringify(data) );
+      fetch(`${config.restApiUrl}transcribecancel/`, {
+        method: 'POST',
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Here you can add any follow-up actions after successful cancellation
+        })
+        .catch((error) => {
+          console.error(`Error when cancelling transcription: ${error}`);
+        });
+    } else {
+      return null;
+    }
+  };
 
-		fetch(config.restApiUrl+'transcribestart/', {
-			method: "POST",
-			body: formData
-		})
-		.then(function(response) {
-			return response.json()
-		}).then(function(json) {
-			var responseSuccess = false;
-			if (json.success) {
-				if (json.success == 'true') {
-					var transcribesession = false;
-					if (json.data) {
-						transcribesession = json.data.transcribesession;
-					};
-					responseSuccess = true;
-					// localStorage.setItem(`transcribesession ${recordid}`, transcribesession);
-					// Do not show any message:
-					setMessageSent(false);
-					setTranscribesession(transcribesession);
-					setReadytotranscribe(true);
-				}
-			}
-			if (!responseSuccess) {
-				setMessageSent(false);
-				// Inactivate "Skicka in"-button
-				setReadytotranscribe(false);
-			}
-		});
-		// }
-	};
+  useEffect(() => {
+    const handleShowOverlay = (event) => {
+      setIsVisible(true);
+      setRecordDetails({
+        url: event.target.url,
+        id: event.target.id, // Antag att ID hämtas från event.target
+        archiveId: event.target.archiveId,
+        title: event.target.title,
+        type: event.target.type,
+        transcriptionType: event.target.transcriptionType,
+        placeString: event.target.placeString,
+      });
+      setPages(event.target.images || []);
+      transcribeStart(event.target.id, event.target.images[0].source);
+    };
 
-	const transcribeCancel = (keepOverlayVisible = false) => {
-		setVisible(keepOverlayVisible);
-		// Clear transcribe fields:
-		setInformantName('');
-		setInformantBirthDate('');
-		setInformantBirthPlace('');
-		setInformantInformation('');
-		setTitle('');
-		setMessageComment('');
-		setMessageOnFailure(json.message);
+    const handleHideOverlay = () => {
+      // Clear transcribe fields:
+      setInformantNameInput('');
+      setInformantBirthDateInput('');
+      setInformantBirthPlaceInput('');
+      setInformantInformationInput('');
+      setNameInput('');
+      setMessage('');
+      setComment('');
+      setIsVisible(false);
+      transcribeCancel();
+    };
 
-		if(!messageSent) {
-			// localStorage.removeItem(`transcribesession ${id}`);
-			
-			var data = {
-				recordid: id,
-				transcribesession: transcribesession,
-			};
-			
-			var formData = new FormData();
-			formData.append("json", JSON.stringify(data) );
-			
-			fetch(config.restApiUrl+'transcribecancel/', {
-				method: "POST",
-				body: formData,
-			})
-		} else {
-			return null;
-		}
-	};
+    window.eventBus.addEventListener('overlay.transcribePageByPage', handleShowOverlay);
+    window.eventBus.addEventListener('overlay.hide', handleHideOverlay);
 
-	const closeButtonClickHandler = () =>  {
-		transcribeCancel();
-	};
+    return () => {
+      window.eventBus.removeEventListener('overlay.transcribePageByPage', handleShowOverlay);
+      window.eventBus.removeEventListener('overlay.hide', handleHideOverlay);
+    };
+  }, []);
 
-	const randomButtonClickHandler = () =>  {
-		transcribeCancel({ keepOverlayVisible: true });
-		if(window.eventBus) {
-			window.eventBus.dispatch('overlay.transcribe', {
-				random: true,
-			});
-		}
-	};
+  const navigatePages = (index) => {
+    // Avbryter nuvarande transkription innan sidbyte för att undvika att pågående arbete går förlorat
+    transcribeCancel(true); // Denna funktion bör anpassas om den behöver hantera specifika uppgifter vid avbrytande
 
-	const mediaImageClickHandler = () => {
-		imageIndex: event.currentTarget.dataset.index
-	};
+    // Uppdaterar index för den aktuella sidan
+    setCurrentPageIndex(index);
 
-	const inputChangeHandler = () =>  {
-		setState({
-			[event.target.name]: event.target.value
-		});
-	};
+    // Laddar den nya sidans transkriptionstext dynamiskt från 'pages' arrayen
+    // Om ytterligare dynamisk laddning krävs från en extern källa, bör detta implementeras här
+    const newPageTranscriptionText = pages[index]?.text || '';
+    setTranscriptionText(newPageTranscriptionText);
 
-	const sendButtonClickHandler = () =>  {
-		//console.log(this.state);
-		let text = messageInput;
-		let isMinimum2Words = text.trim().indexOf(' ') != -1;
-		if (!isMinimum2Words) {
-			alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
-		}
-		else {
-			var data = {
-				transcribesession: transcribesession,
-				url: url,
-				recordid: id,
-				recordtitle: title,
-				from_email: emailInput,
-				from_name: nameInput,
-				subject: "Crowdsource: Transkribering",
-				informantName: informantNameInput,
-				informantBirthDate: informantBirthDateInput,
-				informantBirthPlace: informantBirthPlaceInput,
-				informantInformation: informantInformationInput,
-				message: messageInput,
-				messageComment: messageCommentInput,
-			};	
+    // Fortsätter med att initiera transkriptionen för den nya sidan
+    // Detta steg kan behöva anpassas baserat på hur din applikation hanterar transkriptionssessioner
+    if (pages[index] && pages[index].source) {
+      transcribeStart(recordDetails.id, pages[index].source);
+    }
+  };
 
-			var formData = new FormData();
-			formData.append("json", JSON.stringify(data) );
+  const sendButtonClickHandler = () => {
+    const text = message;
+    const isMinimum2Words = text.trim().indexOf(' ') !== -1;
 
-			fetch(config.restApiUrl+'transcribe/', {
-				method: "POST",
-				body: formData
-			})
-			.then(function(response) {
-				return response.json()
-			}).then(function(json) {
-				if (json.success) {
-					// send signal to current view to re-mount
-					if(window.eventBus) {
-						window.eventBus.dispatch('overlay.transcribe.sent');
-					}
-					// Show thank you message:
-					setMessageSent(true);
-					// Clear transcribe fields:
-					setInformantName('');
-					setInformantNameInput('');
-					setInformantBirthDate('');
-					setInformantBirthDateInput('');
-					setInformantBirthPlace('');
-					setInformantBirthPlaceInput('');
-					setInformantInformation('');
-					setInformantInformationInput('');
-					setTitle('');
-					setMessageInput('');
-					setMessageComment('');
-					setMessageCommentInput('');
-					setMessageOnFailure(json.message);
-				} else {
-						// Show message:
-						console.log('Server does not repond for: ' + url);
-				}
-			});
-		}
-	};
+    if (!isMinimum2Words) {
+      alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
+    } else {
+      // fråga: ska övergripande dokumentegenskapen skickas in separat?
+      // med andra ord: när skickas page-id till servern?
+      // annan idé/fråga: är bara sida 1 uppteckningsblankett, och de andra är fritext? dvs transcriptionType på sidnivå?
 
-	const renderTranscribeForm = () =>  {
-		// write a switch-statement for the different transcription types
-		// and return the correct form
-		switch (transcriptionType) {
-			case 'uppteckningsblankett':
-				return (
-					<Uppteckningsblankett 
-						informantNameInput={informantNameInput}
-						informantBirthDateInput={informantBirthDateInput}
-						informantBirthPlaceInput={informantBirthPlaceInput}
-						informantInformationInput={informantInformationInput}
-						title={title}
-						messageInput={messageInput}
-						inputChangeHandler={inputChangeHandler} 
-						/>
-				);
-			case 'fritext':
-				return (
-					<Fritext 
-						messageInput={messageInput}
-						inputChangeHandler={inputChangeHandler} 
-					/>
-				);
-			default:
-				return (
-					<Fritext 
-						messageInput={messageInput}
-						inputChangeHandler={inputChangeHandler} 
-					/>
-				);
-		}
-	};
-		
-	// let _props = props;
+      // på one_record är transcriptiontype "sidaforsida".
+      // sidorna har egna transcriptiontypes.
+      // det finns en django eaction som skapar one records sida för sida
+      // som default får alla media "fritext"
+      // men de kan byta senare. t ex "uppteckning"
+      // så: fältet som "berättat av" etc ligger på sida/media-nivå
+      // transcriptionstatus för själva sida_för_sida är
+      // - så länge det finns undertranscription sidor så är den undertranscription
+      // - one_record blir "published" när alla undersidor är published (sker inte automatiskt, kan senare
+      //   läggas till med ny kod i djangoadmin model save.)
 
-	if (messageSent) {
-		let message = 'Tack för din avskrift som nu skickats till Institutet för språk och folkminnen. Efter granskning kommer den att publiceras.'
-		if (messageOnFailure) {
-			message = messageOnFailure;
-		}
-		var overlayContent = <div>
-			<p>{l(message)}</p>
-			<p><br/>
-			<TranscribeButton className='button button-primary' random={true} label={
-				random ? l('Skriv av en till slumpmässig uppteckning') : l('Skriv av en slumpmässigt utvald uppteckning')
-			} />
-			&nbsp;
-			<button className="button-primary" onClick={closeButtonClickHandler}>Stäng</button></p>
-		</div>;
-	}
-	else {
-		if (images && images.length > 0) {
-			var imageItems = images.map(function(mediaItem, index) {
-				if (mediaItem.source && mediaItem.source.indexOf('.pdf') == -1) {
-					return <img data-index={index} key={index} className="image-item" data-image={mediaItem.source} onClick={mediaImageClickHandler} src={config.imageUrl+mediaItem.source} alt="" />;
-				}
-			}.bind(this));
-		}
+      // transcriptiontype på one_record är: "transcriptiontype": "sida",
+      const data = {
+        transcribeSession,
+        url: recordDetails.url,
+        recordid: recordDetails.id,
+        recordtitle: recordDetails.title,
+        from_email: emailInput,
+        from_name: nameInput,
+        subject: 'Crowdsource: Transkribering',
+        informantName: informantNameInput,
+        informantBirthDate: informantBirthDateInput,
+        informantBirthPlace: informantBirthPlaceInput,
+        informantInformation: informantInformationInput,
+        message,
+        messageComment: comment,
+      };
 
-		var overlayContent = <div className="row">
+      axios.post(`${config.restApiUrl}transcribe/`, data)
+        .then((response) => {
+          const { responseData = data } = response;
+          if (responseData.success) {
+            // send signal to current view to re-mount
+            if (window.eventBus) {
+              window.eventBus.dispatch('overlay.transcribe.sent');
+            }
+            // Clear transcribe fields and show thank you message:
+            setComment('');
+            setMessage('');
+            setInformantNameInput('');
+            setInformantBirthDateInput('');
+            setInformantBirthPlaceInput('');
+            setInformantInformationInput('');
+            setEmailInput('');
+            setNameInput('');
+          } else {
+            console.error(`Server does not respond for: ${recordDetails.url}`);
+          }
+        })
+        .catch((error) => {
+          console.error(`Error when sending data: ${error}`);
+        });
+    }
+  };
 
-			<div className="four columns">
-				{/*
-				<p><a href="https://www.isof.se/om-oss/kartor/sagenkartan/transkribera.html"><strong>{l('Läs mer om att skriva av.')}</strong></a><br/><br/></p>
+  if (!isVisible) return null;
 
-				<hr/>
+  const inputChangeHandler = (event) => {
+    const { name, value } = event.target;
+    switch (name) {
+      case 'transcriptionText':
+        setTranscriptionText(value);
+        break;
+      case 'informantNameInput':
+        setInformantNameInput(value);
+        break;
+      case 'informantBirthDateInput':
+        setInformantBirthDateInput(value);
+        break;
+      case 'informantBirthPlaceInput':
+        setInformantBirthPlaceInput(value);
+        break;
+      case 'informantInformationInput':
+        setInformantInformationInput(value);
+        break;
+      case 'title': // Uppdatera titeln inom recordDetails
+        setRecordDetails((prevDetails) => ({
+          ...prevDetails,
+          title: value,
+        }));
+        break;
+      case 'nameInput':
+        setNameInput(value);
+        break;
+      case 'emailInput':
+        setEmailInput(value);
+        break;
+      case 'messageCommentInput':
+        setComment(value);
+        break;
+      case 'messageInput':
+        setTranscriptionText(value);
+        break;
+      default:
+        console.log(`Okänt fält: ${name}`);
+    }
+  };
 
-				*/}
-				{renderTranscribeForm()}
+  const renderTranscribeForm = () => {
+    const commonProps = {
+      messageInput: transcriptionText,
+      inputChangeHandler,
+      pageIndex: currentPageIndex,
+    };
 
-				<label htmlFor="transcription_comment" className="u-full-width margin-bottom-zero">{l('Kommentar till avskriften:')}</label>
-				<textarea lang="sv" spellCheck="false" id="transcription_comment" name="messageCommentInput" className="u-full-width margin-bottom-minimal" type="text" value={messageCommentInput} onChange={inputChangeHandler} />
-				<p>{l('Vill du att vi anger att det är du som har skrivit av uppteckningen? Ange i så fall ditt namn och din e-postadress nedan. E-postadressen publiceras inte.')}
-				<br/>{l('Vi hanterar personuppgifter enligt dataskyddsförordningen. ')}<a href="https://www.isof.se/om-oss/behandling-av-personuppgifter.html" target={"_blank"}><strong>{l('Läs mer.')}</strong></a></p>
+    const fritextProps = {
+      ...commonProps,
+    };
 
-				<label htmlFor="transcription_name">Ditt namn (frivilligt):</label>
-				<input id="transcription_name" autoComplete="name" name="nameInput" className="u-full-width" type="text" value={nameInput} onChange={inputChangeHandler} />
-				<label htmlFor="transcription_email">Din e-post adress (frivilligt):</label>
-				<input id="transcription_email" autoComplete="" name="emailInput" className="u-full-width" type="email" value={emailInput} onChange={inputChangeHandler} />
+    const uppteckningsblankettProps = {
+      informantNameInput,
+      informantBirthDateInput,
+      informantBirthPlaceInput,
+      informantInformationInput,
+      title: recordDetails.title,
+      ...commonProps,
+    };
 
-				{readytotranscribe && <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button> }
-			</div>
+    switch (recordDetails.transcriptionType) {
+      case 'uppteckningsblankett':
+        return <Uppteckningsblankett {...uppteckningsblankettProps} />;
+      case 'fritext':
+        return <Fritext {...fritextProps} />;
+      default:
+        return <Uppteckningsblankett {...uppteckningsblankettProps} />;
+    }
+  };
 
-			<div className="eight columns">
+  return (
+    <div className="overlay-container visible">
+      <div className="overlay-window large">
+        <div className="overlay-header">
+          Skriv av
+          {' '}
+          {recordDetails.title}
+          {' '}
+          -
+          {' '}
+          {recordDetails.type}
+          <button title="stäng" className="close-button white" onClick={() => setIsVisible(false)}>Stäng</button>
+        </div>
+        <div className="row">
+          <div className="four columns">
+            {/*
+					<p><a href="https://www.isof.se/om-oss/kartor/sagenkartan/transkribera.html"><strong>{l('Läs mer om att skriva av.')}</strong></a><br/><br/></p>
 
-				<ImageMap image={images ? config.imageUrl+images[imageIndex].source : null} />
+					<hr/>
 
-				<div className="image-list">
-					{imageItems}
-				</div>
-			</div>
+					*/}
+            {renderTranscribeForm()}
 
-		</div>;
-	}
+            <label htmlFor="transcription_comment" className="u-full-width margin-bottom-zero">{l('Kommentar till avskriften:')}</label>
+            <textarea lang="sv" spellCheck="false" id="transcription_comment" name="messageCommentInput" className="u-full-width margin-bottom-minimal" type="text" value={comment} onChange={inputChangeHandler} />
+            <p>
+              {l('Vill du att vi anger att det är du som har skrivit av uppteckningen? Ange i så fall ditt namn och din e-postadress nedan. E-postadressen publiceras inte.')}
+              <br />
+              {l('Vi hanterar personuppgifter enligt dataskyddsförordningen. ')}
+              <a href="https://www.isof.se/om-oss/behandling-av-personuppgifter.html" target="_blank" rel="noreferrer"><strong>{l('Läs mer.')}</strong></a>
+            </p>
 
-return (<div className={'overlay-container'+(visible ? ' visible' : '')}>
-	<div className="overlay-window large">
+            <label htmlFor="transcription_name">Ditt namn (frivilligt):</label>
+            <input id="transcription_name" autoComplete="name" name="nameInput" className="u-full-width" type="text" value={nameInput} onChange={inputChangeHandler} />
+            <label htmlFor="transcription_email">Din e-post adress (frivilligt):</label>
+            <input id="transcription_email" autoComplete="" name="emailInput" className="u-full-width" type="email" value={emailInput} onChange={inputChangeHandler} />
 
-		<div className="overlay-header">
-			{l('Skriv av')} {title ? `"${title}"` : 'uppteckning'}
-			{ archiveId &&
-				<small>&nbsp;(ur {archiveId}{placeString ? ` ${placeString}` : ''})</small>
-				
-			}
-			{/* om detta är en slumpmässig uppteckning, visa en knapp som heter "skriv av annan slumpmässig uppteckning" */}
-			{ random && !messageSent &&
-				<div className={'next-random-record-button-container'}>
-					<TranscribeButton
-						label={l('Skriv av annan slumpmässig uppteckning')}
-						random={true}
-						onClick={randomButtonClickHandler}
-						className="button button-primary next-random-record-button"
-					/>
-				</div>
-			}
-			<button title="stäng" className="close-button white" onClick={closeButtonClickHandler}></button>
-			{
-				!config.siteOptions.hideContactButton &&
-				<FeedbackButton title={title} type="Uppteckning" />
-			}
-			{
-				!config.siteOptions.hideContactButton &&
-				<ContributeInfoButton title={title} type="Uppteckning" />
-			}
-			{
-				!config.siteOptions.hideContactButton &&
-				<TranscriptionHelpButton title={title} type="Uppteckning" />
-				// <TranscriptionHelpButton title={title} type="Uppteckning" {..._props}/>
-			}
-		</div>
+            <button className="button-primary" onClick={sendButtonClickHandler}>
+              Skicka sida
+              {currentPageIndex + 1}
+            </button>
+          </div>
+          <div className="eight columns">
+            {pages.length > 0 && (
+              <img
+                className="main-image"
+                src={`${config.imageUrl}${pages[currentPageIndex].source}`}
+                alt={`Sida ${currentPageIndex + 1}`}
+              />
+            )}
+            <div className="image-thumbnails">
+              {pages.map((page, index) => (
+                page.source && page.source.indexOf('.pdf') === -1 && (
+                  <img
+                    key={index}
+                    className="thumbnail"
+                    src={`${config.imageUrl}${page.source}`}
+                    alt={`Thumbnail ${index + 1}`}
+                    onClick={() => navigatePages(index)}
+                  />
+                )
+              ))}
+            </div>
+          </div>
+        </div>
+        {message && <p>{message}</p>}
+      </div>
+    </div>
+  );
+}
 
-		{overlayContent}
-
-	</div>
-	</div>
-	);
-};
+export default TranscriptionPageByPageOverlay;

@@ -15,7 +15,7 @@ import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
-import TranscriptionPageByPageOverlay from './views/TranscriptionPageByPageOverlay2';
+import TranscriptionPageByPageOverlay from './views/TranscriptionPageByPageOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 
