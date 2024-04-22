@@ -64,7 +64,7 @@ function IntroOverlay() {
 
   return (
     <div className={overlayClass}>
-      <div className="overlay-window">
+      <div className="overlay-window intro">
         <div className="overlay-header">
           {/* Close button. On click, it hides the overlay */}
           <button
