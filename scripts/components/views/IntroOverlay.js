@@ -4,25 +4,28 @@ import config from '../../config';
 function IntroOverlay() {
   // useState hook for managing visibility of the overlay
   const [showOverlay, setShowOverlay] = useState(true);
-  const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
+  // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
 
   useEffect(() => {
-    // Kolla efter urlparam iframeSrc och sätt iframeSrc till det värdet
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlIframeSrc = urlParams.get('iframeSrc');
-    if (urlIframeSrc) {
-      setIframeSrc(urlIframeSrc);
-    }
-    // Kontrollera om overlayen ska döljas baserat på localStorage
-    const hideIntroOverlay = localStorage.getItem('hideIntroOverlay');
-    if (hideIntroOverlay) {
-      setShowOverlay(false);
-    }
+    const handleLocationChange = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlIframeSrc = urlParams.get('iframeSrc');
+      if (urlIframeSrc) {
+        // setIframeSrc(urlIframeSrc);
+        const iframe = document.getElementById('iframe');
+        iframe.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${urlIframeSrc}`;
+      }
+    };
+    handleLocationChange();
+    window.onpopstate = handleLocationChange;
+
+    return () => {
+      window.onpopstate = null;
+    };
   }, []);
 
   useEffect(() => {
     const handleMessage = (event) => {
-
       if (event.data.newSrc) {
         const newUrl = new URL(window.location);
         newUrl.searchParams.set('iframeSrc', event.data.newSrc.split(config.kontextBasePath)[1]);
@@ -77,7 +80,7 @@ function IntroOverlay() {
         <iframe
           id="iframe"
           title="iframe"
-          src={`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${iframeSrc}`}
+          src={`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`}
           style={{
             border: 'none',
             width: '100%',
