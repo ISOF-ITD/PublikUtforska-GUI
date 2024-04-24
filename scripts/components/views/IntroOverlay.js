@@ -4,7 +4,7 @@ import config from '../../config';
 function IntroOverlay() {
   // useState hook for managing visibility of the overlay
   const [showOverlay, setShowOverlay] = useState(true);
-  const [iframeSrc, setIframeSrc] = useState(`folke-start`);
+  const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
 
   useEffect(() => {
     // Kolla efter urlparam iframeSrc och sätt iframeSrc till det värdet
@@ -25,7 +25,7 @@ function IntroOverlay() {
 
       if (event.data.newSrc) {
         const newUrl = new URL(window.location);
-        newUrl.searchParams.set('iframeSrc', event.data.newSrc.split('test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/')[1]);
+        newUrl.searchParams.set('iframeSrc', event.data.newSrc.split(config.kontextBasePath)[1]);
         window.history.pushState({}, '', newUrl); // Uppdaterar URL utan att ladda om
       }
     };
@@ -77,7 +77,7 @@ function IntroOverlay() {
         <iframe
           id="iframe"
           title="iframe"
-          src={`${config.folkeKontextApiUrl}?path=test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/${iframeSrc}`}
+          src={`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${iframeSrc}`}
           style={{
             border: 'none',
             width: '100%',

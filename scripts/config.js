@@ -57,7 +57,7 @@ const matomoApiUrlObject = {
 };
 
 const folkeKontextApiUrlObject = {
-  dev: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
+  dev: 'http://localhost:8000/folke_kontext_api/',
   test: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
   prod: 'https://djangoproxy.isof.se/folke_kontext_api/',
 };
@@ -207,4 +207,10 @@ export default {
   numberOfPlaceSuggestions: null,
   numberOfPersonSuggestions: null,
   numberOfProvinceSuggestions: null,
+
+  // för intro-overlayen
+  // kontextBasePath: 'folke-kontext/',
+  // kontextStartPage: 'sida-1',
+  kontextBasePath: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/',
+  kontextStartPage: 'folke-start',
 };
