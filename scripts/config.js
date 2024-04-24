@@ -57,7 +57,8 @@ const matomoApiUrlObject = {
 };
 
 const folkeKontextApiUrlObject = {
-  dev: 'http://localhost:8000/folke_kontext_api/',
+  // dev: 'http://localhost:8000/folke_kontext_api/',
+  dev: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
   test: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
   prod: 'https://djangoproxy.isof.se/folke_kontext_api/',
 };
