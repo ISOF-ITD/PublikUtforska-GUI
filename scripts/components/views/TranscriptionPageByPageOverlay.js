@@ -181,6 +181,9 @@ function TranscriptionPageByPageOverlay() {
       // - one_record blir "published" när alla undersidor är published (sker inte automatiskt, kan senare
       //   läggas till med ny kod i djangoadmin model save.)
 
+      // Användningsfall:
+      // https://github.com/ISOF-ITD/kartplattformen_common/blob/master/anvandningsfall/transkribera_uppteckning_sida_for_sida.md
+
       // transcriptiontype på one_record är: "transcriptiontype": "sida",
       const data = {
         transcribeSession,
