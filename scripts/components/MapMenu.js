@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faChevronLeft, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faChevronLeft, faPen, faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import SearchBox from './SearchBox';
 import FilterSwitch from './FilterSwitch';
 import ShortStatistics from './ShortStatistics';
@@ -10,6 +10,7 @@ import config from '../config';
 import Folkelogga from '../../img/folke-white.svg';
 import TranscribeButton from './views/TranscribeButton';
 import RecordList from './views/RecordList';
+import IntroOverlay from './views/IntroOverlay';
 import { l } from '../lang/Lang';
 
 // bara tillfälligt, för att visa en länk till enkäten
@@ -69,7 +70,17 @@ export default function MapMenu({
   const isMobile = window.innerWidth < 700;
   const [menuExpanded, setMenuExpanded] = useState(!isMobile);
   const [currentMonth, setCurrentMonth] = useState('');
+  const [showIntroOverlay, setShowIntroOverlay] = useState(false);
   const visible = true;
+
+  // Handle showing the overlay
+  const handleShowIntro = () => {
+    setShowIntroOverlay(true);
+  };
+
+  const handleCloseOverlay = () => {
+    setShowIntroOverlay(false);
+  };
 
   const paramsLatest = {
     size: 10,
@@ -126,6 +137,15 @@ export default function MapMenu({
         <a onClick={() => setMenuExpanded(!menuExpanded)}>
           <FontAwesomeIcon icon={menuExpanded ? faChevronLeft : faChevronRight} />
         </a>
+      </div>
+      <div style={{
+        color: 'white',
+        marginLeft: '20px',
+        marginBottom: '15px'
+      }}>
+        <div onClick={handleShowIntro} className="intro-link">
+        <FontAwesomeIcon icon={faBookOpen} />&nbsp;{l('Visa Introduktion')}
+      </div>
       </div>
       <div className="puffar">
         <div className="statistics puff">
@@ -240,9 +260,9 @@ export default function MapMenu({
               disableListPagination
               columns={['title', 'year', 'place', 'transcribedby']}
               tableClass="table-compressed"
-                // möjliggör att visa 50 poster efter en klick på "visa fler"
+              // möjliggör att visa 50 poster efter en klick på "visa fler"
               sizeMore={50}
-                // interval is 60 sec, if visible is true and the web browser is in focus
+              // interval is 60 sec, if visible is true and the web browser is in focus
               interval={visible ? 60000 : null}
               hasFilter={false}
               smallTitle
@@ -265,6 +285,8 @@ export default function MapMenu({
           <img src="https://i.ibb.co/0Z0Nwxs/M44mm8W.jpg" border="0" alt="" style={{ width: 250 }} />
         </div> */}
       </div>
+      <IntroOverlay forceShow={showIntroOverlay} onClose={handleCloseOverlay} />
     </div>
   );
+
 }

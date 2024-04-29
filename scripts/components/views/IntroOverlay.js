@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 
-function IntroOverlay() {
+
+
+
+function IntroOverlay({ forceShow, onClose }) {
+  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay') !== 'true');
   // useState hook for managing visibility of the overlay
-  const [showOverlay, setShowOverlay] = useState(true);
+  // const [showOverlay, setShowOverlay] = useState(true);
   // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
+
+  // React to changes in forceShow
+  useEffect(() => {
+    if (forceShow) {
+      setShowOverlay(true);
+    }
+  }, [forceShow]);
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -38,23 +51,26 @@ function IntroOverlay() {
     // Rensa upp
     return () => window.removeEventListener('message', handleMessage);
   }, []);
+  
+    const handleClose = () => {
+      setShowOverlay(false);
+      const url = new URL(window.location);
+      url.searchParams.delete('iframeSrc');
+      window.history.pushState({}, '', url);
+      if (onClose) onClose(); // Kalla på onClose om den finns
+    };
 
   // Function to handle checkbox change
   const handleCheckboxChange = () => {
     // When the checkbox is checked, we set 'hideIntroOverlay' in localStorage and hide the overlay
     // As we are using localStorage, this value will persist indefinitely (until manually cleared)
+    handleClose();
     localStorage.setItem('hideIntroOverlay', 'true');
-    setShowOverlay(false);
   };
 
-  // Function to handle close button click
   const handleCloseButtonClick = () => {
-    // When the close button is clicked, we hide the overlay
-    setShowOverlay(false);
-    // Remove search param "iframeSrc":
-    const url = new URL(window.location);
-    url.searchParams.delete('iframeSrc');
-    window.history.pushState({}, '', url);
+    handleClose();
+
   };
 
   // If 'showOverlay' is false, we don't render anything
@@ -65,11 +81,13 @@ function IntroOverlay() {
   // Setting the class for the main div. If 'showOverlay' is true, we add 'visible' to the class
   const overlayClass = `overlay-container light-modal intro-overlay ${showOverlay ? 'visible' : ''}`;
 
+  if (!showOverlay) return null;
+
   return (
     <div className={overlayClass}>
       <div className="intro">
         <div className="overlay-header">
-          <span className="text">Välkommen till Folke sök!</span>
+          <span className="text"><FontAwesomeIcon icon={faBookOpen} />&nbsp; Introduktion</span>
           <div className="controls">
             <label htmlFor="hideOverlay">
               <input id="hideOverlay" type="checkbox" onChange={handleCheckboxChange} />

@@ -16,7 +16,6 @@ import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/TranscriptionOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
-import IntroOverlay from './views/IntroOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 
 import MapWrapper from './MapWrapper';
@@ -146,7 +145,6 @@ export default function Application({
         <TranscriptionHelpOverlay />
         <SwitcherHelpTextOverlay />
         {/* <StatisticsOverlay /> */}
-        <IntroOverlay />
         <Footer />
       </div>
     </AudioProvider>
