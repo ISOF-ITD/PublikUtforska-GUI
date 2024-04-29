@@ -67,40 +67,49 @@ function IntroOverlay() {
 
   return (
     <div className={overlayClass}>
-      <div className="overlay-window intro">
+      <div className="intro">
         <div className="overlay-header">
-          {/* Close button. On click, it hides the overlay */}
-          <button
-            className="close-button white"
-            onClick={handleCloseButtonClick}
-            type="button"
-          />
-          <h2>Välkommen till Folke sök!</h2>
+          <span className="text">Välkommen till Folke sök!</span>
+          <div className="controls">
+            <label htmlFor="hideOverlay">
+              <input id="hideOverlay" type="checkbox" onChange={handleCheckboxChange} />
+              Visa inte igen
+            </label>
+            <button
+              className="close-button white"
+              onClick={handleCloseButtonClick}
+              type="button"
+            />
+          </div>
         </div>
-        <iframe
-          id="iframe"
-          title="iframe"
-          src={`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`}
-          style={{
-            border: 'none',
-            width: '100%',
-            height: '100%',
 
-          }}
-        />
+        <div className="content">
+
+          <iframe
+            id="iframe"
+            title="iframe"
+            src={`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`}
+            style={{
+              border: 'none',
+              width: '100%',
+              height: '100%',
+              
+            }}
+            />
+        </div>
         {/* Checkbox to choose not to show the overlay again */}
-        <p />
+        {/* <p />
         <label htmlFor="hideOverlay">
           <input id="hideOverlay" type="checkbox" onChange={handleCheckboxChange} />
           Visa inte igen
-        </label>
+        </label> */}
         {/* Adding the Close button here */}
-        <button
+        {/* <button
           onClick={handleCloseButtonClick}
           type="button"
         >
           Stäng
-        </button>
+        </button> */}
       </div>
     </div>
   );
