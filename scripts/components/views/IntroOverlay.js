@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
-
-
-
 
 function IntroOverlay({ forceShow, onClose }) {
   const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay') !== 'true');
   // useState hook for managing visibility of the overlay
   // const [showOverlay, setShowOverlay] = useState(true);
   // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.target.click();
+    }
+  };
 
   // React to changes in forceShow
   useEffect(() => {
@@ -51,17 +55,17 @@ function IntroOverlay({ forceShow, onClose }) {
     // Rensa upp
     return () => window.removeEventListener('message', handleMessage);
   }, []);
-  
-    const handleClose = () => {
-      setShowOverlay(false);
-      const url = new URL(window.location);
-      url.searchParams.delete('iframeSrc');
-      window.history.pushState({}, '', url);
-      if (onClose) onClose(); // Kalla på onClose om den finns
-    };
+
+  const handleClose = () => {
+    setShowOverlay(false);
+    const url = new URL(window.location);
+    url.searchParams.delete('iframeSrc');
+    window.history.pushState({}, '', url);
+    if (onClose) onClose(); // Kalla på onClose om den finns
+  };
 
   // Function to handle checkbox change
-  const handleCheckboxChange = () => {
+  const handleDontShowAgain = () => {
     // When the checkbox is checked, we set 'hideIntroOverlay' in localStorage and hide the overlay
     // As we are using localStorage, this value will persist indefinitely (until manually cleared)
     handleClose();
@@ -70,7 +74,6 @@ function IntroOverlay({ forceShow, onClose }) {
 
   const handleCloseButtonClick = () => {
     handleClose();
-
   };
 
   // If 'showOverlay' is false, we don't render anything
@@ -87,22 +90,41 @@ function IntroOverlay({ forceShow, onClose }) {
     <div className={overlayClass}>
       <div className="intro">
         <div className="overlay-header">
-          <span className="text"><FontAwesomeIcon icon={faBookOpen} />&nbsp; Introduktion</span>
+          <span className="text">
+            <FontAwesomeIcon icon={faBookOpen} />
+            &nbsp; Introduktion
+          </span>
           <div className="controls">
-            <label htmlFor="hideOverlay">
-              <input id="hideOverlay" type="checkbox" onChange={handleCheckboxChange} />
-              Visa inte igen
-            </label>
-            <button
-              className="close-button white"
+            {/* If 'hideIntroOverlay' is true in localStorage,
+            we don't render the link to hide it again */}
+            { localStorage.getItem('hideIntroOverlay') === 'true'
+              ? null
+              : (
+                <span
+                  className="control-link"
+                  onClick={handleDontShowAgain}
+                  onKeyDown={handleKeyDown}
+                  role="button"
+                  tabIndex="0"
+                >
+                  Visa inte igen
+              </span>
+              )
+            }
+            <span
               onClick={handleCloseButtonClick}
-              type="button"
-            />
+              onKeyDown={handleKeyDown}
+              role="button"
+              tabIndex="0"
+              className="intro-close-button"
+            >
+              Stäng
+            </span>
+
           </div>
         </div>
 
         <div className="content">
-
           <iframe
             id="iframe"
             title="iframe"
@@ -111,26 +133,23 @@ function IntroOverlay({ forceShow, onClose }) {
               border: 'none',
               width: '100%',
               height: '100%',
-              
             }}
-            />
+          />
         </div>
-        {/* Checkbox to choose not to show the overlay again */}
-        {/* <p />
-        <label htmlFor="hideOverlay">
-          <input id="hideOverlay" type="checkbox" onChange={handleCheckboxChange} />
-          Visa inte igen
-        </label> */}
-        {/* Adding the Close button here */}
-        {/* <button
-          onClick={handleCloseButtonClick}
-          type="button"
-        >
-          Stäng
-        </button> */}
       </div>
     </div>
   );
 }
 
 export default IntroOverlay;
+
+// props validation
+IntroOverlay.propTypes = {
+  forceShow: PropTypes.bool,
+  onClose: PropTypes.func,
+};
+
+IntroOverlay.defaultProps = {
+  forceShow: false,
+  onClose: null,
+};
