@@ -32,7 +32,7 @@ function IntroOverlay({ forceShow, onClose }) {
   useEffect(() => {
     const handleLocationChange = () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const urlIframeSrc = urlParams.get('iframeSrc');
+      const urlIframeSrc = urlParams.get('k');
       if (urlIframeSrc) {
         // setIframeSrc(urlIframeSrc);
         const iframe = document.getElementById('iframe');
@@ -51,7 +51,7 @@ function IntroOverlay({ forceShow, onClose }) {
     const handleMessage = (event) => {
       if (event.data.newSrc) {
         const newUrl = new URL(window.location);
-        newUrl.searchParams.set('iframeSrc', event.data.newSrc.split(config.kontextBasePath)[1]);
+        newUrl.searchParams.set('k', event.data.newSrc.split(config.kontextBasePath)[1]);
         window.history.pushState({}, '', newUrl); // Uppdaterar URL utan att ladda om
       }
     };
@@ -66,7 +66,7 @@ function IntroOverlay({ forceShow, onClose }) {
     setShowOverlay(false);
     setIsLoading(true);
     const url = new URL(window.location);
-    url.searchParams.delete('iframeSrc');
+    url.searchParams.delete('k');
     window.history.pushState({}, '', url);
     if (onClose) onClose(); // Kalla på onClose om den finns
   };
