@@ -141,11 +141,18 @@ export default function MapMenu({
       <div style={{
         color: 'white',
         marginLeft: '20px',
-        marginBottom: '15px'
       }}>
-        <div onClick={handleShowIntro} className="intro-link">
-        <FontAwesomeIcon icon={faBookOpen} />&nbsp;{l('Visa Introduktion')}
-      </div>
+        <div 
+          onClick={handleShowIntro}
+          className="intro-link"
+          style={{
+            paddingBottom: '15px',
+            cursor: 'pointer',
+          }}>
+          <FontAwesomeIcon icon={faBookOpen} />
+          &nbsp;
+          {l('Visa Introduktion')}
+        </div>
       </div>
       <div className="puffar">
         <div className="statistics puff">
