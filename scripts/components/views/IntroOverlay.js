@@ -67,10 +67,10 @@ function IntroOverlay({ forceShow, onClose }) {
 
   // Function to handle checkbox change
   const handleDontShowAgain = () => {
-    // When the checkbox is checked, we set 'hideIntroOverlay002' in localStorage and hide the overlay
+    // When the checkbox is checked, we set 'hideIntroOverlay003' in localStorage and hide the overlay
     // As we are using localStorage, this value will persist indefinitely (until manually cleared)
     handleClose();
-    localStorage.setItem('hideIntroOverlay002', 'true');
+    localStorage.setItem('hideIntroOverlay003', 'true');
   };
 
   const handleCloseButtonClick = () => {
@@ -96,9 +96,9 @@ function IntroOverlay({ forceShow, onClose }) {
             &nbsp; Introduktion
           </span>
           <div className="controls">
-            {/* If 'hideIntroOverlay002' is true in localStorage,
+            {/* If 'hideIntroOverlay003' is true in localStorage,
             we don't render the link to hide it again */}
-            { localStorage.getItem('hideIntroOverlay002') === 'true'
+            { localStorage.getItem('hideIntroOverlay003') === 'true'
               ? null
               : (
                 <span
