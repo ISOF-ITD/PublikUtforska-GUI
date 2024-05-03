@@ -11,6 +11,11 @@ function IntroOverlay({ forceShow, onClose }) {
   // const [showOverlay, setShowOverlay] = useState(true);
   // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
 
+  const resetIframeSrc = () => {
+    const iframe = document.getElementById('iframe');
+    iframe.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`;
+  };
+
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       event.target.click();
@@ -91,7 +96,16 @@ function IntroOverlay({ forceShow, onClose }) {
     <div className={overlayClass}>
       <div className="intro">
         <div className="overlay-header">
-          <span className="text">
+          <span
+            className="text"
+            onClick={resetIframeSrc}
+            onKeyDown={(event) => event.key === 'Enter' && resetIframeSrc()}
+            role="button"
+            tabIndex="0"
+            style={{
+              cursor: 'pointer',
+            }}
+          >
             <FontAwesomeIcon icon={faBookOpen} />
             &nbsp; Introduktion
           </span>
