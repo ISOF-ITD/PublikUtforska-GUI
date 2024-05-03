@@ -5,7 +5,7 @@ import { faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 
 function IntroOverlay({ forceShow, onClose }) {
-  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay002') !== 'true');
+  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay003') !== 'true');
   const [isLoading, setIsLoading] = useState(true);
   // useState hook for managing visibility of the overlay
   // const [showOverlay, setShowOverlay] = useState(true);
