@@ -64,6 +64,7 @@ function IntroOverlay({ forceShow, onClose }) {
 
   const handleClose = () => {
     setShowOverlay(false);
+    setIsLoading(true);
     const url = new URL(window.location);
     url.searchParams.delete('iframeSrc');
     window.history.pushState({}, '', url);
