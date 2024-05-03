@@ -32,6 +32,7 @@ function IntroOverlay({ forceShow, onClose }) {
   useEffect(() => {
     const handleLocationChange = () => {
       const urlParams = new URLSearchParams(window.location.search);
+      // Senare: Vill man "maskera" kontext-värdet i URL:t, kan man använda t ex base64-kodning
       const urlIframeSrc = urlParams.get('k');
       if (urlIframeSrc) {
         // setIframeSrc(urlIframeSrc);
