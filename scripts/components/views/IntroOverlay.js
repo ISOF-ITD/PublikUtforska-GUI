@@ -5,7 +5,7 @@ import { faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 
 function IntroOverlay({ forceShow, onClose }) {
-  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay') !== 'true');
+  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay002') !== 'true');
   const [isLoading, setIsLoading] = useState(true);
   // useState hook for managing visibility of the overlay
   // const [showOverlay, setShowOverlay] = useState(true);
@@ -67,10 +67,10 @@ function IntroOverlay({ forceShow, onClose }) {
 
   // Function to handle checkbox change
   const handleDontShowAgain = () => {
-    // When the checkbox is checked, we set 'hideIntroOverlay' in localStorage and hide the overlay
+    // When the checkbox is checked, we set 'hideIntroOverlay002' in localStorage and hide the overlay
     // As we are using localStorage, this value will persist indefinitely (until manually cleared)
     handleClose();
-    localStorage.setItem('hideIntroOverlay', 'true');
+    localStorage.setItem('hideIntroOverlay002', 'true');
   };
 
   const handleCloseButtonClick = () => {
@@ -96,9 +96,9 @@ function IntroOverlay({ forceShow, onClose }) {
             &nbsp; Introduktion
           </span>
           <div className="controls">
-            {/* If 'hideIntroOverlay' is true in localStorage,
+            {/* If 'hideIntroOverlay002' is true in localStorage,
             we don't render the link to hide it again */}
-            { localStorage.getItem('hideIntroOverlay') === 'true'
+            { localStorage.getItem('hideIntroOverlay002') === 'true'
               ? null
               : (
                 <span
