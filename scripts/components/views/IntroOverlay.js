@@ -49,6 +49,10 @@ function IntroOverlay({ forceShow, onClose }) {
 
   useEffect(() => {
     const handleMessage = (event) => {
+      if (event.data.status && event.data.status !== 200) {
+        resetIframeSrc(); // Återställ eller hantera felet på lämpligt sätt
+      }
+      
       if (event.data.newSrc) {
         const newUrl = new URL(window.location);
         newUrl.searchParams.set('k', event.data.newSrc.split(config.kontextBasePath)[1]);
