@@ -6,6 +6,7 @@ import config from '../../config';
 
 function IntroOverlay({ forceShow, onClose }) {
   const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay') !== 'true');
+  const [isLoading, setIsLoading] = useState(true);
   // useState hook for managing visibility of the overlay
   // const [showOverlay, setShowOverlay] = useState(true);
   // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
@@ -125,6 +126,11 @@ function IntroOverlay({ forceShow, onClose }) {
         </div>
 
         <div className="content">
+          {
+            isLoading
+              ? <div className="iframe-loading" />
+              : null
+          }
           <iframe
             id="iframe"
             title="iframe"
@@ -133,7 +139,9 @@ function IntroOverlay({ forceShow, onClose }) {
               border: 'none',
               width: '100%',
               height: '100%',
+              display: isLoading ? 'none' : 'block',
             }}
+            onLoad={() => setIsLoading(false)}
           />
         </div>
       </div>
