@@ -4,6 +4,7 @@ import config from '../../config';
 import { l } from '../../lang/Lang';
 import Uppteckningsblankett from './transcriptionForms/Uppteckningsblankett';
 import Fritext from './transcriptionForms/Fritext';
+import ImageMap from './ImageMap';
 
 function TranscriptionPageByPageOverlay() {
   const [isVisible, setIsVisible] = useState(false);
@@ -30,6 +31,91 @@ function TranscriptionPageByPageOverlay() {
     transcriptionType: '',
     placeString: '',
   });
+
+  // add a ref for the active thumbnail container
+  const thumbnailContainerRef = useRef(null);
+
+  // scroll sideways to active thumbnail, when buttons are clicked
+  const scrollToActiveThumbnail = (index) => {
+    const thumbnails = thumbnailContainerRef.current;
+    if (!thumbnails) return;
+  
+    // kolla om den aktiva thumbnailen är utanför (höger + vänster) den synliga ytan:
+    const thumbnailRect = thumbnails.children[index].getBoundingClientRect();
+    const containerRect = thumbnails.getBoundingClientRect();
+    if (thumbnailRect.left < containerRect.left || thumbnailRect.right > containerRect.right) {
+      thumbnails.scrollLeft = thumbnailRect.left
+        - containerRect.left
+        + thumbnails.scrollLeft
+        - (thumbnailRect.width / 2);
+    }
+  };
+  
+
+
+  const transcribeCancel = async (keepOverlayVisible = false) => {
+    console.log('cancel');
+    setIsVisible(keepOverlayVisible);
+
+    if (!messageSent) {
+      const data = {
+        recordid: recordDetails.id,
+        transcribesession: transcribeSession,
+        page: pages[currentPageIndex]?.source,
+      };
+
+      const formData = new FormData();
+      formData.append('json', JSON.stringify(data));
+
+      try {
+        const response = await fetch(`${config.restApiUrl}transcribecancel/`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        // Hantera svaret vid framgång
+      } catch (error) {
+        console.error(`Error when cancelling transcription: ${error}`);
+      }
+    }
+  };
+
+  const navigatePages = async (index) => {
+    await transcribeCancel(true);
+    setCurrentPageIndex(index);
+
+    const newPageTranscriptionText = pages[index]?.text || '';
+    setTranscriptionText(newPageTranscriptionText);
+
+    if (pages[index] && pages[index].source) {
+      transcribeStart(recordDetails.id, pages[index].source);
+    }
+  };
+
+  // functions for navigation
+  const goToPreviousPage = () => {
+    const newIndex = currentPageIndex - 1;
+    if (newIndex >= 0) {
+      navigatePages(newIndex);
+      scrollToActiveThumbnail(newIndex);
+    }
+  };
+  const goToNextPage = () => {
+    const newIndex = currentPageIndex + 1;
+    if (newIndex < pages.length) {
+      navigatePages(newIndex);
+          // Scrolla till den aktiva thumbnailen
+      scrollToActiveThumbnail(newIndex);
+    }
+  };
+  const goToNextTranscribePage = () => {
+    console.log(pages);
+    const nextIndex = pages.findIndex((page, index) => index > currentPageIndex && page.transcriptionstatus === 'readytotranscribe');
+    if (nextIndex !== -1) {
+      navigatePages(nextIndex);
+      scrollToActiveThumbnail(nextIndex);
+    }
+  };
 
   const transcribeStart = (recordid, imageSource) => {
     // if (page.transcriptionstatus === 'readytotranscribe') {
@@ -70,36 +156,17 @@ function TranscriptionPageByPageOverlay() {
     // }
   };
 
-  const transcribeCancel = (keepOverlayVisible = false) => {
-    setIsVisible(keepOverlayVisible);
-
-    if (!messageSent) {
-      // Supposing the `transcribesession` and `recordDetails.id` contain the necessary details.
-      const data = {
-        recordid: recordDetails.id,
-        transcribesession: transcribeSession,
-        // The following assumes `pages` stores the current pages' data
-        // and `currentPageIndex` is the index of the current page:
-        page: pages[currentPageIndex]?.source,
-      };
-
-      const formData = new FormData();
-      formData.append('json', JSON.stringify(data));
-
-      fetch(`${config.restApiUrl}transcribecancel/`, {
-        method: 'POST',
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          // Here you can add any follow-up actions after successful cancellation
-        })
-        .catch((error) => {
-          console.error(`Error when cancelling transcription: ${error}`);
-        });
-    } else {
-      return null;
-    }
+  const handleHideOverlay = () => {
+    // Clear transcribe fields:
+    setInformantNameInput('');
+    setInformantBirthDateInput('');
+    setInformantBirthPlaceInput('');
+    setInformantInformationInput('');
+    setNameInput('');
+    setMessage('');
+    setComment('');
+    setIsVisible(false);
+    transcribeCancel();
   };
 
   useEffect(() => {
@@ -118,19 +185,6 @@ function TranscriptionPageByPageOverlay() {
       transcribeStart(event.target.id, event.target.images[0].source);
     };
 
-    const handleHideOverlay = () => {
-      // Clear transcribe fields:
-      setInformantNameInput('');
-      setInformantBirthDateInput('');
-      setInformantBirthPlaceInput('');
-      setInformantInformationInput('');
-      setNameInput('');
-      setMessage('');
-      setComment('');
-      setIsVisible(false);
-      transcribeCancel();
-    };
-
     window.eventBus.addEventListener('overlay.transcribePageByPage', handleShowOverlay);
     window.eventBus.addEventListener('overlay.hide', handleHideOverlay);
 
@@ -140,27 +194,8 @@ function TranscriptionPageByPageOverlay() {
     };
   }, []);
 
-  const navigatePages = (index) => {
-    // Avbryter nuvarande transkription innan sidbyte för att undvika att pågående arbete går förlorat
-    transcribeCancel(true); // Denna funktion bör anpassas om den behöver hantera specifika uppgifter vid avbrytande
-
-    // Uppdaterar index för den aktuella sidan
-    setCurrentPageIndex(index);
-
-    // Laddar den nya sidans transkriptionstext dynamiskt från 'pages' arrayen
-    // Om ytterligare dynamisk laddning krävs från en extern källa, bör detta implementeras här
-    const newPageTranscriptionText = pages[index]?.text || '';
-    setTranscriptionText(newPageTranscriptionText);
-
-    // Fortsätter med att initiera transkriptionen för den nya sidan
-    // Detta steg kan behöva anpassas baserat på hur din applikation hanterar transkriptionssessioner
-    if (pages[index] && pages[index].source) {
-      transcribeStart(recordDetails.id, pages[index].source);
-    }
-  };
-
   const sendButtonClickHandler = () => {
-    const text = message;
+    const text = transcriptionText;
     const isMinimum2Words = text.trim().indexOf(' ') !== -1;
 
     if (!isMinimum2Words) {
@@ -197,7 +232,7 @@ function TranscriptionPageByPageOverlay() {
         informantBirthDate: informantBirthDateInput,
         informantBirthPlace: informantBirthPlaceInput,
         informantInformation: informantInformationInput,
-        message,
+        message: transcriptionText,
         messageComment: comment,
       };
 
@@ -291,7 +326,7 @@ function TranscriptionPageByPageOverlay() {
       ...commonProps,
     };
 
-    switch (recordDetails.transcriptionType) {
+    switch (pages[currentPageIndex].transcriptiontype) {
       case 'uppteckningsblankett':
         return <Uppteckningsblankett {...uppteckningsblankettProps} />;
       case 'fritext':
@@ -312,7 +347,7 @@ function TranscriptionPageByPageOverlay() {
           -
           {' '}
           {recordDetails.type}
-          <button title="stäng" className="close-button white" onClick={() => setIsVisible(false)}>Stäng</button>
+          <button title="stäng" className="close-button white" onClick={() => handleHideOverlay()}>Stäng</button>
         </div>
         <div className="row">
           <div className="four columns">
@@ -345,25 +380,65 @@ function TranscriptionPageByPageOverlay() {
           </div>
           <div className="eight columns">
             {pages.length > 0 && (
-              <img
-                className="main-image"
-                src={`${config.imageUrl}${pages[currentPageIndex].source}`}
-                alt={`Sida ${currentPageIndex + 1}`}
-              />
+              // <img
+              //   className="main-image"
+              //   src={`${config.imageUrl}${pages[currentPageIndex].source}`}
+              //   alt={`Sida ${currentPageIndex + 1}`}
+              // />
+              <ImageMap image={`${config.imageUrl}${pages[currentPageIndex].source}`} />
             )}
-            <div className="image-thumbnails">
+            <div className="row">
+              <div className="navigation-panel">
+                <button
+                  className="button"
+                  onClick={goToPreviousPage}
+                  disabled={currentPageIndex === 0}
+                  type="button"
+                >
+                  Föregående sida
+                </button>
+                <button
+                  className="button"
+                  onClick={goToNextPage}
+                  disabled={currentPageIndex === pages.length - 1}
+                  type="button"
+                >
+                  Nästa sida
+                </button>
+                <button
+                  className="button"
+                  onClick={goToNextTranscribePage}
+                  // make disabled if none of the following pages can be transcribed
+                  disabled={pages.slice(currentPageIndex + 1).every(page => page.transcriptionstatus !== 'readytotranscribe')}
+                >
+                  Nästa sida att skriva av
+                </button>
+              </div>
+
+            </div>
+            <div className="image-thumbnails" ref={thumbnailContainerRef}>
               {pages.map((page, index) => (
                 page.source && page.source.indexOf('.pdf') === -1 && (
-                  <img
+                  <div
+                    className="thumbnail-container"
                     key={index}
-                    className="thumbnail"
-                    src={`${config.imageUrl}${page.source}`}
-                    alt={`Thumbnail ${index + 1}`}
                     onClick={() => navigatePages(index)}
-                  />
+                    title={JSON.stringify(page, null, 2)}
+                    >
+                    <img
+                      className={`thumbnail ${index === currentPageIndex ? 'active' : ''}`}
+                      src={`${config.imageUrl}${page.source}`}
+                      alt={`Thumbnail ${index + 1}`}
+                      
+                    />
+                    <div className="page-number">
+                      {`${index + 1} av ${pages.length}`}
+                    </div>
+                  </div>
                 )
               ))}
-            </div>
+          </div>
+
           </div>
         </div>
         {message && <p>{message}</p>}

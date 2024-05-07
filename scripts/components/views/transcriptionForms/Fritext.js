@@ -12,7 +12,11 @@ export default function Fritext({ messageInput, inputChangeHandler, pageIndex })
   return (
     <div className="transcriptionform fritext">
       <div className="mark-above-img">
-        <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">Text{pageIndex !== undefined ? ` på sidan ${pageIndex + 1}` : ''}:</label>
+        <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">
+          Text
+          {pageIndex !== undefined ? ` på sidan ${pageIndex + 1}` : ''}
+          :
+        </label>
         <textarea
           lang="sv"
           spellCheck="false"

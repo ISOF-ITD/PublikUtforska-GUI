@@ -12,6 +12,11 @@
     gap: 10px;
     padding: 10px 0;
   }
+
+  .thumbnail-container {
+    // align-items: center;
+    cursor: pointer;
+  }
   
   .thumbnail {
     cursor: pointer;
@@ -26,5 +31,16 @@
   }
   
   .thumbnail.active {
-    border-color: red;
+    border-color: #005462;
+  }
+
+  .page-number {
+    margin-top: 5px;
+    font-size: 12px;  // Anpassa storleken efter dina behov
+    color: #666;  // Grå textfärg för sidnumrering
+    text-align: center;
+  }
+
+  button[disabled] {
+    cursor:default;
   }
