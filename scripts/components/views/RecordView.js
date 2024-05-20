@@ -17,7 +17,7 @@ import ListPlayButton from './ListPlayButton';
 import ContributeInfoButton from './ContributeInfoButton';
 import FeedbackButton from './FeedbackButton';
 
-import TranscribeButton from './TranscribeButton';
+import TranscribeButton from './transcribe/TranscribeButton';
 // import ElementNotificationMessage from '../ElementNotificationMessage';
 import SitevisionContent from '../SitevisionContent';
 import PdfViewer from '../PdfViewer';

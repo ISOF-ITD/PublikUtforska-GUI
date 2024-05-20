@@ -6,7 +6,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from './ListPlayButton';
-import TranscribeButton from './TranscribeButton';
+import TranscribeButton from './transcribe/TranscribeButton';
 import HighlightedText from '../HighlightedText';
 
 import config from '../../config';

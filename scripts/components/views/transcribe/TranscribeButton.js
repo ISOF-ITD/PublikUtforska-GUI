@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import config from '../../config';
-import { getPlaceString } from '../../utils/helpers';
+import config from '../../../config';
+import { getPlaceString } from '../../../utils/helpers';
 
 // The TranscribeButton component is a functional component that, when clicked, dispatches
 // a 'overlay.transcribe' event via the global eventBus object. The event data contains

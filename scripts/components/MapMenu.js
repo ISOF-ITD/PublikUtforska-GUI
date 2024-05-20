@@ -8,7 +8,7 @@ import ShortStatistics from './ShortStatistics';
 import StatisticsList from './StatisticsList';
 import config from '../config';
 import Folkelogga from '../../img/folke-white.svg';
-import TranscribeButton from './views/TranscribeButton';
+import TranscribeButton from './views/transcribe/TranscribeButton';
 import RecordList from './views/RecordList';
 import { l } from '../lang/Lang';
 

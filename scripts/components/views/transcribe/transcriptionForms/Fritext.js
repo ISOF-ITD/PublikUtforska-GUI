@@ -2,11 +2,17 @@ import React from 'react';
 
 import PropTypes from 'prop-types';
 
-export default function Fritext({ messageInput, inputChangeHandler, pageIndex }) {
+export default function Fritext({
+  messageInput,
+  inputChangeHandler,
+  pageIndex,
+  transcriptionstatus = null,
+}) {
   Fritext.propTypes = {
     messageInput: PropTypes.string.isRequired,
     inputChangeHandler: PropTypes.func.isRequired,
     pageIndex: PropTypes.number,
+    transcriptionstatus: PropTypes.string,
   };
 
   return (
@@ -18,12 +24,14 @@ export default function Fritext({ messageInput, inputChangeHandler, pageIndex })
           :
         </label>
         <textarea
+          // disable if transcriptionstatus is not published or null
+          disabled={transcriptionstatus !== 'readytotranscribe' && transcriptionstatus !== null}
           lang="sv"
           spellCheck="false"
           id="transcription_text"
           name="messageInput"
           className="u-full-width margin-bottom-minimal"
-          defaultValue={messageInput}
+          value={messageInput}
           onChange={inputChangeHandler}
         />
         {//

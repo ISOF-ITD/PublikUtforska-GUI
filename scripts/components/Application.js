@@ -13,9 +13,9 @@ import StatisticsOverlay from './StatisticsOverlay';
 import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
-import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
-import TranscriptionOverlay from './views/TranscriptionOverlay';
-import TranscriptionPageByPageOverlay from './views/TranscriptionPageByPageOverlay';
+import TranscriptionHelpOverlay from './views/transcribe/TranscriptionHelpOverlay';
+import TranscriptionOverlay from './views/transcribe/TranscriptionOverlay';
+import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPageByPageOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 
