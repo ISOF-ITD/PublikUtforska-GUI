@@ -48,6 +48,8 @@ export default function Application({
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: { } });
   const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: { } });
   const [loading, setLoading] = useState(true);
+  const [transcriptionPageByPageOverlayVisible, setTranscriptionPageByPageOverlayVisible] = useState(false);
+  const [transcriptionPageByPageEvent, setTranscriptionPageByPageEvent] = useState(null);
 
   const params = useParams();
 
@@ -80,7 +82,20 @@ export default function Application({
     });
   }, [pictureResults]);
 
+  const handleShowOverlay = (event) => {
+    setTranscriptionPageByPageOverlayVisible(true);
+    setTranscriptionPageByPageEvent(event);
+
+  };
+
+  const handleHideOverlay = () => {
+    setTranscriptionPageByPageOverlayVisible(false);
+  };
+
   useEffect(() => {
+    window.eventBus.addEventListener('overlay.transcribePageByPage', handleShowOverlay);
+    window.eventBus.addEventListener('overlay.hide', handleHideOverlay);
+
     // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
     window.eventBus.addEventListener('audio.playervisible', () => {
       // När GlobalAudioPlayer visas lägger vi till class till document.body för att
@@ -107,6 +122,9 @@ export default function Application({
     return () => {
       window.eventBus.removeEventListener('audio.playervisible');
       window.eventBus.removeEventListener('audio.playerhidden');
+
+      window.eventBus.removeEventListener('overlay.transcribePageByPage', handleShowOverlay);
+      window.eventBus.removeEventListener('overlay.hide', handleHideOverlay);
     };
   }, []);
 
@@ -143,7 +161,14 @@ export default function Application({
         <FeedbackOverlay />
         <ContributeInfoOverlay />
         <TranscriptionOverlay />
-        <TranscriptionPageByPageOverlay />
+        {
+          transcriptionPageByPageOverlayVisible
+          && (
+            <TranscriptionPageByPageOverlay
+              event={transcriptionPageByPageEvent}
+            />
+          )
+        }
         <TranscriptionHelpOverlay />
         <SwitcherHelpTextOverlay />
         {/* <StatisticsOverlay /> */}

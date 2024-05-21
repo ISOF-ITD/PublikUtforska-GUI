@@ -8,7 +8,7 @@ import TranscriptionThumbnails from './TranscriptionThumbnails';
 import NavigationPanel from './NavigationPanel';
 import OverlayHeader from './OverlayHeader';
 
-function TranscriptionPageByPageOverlay() {
+function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
   const [isVisible, setIsVisible] = useState(false);
   const [transcribeSession, setTranscribesession] = useState('');
 
@@ -53,10 +53,7 @@ function TranscriptionPageByPageOverlay() {
     }
   };
 
-  const transcribeCancel = async (keepOverlayVisible = false) => {
-    console.log('cancel');
-    setIsVisible(keepOverlayVisible);
-
+  const transcribeCancel = async () => {
     if (!messageSent) {
       const data = {
         recordid: recordId,
@@ -93,7 +90,6 @@ function TranscriptionPageByPageOverlay() {
     setTranscriptionText(pages[index]?.text || '');
     setComment(pages[index]?.comment || '');
   };
-
 
   const goToPreviousPage = () => {
     const newIndex = currentPageIndex - 1;
@@ -150,72 +146,54 @@ function TranscriptionPageByPageOverlay() {
   };
 
   const handleHideOverlay = () => {
-    const hasUnsavedChanges = pages.some((page) => !page.isSent && page.unsavedChanges);
-  
-    if (hasUnsavedChanges && !window.confirm('Du har osparade ändringar. Är du säker på att du vill lämna sidan?')) {
-      return;
+    if (pages.some(page => page.unsavedChanges)) {
+      const confirmLeave = window.confirm("Det finns osparade ändringar. Är du säker på att du vill stänga?");
+      if (!confirmLeave) return;
     }
-  
-    setNameInput('');
-    setComment('');
-    setIsVisible(false);
-    transcribeCancel();
+    window.eventBus.dispatch('overlay.hide');
   };
-  
 
   useEffect(() => {
-    const handleShowOverlay = (event) => {
-      setIsVisible(true);
-      setRecordId(event.target.id);
-    
-      // Initialisera pages med isSent satt till false och inkludera comment
-      const initialPages = (event.target.images || []).map((page) => ({
-        ...page,
-        isSent: false,
-        unsavedChanges: false,
-        text: page.text || '',
-        comment: page.comment || '',
-      }));
-      setPages(initialPages);
-    
-      // Lås hela dokumentet när vyn öppnas
-      transcribeStart(event.target.id);
-    
-      // Ställ in den första sidan för transkribering
-      setCurrentPageIndex(0);
-      setTranscriptionText(initialPages[0]?.text || '');
-      setComment(initialPages[0]?.comment || '');
-    
-      setRecordDetails({
-        url: event.target.url,
-        id: event.target.id,
-        archiveId: event.target.archiveId,
-        title: event.target.title,
-        type: event.target.type,
-        transcriptionType: event.target.transcriptionType,
-        placeString: event.target.placeString,
-      });
-    };
-    
+    setIsVisible(true);
+    setRecordId(transcriptionOverlayEvent.target.id);
 
-    const handleHideOverlay = () => {
-      setIsVisible(false);
-      transcribeCancel();
-    };
+    // Initialisera pages med isSent satt till false och inkludera comment
+    const initialPages = (transcriptionOverlayEvent.target.images || []).map((page) => ({
+      ...page,
+      isSent: false,
+      unsavedChanges: false,
+      text: page.text || '',
+      comment: page.comment || '',
+    }));
+    setPages(initialPages);
 
-    window.eventBus.addEventListener('overlay.transcribePageByPage', handleShowOverlay);
-    window.eventBus.addEventListener('overlay.hide', handleHideOverlay);
+    // Lås hela dokumentet när vyn öppnas
+    transcribeStart(transcriptionOverlayEvent.target.id);
+
+    // Ställ in den första sidan för transkribering
+    setCurrentPageIndex(0);
+    setTranscriptionText(initialPages[0]?.text || '');
+    setComment(initialPages[0]?.comment || '');
+
+    setRecordDetails({
+      url: transcriptionOverlayEvent.target.url,
+      id: transcriptionOverlayEvent.target.id,
+      archiveId: transcriptionOverlayEvent.target.archiveId,
+      title: transcriptionOverlayEvent.target.title,
+      type: transcriptionOverlayEvent.target.type,
+      transcriptionType: transcriptionOverlayEvent.target.transcriptionType,
+      placeString: transcriptionOverlayEvent.target.placeString,
+    });
 
     return () => {
-      window.eventBus.removeEventListener('overlay.transcribePageByPage', handleShowOverlay);
-      window.eventBus.removeEventListener('overlay.hide', handleHideOverlay);
+      transcribeCancel();
     };
   }, []);
 
   const sendButtonClickHandler = () => {
     const text = transcriptionText;
     const isMinimum2Words = text.trim().indexOf(' ') !== -1;
-  
+
     if (!isMinimum2Words) {
       alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
     } else {
@@ -231,9 +209,12 @@ function TranscriptionPageByPageOverlay() {
         informantInformation: informantInformationInput,
         message: transcriptionText,
         messageComment: comment,
+        recordid: recordId,
+        page: currentPageIndex + 1,
+        transcribesession: transcribeSession,
       };
-  
-      axios.post(`${config.restApiUrl}transcribe/`, data)
+
+      axios.post(`${config.restApiUrl}transcribe/`, { json: JSON.stringify(data) })
         .then((response) => {
           const { responseData = data } = response;
           if (responseData.success) {
@@ -244,11 +225,11 @@ function TranscriptionPageByPageOverlay() {
               newPages[currentPageIndex].unsavedChanges = false;
               return newPages;
             });
-  
+
             if (window.eventBus) {
               window.eventBus.dispatch('overlay.transcribe.sent');
             }
-  
+
             setComment('');
             setMessage('');
             setInformantNameInput('');
@@ -266,9 +247,6 @@ function TranscriptionPageByPageOverlay() {
         });
     }
   };
-  
-  
-  
 
   if (!isVisible) return null;
 
@@ -311,7 +289,7 @@ function TranscriptionPageByPageOverlay() {
       default:
         console.log(`Okänt fält: ${name}`);
     }
-  
+
     // Markera som osparad när en förändring sker
     setPages((prevPages) => {
       const newPages = [...prevPages];
@@ -320,7 +298,6 @@ function TranscriptionPageByPageOverlay() {
       return newPages;
     });
   };
-  
 
   return (
     <div className="overlay-container visible">
