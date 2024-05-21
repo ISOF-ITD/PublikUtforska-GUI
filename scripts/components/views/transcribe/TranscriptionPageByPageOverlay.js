@@ -146,7 +146,7 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
   };
 
   const handleHideOverlay = () => {
-    if (pages.some(page => page.unsavedChanges)) {
+    if (pages.some((page) => page.unsavedChanges)) {
       const confirmLeave = window.confirm("Det finns osparade ändringar. Är du säker på att du vill stänga?");
       if (!confirmLeave) return;
     }
@@ -185,7 +185,14 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
       placeString: transcriptionOverlayEvent.target.placeString,
     });
 
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       transcribeCancel();
     };
   }, []);
