@@ -7,12 +7,21 @@ export default function Fritext({
   inputChangeHandler,
   pageIndex,
   transcriptionstatus = null,
+  numberOfPages,
 }) {
   Fritext.propTypes = {
     messageInput: PropTypes.string.isRequired,
     inputChangeHandler: PropTypes.func.isRequired,
     pageIndex: PropTypes.number,
     transcriptionstatus: PropTypes.string,
+    numberOfPages: PropTypes.number,
+  };
+
+  Fritext.defaultProps = {
+    messageInput: '',
+    pageIndex: null,
+    transcriptionstatus: null,
+    numberOfPages: null,
   };
 
   return (
@@ -20,7 +29,7 @@ export default function Fritext({
       <div className="mark-above-img">
         <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">
           Text
-          {pageIndex !== undefined ? ` på sidan ${pageIndex + 1}` : ''}
+          {pageIndex !== undefined ? ` på sidan ${pageIndex + 1} (av ${numberOfPages})` : ''}
           :
         </label>
         <textarea

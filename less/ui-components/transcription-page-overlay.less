@@ -35,12 +35,7 @@
 
 .sent-indicator {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 0;
-  height: 0;
-  border-top: 30px solid green;
-  border-left: 30px solid transparent;
+  border-top-color: green;
 }
 
 .unsaved-indicator {
@@ -80,6 +75,6 @@ button[disabled] {
   cursor: default;
 }
 
-textarea[disabled] {
+textarea[disabled], input[disabled] {
   background-color: #f5f5f5;
 }

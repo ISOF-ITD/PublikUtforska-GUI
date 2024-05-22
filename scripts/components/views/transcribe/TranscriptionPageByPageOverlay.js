@@ -9,20 +9,24 @@ import NavigationPanel from './NavigationPanel';
 import OverlayHeader from './OverlayHeader';
 
 function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [transcribeSession, setTranscribesession] = useState('');
-
-  const [recordId, setRecordId] = useState(null);
   const [recordDetails, setRecordDetails] = useState({
-    url: '',
-    id: '',
-    archiveId: '',
-    title: '',
-    type: '',
-    transcriptionType: '',
-    placeString: '',
+    url: transcriptionOverlayEvent.target.url,
+    id: transcriptionOverlayEvent.target.id,
+    archiveId: transcriptionOverlayEvent.target.archiveId,
+    title: transcriptionOverlayEvent.target.title,
+    type: transcriptionOverlayEvent.target.type,
+    transcriptionType: transcriptionOverlayEvent.target.transcriptionType,
+    placeString: transcriptionOverlayEvent.target.placeString,
   });
-  const [pages, setPages] = useState([]);
+  const [pages, setPages] = useState(
+    (transcriptionOverlayEvent.target.images || []).map((page) => ({
+      ...page,
+      isSent: false,
+      unsavedChanges: false,
+      text: page.text || '',
+      comment: page.comment || '',
+    })),
+  );
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [messageSent, setMessageSent] = useState(false);
 
@@ -38,6 +42,9 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
   const [emailInput, setEmailInput] = useState('');
 
   const thumbnailContainerRef = useRef(null);
+
+  let transcribesessionLocal = null;
+  const [transcribesession, setTranscribesession] = useState(null);
 
   const scrollToActiveThumbnail = (index) => {
     const thumbnails = thumbnailContainerRef.current;
@@ -56,8 +63,8 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
   const transcribeCancel = async () => {
     if (!messageSent) {
       const data = {
-        recordid: recordId,
-        transcribesession: transcribeSession,
+        recordid: recordDetails.id,
+        transcribesession: transcribesession || transcribesessionLocal,
       };
 
       const formData = new FormData();
@@ -130,12 +137,13 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
       .then((response) => response.json())
       .then((json) => {
         if (json.success && json.success === 'true') {
-          let transcribesession = false;
+          // let transcribesession = false;
           if (json.data) {
-            transcribesession = json.data.transcribesession;
+            transcribesessionLocal = json.data.transcribesession;
+            setTranscribesession(json.data.transcribesession);
           }
           setMessageSent(false);
-          setTranscribesession(transcribesession);
+          // setTranscribesession(transcribesession);
         } else {
           setMessageSent(false);
         }
@@ -147,43 +155,32 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
 
   const handleHideOverlay = () => {
     if (pages.some((page) => page.unsavedChanges)) {
-      const confirmLeave = window.confirm("Det finns osparade ändringar. Är du säker på att du vill stänga?");
+      const confirmLeave = window.confirm('Det finns osparade ändringar. Är du säker på att du vill stänga?');
       if (!confirmLeave) return;
     }
     window.eventBus.dispatch('overlay.hide');
   };
 
   useEffect(() => {
-    setIsVisible(true);
-    setRecordId(transcriptionOverlayEvent.target.id);
+    // setIsVisible(true);
 
-    // Initialisera pages med isSent satt till false och inkludera comment
-    const initialPages = (transcriptionOverlayEvent.target.images || []).map((page) => ({
-      ...page,
-      isSent: false,
-      unsavedChanges: false,
-      text: page.text || '',
-      comment: page.comment || '',
-    }));
-    setPages(initialPages);
+    // // Initialisera pages med isSent satt till false och inkludera comment
+    // const initialPages = (transcriptionOverlayEvent.target.images || []).map((page) => ({
+    //   ...page,
+    //   isSent: false,
+    //   unsavedChanges: false,
+    //   text: page.text || '',
+    //   comment: page.comment || '',
+    // }));
+    // setPages(initialPages);
 
     // Lås hela dokumentet när vyn öppnas
     transcribeStart(transcriptionOverlayEvent.target.id);
 
     // Ställ in den första sidan för transkribering
-    setCurrentPageIndex(0);
-    setTranscriptionText(initialPages[0]?.text || '');
-    setComment(initialPages[0]?.comment || '');
-
-    setRecordDetails({
-      url: transcriptionOverlayEvent.target.url,
-      id: transcriptionOverlayEvent.target.id,
-      archiveId: transcriptionOverlayEvent.target.archiveId,
-      title: transcriptionOverlayEvent.target.title,
-      type: transcriptionOverlayEvent.target.type,
-      transcriptionType: transcriptionOverlayEvent.target.transcriptionType,
-      placeString: transcriptionOverlayEvent.target.placeString,
-    });
+    // setCurrentPageIndex(0);
+    setTranscriptionText(pages[0]?.text || '');
+    setComment(pages[0]?.comment || '');
 
     const handleBeforeUnload = (event) => {
       event.preventDefault();
@@ -193,19 +190,22 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      console.log('Cleaning up, recordDetails.id:', recordDetails.id);
       transcribeCancel();
     };
   }, []);
 
-  const sendButtonClickHandler = () => {
+  const sendButtonClickHandler = (event) => {
     const text = transcriptionText;
     const isMinimum2Words = text.trim().indexOf(' ') !== -1;
+    const goToNext = event.target.getAttribute('data-gotonext') === 'true';
 
     if (!isMinimum2Words) {
       alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
     } else {
+      console.log('transcribesession:', transcribesession);
       const data = {
-        transcribeSession,
+        transcribesession,
         url: recordDetails.url,
         from_email: emailInput,
         from_name: nameInput,
@@ -216,46 +216,69 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
         informantInformation: informantInformationInput,
         message: transcriptionText,
         messageComment: comment,
-        recordid: recordId,
-        page: currentPageIndex + 1,
-        transcribesession: transcribeSession,
+        recordid: recordDetails.id,
+        page: pages[currentPageIndex].source,
       };
 
-      axios.post(`${config.restApiUrl}transcribe/`, { json: JSON.stringify(data) })
+      const formData = new FormData();
+      formData.append('json', JSON.stringify(data));
+
+      const sendButton = event.target;
+      sendButton.textContent = 'Skickar...';
+
+      axios.post(`${config.restApiUrl}transcribe/`, formData)
         .then((response) => {
-          const { responseData = data } = response;
-          if (responseData.success) {
+          const { data: responseData } = response;
+          if (responseData.success || responseData.success === 'true') {
+            sendButton.textContent = 'Skickat';
             // Markera sidan som skickad och sparad
             setPages((prevPages) => {
               const newPages = [...prevPages];
               newPages[currentPageIndex].isSent = true;
               newPages[currentPageIndex].unsavedChanges = false;
+              newPages[currentPageIndex].transcriptionstatus = 'reviewing';
               return newPages;
             });
-
-            if (window.eventBus) {
-              window.eventBus.dispatch('overlay.transcribe.sent');
+            if (goToNext) {
+              goToNextTranscribePage();
             }
 
-            setComment('');
-            setMessage('');
-            setInformantNameInput('');
-            setInformantBirthDateInput('');
-            setInformantBirthPlaceInput('');
-            setInformantInformationInput('');
-            setEmailInput('');
-            setNameInput('');
+            if (window.eventBus) {
+              window.eventBus.dispatch('overlay.transcribePageByPage.sent');
+            }
+
+            // setComment('');
+            // setTranscriptionText('');
+            // setInformantNameInput('');
+            // setInformantBirthDateInput('');
+            // setInformantBirthPlaceInput('');
+            // setInformantInformationInput('');
+            // setEmailInput('');
+            // setNameInput('');
           } else {
+            sendButton.textContent = 'Skicka';
             console.error(`Server does not respond for: ${recordDetails.url}`);
+            const errorLabel = document.createElement('span');
+            errorLabel.textContent = 'Fel vid sändning';
+            errorLabel.style.color = 'red';
+            sendButton.parentElement.appendChild(errorLabel);
           }
         })
         .catch((error) => {
+          sendButton.textContent = 'Skicka';
+          if (goToNext) {
+            goToNextTranscribePage();
+          }
           console.error(`Error when sending data: ${error}`);
+          const errorLabel = document.createElement('span');
+          errorLabel.textContent = `Fel: ${error.message}`;
+          errorLabel.style.color = 'red';
+          sendButton.parentElement.appendChild(errorLabel);
         });
     }
   };
 
-  if (!isVisible) return null;
+  // if (!isVisible) return null;
 
   const inputChangeHandler = (event) => {
     const { name, value } = event.target;
