@@ -68,6 +68,8 @@ function TranscriptionForm({
     && pages[currentPageIndex]?.transcriptionstatus !== null
   );
 
+  const sendButtonLabel = `Skicka sida ${currentPageIndex + 1} `;
+
   return (
     <div>
       {renderTranscribeForm()}
@@ -93,7 +95,7 @@ function TranscriptionForm({
           </p>
 
           <label htmlFor="transcription_name">Ditt namn (frivilligt):</label>
-          <input id="transcription_name" autoComplete="name" name="nameInput" className="u-full-width" type="text" value={nameInput} onChange={inputChangeHandler}  disabled={disableInput} />
+          <input id="transcription_name" autoComplete="name" name="nameInput" className="u-full-width" type="text" value={nameInput} onChange={inputChangeHandler} disabled={disableInput} />
           <label htmlFor="transcription_email">Din e-post adress (frivilligt):</label>
           <input
             id="transcription_email"
@@ -107,14 +109,12 @@ function TranscriptionForm({
             disabled={disableInput}
           />
 
-          <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext={false}>
-            Skicka sida
-            {currentPageIndex + 1}
+          <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext={false} disabled={disableInput}>
+            {sendButtonLabel}
           </button>
 
-          <button className="button-secondary" onClick={sendButtonClickHandler} type="button" data-gotonext={true}>
-            Skicka sida
-            {currentPageIndex + 1}
+          <button className="button-secondary" onClick={sendButtonClickHandler} type="button" data-gotonext disabled={disableInput}>
+            {sendButtonLabel}
             och gå vidare
           </button>
         </>
