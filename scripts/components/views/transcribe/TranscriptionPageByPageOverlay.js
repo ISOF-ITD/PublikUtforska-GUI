@@ -1,3 +1,5 @@
+// Användningsfall: https://github.com/ISOF-ITD/kartplattformen_common/blob/master/anvandningsfall/transkribera_uppteckning_sida_for_sida.md
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import config from '../../../config';
@@ -230,7 +232,6 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
         .then((response) => {
           const { data: responseData } = response;
           if (responseData.success || responseData.success === 'true') {
-            sendButton.textContent = 'Skickat';
             // Markera sidan som skickad och sparad
             setPages((prevPages) => {
               const newPages = [...prevPages];

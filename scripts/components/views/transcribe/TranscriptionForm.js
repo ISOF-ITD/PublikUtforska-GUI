@@ -68,7 +68,7 @@ function TranscriptionForm({
     && pages[currentPageIndex]?.transcriptionstatus !== null
   );
 
-  const sendButtonLabel = `Skicka sida ${currentPageIndex + 1} `;
+  const sendButtonLabel = pages[currentPageIndex]?.isSent ? 'Sidan har skickats' : `Skicka sida ${currentPageIndex + 1} `;
 
   return (
     <div>
@@ -109,13 +109,12 @@ function TranscriptionForm({
             disabled={disableInput}
           />
 
-          <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext={false} disabled={disableInput}>
+          {/* <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext={false} disabled={disableInput}>
             {sendButtonLabel}
-          </button>
+          </button> */}
 
-          <button className="button-secondary" onClick={sendButtonClickHandler} type="button" data-gotonext disabled={disableInput}>
+          <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext disabled={disableInput}>
             {sendButtonLabel}
-            och gå vidare
           </button>
         </>
       )}
