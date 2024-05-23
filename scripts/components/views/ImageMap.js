@@ -55,7 +55,7 @@ export default function ImageMap({ maxZoom, image }) {
 
   useEffect(() => {
     mapInstance.current = L.map(mapRef.current, {
-      minZoom: 0,
+      minZoom: -5, // Allow zooming out further to see the whole image
       maxZoom: maxZoom || 3,
       zoom: 0,
       crs: L.CRS.Simple,
