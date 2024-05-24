@@ -29,7 +29,10 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
       comment: page.comment || '',
     })),
   );
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [currentPageIndex, setCurrentPageIndex] = useState(
+    // go to first page with transcriptionstatus === 'readytotranscribe', or first page
+    pages.findIndex((page) => page.transcriptionstatus === 'readytotranscribe') || 0,
+  );
   const [messageSent, setMessageSent] = useState(false);
 
   const [informantNameInput, setInformantNameInput] = useState('');
