@@ -29,7 +29,7 @@ export default function Fritext({
       <div className="mark-above-img">
         <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">
           Text
-          {pageIndex !== undefined ? ` på sidan ${pageIndex + 1} (av ${numberOfPages})` : ''}
+          {pageIndex !== undefined && pageIndex !== null ? ` på sidan ${pageIndex + 1} (av ${numberOfPages})` : ''}
           :
         </label>
         <textarea

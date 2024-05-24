@@ -237,7 +237,7 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
               const newPages = [...prevPages];
               newPages[currentPageIndex].isSent = true;
               newPages[currentPageIndex].unsavedChanges = false;
-              newPages[currentPageIndex].transcriptionstatus = 'reviewing';
+              newPages[currentPageIndex].transcriptionstatus = 'transcribed';
               return newPages;
             });
             if (goToNext) {

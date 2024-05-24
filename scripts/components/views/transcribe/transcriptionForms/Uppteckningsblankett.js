@@ -66,7 +66,11 @@ export default function Uppteckningsblankett({
       </div>
 
       <div className="mark-above-img">
-        <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">Text{pageIndex !== undefined ? ` på sidan ${pageIndex + 1} (av ${numberOfPages})` : ''}:</label>
+        <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">
+          Text
+          {pageIndex !== undefined && pageIndex !== null ? ` på sidan ${pageIndex + 1} (av ${numberOfPages})` : ''}
+          :
+        </label>
         <textarea lang="sv" spellCheck="false" id="transcription_text" name="messageInput" className="u-full-width margin-bottom-minimal" value={messageInput} onChange={inputChangeHandler} />
       </div>
     </div>
