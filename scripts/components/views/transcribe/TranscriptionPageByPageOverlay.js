@@ -270,9 +270,6 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
         })
         .catch((error) => {
           sendButton.textContent = 'Skicka';
-          if (goToNext) {
-            goToNextTranscribePage();
-          }
           console.error(`Error when sending data: ${error}`);
           const errorLabel = document.createElement('span');
           errorLabel.textContent = `Fel: ${error.message}`;
