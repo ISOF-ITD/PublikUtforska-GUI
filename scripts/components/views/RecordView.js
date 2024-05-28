@@ -343,7 +343,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           </p>
           <TranscribeButton
             className="button button-primary"
-            label={l('Skriv av')}
+            label={`${l('Skriv av')} ${data.transcriptiontype === 'sida' ? l('sida för sida') : ''}`}
             title={data.title}
             recordId={data.id}
             archiveId={data.archive.archive_id}

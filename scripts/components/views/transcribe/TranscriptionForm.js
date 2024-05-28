@@ -55,10 +55,13 @@ function TranscriptionForm({
   const renderTranscribeForm = () => {
     switch (pages[currentPageIndex]?.transcriptiontype) {
       case 'uppteckningsblankett':
+        // eslint-disable-next-line react/jsx-props-no-spreading
         return <Uppteckningsblankett {...uppteckningsblankettProps} />;
       case 'fritext':
+        // eslint-disable-next-line react/jsx-props-no-spreading
         return <Fritext {...fritextProps} />;
       default:
+        // eslint-disable-next-line react/jsx-props-no-spreading
         return <Uppteckningsblankett {...uppteckningsblankettProps} />;
     }
   };
@@ -108,10 +111,6 @@ function TranscriptionForm({
             onBlur={handleEmailBlur}
             disabled={disableInput}
           />
-
-          {/* <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext={false} disabled={disableInput}>
-            {sendButtonLabel}
-          </button> */}
 
           <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext disabled={disableInput}>
             {sendButtonLabel}
