@@ -11,6 +11,8 @@ function OverlayHeader({ recordDetails, handleHideOverlay }) {
       Skriv av
       {' '}
       {recordDetails.title || recordDetails.id}
+      {' '}
+      {recordDetails.transcriptionType === 'sida' ? '(sida för sida)' : ''}
       <button type="button" title="stäng" className="close-button white" onClick={handleHideOverlay}>Stäng</button>
       {
       !config.siteOptions.hideContactButton
