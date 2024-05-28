@@ -181,11 +181,7 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
 
     // Lås hela dokumentet när vyn öppnas
     transcribeStart(transcriptionOverlayEvent.target.id);
-
-    // Ställ in den första sidan för transkribering
-    // setCurrentPageIndex(0);
-    setTranscriptionText(pages[0]?.text || '');
-    setComment(pages[0]?.comment || '');
+    scrollToActiveThumbnail(currentPageIndex);
 
     const handleBeforeUnload = (event) => {
       event.preventDefault();

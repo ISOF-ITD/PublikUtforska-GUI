@@ -354,6 +354,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           />
         </div>
       );
+      // special case: all pages are transcribed:
+      if (data.transcriptiontype === 'sida' && data.media.every((page) => page.transcriptionstatus !== 'readytotranscribe')) {
+        textElement = <p>{l('Den här uppteckningen är avskriven och granskas.')}</p>;
+        
+      }
     } else {
       // Om posten innehåller minst en pdf fil
       // (ingen text, inte ljudfiler och inte bilder), då visar vi pdf-filerna filen direkt
