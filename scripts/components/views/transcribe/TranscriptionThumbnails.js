@@ -1,6 +1,8 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAsterisk, faCheck, faLock } from '@fortawesome/free-solid-svg-icons';
+import {
+  faAsterisk, faCheck, faLock, faNewspaper,
+} from '@fortawesome/free-solid-svg-icons'; // Importera faNewspaper ikonen
 import config from '../../../config';
 
 export default function TranscriptionThumbnails({
@@ -8,7 +10,29 @@ export default function TranscriptionThumbnails({
   pages,
   navigatePages,
   currentPageIndex,
- }) {
+}) {
+  const thumbnailTitleAttribute = (page) => {
+    if (!page.isSent && page.unsavedChanges) {
+      return 'Sidan har redigerats';
+    }
+
+    if (page.isSent) {
+      return 'Sidan har skickats';
+    }
+
+    if (page.transcriptionstatus === 'transcribed') {
+      return 'Sidan kontrolleras';
+    }
+
+    if (page.transcriptionstatus === 'published') {
+      return 'Sidan har publicerats';
+    }
+    if (page.transcriptionstatus === 'readytotranscribe') {
+      return 'Sidan kan skrivas av';
+    }
+    return null;
+  };
+
   return (
     <div className="image-thumbnails" ref={thumbnailContainerRef}>
       {pages.map((page, index) => (
@@ -17,7 +41,8 @@ export default function TranscriptionThumbnails({
             className="thumbnail-container"
             key={index}
             onClick={() => navigatePages(index)}
-            title={`${!page.isSent ? 'OSPARADE ÄNDRINGAR' : ''}\n${JSON.stringify(page, null, 2)}`}
+            title={thumbnailTitleAttribute(page)}
+          // title={`${JSON.stringify(page, null, 2)}`}
           >
             <img
               className={`thumbnail ${index === currentPageIndex ? 'active' : ''}`}
@@ -37,6 +62,11 @@ export default function TranscriptionThumbnails({
             {!page.isSent && ['transcribed'].includes(page.transcriptionstatus) && (
               <div className="thumbnail-indicator transcribed-indicator">
                 <FontAwesomeIcon icon={faLock} />
+              </div>
+            )}
+            {!page.isSent && ['published'].includes(page.transcriptionstatus) && (
+              <div className="thumbnail-indicator published-indicator">
+                <FontAwesomeIcon icon={faNewspaper} />
               </div>
             )}
             <div className="page-number">
