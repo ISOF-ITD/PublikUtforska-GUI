@@ -359,6 +359,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         textElement = <p>{l('Den här uppteckningen är avskriven och granskas.')}</p>;
         
       }
+    } else if (data.transcriptionstatus === 'undertranscription') {
+        textElement = <p>{l('Den här uppteckningen håller på att transkriberas av annan användare.')}</p>;
+
     } else {
       // Om posten innehåller minst en pdf fil
       // (ingen text, inte ljudfiler och inte bilder), då visar vi pdf-filerna filen direkt
