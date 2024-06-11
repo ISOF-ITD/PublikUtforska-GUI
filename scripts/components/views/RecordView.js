@@ -118,9 +118,12 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         );
       });
       // Update Recordview using event, as an easy fix as fetchRecord(recordId) is in app.js
+      // Maybe not needed as hide of overlay should call transcribecancel so
+      // transcriptionstatus should be back at "readytotranscribe" 
+      // BUT maybe needed to get other record data as title back? But is title transcribed in page-by-page?
       eventBus.addEventListener('overlay.hide', forceUpdateFunc);
     }
-    // on unnount, set the document title back to the site title
+    // on unmount, set the document title back to the site title
     return () => {
       document.title = config.siteTitle;
     };
