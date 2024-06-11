@@ -44,6 +44,10 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   RecordView.defaultProps = {
     mode: 'material',
   };
+  // Force rerender using reducer
+  // SEEMS NOT to work when data updated i app.js fetchRecord?
+  // https://stackoverflow.com/questions/46240647/react-how-to-force-to-re-render-a-functional-component/53837442#53837442
+  // const [, forceUpdate] = useReducer(x => x + 1, 0);
 
   const params = useParams();
   const navigate = useNavigate();
@@ -69,6 +73,13 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   const collections = new RecordsCollection((json) => {
     setSubrecords(json.data);
   });
+
+  const forceUpdateFunc = () => {
+    // https://www.altcademy.com/blog/how-to-refresh-the-page-in-reactjs/
+    // This is generally not recommended in a ReactJS application, as it goes against the idea of a single-page application. However, if you find yourself needing to do this, you can use the location.reload() method
+    // Fullösning med omläsning sida (Emellanåt i utvecklingsmiljö: Fungerar först vid andra gången man stänger med x?!)
+    window.location.reload();
+  };
 
   const fetchSubrecords = () => {
     const fetchParams = {
@@ -106,6 +117,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           10000,
         );
       });
+      // Update Recordview using event, as an easy fix as fetchRecord(recordId) is in app.js
+      eventBus.addEventListener('overlay.hide', forceUpdateFunc);
     }
     // on unnount, set the document title back to the site title
     return () => {
