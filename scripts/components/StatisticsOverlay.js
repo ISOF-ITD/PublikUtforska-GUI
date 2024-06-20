@@ -79,7 +79,8 @@ export default function StatisticsOverlay() {
             // the server and the timestamps in the database
             // urlencode the range parameter. range = 'transcriptiondate,now-1M,now+2h'
             // "now/M" is the start of the current month
-            range: 'transcriptiondate,now/M,now+2h',
+            //range: 'transcriptiondate,now/M,now+2h',
+            range: 'transcriptiondate,now/M,now%2b2h',
             aggregation: 'sum,archive.total_pages',
           }}
           label={`avskrivna sidor i ${currentMonth}`}
@@ -129,7 +130,8 @@ export default function StatisticsOverlay() {
           params={{
             recordtype: 'one_record',
             transcriptionstatus: 'published',
-            range: 'transcriptiondate,now/M,now+2h',
+            //range: 'transcriptiondate,now/M,now+2h',
+            range: 'transcriptiondate,now/M,now%2b2h',
           }}
           type="topTranscribersByPages"
           label={`Topplista transkriberare i ${currentMonth}`}
