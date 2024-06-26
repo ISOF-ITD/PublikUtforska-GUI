@@ -699,7 +699,20 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         </div>
 
         <div className="row">
-
+        <div className="twelve columns">
+          <i>
+              Delar av Isofs äldre arkivmaterial kan vara svårt att närma
+              sig och använda eftersom det återspeglar fördomar, stereotyper,
+              rasism och sexism. Här finns också ett förlegat och nedsättande
+              språkbruk som vi inte använder i dag.&nbsp;
+              <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
+                Läs mer om fördomar och äldre språkbruk i samlingarna.
+                &nbsp;
+                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+              </a>
+              <p />
+            </i>
+            </div>
           {
             (data.text || textElement || data.headwords || headwordsElement)
             && (
