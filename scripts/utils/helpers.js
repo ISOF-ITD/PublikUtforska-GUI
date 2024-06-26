@@ -211,6 +211,30 @@ export function getArchiveName(archiveOrg) {
 export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
   // Kontrollera att str är definierad
   if (!str) return '';
+
+  // Loopa över alla accessionsnummer utifall det finns flera accessionsnummer med separator semikolon ';'
+  let idparts = str.split(';');
+  let match = false;
+  idparts.forEach((part, index) => {
+    let trimmedPart = part.trim();
+    console.log("Part " + (index + 1) + ": " + trimmedPart);
+    // Matcha första delen av strängen som inte är en siffra (bokstäver)
+    // och andra delen som är minst en siffra (0 eller flera siffror)
+    // och behåll alla tecken efter siffran/siffrorna i andra delen
+    let matchpart = makeArchiveIdElementHumanReadable(trimmedPart, archiveOrg);
+    if (match) {
+      match = match + ';' + matchpart;
+    } else {
+      match = matchpart;
+    }
+  });
+  // Returnera en sträng med alla delar
+  return match;
+}
+
+// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
+// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
+export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
   // och andra delen som är minst en siffra (0 eller flera siffror)
   // och behåll alla tecken efter siffran/siffrorna i andra delen
