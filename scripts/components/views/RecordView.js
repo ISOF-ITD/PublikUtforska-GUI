@@ -707,7 +707,6 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             Information till läsaren: denna arkivhandling innehåller fördomar och språkbruk från en annan tid.
           </b>
           <br/>
-          <br/>
             Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
           <br/>
           <br/>
