@@ -17,9 +17,9 @@ export function getTitle(title, contents) {
     default:
       if (contents) {
         if (contents.length > 300) {
-          return `[${contents.substring(0, 284)} ${'(FÖRKORTAD TITEL)'}]`;
+          return `[${contents.substring(0, 284).replaceAll('\r', ' ')} ${'(FÖRKORTAD TITEL)'}]`;
         }
-        return `[${contents}]`;
+        return `[${contents.replaceAll('\r', ' ')}]`;
       }
       return null;
   }
