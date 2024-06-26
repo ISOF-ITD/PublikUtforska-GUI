@@ -51,7 +51,7 @@ export default function Uppteckningsblankett({
         </div>
       </div>
 
-      <label htmlFor="transcription_informant" className="u-full-width margin-bottom-zero">Fält under berättat av:</label>
+      <label htmlFor="transcription_informant" className="u-full-width margin-bottom-zero">Fält under berättat av (om det finns fler uppgifter nedskrivna):</label>
       <input id="transcription_informant" name="informantInformationInput" className="u-full-width margin-bottom-minimal" type="text" defaultValue={informantInformationInput} onChange={inputChangeHandler} />
 
       <div className="mark-above-img">
