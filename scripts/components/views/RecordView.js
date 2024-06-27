@@ -458,7 +458,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           </button>
           <div className={`record-text realkatalog-content display-line-breaks ${expandedHeadwords ? 'show' : 'hide'}`}>
             <b>
-            Information till läsaren: denna arkivhandling innehåller fördomar och språkbruk från en annan tid.
+            Information till läsaren: denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
             </b>
             <br/>
             Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
@@ -704,7 +704,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         <div className="row">
         <div className="twelve columns">
           <b>
-            Information till läsaren: denna arkivhandling innehåller fördomar och språkbruk från en annan tid.
+            Information till läsaren: denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
           </b>
           <br/>
             Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
