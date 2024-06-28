@@ -111,7 +111,7 @@ export default function RecordListItem({
   // used for fetching number of subrecordmedias and transcribed subrecordmedias
   // after the component has mounted
   // is called in the useEffect hook below
-  const fetchRecordMediaCount = async (functionScopeParams, setValue) => {
+  const fetchRecordMediaCount = async (functionScopeParams, setValue, setValueTranscribed) => {
     try {
       const queryParams = { ...functionScopeParams };
       const queryParamsString = Object.entries(queryParams)
@@ -120,7 +120,8 @@ export default function RecordListItem({
       const response = await fetch(`${config.apiUrl}mediacount?${queryParamsString}`);
       if (response.ok) {
         const json = await response.json();
-        setValue(json.data.value);
+        setValueTranscribed(json.data.value);
+        setValue(json.aggregations.media_count.doc_count);
       } else {
         throw new Error('Fel vid hämtning av antal sidor/filer');
       }
@@ -149,8 +150,8 @@ export default function RecordListItem({
       };
       // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord 
       if (transcriptiontype === 'sida') {
-        fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia);
-        fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
+        fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
+        //fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
       }
       fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
       fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
