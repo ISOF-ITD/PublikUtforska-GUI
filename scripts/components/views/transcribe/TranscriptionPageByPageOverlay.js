@@ -82,6 +82,12 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
         });
         const data = await response.json();
         // Hantera svaret vid framgång
+        // if (data.status === 'ok') {
+        // if there are any pages with 'isSent' set to true, reload the page
+        if (pages.some((page) => page.isSent)) {
+          // do a proper page reload:
+          // window.location.reload();
+        }
       } catch (error) {
         console.error(`Error when cancelling transcription: ${error}`);
       }

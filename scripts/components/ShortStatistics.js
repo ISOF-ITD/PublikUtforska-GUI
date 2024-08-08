@@ -15,6 +15,7 @@ export default function ShortStatistics({ visible, params, label }) {
   });
 
   const fetchStatistics = () => {
+    
     const queryParams = { ...config.requiredParams, ...params };
     const paramString = new URLSearchParams(queryParams).toString();
 
