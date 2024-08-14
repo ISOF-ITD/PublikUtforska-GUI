@@ -184,6 +184,8 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
     scrollToActiveThumbnail(currentPageIndex);
 
     const handleBeforeUnload = (event) => {
+      // Make sure transcribecancel called even if user leaves page
+      transcribeCancel();
       // Prevent page unload if there are unsaved changes in TranscriptionPageByPageOverlay
       // Visar "säker att du vill lämna":
       // The main use case for this event is to trigger a browser-generated confirmation dialog that asks users to confirm if they really want to leave the page when they try to close or reload it, or navigate somewhere else. This is intended to help prevent loss of unsaved data.
