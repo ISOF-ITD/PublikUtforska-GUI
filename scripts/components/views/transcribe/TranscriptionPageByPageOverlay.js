@@ -184,14 +184,19 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
     scrollToActiveThumbnail(currentPageIndex);
 
     const handleBeforeUnload = (event) => {
+      // Prevent page unload if there are unsaved changes in TranscriptionPageByPageOverlay
+      // Visar "säker att du vill lämna":
+      // The main use case for this event is to trigger a browser-generated confirmation dialog that asks users to confirm if they really want to leave the page when they try to close or reload it, or navigate somewhere else. This is intended to help prevent loss of unsaved data.
       event.preventDefault();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
+    // Körs när komponenten stängs, unmount, dvs tas bort från DOM
+    // Unmount görs nu alltid när komponenten inte visas
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      console.log('Cleaning up, recordDetails.id:', recordDetails.id);
+      //console.log('Cleaning up, recordDetails.id:', recordDetails.id);
       transcribeCancel();
     };
   }, []);
