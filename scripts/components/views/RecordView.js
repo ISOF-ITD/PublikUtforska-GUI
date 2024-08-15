@@ -230,8 +230,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       const imageDataItems = data.media.filter((dataItem) => dataItem.type === 'image');
       imageItems = imageDataItems.map((mediaItem, index) => {
         if (mediaItem.source.indexOf('.pdf') === -1) {
-          if (data.transcriptiontype && data.transcriptiontype == 'sida') {
-            // transcriptiontype = 'sida'
+          if (data.transcriptiontype && data.transcriptiontype == 'sida' && data.transcriptionstatus && data.transcriptionstatus == 'published') {
+            // transcriptiontype = 'sida' and transcriptionstatus = 'published'
             // Make rows with "columns": image-text and image
             return (
               <div className="row record-text-and-image">
@@ -887,9 +887,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         }
 
         {
-          // transcriptiontype = 'sida'
+          // transcriptiontype = 'sida' and transcriptionstatus = 'published'
           // If transcribed page by page: Text and images in dependent columns each row with dependent text and image
-          data.transcriptiontype && data.transcriptiontype == 'sida'
+          data.transcriptiontype && data.transcriptiontype == 'sida' && data.transcriptionstatus && data.transcriptionstatus == 'published'
           && (
             imageItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under'))
             && (
