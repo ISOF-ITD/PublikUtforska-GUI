@@ -420,6 +420,31 @@ div.display-line-breaks {
 	}
 }
 
+.record-text-and-image {
+	// as .record-text above but for rows with "columns" image-text (transcribed text for image) and image
+	// div with a white background, a slight shadow to make
+	// it look like it's lifted off the page, rounded corners
+	// to give it a more organic feel, and some padding to 
+	// separate the content from the edges.
+	background-color: #fff;
+	border-radius: 10px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	//display: inline-block;
+	font-family: "Source Serif Pro", serif;
+	line-height: 1.5;
+	margin: 0 0 20px;
+	max-width: 100%;
+	padding: 20px 30px;
+
+	&.small {
+		font-size: 0.8rem;
+		padding: 5px 7px;
+		line-height: 1.3;
+		margin: 6px 0 0;
+	}
+}
+
+
 .next-random-record-button-container {
 	position: relative;
 	height: 6px;

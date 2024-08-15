@@ -230,16 +230,40 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       const imageDataItems = data.media.filter((dataItem) => dataItem.type === 'image');
       imageItems = imageDataItems.map((mediaItem, index) => {
         if (mediaItem.source.indexOf('.pdf') === -1) {
-          return (
-            <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
-              <img src={config.imageUrl + mediaItem.source} alt="" />
-              {
-                mediaItem.title
-                && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
-              }
-            </div>
-          );
+          if (data.transcriptiontype && data.transcriptiontype == 'sida') {
+            // transcriptiontype = 'sida'
+            // Make rows with "columns": image-text and image
+            return (
+              <div className="row record-text-and-image">
+                <div className="six columns" >
+                  {mediaItem.text}
+                </div>
+                <div className="six columns">
+                  <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
+                    <img src={config.imageUrl + mediaItem.source} alt="" />
+                    {
+                      mediaItem.title
+                      && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
+                    }
+                  </div>
+                </div>
+              </div>
+            );
+          } else {
+            // transcriptiontype != 'sida'
+            // Independent columns: one with text and one with images
+            return (
+              <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
+                <img src={config.imageUrl + mediaItem.source} alt="" />
+                {
+                  mediaItem.title
+                  && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
+                }
+              </div>
+            );
+          }
         }
+        return null; // Return null to avoid undefined elements in the array
       });
 
       const audioDataItems = data.media.filter((dataItem) => dataItem.type === 'audio');
@@ -373,10 +397,10 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       // special case: all pages are transcribed:
       if (data.transcriptiontype === 'sida' && data.media.every((page) => page.transcriptionstatus !== 'readytotranscribe')) {
         textElement = <p>{l('Den här uppteckningen är avskriven och granskas.')}</p>;
-        
+
       }
     } else if (data.transcriptionstatus === 'undertranscription') {
-        textElement = <p>{l('Den här uppteckningen håller på att transkriberas av annan användare.')}</p>;
+      textElement = <p>{l('Den här uppteckningen håller på att transkriberas av annan användare.')}</p>;
 
     } else {
       // Om posten innehåller minst en pdf fil
@@ -830,8 +854,13 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 }
 
                 {
-                  (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
-                  && imageItems
+                  // transcriptiontype != 'sida'
+                  // If not transcribed page by page: Text and images in independent columns
+                  data.transcriptiontype && data.transcriptiontype !== 'sida'
+                  && (
+                    (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+                    && imageItems
+                  )
                 }
 
                 {
@@ -855,6 +884,23 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
 
             </div>
           )
+        }
+
+        {
+          // transcriptiontype = 'sida'
+          // If transcribed page by page: Text and images in dependent columns each row with dependent text and image
+          data.transcriptiontype && data.transcriptiontype == 'sida'
+          && (
+            imageItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under'))
+            && (
+              { imageItems }
+            )
+          )
+        }
+
+        {
+          (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+          && imageItems
         }
 
         <div className="row">
