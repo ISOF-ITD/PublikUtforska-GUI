@@ -1,4 +1,3 @@
-const axios = require('axios');
 const xmlbuilder = require('xmlbuilder');
 const fs = require('fs');
 
@@ -9,9 +8,10 @@ async function fetchDocuments(size, from = 0) {
     try {
         // Log the fetch operation details
         console.log(`Fetching documents: Size = ${size}, From = ${from}`);
-        
-        const response = await axios.get(`${BASE_URL}&size=${size}&from=${from}`);
-        return response.data.data;
+
+        const response = await fetch(`${BASE_URL}&size=${size}&from=${from}`);
+        const data = await response.json();
+        return data.data;
     } catch (error) {
         console.error('Error fetching documents:', error);
         return [];
@@ -31,12 +31,14 @@ async function createSitemap() {
             break;
         }
 
-        documents.forEach(doc => {
+        documents.forEach((doc) => {
             if (doc._source.id) {
                 urlSet.ele('url')
                     .ele('loc', `${SITEMAP_BASE_URL}${doc._source.id}`).up()
-                    .ele('lastmod', new Date().toISOString().split('T')[0]).up()
-                    .ele('changefreq', 'monthly').up()
+                    .ele('lastmod', new Date().toISOString().split('T')[0])
+                    .up()
+                    .ele('changefreq', 'monthly')
+                    .up()
                     .ele('priority', 0.5);
             }
         });

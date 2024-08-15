@@ -1,7 +1,6 @@
 // Användningsfall: https://github.com/ISOF-ITD/kartplattformen_common/blob/master/anvandningsfall/transkribera_uppteckning_sida_for_sida.md
 
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import config from '../../../config';
 import { l } from '../../../lang/Lang';
 import TranscriptionForm from './TranscriptionForm';
@@ -82,6 +81,12 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
         });
         const data = await response.json();
         // Hantera svaret vid framgång
+        // if (data.status === 'ok') {
+        // if there are any pages with 'isSent' set to true, reload the page
+        if (pages.some((page) => page.isSent)) {
+          // do a proper page reload:
+          // window.location.reload();
+        }
       } catch (error) {
         console.error(`Error when cancelling transcription: ${error}`);
       }
@@ -198,7 +203,7 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
     // Unmount görs nu alltid när komponenten inte visas
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      //console.log('Cleaning up, recordDetails.id:', recordDetails.id);
+      // console.log('Cleaning up, recordDetails.id:', recordDetails.id);
       transcribeCancel();
     };
   }, []);
@@ -234,9 +239,12 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
       const sendButton = event.target;
       sendButton.textContent = 'Skickar...';
 
-      axios.post(`${config.restApiUrl}transcribe/`, formData)
-        .then((response) => {
-          const { data: responseData } = response;
+      fetch(`${config.restApiUrl}transcribe/`, {
+        method: 'POST',
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((responseData) => {
           if (responseData.success || responseData.success === 'true') {
             // Markera sidan som skickad och sparad
             setPages((prevPages) => {

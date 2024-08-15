@@ -15,7 +15,6 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@react-spring/web": "^9.7.3",
-    "axios": "^1.6.7",
     "d3": "^7.8.5",
     "eventbusjs": "^0.2.0",
     "html-webpack-plugin": "^5.6.0",
