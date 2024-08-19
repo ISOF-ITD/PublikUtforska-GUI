@@ -234,11 +234,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             // transcriptiontype = 'sida' and transcriptionstatus = 'published'
             // Make rows with "columns": image-text and image
             return (
-              <div className="row record-text-and-image">
-                <div className="six columns" >
+              <div className="row">
+                <div className="eight columns record-text display-line-breaks">
                   {mediaItem.text}
                 </div>
-                <div className="six columns">
+                <div className="four columns">
                   <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
                     <img src={config.imageUrl + mediaItem.source} alt="" />
                     {
