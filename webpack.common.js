@@ -1,6 +1,5 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -62,11 +61,5 @@ module.exports = {
       robots: 'index, follow',
     },
     template: './index.html',
-  }),
-  new CopyWebpackPlugin({
-    patterns: [
-      { from: 'robots.txt', to: 'robots.txt' },
-      { from: 'sitemap.xml', to: 'sitemap.xml' },
-    ],
   })],
 };

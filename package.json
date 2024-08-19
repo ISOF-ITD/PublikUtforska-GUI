@@ -6,7 +6,8 @@
   "scripts": {
     "start": "webpack serve --open --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
-    "create-sitemap": "node create-sitemap.js"
+    "create-xml-sitemap": "node create-xml-sitemap.js",
+    "create-txt-sitemap": "node create-txt-sitemap.js"
   },
   "author": "",
   "license": "ISC",

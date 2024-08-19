@@ -502,19 +502,24 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             Uppgifter från  äldre innehållsregister
           </button>
           <div className={`record-text realkatalog-content display-line-breaks ${expandedHeadwords ? 'show' : 'hide'}`}>
-            <i>
-              Delar av Isofs äldre arkivmaterial kan vara svårt att närma
-              sig och använda eftersom det återspeglar fördomar, stereotyper,
-              rasism och sexism. Här finns också ett förlegat och nedsättande
-              språkbruk som vi inte använder i dag.
-              <br />
-              <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
-                Läs mer om fördomar och äldre språkbruk i samlingarna.
-                &nbsp;
-                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
-              </a>
-              <p />
-            </i>
+            <b>
+              Information till läsaren: denna arkivhandling kan innehålla
+              fördomar och språkbruk från en annan tid.
+            </b>
+            <br />
+            Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda
+            då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
+            <br />
+            <b>
+              Läs mer
+            </b>
+            <br />
+            <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
+              Fördomar och äldre språkbruk i samlingarna.
+              &nbsp;
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+            </a>
+            <p />
             <div
               // Lösning med säkerhetsbrist! Fundera på bättre lösning!
               dangerouslySetInnerHTML={{
@@ -744,7 +749,21 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         </div>
 
         <div className="row">
-
+          <div className="ten columns content-warning">
+            <small><i>
+              <b>Information till läsaren:</b> Denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
+              <br />
+              Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
+              <br />
+              <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna" target='_blank'>
+                Läs mer om Fördomar och äldre språkbruk i samlingarna.
+                &nbsp;
+                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+              </a>
+            </i></small>
+          </div>
+        </div>
+        <div className="row">
           {
             (data.text || textElement || data.headwords || headwordsElement)
             && (
