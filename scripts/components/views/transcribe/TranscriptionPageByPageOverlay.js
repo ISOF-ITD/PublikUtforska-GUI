@@ -104,7 +104,17 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
 
     // Uppdatera den aktuella sidan och återställ text och kommentar
     setCurrentPageIndex(index);
-    setTranscriptionText(pages[index]?.text || '');
+    if ((pages[index].transcriptionstatus && pages[index].transcriptionstatus !== 'readytotranscribe')) {
+      setTranscriptionText(pages[index]?.text || '');
+    } else {
+      // If ready to transcribe clear text field if it is not transcribed by user
+      if (pages[index].unsavedChanges == true) { 
+        setTranscriptionText(pages[index]?.text || '');
+      } else
+      {
+        setTranscriptionText('');
+      }
+    }
     setComment(pages[index]?.comment || '');
   };
 
@@ -296,6 +306,16 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
     const { name, value } = event.target;
     switch (name) {
       case 'transcriptionText':
+/*         console.log('pages[index].unsavedChanges: ' + pages[currentPageIndex].unsavedChanges)
+        if ((pages[currentPageIndex].transcriptionstatus && pages[currentPageIndex].transcriptionstatus !== 'readytotranscribe')) {
+          setTranscriptionText(pages[currentPageIndex]?.text || '');
+        } else {
+          // If ready to transcribe clear text field if not transcribed by user
+          if (pages[currentPageIndex].unsavedChanges == false) {
+            setTranscriptionText('');
+          }
+        }
+ */        // Old
         setTranscriptionText(value);
         break;
       case 'informantNameInput':
