@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons';
@@ -7,13 +7,15 @@ import config from '../../config';
 function IntroOverlay({ forceShow, onClose }) {
   const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay003') !== 'true');
   const [isLoading, setIsLoading] = useState(true);
+  const iframeRef = useRef(null); // Create ref for ifram
   // useState hook for managing visibility of the overlay
   // const [showOverlay, setShowOverlay] = useState(true);
   // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
 
   const resetIframeSrc = () => {
-    const iframe = document.getElementById('iframe');
-    iframe.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`;
+    if (iframeRef.current) {
+      iframeRef.current.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`;
+    }
   };
 
   const handleKeyDown = (event) => {
@@ -152,6 +154,7 @@ function IntroOverlay({ forceShow, onClose }) {
               : null
           }
           <iframe
+            ref={iframeRef}
             id="iframe"
             title="iframe"
             src={`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`}
