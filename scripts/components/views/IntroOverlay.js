@@ -7,14 +7,16 @@ import config from '../../config';
 function IntroOverlay({ forceShow, onClose }) {
   const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay003') !== 'true');
   const [isLoading, setIsLoading] = useState(true);
-  const iframeRef = useRef(null); // Create ref for ifram
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+  const iframeRef = useRef(null); // Create ref for iframe
   // useState hook for managing visibility of the overlay
+  const [currentIframeSrc, setCurrentIframeSrc] = useState('');
   // const [showOverlay, setShowOverlay] = useState(true);
   // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
 
   const resetIframeSrc = () => {
     if (iframeRef.current) {
-      iframeRef.current.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`;
+      setCurrentIframeSrc(`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`);
     }
   };
 
@@ -31,15 +33,30 @@ function IntroOverlay({ forceShow, onClose }) {
     }
   }, [forceShow]);
 
+  // useEffect to check when iframeRef.current is set (i.e., iframe is mounted)
+  useEffect(() => {
+    if (iframeRef.current) {
+      setIsIframeLoaded(true); // Sätt state till true när iframen är tillgänglig
+    }
+  }, [iframeRef.current]); // Lägg till iframeRef.current som beroende
+
+  useEffect(() => {
+    if (iframeRef.current) {
+    iframeRef.current.src = currentIframeSrc;
+    }
+  }, [currentIframeSrc]);
+
   useEffect(() => {
     const handleLocationChange = () => {
       const urlParams = new URLSearchParams(window.location.search);
       // Senare: Vill man "maskera" kontext-värdet i URL:t, kan man använda t ex base64-kodning
       const urlIframeSrc = urlParams.get('k');
       if (urlIframeSrc) {
-        // setIframeSrc(urlIframeSrc);
-        const iframe = document.getElementById('iframe');
-        iframe.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${urlIframeSrc}`;
+        if (iframeRef.current) {
+          iframeRef.current.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${urlIframeSrc}`;
+          // setCurrentIframeSrc(`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${urlIframeSrc}`)
+        }
+        setShowOverlay(true);
       }
     };
     handleLocationChange();
@@ -48,7 +65,7 @@ function IntroOverlay({ forceShow, onClose }) {
     return () => {
       window.onpopstate = null;
     };
-  }, []);
+  }, [isIframeLoaded]);
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -91,9 +108,9 @@ function IntroOverlay({ forceShow, onClose }) {
   };
 
   // If 'showOverlay' is false, we don't render anything
-  if (!showOverlay) {
-    return null;
-  }
+  // if (!showOverlay) {
+  //   return null;
+  // }
 
   // Setting the class for the main div. If 'showOverlay' is true, we add 'visible' to the class
   const overlayClass = `overlay-container light-modal intro-overlay ${showOverlay ? 'visible' : ''}`;
@@ -164,7 +181,10 @@ function IntroOverlay({ forceShow, onClose }) {
               height: '100%',
               display: isLoading ? 'none' : 'block',
             }}
-            onLoad={() => setIsLoading(false)}
+            onLoad={() => {
+              setIsLoading(false);
+              setIsIframeLoaded(true); // När iframen laddas, sätt state till true
+            }}
           />
         </div>
       </div>
