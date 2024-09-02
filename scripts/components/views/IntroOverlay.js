@@ -2,120 +2,90 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons';
+import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 
 function IntroOverlay({ forceShow, onClose }) {
-  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay003') !== 'true');
   const [isLoading, setIsLoading] = useState(true);
-  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
-  const iframeRef = useRef(null); // Create ref for iframe
-  // useState hook for managing visibility of the overlay
-  const [currentIframeSrc, setCurrentIframeSrc] = useState('');
-  // const [showOverlay, setShowOverlay] = useState(true);
-  // const [iframeSrc, setIframeSrc] = useState(config.kontextStartPage);
+  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay005') !== 'true');
+  const iframeRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const resetIframeSrc = () => {
-    if (iframeRef.current) {
-      setCurrentIframeSrc(`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`);
-    }
+  const overlayClass = `overlay-container light-modal intro-overlay ${showOverlay ? 'visible' : ''}`;
+
+  const getKParam = () => {
+    const params = new URLSearchParams(location.search);
+    return params.get('k') || config.kontextStartPage;
   };
 
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      event.target.click();
-    }
+  const updateKParam = (newPath) => {
+    const params = new URLSearchParams(location.search);
+    params.set('k', newPath);
+    navigate({ search: params.toString() }, { replace: true });
   };
 
-  // React to changes in forceShow
   useEffect(() => {
     if (forceShow) {
       setShowOverlay(true);
     }
   }, [forceShow]);
 
-  // useEffect to check when iframeRef.current is set (i.e., iframe is mounted)
   useEffect(() => {
-    if (iframeRef.current) {
-      setIsIframeLoaded(true); // Sätt state till true när iframen är tillgänglig
+    const params = new URLSearchParams(location.search);
+    if (!params.has('k')) {
+      updateKParam(config.kontextStartPage);
     }
-  }, [iframeRef.current]); // Lägg till iframeRef.current som beroende
+  }, [location]);
 
   useEffect(() => {
+    const kParam = getKParam();
     if (iframeRef.current) {
-    iframeRef.current.src = currentIframeSrc;
+      const iframeSrc = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${kParam}`;
+      iframeRef.current.src = iframeSrc;
     }
-  }, [currentIframeSrc]);
-
-  useEffect(() => {
-    const handleLocationChange = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      // Senare: Vill man "maskera" kontext-värdet i URL:t, kan man använda t ex base64-kodning
-      const urlIframeSrc = urlParams.get('k');
-      if (urlIframeSrc) {
-        if (iframeRef.current) {
-          iframeRef.current.src = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${urlIframeSrc}`;
-          // setCurrentIframeSrc(`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${urlIframeSrc}`)
-        }
-        setShowOverlay(true);
-      }
-    };
-    handleLocationChange();
-    window.onpopstate = handleLocationChange;
-
-    return () => {
-      window.onpopstate = null;
-    };
-  }, [isIframeLoaded]);
+  }, [location]);
 
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.data.status && event.data.status !== 200) {
-        resetIframeSrc(); // Återställ eller hantera felet på lämpligt sätt
-      }
-      
-      if (event.data.newSrc) {
-        const newUrl = new URL(window.location);
-        newUrl.searchParams.set('k', event.data.newSrc.split(config.kontextBasePath)[1]);
-        window.history.pushState({}, '', newUrl); // Uppdaterar URL utan att ladda om
+      if (event.origin !== window.location.origin) return;
+
+      if (!event.data || !event.data.newSrc) return;
+
+      try {
+        let newUrl;
+        if (event.data.newSrc.startsWith('http')) {
+          newUrl = new URL(event.data.newSrc);
+        } else {
+          newUrl = new URL(event.data.newSrc, window.location.origin);
+        }
+
+        const newPath = newUrl.pathname.replace(config.kontextBasePath, '');
+        updateKParam(newPath);
+      } catch (error) {
+        console.error('Error constructing URL:', error);
       }
     };
 
     window.addEventListener('message', handleMessage);
-
-    // Rensa upp
-    return () => window.removeEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
+
+  const handleIntroductionClick = () => {
+    updateKParam(config.kontextStartPage);
+  };
 
   const handleClose = () => {
     setShowOverlay(false);
-    setIsLoading(true);
-    const url = new URL(window.location);
-    url.searchParams.delete('k');
-    window.history.pushState({}, '', url);
-    if (onClose) onClose(); // Kalla på onClose om den finns
+    if (onClose) onClose();
   };
 
-  // Function to handle checkbox change
   const handleDontShowAgain = () => {
-    // When the checkbox is checked, we set 'hideIntroOverlay003' in localStorage and hide the overlay
-    // As we are using localStorage, this value will persist indefinitely (until manually cleared)
-    handleClose();
-    localStorage.setItem('hideIntroOverlay003', 'true');
-  };
-
-  const handleCloseButtonClick = () => {
+    localStorage.setItem('hideIntroOverlay005', 'true');
     handleClose();
   };
-
-  // If 'showOverlay' is false, we don't render anything
-  // if (!showOverlay) {
-  //   return null;
-  // }
-
-  // Setting the class for the main div. If 'showOverlay' is true, we add 'visible' to the class
-  const overlayClass = `overlay-container light-modal intro-overlay ${showOverlay ? 'visible' : ''}`;
-
-  if (!showOverlay) return null;
 
   return (
     <div className={overlayClass}>
@@ -123,68 +93,59 @@ function IntroOverlay({ forceShow, onClose }) {
         <div className="overlay-header">
           <span
             className="text"
-            onClick={resetIframeSrc}
-            onKeyDown={(event) => event.key === 'Enter' && resetIframeSrc()}
+            style={{ cursor: 'pointer' }}
+            onClick={handleIntroductionClick}
             role="button"
             tabIndex="0"
-            style={{
-              cursor: 'pointer',
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') handleIntroductionClick();
             }}
           >
             <FontAwesomeIcon icon={faBookOpen} />
             &nbsp; Introduktion
           </span>
           <div className="controls">
-            {/* If 'hideIntroOverlay003' is true in localStorage,
-            we don't render the link to hide it again */}
-            { localStorage.getItem('hideIntroOverlay003') === 'true'
-              ? null
-              : (
-                <span
-                  className="control-link"
-                  onClick={handleDontShowAgain}
-                  onKeyDown={handleKeyDown}
-                  role="button"
-                  tabIndex="0"
-                >
-                  Visa inte igen
+            {localStorage.getItem('hideIntroOverlay005') === 'true' ? null : (
+              <span
+                className="control-link"
+                onClick={handleDontShowAgain}
+                role="button"
+                tabIndex="0"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') handleDontShowAgain();
+                }}
+              >
+                Visa inte igen
               </span>
-              )
-            }
+            )}
             <span
-              onClick={handleCloseButtonClick}
-              onKeyDown={handleKeyDown}
+              onClick={handleClose}
               role="button"
               tabIndex="0"
               className="intro-close-button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') handleClose();
+              }}
             >
               Stäng
             </span>
-
           </div>
         </div>
 
         <div className="content">
-          {
-            isLoading
-              ? <div className="iframe-loading" />
-              : null
-          }
+          {isLoading ? <div className="iframe-loading" /> : null}
           <iframe
             ref={iframeRef}
             id="iframe"
             title="iframe"
-            src={`${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${config.kontextStartPage}`}
+            src=""
             style={{
               border: 'none',
               width: '100%',
               height: '100%',
               display: isLoading ? 'none' : 'block',
             }}
-            onLoad={() => {
-              setIsLoading(false);
-              setIsIframeLoaded(true); // När iframen laddas, sätt state till true
-            }}
+            onLoad={() => setIsLoading(false)}
           />
         </div>
       </div>
@@ -192,9 +153,6 @@ function IntroOverlay({ forceShow, onClose }) {
   );
 }
 
-export default IntroOverlay;
-
-// props validation
 IntroOverlay.propTypes = {
   forceShow: PropTypes.bool,
   onClose: PropTypes.func,
@@ -204,3 +162,5 @@ IntroOverlay.defaultProps = {
   forceShow: false,
   onClose: null,
 };
+
+export default IntroOverlay;
