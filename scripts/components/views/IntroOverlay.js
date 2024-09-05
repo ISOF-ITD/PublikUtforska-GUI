@@ -7,7 +7,7 @@ import config from '../../config';
 
 function IntroOverlay({ forceShow, onClose }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay005') !== 'true');
+  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay') !== 'true');
   const iframeRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,9 +25,31 @@ function IntroOverlay({ forceShow, onClose }) {
     navigate({ search: params.toString() }, { replace: true });
   };
 
+  // Funktion för att kolla om overlayen ska visas igen
+  const shouldShowOverlay = () => {
+    const lastShownDate = localStorage.getItem('lastIntroOverlayShownDate');
+    const hideOverlay = localStorage.getItem('hideIntroOverlay') === 'true';
+
+    if (lastShownDate) {
+      const lastDate = new Date(lastShownDate);
+      const currentDate = new Date();
+      const diffInDays = (currentDate - lastDate) / (1000 * 60 * 60 * 24);
+
+      // Visa overlayen om det har gått mer än 30 dagar
+      if (diffInDays > 30) {
+        return true;
+      }
+    }
+
+    // Visa overlayen om användaren inte har valt "Visa inte igen" och det har gått mindre än 30 dagar
+    return !hideOverlay;
+  };
+
   useEffect(() => {
-    if (forceShow) {
+    if (forceShow || shouldShowOverlay()) {
       setShowOverlay(true);
+      // Uppdatera datumet för senaste visning
+      localStorage.setItem('lastIntroOverlayShownDate', new Date().toISOString());
     }
   }, [forceShow]);
 
@@ -83,7 +105,7 @@ function IntroOverlay({ forceShow, onClose }) {
   };
 
   const handleDontShowAgain = () => {
-    localStorage.setItem('hideIntroOverlay005', 'true');
+    localStorage.setItem('hideIntroOverlay', 'true');
     handleClose();
   };
 
@@ -105,7 +127,7 @@ function IntroOverlay({ forceShow, onClose }) {
             &nbsp; Introduktion
           </span>
           <div className="controls">
-            {localStorage.getItem('hideIntroOverlay005') === 'true' ? null : (
+            {localStorage.getItem('hideIntroOverlay') === 'true' ? null : (
               <span
                 className="control-link"
                 onClick={handleDontShowAgain}
