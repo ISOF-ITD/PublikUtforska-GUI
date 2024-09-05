@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
 import RecordListWrapper from './views/RecordListWrapper';
-import StatisticsOverlay from './StatisticsOverlay';
+// import StatisticsOverlay from './StatisticsOverlay';
 import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
@@ -19,6 +19,7 @@ import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 
 import MapWrapper from './MapWrapper';
+import Header from './Header';
 import Footer from './Footer';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
@@ -125,6 +126,8 @@ export default function Application({
         {
           children
         }
+
+        <Header />
 
         <MapWrapper
           mapMarkerClick={mapMarkerClick}

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 
@@ -25,28 +23,8 @@ function IntroOverlay({ forceShow, onClose }) {
     navigate({ search: params.toString() }, { replace: true });
   };
 
-  // Funktion för att kolla om overlayen ska visas igen
-  const shouldShowOverlay = () => {
-    const lastShownDate = localStorage.getItem('lastIntroOverlayShownDate');
-    const hideOverlay = localStorage.getItem('hideIntroOverlay') === 'true';
-
-    if (lastShownDate) {
-      const lastDate = new Date(lastShownDate);
-      const currentDate = new Date();
-      const diffInDays = (currentDate - lastDate) / (1000 * 60 * 60 * 24);
-
-      // Visa overlayen om det har gått mer än 30 dagar
-      if (diffInDays > 30) {
-        return true;
-      }
-    }
-
-    // Visa overlayen om användaren inte har valt "Visa inte igen" och det har gått mindre än 30 dagar
-    return !hideOverlay;
-  };
-
   useEffect(() => {
-    if (forceShow || shouldShowOverlay()) {
+    if (forceShow) {
       setShowOverlay(true);
       // Uppdatera datumet för senaste visning
       localStorage.setItem('lastIntroOverlayShownDate', new Date().toISOString());
@@ -123,8 +101,7 @@ function IntroOverlay({ forceShow, onClose }) {
               if (e.key === 'Enter' || e.key === ' ') handleIntroductionClick();
             }}
           >
-            <FontAwesomeIcon icon={faBookOpen} />
-            &nbsp; Introduktion
+            Meny
           </span>
           <div className="controls">
             {localStorage.getItem('hideIntroOverlay') === 'true' ? null : (
