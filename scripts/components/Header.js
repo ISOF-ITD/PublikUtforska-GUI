@@ -1,19 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
+import { useLocation } from 'react-router-dom';
 import IntroOverlay from './views/IntroOverlay';
 import { l } from '../lang/Lang';
 
 export default function Header() {
-  const [forceShowIntroOverlay, setForceShowIntroOverlay] = useState(false);
+  const [showIntroOverlay, setShowIntroOverlay] = useState(false);
+  const location = useLocation(); // Använd useLocation för att få tillgång till current route
+  const initialLoad = useRef(true); // En ref som håller koll på om appen precis laddats
+
+
+  // Kontrollera om användaren är på root-routen och uppdatera state.
+  useEffect(() => {
+    if (initialLoad.current && location.pathname === '/') {
+      setShowIntroOverlay(true);
+    }
+    initialLoad.current = false; // Efter första laddningen sätter vi den till false
+  }, [location]); // Uppdatera när location förändras
 
   // Handle showing the overlay
   const handleShowIntro = () => {
-    setForceShowIntroOverlay(true);
+    setShowIntroOverlay(true);
   };
 
   const handleCloseOverlay = () => {
-    setForceShowIntroOverlay(false);
+    setShowIntroOverlay(false);
   };
 
   // Handle keyboard interaction (Enter key)
@@ -36,13 +48,13 @@ export default function Header() {
               cursor: 'pointer',
             }}
           >
-            <FontAwesomeIcon icon={faBars} />
+            <FontAwesomeIcon icon={faWindowMaximize} />
             &nbsp;
             {l('Meny')}
           </div>
         </div>
       </header>
-      <IntroOverlay forceShow={forceShowIntroOverlay} onClose={handleCloseOverlay} />
+      <IntroOverlay show={showIntroOverlay} onClose={handleCloseOverlay} />
     </>
   );
 }

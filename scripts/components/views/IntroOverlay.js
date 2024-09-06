@@ -3,14 +3,13 @@ import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 
-function IntroOverlay({ forceShow, onClose }) {
+function IntroOverlay({ show, onClose }) {
   const [isLoading, setIsLoading] = useState(true);
-  const [showOverlay, setShowOverlay] = useState(localStorage.getItem('hideIntroOverlay') !== 'true');
   const iframeRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const overlayClass = `overlay-container light-modal intro-overlay ${showOverlay ? 'visible' : ''}`;
+  const overlayClass = `overlay-container light-modal intro-overlay ${show ? 'visible' : ''}`;
 
   const getKParam = () => {
     const params = new URLSearchParams(location.search);
@@ -22,14 +21,6 @@ function IntroOverlay({ forceShow, onClose }) {
     params.set('k', newPath);
     navigate({ search: params.toString() }, { replace: true });
   };
-
-  useEffect(() => {
-    if (forceShow) {
-      setShowOverlay(true);
-      // Uppdatera datumet för senaste visning
-      localStorage.setItem('lastIntroOverlayShownDate', new Date().toISOString());
-    }
-  }, [forceShow]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -78,13 +69,7 @@ function IntroOverlay({ forceShow, onClose }) {
   };
 
   const handleClose = () => {
-    setShowOverlay(false);
     if (onClose) onClose();
-  };
-
-  const handleDontShowAgain = () => {
-    localStorage.setItem('hideIntroOverlay', 'true');
-    handleClose();
   };
 
   return (
@@ -104,7 +89,7 @@ function IntroOverlay({ forceShow, onClose }) {
             Meny
           </span>
           <div className="controls">
-            {localStorage.getItem('hideIntroOverlay') === 'true' ? null : (
+            {/* {localStorage.getItem('hideIntroOverlay') === 'true' ? null : (
               <span
                 className="control-link"
                 onClick={handleDontShowAgain}
@@ -116,7 +101,7 @@ function IntroOverlay({ forceShow, onClose }) {
               >
                 Visa inte igen
               </span>
-            )}
+            )} */}
             <span
               onClick={handleClose}
               role="button"
@@ -153,12 +138,12 @@ function IntroOverlay({ forceShow, onClose }) {
 }
 
 IntroOverlay.propTypes = {
-  forceShow: PropTypes.bool,
+  show: PropTypes.bool,
   onClose: PropTypes.func,
 };
 
 IntroOverlay.defaultProps = {
-  forceShow: false,
+  show: false,
   onClose: null,
 };
 
