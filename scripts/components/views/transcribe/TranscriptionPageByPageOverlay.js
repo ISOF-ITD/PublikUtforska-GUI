@@ -362,7 +362,7 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
   };
 
   return (
-    <div className="overlay-container visible">
+    <div className="overlay-container visible transcription-page-by-page-overlay">
       <div className="overlay-window large">
         <OverlayHeader recordDetails={recordDetails} handleHideOverlay={handleHideOverlay} />
         <div className="row">
