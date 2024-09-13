@@ -397,7 +397,8 @@ div.display-line-breaks {
 	flex-direction: column;
 }
 
-.record-text {
+.record-text-and-image {
+	// as old .record-text but for rows with "columns" image-text (transcribed text for image) and image
 	// div with a white background, a slight shadow to make
 	// it look like it's lifted off the page, rounded corners
 	// to give it a more organic feel, and some padding to 
@@ -405,7 +406,7 @@ div.display-line-breaks {
 	background-color: #fff;
 	border-radius: 10px;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-	display: inline-block;
+	// display: inline-block;
 	font-family: "Source Serif Pro", serif;
 	line-height: 1.5;
 	margin: 0 0 20px;
@@ -418,6 +419,18 @@ div.display-line-breaks {
 		line-height: 1.3;
 		margin: 6px 0 0;
 	}
+}
+
+
+
+.record-text {
+	// div with a white background, a slight shadow to make
+	// it look like it's lifted off the page, rounded corners
+	// to give it a more organic feel, and some padding to 
+	// separate the content from the edges.
+	&:extend(.record-text-and-image);
+
+	display: inline-block;
 }
 
 

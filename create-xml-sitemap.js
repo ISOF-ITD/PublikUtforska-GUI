@@ -47,7 +47,7 @@ async function createSitemap() {
     }
 
     const xml = urlSet.end({ pretty: true });
-    fs.writeFileSync('sitemap.xml', xml);
+    fs.writeFileSync('www/sitemap.xml', xml);
     console.log('Sitemap created successfully.');
 }
 
