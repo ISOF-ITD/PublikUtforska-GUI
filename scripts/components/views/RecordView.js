@@ -121,7 +121,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       // Maybe not needed as hide of overlay should call transcribecancel so
       // transcriptionstatus should be back at "readytotranscribe" 
       // BUT maybe needed to get other record data as title back? But is title transcribed in page-by-page?
-      eventBus.addEventListener('overlay.hide', forceUpdateFunc);
+      // KOMMENTAR (Rico): Följande rad triggrar en oönskad omladdning när man stänger
+      // transcriptionPageByPageOverlay, därför tar jag bort det:
+      // -----------------------
+      // eventBus.addEventListener('overlay.hide', forceUpdateFunc);
+      // -----------------------
     }
     // on unmount, set the document title back to the site title
     return () => {
