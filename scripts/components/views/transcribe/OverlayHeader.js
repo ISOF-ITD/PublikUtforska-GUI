@@ -10,22 +10,26 @@ function OverlayHeader({ recordDetails, handleHideOverlay }) {
     <div className="overlay-header">
       Skriv av
       {' '}
-      {recordDetails.title || recordDetails.id}
+      {recordDetails.title || 'uppteckning'}
+      {recordDetails.archiveId && (
+        <small>
+          &nbsp;(ur {recordDetails.archiveId}
+          {recordDetails.placeString ? ` ${recordDetails.placeString}` : ''}
+          )
+        </small>
+      )}
       {' '}
-      {recordDetails.transcriptionType === 'sida' ? '(sida för sida)' : ''}
+      {recordDetails.transcriptionType === 'sida' && (
+        <small>(sida för sida)</small>
+      )}
       <button type="button" title="stäng" className="close-button white" onClick={handleHideOverlay}>Stäng</button>
-      {
-      !config.siteOptions.hideContactButton
-      && <FeedbackButton type="Uppteckning" />
-    }
-      {
-      !config.siteOptions.hideContactButton
-      && <ContributeInfoButton type="Uppteckning" />
-    }
-      {
-      !config.siteOptions.hideContactButton
-      && <TranscriptionHelpButton type="Uppteckning" />
-    }
+      {!config.siteOptions.hideContactButton && (
+        <>
+          <FeedbackButton type="Uppteckning" />
+          <ContributeInfoButton type="Uppteckning" />
+          <TranscriptionHelpButton type="Uppteckning" />
+        </>
+      )}
     </div>
   );
 }
