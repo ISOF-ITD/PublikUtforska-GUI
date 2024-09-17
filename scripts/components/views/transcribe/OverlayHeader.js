@@ -22,7 +22,14 @@ function OverlayHeader({ recordDetails, handleHideOverlay }) {
       {recordDetails.transcriptionType === 'sida' && (
         <small>(sida för sida)</small>
       )}
-      <button type="button" title="stäng" className="close-button white" onClick={handleHideOverlay}>Stäng</button>
+      <button
+        type="button"
+        title="stäng"
+        className="close-button white"
+        onClick={handleHideOverlay}
+        aria-label="Stäng"
+      />
+
       {!config.siteOptions.hideContactButton && (
         <>
           <FeedbackButton type="Uppteckning" />
