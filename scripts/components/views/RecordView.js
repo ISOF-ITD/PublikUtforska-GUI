@@ -240,7 +240,15 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             return (
               <div className="row record-text-and-image">
                 <div className="eight columns display-line-breaks">
-                  {mediaItem.text}
+                  <div>
+                    {mediaItem.text}
+                  </div>
+                  {mediaItem.comment && mediaItem.comment.trim() !== '' && (
+                    <div>
+                      <br /><strong>Kommentar:</strong><br />
+                      {mediaItem.comment}
+                    </div>
+                  )}
                 </div>
                 <div className="four columns">
                   <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
