@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 
@@ -77,6 +77,7 @@ export default function RecordList({
   };
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [records, setRecords] = useState([]);
   const [fetchingPage, setFetchingPage] = useState(false);
@@ -97,6 +98,17 @@ export default function RecordList({
     setFilter(event.target.value);
     setCurrentPage(1);
   };
+
+  // If parameter showlist in url show record list using routePopup event
+  // Seems to have to be placed here BUT why? Seems it could be placed anywhere in the code. Test to place it in RoutePopupWindow stopped to work
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has('showlist')) {
+      if (window.eventBus) {
+        window.eventBus.dispatch('routePopup.show');
+      }
+    }
+  }, [location]);
 
   const collections = new RecordsCollection((json) => {
     if (window.eventBus) {
