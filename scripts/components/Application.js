@@ -119,6 +119,7 @@ export default function Application({
       setLoading(false);
     });
 
+    // on unmount, remove listeners to clean as you always should do (might not be needed)
     return () => {
       window.eventBus.removeEventListener('audio.playervisible');
       window.eventBus.removeEventListener('audio.playerhidden');
