@@ -435,3 +435,26 @@ export const getPlaceString = (places) => {
   // Return the final value of `placeString`
   return placeString;
 };
+
+// used for fetching number of subrecordmedias and transcribed subrecordmedias
+// normally after the component has mounted
+// it is normally called in the useEffect hook
+export const fetchRecordMediaCount = async (functionScopeParams, setValue, setValueTranscribed) => {
+  try {
+    const queryParams = { ...functionScopeParams };
+    const queryParamsString = Object.entries(queryParams)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
+    const response = await fetch(`${config.apiUrl}mediacount?${queryParamsString}`);
+    if (response.ok) {
+      const json = await response.json();
+      setValueTranscribed(json.data.value);
+      setValue(json.aggregations.media_count.doc_count);
+    } else {
+      throw new Error('Fel vid hämtning av antal sidor/filer');
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+

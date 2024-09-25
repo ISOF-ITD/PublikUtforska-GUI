@@ -14,7 +14,7 @@ import { l } from '../../lang/Lang';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/routeHelper';
 import {
-  pageFromTo, getTitle, makeArchiveIdHumanReadable, getPlaceString,
+  pageFromTo, getTitle, makeArchiveIdHumanReadable, getPlaceString, fetchRecordMediaCount
 } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
@@ -102,28 +102,6 @@ export default function RecordListItem({
         setValue(json.data.value);
       } else {
         throw new Error('Fel vid hämtning av antal uppteckningar');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // used for fetching number of subrecordmedias and transcribed subrecordmedias
-  // after the component has mounted
-  // is called in the useEffect hook below
-  const fetchRecordMediaCount = async (functionScopeParams, setValue, setValueTranscribed) => {
-    try {
-      const queryParams = { ...functionScopeParams };
-      const queryParamsString = Object.entries(queryParams)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('&');
-      const response = await fetch(`${config.apiUrl}mediacount?${queryParamsString}`);
-      if (response.ok) {
-        const json = await response.json();
-        setValueTranscribed(json.data.value);
-        setValue(json.aggregations.media_count.doc_count);
-      } else {
-        throw new Error('Fel vid hämtning av antal sidor/filer');
       }
     } catch (error) {
       console.error(error);
