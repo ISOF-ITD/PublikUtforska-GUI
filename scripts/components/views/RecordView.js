@@ -55,10 +55,16 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   // const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
-
+  //const [transcribeButtonVisible, setTranscribeButtonVisible] = useState(true);
+  //const [transcribeButtonPageCounts, setTranscribeButtonPageCounts] = useState([]);
+  
   const [expandedHeadwords, setExpandedHeadwords] = useState(false);
   const toggleHeadwordsExpand = () => {
     setExpandedHeadwords(!expandedHeadwords);
+  };
+  const [expandedContents, setExpandedContents] = useState(false);
+  const toggleContentsExpand = () => {
+    setExpandedContents(!expandedContents);
   };
 
   const location = useLocation();
@@ -126,6 +132,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       // -----------------------
       // eventBus.addEventListener('overlay.hide', forceUpdateFunc);
       // -----------------------
+      //eventBus.addEventListener('overlay.hide-update-data', updateTranscribeButtonAndPageCounts);
     }
     // on unmount, set the document title back to the site title
     return () => {
@@ -372,6 +379,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
 
     let textElement;
     let headwordsElement;
+    let contentsElement;
 
     let forceFullWidth = false;
 
@@ -381,6 +389,24 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     const hasSitevisionUrl = sitevisionUrl;
     const isReadyToTranscribe = data.transcriptionstatus === 'readytotranscribe';
     const hasMedia = data.media.length > 0;
+
+    // Prepare title
+    let titleText;
+    const transcriptionStatusElement = data.transcriptionstatus;
+    if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
+      titleText = 'Titel granskas';
+    } else if (data.transcriptionstatus === 'readytotranscribe') {
+      titleText = 'Ej avskriven';
+      // If there is a title, use it, and put "Ej avskriven" in brackets
+      if (data.title) {
+        titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
+      }
+    } else {
+      titleText = getTitle(data.title, data.contents);
+    }
+    if (titleText) {
+      document.title = `${titleText} - ${config.siteTitle}`;
+    }
 
     if (hasSitevisionUrl) {
       textElement = <SitevisionContent url={sitevisionUrl.value} />;
@@ -491,6 +517,42 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         }
       }
 
+    // If content Is In Title do not show contents element
+    if (data?.contents && !titleText?.includes(data.contents)) {
+        contentsElement = (
+          <div>
+              <button
+              className="headwords-toggle"
+              type="button"
+              tabIndex={0}
+              style={{
+                textDecoration: 'underline',
+                cursor: 'pointer',
+              }}
+              onClick={toggleContentsExpand}
+              onKeyDown={(e) => {
+                // Aktiverar när "Enter" eller "Space" trycks ned
+                if (e.key === 'Enter' || e.key === ' ') {
+                  toggleContentsExpand();
+                }
+              }}
+            >
+              <FontAwesomeIcon icon={expandedContents ? faChevronDown : faChevronRight} />
+              &nbsp;
+              Innehållsuppgifter i register
+            </button>
+            <div className={`record-text realkatalog-content display-line-breaks ${expandedContents ? 'show' : 'hide'}`}>
+              <p />
+              <div
+                // Lösning med säkerhetsbrist! Fundera på bättre lösning!
+                dangerouslySetInnerHTML={{
+                  __html: data.contents,
+                }}
+              />
+            </div>
+          </div>
+        );
+      }    
       headwordsElement = (
         <div>
           <button
@@ -636,24 +698,6 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       }
     }
 
-    // Prepare title
-    let titleText;
-    const transcriptionStatusElement = data.transcriptionstatus;
-    if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
-      titleText = 'Titel granskas';
-    } else if (data.transcriptionstatus === 'readytotranscribe') {
-      titleText = 'Ej avskriven';
-      // If there is a title, use it, and put "Ej avskriven" in brackets
-      if (data.title) {
-        titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
-      }
-    } else {
-      titleText = getTitle(data.title, data.contents);
-    }
-    if (titleText) {
-      document.title = `${titleText} - ${config.siteTitle}`;
-    }
-
     return (
       <div className={`container${data.id ? '' : ' loading'}`}>
 
@@ -796,6 +840,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                           <span style={{ marginLeft: 10 }}>Markera sökord</span>
                         </label>
                       )}
+                    {data.contents && contentsElement}
                     {data.headwords && headwordsElement}
                   </>
                 }
