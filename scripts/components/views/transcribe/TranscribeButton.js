@@ -19,6 +19,7 @@ function TranscribeButton({
   className,
   onClick,
   label,
+  helptext,
 }) {
   // This function handles button clicks. If a custom onClick handler is provided, it uses that;
   // otherwise, it defaults to dispatching an 'overlay.transcribe' event.
@@ -97,14 +98,20 @@ function TranscribeButton({
     // Render a button with a dynamic class name based on the passed-in props.
     // The button's click event is tied to the transcribeButtonClick function,
     // or to the onClick prop if it's provided.
+    <div>
+      {/* Conditionally render the help text if it's provided */}
+      {helptext && (
+        <div className="help-text">
+          {helptext}
+        </div>  
+        )}
     <div
       className={`transcribe-button${className ? ` ${className}` : ''}`}
       onClick={effectiveOnClick}
-      type="button"
-    >
+      type="button">
       {label}
-    </div>
-  );
-}
+      </div>
+      </div>
+  )}
 
 export default TranscribeButton;

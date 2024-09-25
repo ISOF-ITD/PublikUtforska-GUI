@@ -24,7 +24,7 @@ import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
 import {
-  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName,
+  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName, fetchRecordMediaCount
 } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
@@ -55,8 +55,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   // const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
-  //const [transcribeButtonVisible, setTranscribeButtonVisible] = useState(true);
-  //const [transcribeButtonPageCounts, setTranscribeButtonPageCounts] = useState([]);
+  const [transcribeButtonVisible, setTranscribeButtonVisible] = useState(true);
+  const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
+  const [numberOfTranscribedSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia] = useState(0);
   
   const [expandedHeadwords, setExpandedHeadwords] = useState(false);
   const toggleHeadwordsExpand = () => {
@@ -133,6 +134,16 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       // eventBus.addEventListener('overlay.hide', forceUpdateFunc);
       // -----------------------
       //eventBus.addEventListener('overlay.hide-update-data', updateTranscribeButtonAndPageCounts);
+    }
+    if (data?.recordtype === 'one_record') {
+      const oneRecordPagesParams = {
+        search: data.id,
+      };
+      // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord 
+      if (data.transcriptiontype === 'sida') {
+        fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
+        //fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
+      }
     }
     // on unmount, set the document title back to the site title
     return () => {
@@ -421,7 +432,14 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           </p>
           <TranscribeButton
             className="button button-primary"
-            label={`${l('Skriv av')} ${data.transcriptiontype === 'sida' ? l('sida för sida') : ''}`}
+            label={
+              `${l('Skriv av')} ${data.transcriptiontype === 'sida' ? l('sida för sida') : ''}`
+            }
+            helptext={
+              data.transcriptiontype === 'sida' ? 
+                `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor transkriberade')}` :
+                ''
+            }
             title={data.title}
             recordId={data.id}
             archiveId={data.archive.archive_id}
