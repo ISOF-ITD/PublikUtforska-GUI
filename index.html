@@ -66,47 +66,6 @@
             }, 1000);
         });
     </script>
-    <script>
-        // Kontrollera om varning.html finns i samma mapp
-        fetch('varning.html')
-          .then(response => {
-            if (response.ok) {
-              return response.text();
-            } else {
-              console.log('Filen varning.html hittades inte.');
-            }
-          })
-          .then(htmlContent => {
-            // Hitta div:en med class "menu-wrapper menu-expanded"
-            const menuWrapper = document.querySelector('.menu-wrapper.menu-expanded');
-            if (menuWrapper) {
-              // Skapa ett nytt div-element med rätt attribut och innehåll
-              const warningDiv = document.createElement('div');
-            //   warningDiv.setAttribute('role', 'button');
-            //   warningDiv.setAttribute('tabindex', '0');
-              warningDiv.setAttribute('aria-label', 'Varning');
-              warningDiv.style.backgroundColor = '#ffc107!important';
-              warningDiv.style.padding = '1.2rem 1rem 1.1rem';
-              warningDiv.style.textAlign = 'center';
-              warningDiv.style.borderRadius = '13px';
-              warningDiv.style.marginBottom = '10px';
-            //   warningDiv.style.cursor = 'pointer';
-            //   warningDiv.style.textDecoration = 'underline';
-              
-              // Lägg till innehållet från varning.html
-              warningDiv.innerHTML = htmlContent;
-      
-              // Lägg till det som första child i menu-wrapper
-              menuWrapper.insertBefore(warningDiv, menuWrapper.firstChild);
-            }
-          })
-          .catch(error => {
-            console.error('Ett fel inträffade:', error);
-          });
-      </script>
-     <script>
-
-     </script>
      
     <!-- End Matomo Code -->
     <script type="text/javascript">

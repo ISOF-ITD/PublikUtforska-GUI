@@ -47,6 +47,48 @@ function SurveyLink() {
   );
 }
 
+function Warning() {
+  const [warningMessage, setWarningMessage] = useState('');
+
+  useEffect(() => {
+    // Hämta innehållet från varning.html och sätt det som varningMessage
+    fetch('varning.html')
+      .then((response) => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error('Filen varning.html hittades inte.');
+        }
+      })
+      .then((htmlContent) => {
+        setWarningMessage(htmlContent);
+      })
+      .catch((error) => {
+        console.error('Ett fel inträffade:', error);
+      });
+  }, []);
+
+  if (!warningMessage) {
+    // Om det inte finns något varningsmeddelande, rendera ingenting
+    return null;
+  }
+
+  return (
+    <div
+      aria-label="Varning"
+      style={{
+        backgroundColor: '#ffc107',
+        padding: '1.2rem 1rem 1.1rem',
+        textAlign: 'center',
+        borderRadius: '13px',
+        marginBottom: '10px',
+      }}
+      dangerouslySetInnerHTML={{ __html: warningMessage }} // Sätter HTML-innehållet
+    />
+  );
+}
+
+
 export default function MapMenu({
   mode, params, recordsData, audioRecordsData, pictureRecordsData, loading,
 }) {
@@ -95,6 +137,7 @@ export default function MapMenu({
   return (
     <div className={`menu-wrapper ${menuExpanded ? 'menu-expanded' : 'menu-collapsed'}`}>
       {/* <SurveyLink /> */}
+      <Warning />
       <img src={Folkelogga} alt="Folkelogga" style={{ height: 80, width: '100%' }} />
       <FilterSwitch
         mode={mode}
