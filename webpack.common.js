@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -53,13 +54,20 @@ module.exports = {
       },
     ],
   },
-  plugins: [new HtmlWebpackPlugin({
-    favicon: './img/favicon.ico',
-    lang: 'sv',
-    meta: {
-      viewport: 'width=device-width, initial-scale=1',
-      robots: 'index, follow',
-    },
-    template: './index.html',
-  })],
+  plugins: [
+    new HtmlWebpackPlugin({
+      favicon: './img/favicon.ico',
+      lang: 'sv',
+      meta: {
+        viewport: 'width=device-width, initial-scale=1',
+        robots: 'index, follow',
+      },
+      template: './index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'varning.template.html', to: '' }, // Copy varning.html to www-folder
+      ],
+    }),
+  ],
 };
