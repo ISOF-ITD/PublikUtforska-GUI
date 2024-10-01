@@ -83,6 +83,18 @@ https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-
 
 # Documentation
 
+## How to display a warning message, e.g., when the server is slow
+
+To add a custom warning message to the application, follow these steps:
+
+1. **Create the `varning.html` file on the server**:
+   - Add a file named `varning.html` to the `www` folder of your project. 
+   - This file should contain the HTML structure of the warning message. You can include plain text or HTML tags (e.g., `<pre>`, `<strong>`, etc.) to style the message as needed.
+   
+2. **Display the warning message**:
+   - If the `varning.html` file exists, the warning message will be automatically rendered.
+
+
 ## css 
 Uses less. Every component states its main css in a comment 
 Example:
