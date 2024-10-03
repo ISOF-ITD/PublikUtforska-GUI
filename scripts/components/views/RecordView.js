@@ -844,6 +844,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               <div className={`${sitevisionUrl || imageItems.length === 0 || forceFullWidth || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
                 {
                   <>
+                    {data.contents && contentsElement}
                     {textElement}
                     {/* add a switch that toggles the state variable highlight */}
                     {highlightedText
@@ -858,7 +859,6 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                           <span style={{ marginLeft: 10 }}>Markera sökord</span>
                         </label>
                       )}
-                    {data.contents && contentsElement}
                     {data.headwords && headwordsElement}
                   </>
                 }
