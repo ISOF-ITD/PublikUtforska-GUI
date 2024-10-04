@@ -45,12 +45,7 @@ export default function StatisticsList({
   };
 
   useEffect(() => {
-    // if (visible) {
     fetchStatistics();
-    const timer = setInterval(fetchStatistics, 60000);
-    return () => clearInterval(timer);
-    // }
-    return undefined;
   }, []);
 
   useEffect(() => {
