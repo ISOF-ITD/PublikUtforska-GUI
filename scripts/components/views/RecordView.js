@@ -6,7 +6,13 @@ import PropTypes from 'prop-types';
 import sanitizeHtml from 'sanitize-html';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronRight, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChevronDown,
+  faChevronRight,
+  faArrowUpRightFromSquare,
+  faLock,
+  faNewspaper,
+} from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 // import localLibrary from '../../utils/localLibrary';
 
@@ -35,20 +41,27 @@ import archiveLogoIkos from '../../../img/archive-logo-ikos.png';
 import { l } from '../../lang/Lang';
 import RecordList from './RecordList';
 
+const getIndicator = (item) => {
+  if (item.transcriptionstatus === 'transcribed') {
+    return (
+      <div className="thumbnail-indicator transcribed-indicator">
+        <FontAwesomeIcon icon={faLock} />
+      </div>
+    );
+  }
+
+  if (item.transcriptionstatus === 'published') {
+    return (
+      <div className="thumbnail-indicator published-indicator">
+        <FontAwesomeIcon icon={faNewspaper} />
+      </div>
+    );
+  }
+
+  return null;
+};
+
 export default function RecordView({ mode, openSwitcherHelptext }) {
-  RecordView.propTypes = {
-    mode: PropTypes.string,
-    openSwitcherHelptext: PropTypes.func.isRequired,
-  };
-
-  RecordView.defaultProps = {
-    mode: 'material',
-  };
-  // Force rerender using reducer
-  // SEEMS NOT to work when data updated i app.js fetchRecord?
-  // https://stackoverflow.com/questions/46240647/react-how-to-force-to-re-render-a-functional-component/53837442#53837442
-  // const [, forceUpdate] = useReducer(x => x + 1, 0);
-
   const params = useParams();
   const navigate = useNavigate();
 
@@ -58,7 +71,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   const [transcribeButtonVisible, setTranscribeButtonVisible] = useState(true);
   const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
   const [numberOfTranscribedSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia] = useState(0);
-  
+
   const [expandedHeadwords, setExpandedHeadwords] = useState(false);
   const toggleHeadwordsExpand = () => {
     setExpandedHeadwords(!expandedHeadwords);
@@ -80,13 +93,6 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
   const collections = new RecordsCollection((json) => {
     setSubrecords(json.data);
   });
-
-  const forceUpdateFunc = () => {
-    // https://www.altcademy.com/blog/how-to-refresh-the-page-in-reactjs/
-    // This is generally not recommended in a ReactJS application, as it goes against the idea of a single-page application. However, if you find yourself needing to do this, you can use the location.reload() method
-    // Fullösning med omläsning sida (Emellanåt i utvecklingsmiljö: Fungerar först vid andra gången man stänger med x?!)
-    window.location.reload();
-  };
 
   const fetchSubrecords = () => {
     const fetchParams = {
@@ -280,11 +286,18 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               </div>
             );
           } else {
-            // transcriptiontype != 'sida'
             // Independent columns: one with text and one with images
             return (
-              <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
+              <div
+                data-type="image"
+                data-image={mediaItem.source}
+                onClick={() => mediaImageClickHandler(mediaItem)}
+                key={`image-${index}`}
+                className="archive-image"
+                style={{ position: 'relative' }} // För att positionera indikatorn absolut inom denna container
+              >
                 <img src={config.imageUrl + mediaItem.source} alt="" />
+                {getIndicator(mediaItem)}
                 {
                   mediaItem.title
                   && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
@@ -436,7 +449,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               `${l('Skriv av')} ${data.transcriptiontype === 'sida' ? l('sida för sida') : ''}`
             }
             helptext={
-              data.transcriptiontype === 'sida' ? 
+              data.transcriptiontype === 'sida' ?
                 `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor transkriberade')}` :
                 ''
             }
@@ -535,11 +548,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         }
       }
 
-    // If content Is In Title do not show contents element
-    if (data?.contents && !titleText?.includes(data.contents)) {
+      // If content Is In Title do not show contents element
+      if (data?.contents && !titleText?.includes(data.contents)) {
         contentsElement = (
           <div>
-              <button
+            <button
               className="headwords-toggle"
               type="button"
               tabIndex={0}
@@ -570,7 +583,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             </div>
           </div>
         );
-      }    
+      }
       headwordsElement = (
         <div>
           <button
@@ -983,7 +996,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         {
           // transcriptiontype = 'sida' and transcriptionstatus = 'published'
           // If transcribed page by page: Text and images in dependent columns each row with dependent text and image
-          data.transcriptiontype && data.transcriptiontype == 'sida' && data.transcriptionstatus && data.transcriptionstatus == 'published'
+          data.transcriptiontype && data.transcriptiontype === 'sida' && data.transcriptionstatus && data.transcriptionstatus === 'published'
           && (
             imageItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under'))
             && (
@@ -994,7 +1007,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
 
         {
           (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
-          && imageItems
+          && <div className="record-view-thumbnails">{imageItems}</div>
         }
 
         <div className="row">
@@ -1236,3 +1249,12 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     </div>
   );
 }
+
+RecordView.propTypes = {
+  mode: PropTypes.string,
+  openSwitcherHelptext: PropTypes.func.isRequired,
+};
+
+RecordView.defaultProps = {
+  mode: 'material',
+};
