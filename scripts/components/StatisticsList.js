@@ -20,7 +20,7 @@ export default function StatisticsList({
     let esApiEndpoint;
     switch (type) {
       case 'topTranscribersByPages':
-        esApiEndpoint = 'statistics/get_top_transcribers_by_pages';
+        esApiEndpoint = 'statistics/get_top_transcribers_by_pages/';
         break;
       default:
         setFetchError(`Unsupported type: ${type}`);
