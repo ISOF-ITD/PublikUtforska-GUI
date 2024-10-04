@@ -63,13 +63,15 @@ cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
 Bash script to upgrade all node modules:
 
 ```bash
-npm outdated; npm install $(npm outdated | egrep '^[a-z0-9@/-]*' -o | tr '\r\n' ' ') && npm outdated
+npm outdated | awk '{print $1}' | xargs -I {} npm install {}
 ```
 
 PowerShell script to upgrade all node modules:
 
 ```PowerShell
-npm outdated; npm install $(npm outdated | Select-String -Pattern '^[a-z@/-]*' -AllMatches -CaseSensitive | % { $_.Matches } | % { $_.Value } | Out-String -Width 1000000 | ForEach-Object { $_ -replace "`r`n", " " } | % {$_.TrimStart()}); npm outdated
+npm outdated | ForEach-Object {
+  npm install "$($_.Split(' ')[0])@latest"
+}
 ```
 
 ## Import new data
