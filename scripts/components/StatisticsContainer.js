@@ -4,17 +4,20 @@ import StatisticsList from './StatisticsList';
 import config from '../config';
 
 export default function StatisticsContainer() {
-  //   const [firstStatValue, setFirstStatValue] = useState(null);
   const firstStatValueRef = useRef(null);
   const [dataChanged, setDataChanged] = useState(false);
   const [currentMonth, setCurrentMonth] = useState('');
 
   // Funktion för att hantera förändring i första statistiken
-  const handleFirstStatChange = (newValue) => {
+  const compareAndUpdateStat = (newValue) => {
+    console.log("----\nJämför gammalt och nytt värde...");
     // console.log(firstStatValueRef.current, newValue, firstStatValueRef.current !== newValue)
     if (firstStatValueRef.current !== newValue) {
+      console.log(`De är olika! förut ${firstStatValueRef.current}, men nu ${newValue}. sätter dataChanged till true.`);
       firstStatValueRef.current = newValue;
       setDataChanged(true);
+    } else {
+      console.log(`De är samma. fortfarande ${firstStatValueRef.current}. gör inget mer.`);
     }
   };
 
@@ -29,6 +32,7 @@ export default function StatisticsContainer() {
   useEffect(() => {
     if (dataChanged) {
       // Återställ flaggan efter att andra komponenter har fått hämta data
+      console.log("Återställer dataChanged till false.")
       setDataChanged(false);
     }
   }, [dataChanged]);
@@ -50,7 +54,6 @@ export default function StatisticsContainer() {
     <div className="statistics-container">
       {/* Första ShortStatistics som hämtar data när dataChanged är true */}
       <ShortStatistics
-        visible
         params={{
           recordtype: 'one_record',
           transcriptionstatus: 'published',
@@ -62,18 +65,16 @@ export default function StatisticsContainer() {
 
       {/* Andra ShortStatistics som hämtar data varje minut */}
       <ShortStatistics
-        visible
         params={{
           recordtype: 'one_record',
           transcriptionstatus: 'published',
         }}
         label="avskrivna uppteckningar totalt"
-        onDataChange={handleFirstStatChange}
+        compareAndUpdateStat={compareAndUpdateStat}
       />
 
       {/* Övriga ShortStatistics och StatisticsList som hämtar data när dataChanged är true */}
       <ShortStatistics
-        visible
         params={{
           recordtype: 'one_record',
           transcriptionstatus: 'published',
@@ -85,7 +86,6 @@ export default function StatisticsContainer() {
       />
 
       <ShortStatistics
-        visible
         params={{
           recordtype: 'one_record',
           transcriptionstatus: 'published',
@@ -96,7 +96,6 @@ export default function StatisticsContainer() {
       />
 
       <ShortStatistics
-        visible
         params={{
           recordtype: 'one_record',
           transcriptionstatus: 'published',
@@ -108,7 +107,6 @@ export default function StatisticsContainer() {
       />
 
       <ShortStatistics
-        visible
         params={{
           recordtype: 'one_record',
           transcriptionstatus: 'published',
@@ -126,7 +124,6 @@ export default function StatisticsContainer() {
         }}
         type="topTranscribersByPages"
         label={`Topplista transkriberare i ${currentMonth}`}
-        visible
         shouldFetch={dataChanged}
       />
 
@@ -137,7 +134,6 @@ export default function StatisticsContainer() {
         }}
         type="topTranscribersByPages"
         label="Topplista transkriberare totalt"
-        visible
         shouldFetch={dataChanged}
       />
     </div>

@@ -5,11 +5,10 @@ import PropTypes from 'prop-types';
 import config from '../config';
 
 export default function ShortStatistics({
-  visible,
   params,
   label,
-  onDataChange,
-  shouldFetch,
+  compareAndUpdateStat,
+  shouldFetch = false,
 }) {
   const [value, setValue] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +21,7 @@ export default function ShortStatistics({
   });
 
   const fetchStatistics = () => {
+    console.log("hämtar shortStatistics")
     const queryParams = { ...config.requiredParams, ...params };
     const paramString = new URLSearchParams(queryParams).toString();
 
@@ -33,9 +33,8 @@ export default function ShortStatistics({
         throw new Error('Fel vid hämtning av statistik');
       })
       .then((json) => {
-        if (onDataChange) {
-          console.log("anropar onDataChange med ", json.data.value, " från ", label)
-          onDataChange(json.data.value);
+        if (compareAndUpdateStat) {
+          compareAndUpdateStat(json.data.value);
         }
         setValue(json.data.value);
         setLoading(false);
@@ -48,15 +47,14 @@ export default function ShortStatistics({
   };
 
   useEffect(() => {
-    if (visible) {
+    if (compareAndUpdateStat) {
+      console.log("hämtar för att onDataChange is truthy")
       fetchStatistics();
-      if (onDataChange) {
-        const timer = setInterval(fetchStatistics, 60000);
-        return () => clearInterval(timer);
-      }
+      const timer = setInterval(fetchStatistics, 10000);
+      return () => clearInterval(timer);
     }
     return () => {}; // no-op cleanup
-  }, [visible]);
+  }, []);
 
   useEffect(() => {
     if (shouldFetch) {
@@ -68,7 +66,7 @@ export default function ShortStatistics({
     <div className="short-statistics">
       {loading && <div className="loading">Hämtar statistik...</div>}
       {error && <div className="error">Fel vid hämtning av statistik</div>}
-      {!loading && !error && visible && (
+      {!loading && !error && (
         <animated.div className="value">
           {animatedValue.number.to((num) => Math.floor(num).toLocaleString('sv-SE'))}
         </animated.div>
@@ -79,14 +77,9 @@ export default function ShortStatistics({
 }
 
 ShortStatistics.propTypes = {
-  visible: PropTypes.bool.isRequired,
   params: PropTypes.object.isRequired,
   label: PropTypes.string.isRequired,
-  onDataChange: PropTypes.func,
+  compareAndUpdateStat: PropTypes.func,
   shouldFetch: PropTypes.bool,
 };
 
-ShortStatistics.defaultProps = {
-  onDataChange: null,
-  shouldFetch: false,
-};

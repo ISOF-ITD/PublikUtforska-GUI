@@ -4,16 +4,16 @@ import config from '../config';
 
 export default function StatisticsList({
   params: rawParams = {},
-  visible,
   label,
   type,
-  shouldFetch,
+  shouldFetch = false,
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
 
   const fetchStatistics = async () => {
+    console.log("hämtar statisticsList")
     const queryParams = { ...config.requiredParams, ...rawParams };
     const paramString = new URLSearchParams(queryParams).toString();
 
@@ -45,10 +45,6 @@ export default function StatisticsList({
   };
 
   useEffect(() => {
-    fetchStatistics();
-  }, []);
-
-  useEffect(() => {
     if (shouldFetch) {
       fetchStatistics();
     }
@@ -65,7 +61,7 @@ export default function StatisticsList({
         </div>
       )}
       {!loading && !fetchError && <h3>{label}</h3>}
-      {!loading && !fetchError && visible && data && (
+      {!loading && !fetchError && data && (
         <ol>
           {data.map((item) => (
             <li key={`${item.key}-${item.value}`}>
@@ -87,13 +83,7 @@ export default function StatisticsList({
 
 StatisticsList.propTypes = {
   params: PropTypes.object,
-  visible: PropTypes.bool.isRequired,
   label: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
   shouldFetch: PropTypes.bool,
-};
-
-StatisticsList.defaultProps = {
-  params: {},
-  shouldFetch: false,
 };
