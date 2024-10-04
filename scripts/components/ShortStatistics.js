@@ -10,6 +10,7 @@ export default function ShortStatistics({
   label,
   onDataChange,
   shouldFetch,
+  timer,
 }) {
   const [value, setValue] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,9 +52,11 @@ export default function ShortStatistics({
     if (visible) {
       fetchStatistics();
       if (onDataChange) {
-        // Avoid starting a timer for an instance at initialization (visible-effect-change) that should only act on shouldFetch change
-        if (!shouldFetch) {
+        // Avoid starting a timer for an instance at initialization (or visible-effect-change) that should only act on shouldFetch change
+        console.log('before timer', label)
+        if (timer) {
             const timer = setInterval(fetchStatistics, 60000);
+            console.log('after timer', label)
           return () => clearInterval(timer);
         }
       }
@@ -88,9 +91,11 @@ ShortStatistics.propTypes = {
   label: PropTypes.string.isRequired,
   onDataChange: PropTypes.func,
   shouldFetch: PropTypes.bool,
+  timer: PropTypes.bool,
 };
 
 ShortStatistics.defaultProps = {
   onDataChange: null,
   shouldFetch: false,
+  timer: false,
 };
