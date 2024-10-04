@@ -69,7 +69,6 @@ export default function StatisticsContainer() {
         }}
         label="avskrivna uppteckningar totalt"
         onDataChange={handleFirstStatChange}
-        timer={true}
       />
 
       {/* Övriga ShortStatistics och StatisticsList som hämtar data när dataChanged är true */}
