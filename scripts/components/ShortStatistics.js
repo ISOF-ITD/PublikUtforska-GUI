@@ -51,8 +51,11 @@ export default function ShortStatistics({
     if (visible) {
       fetchStatistics();
       if (onDataChange) {
-        const timer = setInterval(fetchStatistics, 60000);
-        return () => clearInterval(timer);
+        // Avoid starting a timer for an instance at initialization (visible-effect-change) that should only act on shouldFetch change
+        if (!shouldFetch) {
+            const timer = setInterval(fetchStatistics, 60000);
+          return () => clearInterval(timer);
+        }
       }
     }
     return () => {}; // no-op cleanup
