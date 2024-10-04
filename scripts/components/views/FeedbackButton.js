@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import config from '../../config';
@@ -6,19 +7,8 @@ import { l } from '../../lang/Lang';
 // Main CSS: /ui-components/feedback-buttons.less
 
 export default function FeedbackButton({
-  title, type, country,
+  title = '', type, country = undefined,
 }) {
-  FeedbackButton.propTypes = {
-    title: PropTypes.string,
-    type: PropTypes.string.isRequired,
-    country: PropTypes.string,
-  };
-
-  FeedbackButton.defaultProps = {
-    title: '',
-    country: undefined,
-  };
-
   const { pathname } = useLocation();
 
   const feedbackButtonClick = () => {
@@ -43,3 +33,9 @@ export default function FeedbackButton({
     </button>
   );
 }
+
+FeedbackButton.propTypes = {
+  title: PropTypes.string,
+  type: PropTypes.string.isRequired,
+  country: PropTypes.string,
+};

@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import {
   useState, useEffect, useCallback, useRef,
 } from 'react';
@@ -5,17 +6,17 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
 function DropdownMenu({
-  manuallyClose,
-  onOpen,
-  dropdownHeight,
-  dropdownWidth,
-  dropdownDirection,
-  className,
-  label,
-  keepOpen,
-  headerText,
-  containerType,
-  footerContent,
+  manuallyClose = false,
+  onOpen = null,
+  dropdownHeight = '',
+  dropdownWidth = '',
+  dropdownDirection = '',
+  className = '',
+  label = '',
+  keepOpen = false,
+  headerText = '',
+  containerType = '',
+  footerContent = '',
   children,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -104,20 +105,6 @@ DropdownMenu.propTypes = {
   containerType: PropTypes.string,
   footerContent: PropTypes.string,
   children: PropTypes.node.isRequired,
-};
-
-DropdownMenu.defaultProps = {
-  manuallyClose: false,
-  onOpen: null,
-  dropdownHeight: '',
-  dropdownWidth: '',
-  dropdownDirection: '',
-  className: '',
-  label: '',
-  keepOpen: false,
-  headerText: '',
-  containerType: '',
-  footerContent: '',
 };
 
 export default DropdownMenu;

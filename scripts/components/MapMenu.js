@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -90,24 +91,13 @@ function Warning() {
 
 
 export default function MapMenu({
-  mode, params, recordsData, audioRecordsData, pictureRecordsData, loading,
+  mode = 'material',
+  params,
+  recordsData = { data: [], metadata: {} },
+  audioRecordsData = { data: [], metadata: {} },
+  pictureRecordsData = { data: [], metadata: {} },
+  loading,
 }) {
-  MapMenu.propTypes = {
-    mode: PropTypes.string,
-    params: PropTypes.object.isRequired,
-    recordsData: PropTypes.object,
-    audioRecordsData: PropTypes.object,
-    pictureRecordsData: PropTypes.object,
-    loading: PropTypes.bool.isRequired,
-  };
-
-  MapMenu.defaultProps = {
-    mode: 'material',
-    recordsData: { data: [], metadata: {} },
-    audioRecordsData: { data: [], metadata: {} },
-    pictureRecordsData: { data: [], metadata: {} },
-  };
-
   const isMobile = window.innerWidth < 700;
   const [menuExpanded, setMenuExpanded] = useState(!isMobile);
   const [currentMonth, setCurrentMonth] = useState('');
@@ -311,3 +301,12 @@ export default function MapMenu({
     </div>
   );
 }
+
+MapMenu.propTypes = {
+  mode: PropTypes.string,
+  params: PropTypes.object.isRequired,
+  recordsData: PropTypes.object,
+  audioRecordsData: PropTypes.object,
+  pictureRecordsData: PropTypes.object,
+  loading: PropTypes.bool.isRequired,
+};

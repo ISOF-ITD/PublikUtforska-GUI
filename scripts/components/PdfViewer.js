@@ -1,7 +1,8 @@
+/* eslint-disable react/require-default-props */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-function SitevisionContent({ url, height }) {
+export default function SitevisionContent({ url = null, height = 500 }) {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfHeight, setPdfHeight] = useState(500);
 
@@ -23,14 +24,8 @@ function SitevisionContent({ url, height }) {
   );
 }
 
+
 SitevisionContent.propTypes = {
   url: PropTypes.string,
   height: PropTypes.number,
 };
-
-SitevisionContent.defaultProps = {
-  url: null,
-  height: 500,
-};
-
-export default SitevisionContent;

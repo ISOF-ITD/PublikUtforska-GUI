@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
@@ -19,32 +20,13 @@ const useNavigationCount = () => {
 
 export default function RoutePopupWindow({
   children,
-  onClose,
-  manuallyOpenPopup,
-  onHide,
-  onShow,
-  closeButtonStyle,
-  routeId,
+  onClose = null,
+  manuallyOpenPopup = false,
+  onHide = null,
+  onShow = null,
+  closeButtonStyle = 'white',
+  routeId = null,
 }) {
-  RoutePopupWindow.propTypes = {
-    children: PropTypes.node.isRequired,
-    onClose: PropTypes.func,
-    manuallyOpenPopup: PropTypes.bool,
-    onHide: PropTypes.func,
-    onShow: PropTypes.func,
-    closeButtonStyle: PropTypes.string,
-    routeId: PropTypes.string,
-  };
-
-  RoutePopupWindow.defaultProps = {
-    onClose: null,
-    manuallyOpenPopup: false,
-    onHide: null,
-    onShow: null,
-    closeButtonStyle: 'white',
-    routeId: null,
-  };
-
   const [windowOpen, setWindowOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
@@ -169,13 +151,14 @@ export default function RoutePopupWindow({
     // TODO: do we want to render the popup even if it's not visible?
     return (
       <div className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}>
-        {
-          // this.props.children && this.props.children.props.manuallyOpenPopup &&
-          // <a className="popup-open-button map-floating-control map-bottom-control visible" onClick={this.openButtonClickHandler} onKeyUp={this.openButtonKeyUpHandler} tabIndex={0}><strong>{l(this.props.children.props.openButtonLabel)}</strong></a>
-        }
         <div className="popup-content-wrapper">
           <div className="page-content">
-            <a tabIndex={0} className={`close-button${closeButtonStyle == 'dark' ? '' : closeButtonStyle == 'white' ? ' white' : ' white'}`} onClick={closeButtonClick} onKeyUp={closeButtonKeyUp} />
+            <a
+              tabIndex={0}
+              className={`close-button${closeButtonStyle == 'dark' ? '' : closeButtonStyle == 'white' ? ' white' : ' white'}`}
+              onClick={closeButtonClick}
+              onKeyUp={closeButtonKeyUp}
+            />
             {children}
           </div>
         </div>
@@ -184,3 +167,13 @@ export default function RoutePopupWindow({
   }
   return null;
 }
+
+RoutePopupWindow.propTypes = {
+  children: PropTypes.node.isRequired,
+  onClose: PropTypes.func,
+  manuallyOpenPopup: PropTypes.bool,
+  onHide: PropTypes.func,
+  onShow: PropTypes.func,
+  closeButtonStyle: PropTypes.string,
+  routeId: PropTypes.string,
+};

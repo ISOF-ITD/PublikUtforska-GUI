@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, { useRef, useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
@@ -9,39 +10,16 @@ import MapBase from './MapBase';
 import mapHelper from '../../utils/mapHelper';
 
 export default function MapView({
-  onMarkerClick,
-  highlightedMarkerIcon,
-  defaultMarkerIcon,
-  layersControlPosition,
-  zoomControlPosition,
-  zoom,
-  center,
-  disableSwedenMap,
+  onMarkerClick = undefined,
+  highlightedMarkerIcon = undefined,
+  defaultMarkerIcon = undefined,
+  layersControlPosition = 'bottomright',
+  zoomControlPosition = 'bottomright',
+  zoom = undefined,
+  center = undefined,
+  disableSwedenMap = false,
   mapData,
 }) {
-  MapView.propTypes = {
-    onMarkerClick: PropTypes.func,
-    highlightedMarkerIcon: PropTypes.string,
-    defaultMarkerIcon: PropTypes.string,
-    layersControlPosition: PropTypes.string,
-    zoomControlPosition: PropTypes.string,
-    zoom: PropTypes.number,
-    center: PropTypes.arrayOf(PropTypes.number),
-    disableSwedenMap: PropTypes.bool,
-    mapData: PropTypes.object.isRequired,
-  };
-
-  MapView.defaultProps = {
-    onMarkerClick: undefined,
-    highlightedMarkerIcon: undefined,
-    defaultMarkerIcon: undefined,
-    layersControlPosition: undefined,
-    zoomControlPosition: undefined,
-    zoom: undefined,
-    center: undefined,
-    disableSwedenMap: false,
-  };
-
   const mapView = useRef();
 
   const updateMap = () => {
@@ -120,8 +98,8 @@ export default function MapView({
       <MapBase
         ref={mapView}
         className="map-view"
-        layersControlPosition={layersControlPosition || 'bottomright'}
-        zoomControlPosition={zoomControlPosition || 'bottomright'}
+        layersControlPosition={layersControlPosition}
+        zoomControlPosition={zoomControlPosition}
         // Inte visa locateControl knappen (som kan visa på kartan var användaren är)
         disableLocateControl
         scrollWheelZoom
@@ -133,3 +111,15 @@ export default function MapView({
     </div>
   );
 }
+
+MapView.propTypes = {
+  onMarkerClick: PropTypes.func,
+  highlightedMarkerIcon: PropTypes.string,
+  defaultMarkerIcon: PropTypes.string,
+  layersControlPosition: PropTypes.string,
+  zoomControlPosition: PropTypes.string,
+  zoom: PropTypes.number,
+  center: PropTypes.arrayOf(PropTypes.number),
+  disableSwedenMap: PropTypes.bool,
+  mapData: PropTypes.object.isRequired,
+};

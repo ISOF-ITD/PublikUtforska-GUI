@@ -27,16 +27,12 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 import config from '../config';
 
 export default function Application({
-  children, mode, openSwitcherHelptext,
+  children, mode = 'material', openSwitcherHelptext,
 }) {
   Application.propTypes = {
     children: PropTypes.node.isRequired,
-    mode: PropTypes.string,
+    mode: PropTypes.string.isRequired,
     openSwitcherHelptext: PropTypes.func.isRequired,
-  };
-
-  Application.defaultProps = {
-    mode: 'material',
   };
 
   window.eventBus = EventBus;

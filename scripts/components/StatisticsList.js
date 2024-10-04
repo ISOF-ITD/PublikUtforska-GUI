@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import config from '../config';
@@ -85,8 +86,4 @@ StatisticsList.propTypes = {
   visible: PropTypes.bool.isRequired,
   label: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
-};
-
-StatisticsList.defaultProps = {
-  params: {},
 };

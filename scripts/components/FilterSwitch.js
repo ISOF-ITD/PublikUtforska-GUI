@@ -1,48 +1,11 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 import { useParams, Link } from 'react-router-dom';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 import { l } from '../lang/Lang';
 
-export default function FilterSwitch({ mode }) {
-  FilterSwitch.propTypes = {
-    mode: PropTypes.string,
-  };
-
-  FilterSwitch.defaultProps = {
-    mode: 'material',
-  };
-
+export default function FilterSwitch({ mode = 'material' }) {
   const params = useParams();
-
-  // const searchParams = routeHelper.createParamsFromSearchRoute(params['*']);
-
-  //const openSideMenu = () => {
-  //  if (window.eventBus) {
-  //    window.eventBus.dispatch('overlay.sideMenu', 'visible');
-  //  }
-  //};
-
-  // const menuButtonClick = (e) => {
-  //   const { value } = e.currentTarget.dataset;
-  //   const searchParams = {
-  //     ...searchParams,
-  //     recordtype: value,
-  //   };
-  //   if (value === 'one_accession_row') {
-  //     searchParams.category = undefined;
-  //     searchParams.transcriptionstatus = undefined;
-  //     // default is digitized material
-  //     searchParams.has_media = true;
-  //     searchParams.has_transcribed_records = undefined;
-  //   } else if (value === 'one_record') {
-  //     searchParams.has_media = undefined;
-  //     searchParams.has_transcribed_records = undefined;
-  //     searchParams.transcriptionstatus = 'readytotranscribe';
-  //   }
-  //   navigate(
-  //     `/places${routeHelper.createSearchRoute(searchParams)}`,
-  //   );
-  // };
 
   return (
     <div className="nordic-switch-wrapper map-floating-control">
@@ -65,3 +28,7 @@ export default function FilterSwitch({ mode }) {
     </div>
   );
 }
+
+FilterSwitch.propTypes = {
+  mode: PropTypes.string,
+};
