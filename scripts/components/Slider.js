@@ -45,9 +45,13 @@ export default function Slider({
 Slider.propTypes = {
   behaviour: PropTypes.string.isRequired,
   start: PropTypes.number.isRequired,
-  currentTime: PropTypes.number.isRequired,
+  currentTime: PropTypes.number,
   playing: PropTypes.bool.isRequired,
   rangeMin: PropTypes.number.isRequired,
   rangeMax: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
+};
+
+Slider.defaultProps = {
+  currentTime: null,
 };
