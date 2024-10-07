@@ -121,5 +121,5 @@ MapView.propTypes = {
   zoom: PropTypes.number,
   center: PropTypes.arrayOf(PropTypes.number),
   disableSwedenMap: PropTypes.bool,
-  mapData: PropTypes.object.isRequired,
+  mapData: PropTypes.object,
 };

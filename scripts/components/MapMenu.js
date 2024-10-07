@@ -55,15 +55,11 @@ function Warning() {
       .then((response) => {
         if (response.ok) {
           return response.text();
-        } else {
-          throw new Error('Filen varning.html hittades inte.');
         }
+        return null;
       })
       .then((htmlContent) => {
         setWarningMessage(htmlContent);
-      })
-      .catch((error) => {
-        console.error('Ett fel inträffade:', error);
       });
   }, []);
 

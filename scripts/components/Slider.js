@@ -1,9 +1,10 @@
+/* eslint-disable react/require-default-props */
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import noUiSlider from 'nouislider';
 
 export default function Slider({
-  behaviour, start, currentTime, playing, rangeMin, rangeMax, onChange,
+  behaviour, start, currentTime = null, playing, rangeMin, rangeMax, onChange,
 }) {
   // create a ref to the slider DOM node
   const sliderRef = useRef(null);
@@ -50,8 +51,4 @@ Slider.propTypes = {
   rangeMin: PropTypes.number.isRequired,
   rangeMax: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired,
-};
-
-Slider.defaultProps = {
-  currentTime: null,
 };

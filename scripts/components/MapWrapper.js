@@ -17,7 +17,7 @@ export default function MapWrapper({
     mapMarkerClick: PropTypes.func.isRequired,
     mode: PropTypes.string.isRequired,
     params: PropTypes.object.isRequired,
-    mapData: PropTypes.object.isRequired,
+    mapData: PropTypes.object,
     loading: PropTypes.bool,
     recordsData: PropTypes.object.isRequired,
     audioRecordsData: PropTypes.object.isRequired,

@@ -217,7 +217,7 @@ export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
   let match = false;
   idparts.forEach((part, index) => {
     let trimmedPart = part.trim();
-    console.log("Part " + (index + 1) + ": " + trimmedPart);
+    // console.log("Part " + (index + 1) + ": " + trimmedPart);
     // Matcha första delen av strängen som inte är en siffra (bokstäver)
     // och andra delen som är minst en siffra (0 eller flera siffror)
     // och behåll alla tecken efter siffran/siffrorna i andra delen

@@ -519,7 +519,7 @@ export default function SearchBox({
             id="searchInputMapMenu"
             ref={searchInputRef}
             type="text"
-            value={search}
+            value={search || ''}
             onInput={searchValueChangeHandler}
             onKeyDown={inputKeyPressHandler}
             placeholder="Sök i Folke"
