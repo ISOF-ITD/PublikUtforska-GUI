@@ -115,9 +115,17 @@ export default function SearchBox({
       .forEach((key) => url.searchParams.append(key, searchSuggestionsParams[key]));
     // read data from json api and store to window object
     fetch(url, { mode: 'cors' }).then((response) => response.json()).then((json) => {
+      // Check if the JSON is valid and in the expected format
+      if (!Array.isArray(json)) {
+        throw new Error("Invalid JSON format");
+      }
       // for every row in json, copy row["label"] to row["value"]
       const newJson = json.map((row) => ({ ...row, value: row.label }));
       setSearchSuggestions(newJson);
+    }).catch((error) => {
+      console.error('Error fetching search suggestions:', error);
+      // Set search suggestions to empty array in case of any error
+      // setSearchSuggestions([]);
     });
   };
 
