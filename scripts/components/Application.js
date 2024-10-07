@@ -9,7 +9,6 @@ import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
 import RecordListWrapper from './views/RecordListWrapper';
-import StatisticsOverlay from './StatisticsOverlay';
 import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
@@ -168,7 +167,6 @@ export default function Application({
         }
         <TranscriptionHelpOverlay />
         <SwitcherHelpTextOverlay />
-        {/* <StatisticsOverlay /> */}
         <Footer />
       </div>
     </AudioProvider>
