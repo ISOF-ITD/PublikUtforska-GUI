@@ -1,29 +1,15 @@
+/* eslint-disable react/require-default-props */
 import React from 'react';
 
 import PropTypes from 'prop-types';
 
 export default function Fritext({
-  messageInput,
+  messageInput = '',
   inputChangeHandler,
-  pageIndex,
+  pageIndex = null,
   transcriptionstatus = null,
-  numberOfPages,
+  numberOfPages = null,
 }) {
-  Fritext.propTypes = {
-    messageInput: PropTypes.string.isRequired,
-    inputChangeHandler: PropTypes.func.isRequired,
-    pageIndex: PropTypes.number,
-    transcriptionstatus: PropTypes.string,
-    numberOfPages: PropTypes.number,
-  };
-
-  Fritext.defaultProps = {
-    messageInput: '',
-    pageIndex: null,
-    transcriptionstatus: null,
-    numberOfPages: null,
-  };
-
   return (
     <div className="transcriptionform fritext">
       <div className="mark-above-img">
@@ -53,3 +39,11 @@ export default function Fritext({
     </div>
   );
 }
+
+Fritext.propTypes = {
+  messageInput: PropTypes.string.isRequired,
+  inputChangeHandler: PropTypes.func.isRequired,
+  pageIndex: PropTypes.number,
+  transcriptionstatus: PropTypes.string,
+  numberOfPages: PropTypes.number,
+};

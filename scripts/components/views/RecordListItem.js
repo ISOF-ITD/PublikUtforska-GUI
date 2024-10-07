@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,7 +15,7 @@ import { l } from '../../lang/Lang';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/routeHelper';
 import {
-  pageFromTo, getTitle, makeArchiveIdHumanReadable, getPlaceString, fetchRecordMediaCount
+  pageFromTo, getTitle, makeArchiveIdHumanReadable, getPlaceString, fetchRecordMediaCount,
 } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
@@ -47,35 +48,14 @@ export default function RecordListItem({
   searchParams,
   // useRouteParams: use the route params instead of the search params for the link
   // maybe this should be the default behaviour and search params via props should be optional?
-  useRouteParams,
+  useRouteParams = false,
   archiveIdClick,
-  columns,
+  columns = null,
   shouldRenderColumn,
-  highlightRecordsWithMetadataField,
-  mode,
-  smallTitle,
+  highlightRecordsWithMetadataField = null,
+  mode = 'material',
+  smallTitle = false,
 }) {
-  RecordListItem.propTypes = {
-    id: PropTypes.string.isRequired,
-    item: PropTypes.object.isRequired,
-    searchParams: PropTypes.object.isRequired,
-    archiveIdClick: PropTypes.func.isRequired,
-    columns: PropTypes.array,
-    shouldRenderColumn: PropTypes.func.isRequired,
-    highlightRecordsWithMetadataField: PropTypes.string,
-    mode: PropTypes.string,
-    useRouteParams: PropTypes.bool,
-    smallTitle: PropTypes.bool,
-  };
-
-  RecordListItem.defaultProps = {
-    highlightRecordsWithMetadataField: null,
-    mode: 'material',
-    columns: null,
-    useRouteParams: false,
-    smallTitle: false,
-  };
-
   const [subrecords, setSubrecords] = useState([]);
   const [fetchedSubrecords, setFetchedSubrecords] = useState(false);
   const [visibleSubrecords, setVisibleSubrecords] = useState(false);
@@ -126,10 +106,10 @@ export default function RecordListItem({
         search: id,
         transcriptionstatus: 'published,transcribed',
       };
-      // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord 
+      // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
       if (transcriptiontype === 'sida') {
         fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
-        //fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
+        // fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
       }
       fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
       fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
@@ -335,10 +315,10 @@ export default function RecordListItem({
             if (['c', 'collector', 'interviewer', 'recorder'].includes(collectorPersonItem.relation)) {
               const collectorParams = { ...searchParams, page: undefined };
               const href = `#${mode === 'transcribe' ? '/transcribe' : ''
-              }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
-                search: collectorParams.search,
-                search_field: collectorParams.search_field,
-              })}`;
+                }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
+                  search: collectorParams.search,
+                  search_field: collectorParams.search_field,
+                })}`;
               return (
                 <a href={href} key={`record-list-item-${id}-${collectorPersonItem.id}`}>
                   {l(collectorPersonItem.name)}
@@ -600,3 +580,16 @@ export default function RecordListItem({
     </tr>
   );
 }
+
+RecordListItem.propTypes = {
+  id: PropTypes.string.isRequired,
+  item: PropTypes.object.isRequired,
+  searchParams: PropTypes.object.isRequired,
+  archiveIdClick: PropTypes.func.isRequired,
+  columns: PropTypes.array,
+  shouldRenderColumn: PropTypes.func.isRequired,
+  highlightRecordsWithMetadataField: PropTypes.string,
+  mode: PropTypes.string,
+  useRouteParams: PropTypes.bool,
+  smallTitle: PropTypes.bool,
+};

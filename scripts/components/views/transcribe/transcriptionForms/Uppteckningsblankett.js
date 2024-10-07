@@ -1,40 +1,18 @@
+/* eslint-disable react/require-default-props */
 import React from 'react';
 import PropTypes from 'prop-types';
 
 export default function Uppteckningsblankett({
-  informantNameInput,
-  informantBirthDateInput,
-  informantBirthPlaceInput,
-  informantInformationInput,
-  title,
-  messageInput,
+  informantNameInput = '',
+  informantBirthDateInput = '',
+  informantBirthPlaceInput = '',
+  informantInformationInput = '',
+  title = '',
+  messageInput = '',
   inputChangeHandler,
-  pageIndex,
-  numberOfPages,
+  pageIndex = null,
+  numberOfPages = null,
 }) {
-    Uppteckningsblankett.propTypes = {
-        informantNameInput: PropTypes.string,
-        informantBirthDateInput: PropTypes.string,
-        informantBirthPlaceInput: PropTypes.string,
-        informantInformationInput: PropTypes.string,
-        title: PropTypes.string,
-        messageInput: PropTypes.string,
-        inputChangeHandler: PropTypes.func.isRequired,
-        pageIndex: PropTypes.number,
-        numberOfPages: PropTypes.number,
-      };
-      
-      Uppteckningsblankett.defaultProps = {
-        informantNameInput: '',
-        informantBirthDateInput: '',
-        informantBirthPlaceInput: '',
-        informantInformationInput: '',
-        title: '',
-        messageInput: '',
-        pageIndex: null,
-        numberOfPages: null,
-      };
-      
   return (
     <div className="transcriptionform uppteckningsblankett">
       <div className="row">
@@ -76,3 +54,15 @@ export default function Uppteckningsblankett({
     </div>
   );
 }
+
+Uppteckningsblankett.propTypes = {
+  informantNameInput: PropTypes.string,
+  informantBirthDateInput: PropTypes.string,
+  informantBirthPlaceInput: PropTypes.string,
+  informantInformationInput: PropTypes.string,
+  title: PropTypes.string,
+  messageInput: PropTypes.string,
+  inputChangeHandler: PropTypes.func.isRequired,
+  pageIndex: PropTypes.number,
+  numberOfPages: PropTypes.number,
+};
