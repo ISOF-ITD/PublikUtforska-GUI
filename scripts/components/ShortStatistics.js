@@ -50,7 +50,7 @@ export default function ShortStatistics({
     if (compareAndUpdateStat) {
       console.log("hämtar för att onDataChange is truthy")
       fetchStatistics();
-      const timer = setInterval(fetchStatistics, 10000);
+      const timer = setInterval(fetchStatistics, 60000);
       return () => clearInterval(timer);
     }
     return () => {}; // no-op cleanup
