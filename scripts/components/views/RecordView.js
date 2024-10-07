@@ -30,7 +30,7 @@ import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
 import {
-  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName, fetchRecordMediaCount
+  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName, fetchRecordMediaCount,
 } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
@@ -61,14 +61,13 @@ const getIndicator = (item) => {
   return null;
 };
 
-export default function RecordView({ mode, openSwitcherHelptext }) {
+export default function RecordView({ mode = 'material', openSwitcherHelptext }) {
   const params = useParams();
   const navigate = useNavigate();
 
   // const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
-  const [transcribeButtonVisible, setTranscribeButtonVisible] = useState(true);
   const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
   const [numberOfTranscribedSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia] = useState(0);
 
@@ -132,23 +131,23 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       });
       // Update Recordview using event, as an easy fix as fetchRecord(recordId) is in app.js
       // Maybe not needed as hide of overlay should call transcribecancel so
-      // transcriptionstatus should be back at "readytotranscribe" 
+      // transcriptionstatus should be back at "readytotranscribe"
       // BUT maybe needed to get other record data as title back? But is title transcribed in page-by-page?
       // KOMMENTAR (Rico): Följande rad triggrar en oönskad omladdning när man stänger
       // transcriptionPageByPageOverlay, därför tar jag bort det:
       // -----------------------
       // eventBus.addEventListener('overlay.hide', forceUpdateFunc);
       // -----------------------
-      //eventBus.addEventListener('overlay.hide-update-data', updateTranscribeButtonAndPageCounts);
+      // eventBus.addEventListener('overlay.hide-update-data', updateTranscribeButtonAndPageCounts);
     }
     if (data?.recordtype === 'one_record') {
       const oneRecordPagesParams = {
         search: data.id,
       };
-      // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord 
+      // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
       if (data.transcriptiontype === 'sida') {
         fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
-        //fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
+        // fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
       }
     }
     // on unmount, set the document title back to the site title
@@ -269,7 +268,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                   </div>
                   {mediaItem.comment && mediaItem.comment.trim() !== '' && (
                     <div>
-                      <br /><strong>Kommentar:</strong><br />
+                      <br />
+                      <strong>Kommentar:</strong>
+                      <br />
                       {mediaItem.comment}
                     </div>
                   )}
@@ -285,26 +286,25 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 </div>
               </div>
             );
-          } else {
-            // Independent columns: one with text and one with images
-            return (
-              <div
-                data-type="image"
-                data-image={mediaItem.source}
-                onClick={() => mediaImageClickHandler(mediaItem)}
-                key={`image-${index}`}
-                className="archive-image"
-                style={{ position: 'relative' }} // För att positionera indikatorn absolut inom denna container
-              >
-                <img src={config.imageUrl + mediaItem.source} alt="" />
-                {getIndicator(mediaItem)}
-                {
+          }
+          // Independent columns: one with text and one with images
+          return (
+            <div
+              data-type="image"
+              data-image={mediaItem.source}
+              onClick={() => mediaImageClickHandler(mediaItem)}
+              key={`image-${index}`}
+              className="archive-image"
+              style={{ position: 'relative' }}
+            >
+              <img src={config.imageUrl + mediaItem.source} alt="" />
+              {getIndicator(mediaItem)}
+              {
                   mediaItem.title
                   && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
                 }
-              </div>
-            );
-          }
+            </div>
+          );
         }
         return null; // Return null to avoid undefined elements in the array
       });
@@ -449,9 +449,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
               `${l('Skriv av')} ${data.transcriptiontype === 'sida' ? l('sida för sida') : ''}`
             }
             helptext={
-              data.transcriptiontype === 'sida' ?
-                `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor transkriberade')}` :
-                ''
+              data.transcriptiontype === 'sida'
+                ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor transkriberade')}`
+                : ''
             }
             title={data.title}
             recordId={data.id}
@@ -466,11 +466,9 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       // special case: all pages are transcribed:
       if (data.transcriptiontype === 'sida' && data.media.every((page) => page.transcriptionstatus !== 'readytotranscribe')) {
         textElement = <p>{l('Den här uppteckningen är avskriven och granskas.')}</p>;
-
       }
     } else if (data.transcriptionstatus === 'undertranscription') {
       textElement = <p>{l('Den här uppteckningen håller på att transkriberas av annan användare.')}</p>;
-
     } else {
       // Om posten innehåller minst en pdf fil
       // (ingen text, inte ljudfiler och inte bilder), då visar vi pdf-filerna filen direkt
@@ -837,17 +835,21 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
 
         <div className="row">
           <div className="ten columns content-warning">
-            <small><i>
-              <b>Information till läsaren:</b> Denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
-              <br />
-              Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
-              <br />
-              <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna" target='_blank'>
-                Läs mer om Fördomar och äldre språkbruk i samlingarna.
-                &nbsp;
-                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
-              </a>
-            </i></small>
+            <small>
+              <i>
+                <b>Information till läsaren:</b>
+                {' '}
+                Denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
+                <br />
+                Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
+                <br />
+                <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna" target="_blank" rel="noreferrer">
+                  Läs mer om Fördomar och äldre språkbruk i samlingarna.
+                  &nbsp;
+                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+                </a>
+              </i>
+            </small>
           </div>
         </div>
         <div className="row">
@@ -1253,8 +1255,4 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
 RecordView.propTypes = {
   mode: PropTypes.string,
   openSwitcherHelptext: PropTypes.func.isRequired,
-};
-
-RecordView.defaultProps = {
-  mode: 'material',
 };
