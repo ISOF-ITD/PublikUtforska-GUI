@@ -10,29 +10,18 @@ export default function StatisticsContainer() {
 
   // Funktion för att hantera förändring i första statistiken
   const compareAndUpdateStat = (newValue) => {
-    console.log("----\nJämför gammalt och nytt värde...");
-    // console.log(firstStatValueRef.current, newValue, firstStatValueRef.current !== newValue)
+    // console.log("----\nJämför gammalt och nytt värde...");
     if (firstStatValueRef.current !== newValue) {
-      console.log(`De är olika! förut ${firstStatValueRef.current}, men nu ${newValue}. sätter dataChanged till true.`);
+      // console.log(`De är olika! förut ${firstStatValueRef.current}, men nu ${newValue}. sätter dataChanged till true.`);
       firstStatValueRef.current = newValue;
       setDataChanged(true);
-    } else {
-      console.log(`De är samma. fortfarande ${firstStatValueRef.current}. gör inget mer.`);
     }
   };
 
   useEffect(() => {
-    // console.log('firstStatValue har uppdaterats:', firstStatValueRef.current);
-  }, [firstStatValueRef.current]);
-
-  useEffect(() => {
-    // console.log('Containern är mountad');
-  }, []);
-
-  useEffect(() => {
     if (dataChanged) {
       // Återställ flaggan efter att andra komponenter har fått hämta data
-      console.log("Återställer dataChanged till false.")
+      // console.log("Återställer dataChanged till false.")
       setDataChanged(false);
     }
   }, [dataChanged]);

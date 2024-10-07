@@ -13,7 +13,7 @@ export default function StatisticsList({
   const [fetchError, setFetchError] = useState(false);
 
   const fetchStatistics = async () => {
-    console.log("hämtar statisticsList")
+    // console.log("hämtar statisticsList")
     const queryParams = { ...config.requiredParams, ...rawParams };
     const paramString = new URLSearchParams(queryParams).toString();
 

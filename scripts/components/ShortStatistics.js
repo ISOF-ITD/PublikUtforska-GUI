@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import PropTypes from 'prop-types';
@@ -21,7 +20,7 @@ export default function ShortStatistics({
   });
 
   const fetchStatistics = () => {
-    console.log("hämtar shortStatistics")
+    // console.log("hämtar shortStatistics")
     const queryParams = { ...config.requiredParams, ...params };
     const paramString = new URLSearchParams(queryParams).toString();
 
@@ -48,7 +47,7 @@ export default function ShortStatistics({
 
   useEffect(() => {
     if (compareAndUpdateStat) {
-      console.log("hämtar för att onDataChange is truthy")
+      // console.log("hämtar för att onDataChange is truthy")
       fetchStatistics();
       const timer = setInterval(fetchStatistics, 60000);
       return () => clearInterval(timer);
