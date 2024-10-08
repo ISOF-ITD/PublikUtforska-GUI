@@ -414,11 +414,45 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
     const isReadyToTranscribe = data.transcriptionstatus === 'readytotranscribe';
     const hasMedia = data.media.length > 0;
 
+    function getPages() {
+      let pages = '';
+    
+      if (data?.archive?.page) {
+        pages = data.archive.page;
+    
+        // Kontrollera om 'pages' inte är ett intervall och hantera det
+        if (pages && pages.indexOf('-') === -1) {
+          if (data.archive.total_pages) {
+            // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
+            if (typeof pages === 'string') {
+              pages = pages.replace(/\D/g, '');
+              pages = parseInt(pages, 10);
+            }
+    
+            const totalPages = parseInt(data.archive.total_pages, 10);
+    
+            // Om det finns fler än en sida, skapa intervall
+            if (totalPages > 1) {
+              let endPage = pages + totalPages - 1;
+              pages = `${pages}-${endPage}`;
+            }
+          }
+        }
+      }
+    
+      return pages;
+    }
+    
+
     // Prepare title
     let titleText;
     const transcriptionStatusElement = data.transcriptionstatus;
     if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
       titleText = 'Titel granskas';
+    } else if (data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0) {
+      titleText = `Sida ${getPages()} (${numberOfTranscribedSubrecordsMedia} ${l(
+        numberOfTranscribedSubrecordsMedia === 1 ? 'sida avskriven' : 'sidor avskrivna',
+      )})`;
     } else if (data.transcriptionstatus === 'readytotranscribe') {
       titleText = 'Ej avskriven';
       // If there is a title, use it, and put "Ej avskriven" in brackets
@@ -438,7 +472,13 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
       textElement = (
         <div>
           <p>
-            <strong>{l('Den här uppteckningen är inte avskriven.')}</strong>
+            <strong>
+              {
+                data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0
+                ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor avskrivna')}`
+                : l('Den här uppteckningen är inte avskriven.')
+              }
+            </strong>
             <br />
             <br />
             {l('Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!')}
@@ -448,11 +488,11 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
             label={
               `${l('Skriv av')} ${data.transcriptiontype === 'sida' ? l('sida för sida') : ''}`
             }
-            helptext={
-              data.transcriptiontype === 'sida'
-                ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor transkriberade')}`
-                : ''
-            }
+            // helptext={
+            //   data.transcriptiontype === 'sida'
+            //     ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor avskrivna')}`
+            //     : ''
+            // }
             title={data.title}
             recordId={data.id}
             archiveId={data.archive.archive_id}
@@ -704,29 +744,6 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
       });
     }
 
-    // Prepares pages
-    let pages = '';
-    if (data?.archive?.page) {
-      pages = data.archive.page;
-      // If pages is not an interval separated with '-': calculate interval
-      // pages can be recorded as interval in case of pages '10a-10b'
-      if (!!pages && pages.indexOf('-') === -1) {
-        if (data.archive.total_pages) {
-          // Remove uncommon non numeric characters in pages (like 10a) for simplicity
-          if (typeof pages === 'string') {
-            pages = pages.replace(/\D/g, '');
-            pages = parseInt(pages, 10);
-          }
-          const totalPages = parseInt(data.archive.total_pages, 10);
-          if (totalPages > 1) {
-            let endpage = pages;
-            endpage = endpage + totalPages - 1;
-            pages = `${pages.toString()}-${endpage.toString()}`;
-          }
-        }
-      }
-    }
-
     return (
       <div className={`container${data.id ? '' : ' loading'}`}>
 
@@ -800,11 +817,11 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                     : null
                 }
                 {
-                  !!data.archive && !!data.archive.archive && !!pages
+                  !!data.archive && !!data.archive.archive && !!getPages()
                   && (
                     <span style={{ marginLeft: 10 }}>
                       <strong>{l('Sidnummer')}</strong>
-                      {`: ${pages}`}
+                      {`: ${getPages()}`}
                     </span>
                   )
                 }
@@ -1022,7 +1039,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${getArchiveName(data.archive.archive_org)}`
+                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${getPages() ? `s. ${getPages()}, ` : ''}${getArchiveName(data.archive.archive_org)}`
               )}
               title={l('Källhänvisning')}
             />
@@ -1169,7 +1186,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                 <p>
                   <strong>{l('Sidnummer')}</strong>
                   <br />
-                  {pages}
+                  {getPages()}
                 </p>
               )
             }
