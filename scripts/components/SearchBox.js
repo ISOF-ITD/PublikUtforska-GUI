@@ -32,6 +32,7 @@ export default function SearchBox({
 
   // const [fetchingPage, setFetchingPage] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [hasFetchedSuggestions, setHasFetchedSuggestions] = useState(false);
   const [personSuggestions, setPersonSuggestions] = useState([]);
   const [placeSuggestions, setPlaceSuggestions] = useState([]);
   const [provinceSuggestions, setProvinceSuggestions] = useState([]);
@@ -217,8 +218,6 @@ export default function SearchBox({
 
   useEffect(() => {
     // document.getElementById('app').addEventListener('click', windowClickHandler);
-    // populate search suggestions from matomo api
-    getSearchSuggestions();
     // setSearchParamsState(routeHelper.createParamsFromSearchRoute(params['*']));
     setSearch(searchParam);
     setCategories(categoryParam ? categoryParam.split(',') : []);
@@ -435,6 +434,10 @@ export default function SearchBox({
   // set suggestionsVisible to true when the search input is focused
   const searchInputFocusHandler = () => {
     setSuggestionsVisible(true);
+    if (!hasFetchedSuggestions) {
+      getSearchSuggestions();
+      setHasFetchedSuggestions(true);
+    }
   };
 
   // set suggestionsVisible to false when the search input is blurred
