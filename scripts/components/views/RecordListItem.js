@@ -111,7 +111,7 @@ export default function RecordListItem({
         transcriptionstatus: 'published,transcribed',
       };
       if (transcriptiontype === 'sida') {
-        if (numberofpages) {
+        if (Number.isInteger(numberofpages)) {
           // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
           setNumberOfSubrecordsMedia(numberofpages);
           setNumberOfTranscribedSubrecordsMedia(numberoftranscribedpages);
@@ -120,7 +120,7 @@ export default function RecordListItem({
           fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
           // fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
         }
-      } else if (numberofonerecord) {
+      } else if (Number.isInteger(numberofonerecord)) {
         // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
         setNumberOfSubrecords(numberofonerecord);
         setNumberOfTranscribedSubrecords(numberoftranscribedonerecord);
