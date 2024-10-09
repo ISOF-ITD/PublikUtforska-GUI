@@ -340,9 +340,9 @@ export default function RecordList({
                       <button
                         type="button"
                         className="sort"
-                        onClick={() => handleSort('transcriptionstatus.keyword')}
+                        onClick={() => handleSort('transcriptionstatus')}
                       >
-                        {sort === 'transcriptionstatus.keyword' && (order === 'asc' ? '▼' : '▲')}
+                        {sort === 'transcriptionstatus' && (order === 'asc' ? '▼' : '▲')}
                         {l('Avskriven')}
                       </button>
                     </th>
