@@ -1025,7 +1025,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
         }
 
         {
-          (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+           data.transcriptiontype === 'sida' && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
           && <div className="record-view-thumbnails">{imageItems}</div>
         }
 
