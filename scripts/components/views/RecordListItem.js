@@ -116,20 +116,18 @@ export default function RecordListItem({
           setNumberOfSubrecordsMedia(numberofpages);
           setNumberOfTranscribedSubrecordsMedia(numberoftranscribedpages);
         } else {
-          // We get new values from server 
+          // We get new values from server
           fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
           // fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
         }
+      } else if (numberofonerecord) {
+        // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
+        setNumberOfSubrecords(numberofonerecord);
+        setNumberOfTranscribedSubrecords(numberoftranscribedonerecord);
       } else {
-        if (numberofonerecord) {
-          // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
-          setNumberOfSubrecords(numberofonerecord);
-          setNumberOfTranscribedSubrecords(numberoftranscribedonerecord);
-        } else {
-          // We get new values from server 
-          fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
-          fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
-        }
+        // We get new values from server
+        fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
+        fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
       }
     }
   }, []);
