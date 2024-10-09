@@ -25,8 +25,8 @@ const apiUrlObject = {
 };
 
 const restApiUrlObject = {
-  dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
-  // dev: 'https://garm-test.isof.se/folkeservice/api/',
+  // dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
+  dev: 'https://garm-test.isof.se/folkeservice/api/',
   test: 'https://garm-test.isof.se/folkeservice/api/',
   prod: 'https://garm.isof.se/folkeservice/api/',
 };
@@ -67,7 +67,7 @@ export default {
   // Parametrar som alltid skulle skickas till API:et, här passar vi på att sägenkartan alltid hämtar textar av typ arkiv eller tryckt och som finns i en kategori
   requiredParams: {
     // transcriptionstatus: 'readytotranscribe,undertranscription,transcribed,reviewing,needsimprovement,approved,published',
-    mark_metadata: 'transcriptionstatus',
+    // mark_metadata: 'transcriptionstatus',
     type: 'arkiv',
     categorytypes: 'tradark',
     publishstatus: 'published',

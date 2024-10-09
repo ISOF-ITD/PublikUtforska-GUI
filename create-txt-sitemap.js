@@ -10,7 +10,7 @@ const axios = require('axios');
 const fs = require('fs');
 
 // Bas-URL för att hämta dokumenten
-const BASE_URL = 'https://garm.isof.se/folkeservice/api/es/documents/?mark_metadata=transcriptionstatus&type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_record&transcriptionstatus=published';
+const BASE_URL = 'https://garm.isof.se/folkeservice/api/es/documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false&recordtype=one_record&transcriptionstatus=published';
 // const BASE_URL = 'https://garm.isof.se/folkeservice/api/es/documents/?type=arkiv&categorytypes=tradark&publishstatus=published&has_media=true&add_aggregations=false';
 // Bas-URL för sitemap-länkarna
 const SITEMAP_BASE_URL = 'https://sok.folke.isof.se/#/records/';
