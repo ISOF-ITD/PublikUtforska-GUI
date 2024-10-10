@@ -32,7 +32,7 @@ async function fetchDocuments(size, from = 0) {
 async function createTextSitemap() {
     let from = 0;
     const size = 500;
-    const filePath = 'www/sitemap.txt';
+    const filePath = 'sitemap.txt';
 
     // Tömmer eller tar bort filen om den finns
     if (fs.existsSync(filePath)) {
