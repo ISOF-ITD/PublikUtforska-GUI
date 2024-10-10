@@ -69,7 +69,7 @@ module.exports = {
         { from: 'varning.template.html', to: '' }, // Copy varning.html to www-folder
         { from: 'googlef01bc830ea17f73e.html', to: '' }, // Copy google site verification to www-folder
         { from: 'robots.txt', to: '' }, // Copy robots.txt
-        { from: 'sitemap.txt', to: '' }, // Copy sitemap
+        { from: 'sitemap*.xml', to: '' }, // Copy all individual sitemaps (sitemap_0.txt, sitemap_1.txt, etc.)
       ],
     }),
   ],
