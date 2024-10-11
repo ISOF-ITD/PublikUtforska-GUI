@@ -212,6 +212,7 @@ export default {
   // för intro-overlayen
   // kontextBasePath: 'folke-kontext/',
   // kontextStartPage: 'sida-1',
-  kontextBasePath: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/',
-  kontextStartPage: 'folke-start',
+  // kontextBasePath: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/',
+  kontextBasePath: 'https://isof.se/',
+  kontextStartPage: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/folke-start',
 };

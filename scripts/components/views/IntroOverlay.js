@@ -32,7 +32,7 @@ function IntroOverlay({ show, onClose }) {
   useEffect(() => {
     const kParam = getKParam();
     if (iframeRef.current) {
-      const iframeSrc = `${config.folkeKontextApiUrl}?path=${config.kontextBasePath}${kParam}`;
+      const iframeSrc = `${config.kontextBasePath}${kParam}`;
       iframeRef.current.src = iframeSrc;
     }
   }, [location]);
