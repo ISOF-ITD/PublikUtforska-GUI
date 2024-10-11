@@ -201,8 +201,8 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
       // Skickar overlay.viewimage till eventBus
       // ImageOverlay modulen lyssnar på det och visar bilden
       window.eventBus.dispatch('overlay.viewimage', {
-        imageUrl: e.currentTarget.dataset.image,
-        type: e.currentTarget.dataset.type,
+        imageUrl: e.source,
+        type: e.type,
       });
     }
   };
