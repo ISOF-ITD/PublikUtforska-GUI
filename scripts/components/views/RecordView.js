@@ -397,7 +397,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
     // Förbereder lista över socknar
     const placeItems = data.places && data.places.length > 0 ? data.places.map((place) => (
       <tr key={place.id}>
-        <td><a href={`#/places/${place.id}${routeParams || ''}`}>{`${place.name}, ${place.fylke ? place.fylke : place.harad}`}</a></td>
+        <td>{place.specification ? place.specification + ' i ' : ''}<a href={`#/places/${place.id}${routeParams || ''}`}>{`${place.name}, ${place.fylke ? place.fylke : place.harad}`}</a></td>
       </tr>
     )) : [];
 
