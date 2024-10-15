@@ -521,7 +521,8 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
         // use the filter method to find all items of a certain type
         data.media?.filter((item) => item.type === 'pdf').length >= 1 // At least one PDF file
         && data.media.filter((item) => item.type === 'image').length === 0 // No images
-        && data.media.filter((item) => item.type === 'audio').length === 0 // No audio files
+        // Activate to not show pdf when audio exists
+        // && data.media.filter((item) => item.type === 'audio').length === 0 // No audio files
       ) {
         // Set the pdfObjects variable to all PDF files
         // Use the filter method to find all items of a certain type
@@ -874,6 +875,20 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
             (data.text || textElement || data.headwords || headwordsElement)
             && (
               <div className={`${sitevisionUrl || imageItems.length === 0 || forceFullWidth || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
+                {/* audio items above text items that includes pdf */}
+                {
+                  audioItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under'))
+                  && (
+                    <div className="table-wrapper">
+                      <table width="100%">
+                        <tbody>
+                          {audioItems}
+                        </tbody>
+                      </table>
+                    </div>
+                  )
+                }
+
                 {
                   <>
                     {data.contents && contentsElement}
@@ -923,19 +938,6 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                       <strong>{`${l('Tryckt källa')}: `}</strong>
                       <em>{data.source}</em>
                     </p>
-                  )
-                }
-
-                {
-                  audioItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under'))
-                  && (
-                    <div className="table-wrapper">
-                      <table width="100%">
-                        <tbody>
-                          {audioItems}
-                        </tbody>
-                      </table>
-                    </div>
                   )
                 }
 
