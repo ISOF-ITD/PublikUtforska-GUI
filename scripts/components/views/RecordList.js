@@ -11,7 +11,7 @@ import { createSearchRoute } from '../../utils/routeHelper';
 import Filter from './Filter';
 
 function Pagination({
-  currentPage, total, hitsPerPage, onStep,
+  currentPage, total, hitsPerPage, onStep, maxPage,
 }) {
   const from = (currentPage - 1) * hitsPerPage + 1;
   const to = currentPage * hitsPerPage > total ? total : currentPage * hitsPerPage;
@@ -37,7 +37,7 @@ function Pagination({
             </button>
             <span> </span>
             <button
-              disabled={total <= currentPage * hitsPerPage}
+              disabled={currentPage >= maxPage}
               className="button next-button"
               onClick={() => onStep(1)}
               type="button"
@@ -45,6 +45,9 @@ function Pagination({
               {l('Nästa')}
             </button>
           </>
+        )}
+        {currentPage >= maxPage && (
+          <span className="limit-message">{l('Du har nått det maximala antalet sidor (10 000 poster).')}</span>
         )}
       </div>
     )
@@ -56,6 +59,7 @@ Pagination.propTypes = {
   total: PropTypes.number.isRequired,
   hitsPerPage: PropTypes.number.isRequired,
   onStep: PropTypes.func.isRequired,
+  maxPage: PropTypes.number.isRequired,
 };
 
 export default function RecordList({
@@ -91,6 +95,12 @@ export default function RecordList({
   const [filter, setFilter] = useState('');
 
   const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
+  // för att begränsa bläddringen till 10 000 hits
+  // detta pga begränsningar i Elasticsearch
+  const MAX_TOTAL = 10000;
+  const maxPage = Math.ceil(MAX_TOTAL / config.hitsPerPage);
+
 
   const handleFilterChange = (event) => {
     const { value } = event.target;
@@ -128,7 +138,7 @@ export default function RecordList({
   // Hämta data vid initial render och när relevanta beroenden ändras
   useEffect(() => {
     const fetchParams = {
-      from: (currentPage - 1) * config.hitsPerPage,
+      from: Math.min((currentPage - 1) * config.hitsPerPage, MAX_TOTAL - config.hitsPerPage),
       size: config.hitsPerPage,
       search: params.search ? encodeURIComponent(params.search) : undefined,
       search_field: params.search_field || undefined,
@@ -196,12 +206,25 @@ export default function RecordList({
 
   const handleStepPage = (step) => {
     if (disableRouterPagination) {
-      setCurrentPage(prev => prev + step);
+      setCurrentPage((prev) => {
+        const nextPage = prev + step;
+        if (nextPage > maxPage) {
+          return maxPage;
+        }
+        if (nextPage < 1) {
+          return 1;
+        }
+        return nextPage;
+      });
     } else {
-      const newSearchParams = { ...params, page: currentPage + step };
-      navigate(`/places${createSearchRoute(newSearchParams)}`);
+      const newPage = currentPage + step;
+      if (newPage <= maxPage && newPage >= 1) {
+        const newSearchParams = { ...params, page: newPage };
+        navigate(`/places${createSearchRoute(newSearchParams)}`);
+      }
     }
   };
+  
 
   const handleSort = (sortField) => {
     const newOrder = sort === sortField && order === 'asc' ? 'desc' : 'asc';
@@ -233,6 +256,7 @@ export default function RecordList({
         total={total}
         hitsPerPage={config.hitsPerPage}
         onStep={handleStepPage}
+        maxPage={maxPage}
       />
     )
   );
