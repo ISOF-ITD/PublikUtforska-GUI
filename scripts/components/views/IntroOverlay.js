@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 
 function IntroOverlay({ show, onClose }) {
-  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const iframeRef = useRef(null);
@@ -77,7 +76,7 @@ function IntroOverlay({ show, onClose }) {
               if (e.key === 'Enter' || e.key === ' ') handleIntroductionClick();
             }}
           >
-            Meny
+            {/* Meny */}
           </span>
           <div className="controls">
             <span
@@ -95,7 +94,6 @@ function IntroOverlay({ show, onClose }) {
         </div>
 
         <div className="content">
-          {isLoading && <div className="iframe-loading" />}
           <iframe
             ref={iframeRef}
             id="iframe"
@@ -105,9 +103,8 @@ function IntroOverlay({ show, onClose }) {
               border: 'none',
               width: '100%',
               height: '100%',
-              display: isLoading ? 'none' : 'block',
+              display: 'block',
             }}
-            onLoad={() => setIsLoading(false)}
           />
         </div>
       </div>
