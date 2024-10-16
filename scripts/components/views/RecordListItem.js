@@ -529,6 +529,10 @@ export default function RecordListItem({
             {
               places && places.length > 0
               && (
+                <div>
+                  <div className="table-buttons-prefix">
+                  {places[0].specification ? places[0].specification + ' i ' : ''}
+                  </div>
                 <a
                   target={config.embeddedApp ? '_parent' : '_self'}
                   href={`#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}${createSearchRoute(
@@ -547,6 +551,7 @@ export default function RecordListItem({
                     getPlaceString(places)
                   }
                 </a>
+                </div>
               )
             }
           </td>
