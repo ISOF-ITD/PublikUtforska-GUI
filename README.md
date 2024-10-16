@@ -72,22 +72,6 @@ node .\create-sitemap.js
 
 To deploy the new sitemap to the server, see "Bundle code for deployment".
 
-## Upgrade node modules
-
-Bash script to upgrade all node modules:
-
-```bash
-npm outdated | awk '{print $1}' | xargs -I {} npm install {}
-```
-
-PowerShell script to upgrade all node modules:
-
-```PowerShell
-npm outdated | ForEach-Object {
-  npm install "$($_.Split(' ')[0])@latest"
-}
-```
-
 ## Import new data
 
 See README.md in TradarkAdmin: https://vcs.its.uu.se/isof-devs/TradarkAdmin/src/master/README.md
