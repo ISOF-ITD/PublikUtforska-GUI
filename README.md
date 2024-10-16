@@ -92,11 +92,6 @@ npm outdated | ForEach-Object {
 
 See README.md in TradarkAdmin: https://vcs.its.uu.se/isof-devs/TradarkAdmin/src/master/README.md
 
-## Set up ssh by following github instructions
-
-### Example:
-https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
-
 # Documentation
 
 ## How to display a warning message, e.g., when the server is slow
