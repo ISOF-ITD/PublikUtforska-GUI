@@ -181,7 +181,7 @@ export default function RecordListItem({
               title={`Gå till accessionen ${archive.archive_id_row}`}
               style={{ cursor: archive.archive_id_row ? 'pointer' : 'inherit' }}
             >
-              {makeArchiveIdHumanReadable(archive.archive_id)}
+              {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
             </a>
             {
               archive.page && (`:${pageFromTo({ _source: { archive } })}`)
@@ -201,7 +201,7 @@ export default function RecordListItem({
             title={`Gå till ${searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
             style={{ cursor: 'pointer' }}
           >
-            {makeArchiveIdHumanReadable(archive.archive_id)}
+            {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
           </a>
           {
             archive.page && (`:${archive.page}`)
@@ -442,6 +442,14 @@ export default function RecordListItem({
     }
   } else {
     titleText = getTitle(title, contents);
+  }
+  // Default fallback for title to archive id
+  if (titleText) {
+    if (titleText.length < 1) {
+      titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)
+    }
+  } else {
+    titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)
   }
 
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
