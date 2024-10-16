@@ -5,56 +5,40 @@ import config from '../../config';
 
 function IntroOverlay({ show, onClose }) {
   const [isLoading, setIsLoading] = useState(true);
-  const iframeRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const iframeRef = useRef(null);
+
+  const getInitialSrc = () => {
+    const params = new URLSearchParams(location.search);
+    const kParam = params.get('k') || config.kontextStartPage;
+    return `${config.kontextBasePath}${kParam}`;
+  };
+
+  const [iframeSrc, setIframeSrc] = useState(getInitialSrc);
 
   const overlayClass = `overlay-container light-modal intro-overlay ${show ? 'visible' : ''}`;
 
-  const getKParam = () => {
-    const params = new URLSearchParams(location.search);
-    return params.get('k') || config.kontextStartPage;
-  };
-
-  const updateKParam = (newPath) => {
-    const params = new URLSearchParams(location.search);
-    params.set('k', newPath);
-    navigate({ search: params.toString() }, { replace: true });
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (!params.has('k')) {
-      updateKParam(config.kontextStartPage);
-    }
-  }, [location]);
-
-  useEffect(() => {
-    const kParam = getKParam();
-    if (iframeRef.current) {
-      const iframeSrc = `${config.kontextBasePath}${kParam}`;
-      iframeRef.current.src = iframeSrc;
-    }
-  }, [location]);
-
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (!event.data || !event.data.newSrc) return;
-
       try {
-        let newUrl;
-        if (event.data.newSrc.startsWith('http')) {
-          newUrl = new URL(event.data.newSrc);
-        } else {
-          newUrl = new URL(event.data.newSrc, window.location.origin);
-        }
+        if (event.data.newSrc?.startsWith('http')) {
+          const newUrlObject = new URL(event.data.newSrc);
+          const newPath = newUrlObject.href.replace(
+            config.kontextBasePath,
+            ''
+          );
+          console.log('Uppdaterar k-parametern med:', newPath, 'från meddelande');
 
-        const newPath = newUrl.pathname.replace(config.kontextBasePath, '');
-        updateKParam(newPath);
+          // Uppdatera endast URL:en, men inte iframeSrc
+          const params = new URLSearchParams(location.search);
+          if (params.get('k') !== newPath) {
+            params.set('k', newPath);
+            navigate(`?${params.toString()}`, { replace: true });
+          }
+        }
       } catch (error) {
-        console.error('Error constructing URL:', error);
+        console.error('Fel vid konstruktion av URL:', error);
       }
     };
 
@@ -62,10 +46,17 @@ function IntroOverlay({ show, onClose }) {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [navigate, location.search]);
 
   const handleIntroductionClick = () => {
-    updateKParam(config.kontextStartPage);
+    console.log('Återställer k-parametern till startvärdet:', config.kontextStartPage, 'från handleIntroductionClick()');
+
+    // Uppdatera både iframeSrc och URL:en
+    const newSrc = config.kontextBasePath + config.kontextStartPage;
+    setIframeSrc(newSrc);
+    const params = new URLSearchParams(location.search);
+    params.set('k', config.kontextStartPage);
+    navigate(`?${params.toString()}`, { replace: true });
   };
 
   const handleClose = () => {
@@ -89,19 +80,6 @@ function IntroOverlay({ show, onClose }) {
             Meny
           </span>
           <div className="controls">
-            {/* {localStorage.getItem('hideIntroOverlay') === 'true' ? null : (
-              <span
-                className="control-link"
-                onClick={handleDontShowAgain}
-                role="button"
-                tabIndex="0"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') handleDontShowAgain();
-                }}
-              >
-                Visa inte igen
-              </span>
-            )} */}
             <span
               onClick={handleClose}
               role="button"
@@ -117,12 +95,12 @@ function IntroOverlay({ show, onClose }) {
         </div>
 
         <div className="content">
-          {isLoading ? <div className="iframe-loading" /> : null}
+          {isLoading && <div className="iframe-loading" />}
           <iframe
             ref={iframeRef}
             id="iframe"
             title="iframe"
-            src=""
+            src={iframeSrc}
             style={{
               border: 'none',
               width: '100%',

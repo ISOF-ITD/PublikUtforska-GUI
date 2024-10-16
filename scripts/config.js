@@ -25,8 +25,8 @@ const apiUrlObject = {
 };
 
 const restApiUrlObject = {
-  dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
-  // dev: 'https://garm-test.isof.se/folkeservice/api/',
+  // dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
+  dev: 'https://garm-test.isof.se/folkeservice/api/',
   test: 'https://garm-test.isof.se/folkeservice/api/',
   prod: 'https://garm.isof.se/folkeservice/api/',
 };
@@ -213,6 +213,6 @@ export default {
   // kontextBasePath: 'folke-kontext/',
   // kontextStartPage: 'sida-1',
   // kontextBasePath: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/',
-  kontextBasePath: 'https://isof.se/',
+  kontextBasePath: 'https://www.isof.se/',
   kontextStartPage: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/folke-start',
 };
