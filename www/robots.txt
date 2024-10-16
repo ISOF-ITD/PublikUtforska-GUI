@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: /sitemap_index.xml
+Sitemap: /sitemap-index.xml

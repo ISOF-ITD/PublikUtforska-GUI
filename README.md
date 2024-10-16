@@ -58,6 +58,20 @@ frigg:
 cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
 ```
 
+## Create or update sitemap
+
+```bash
+node ./create-sitemap.js
+```
+
+or in PowerShell:
+
+```PowerShell
+node .\create-sitemap.js
+```
+
+To deploy the new sitemap to the server, see "Bundle code for deployment".
+
 ## Upgrade node modules
 
 Bash script to upgrade all node modules:

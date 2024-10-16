@@ -79,7 +79,7 @@ function formatEndTime(remainingSeconds) {
 
 // Funktion för att initiera sitemap index-fil
 function initSitemapIndex() {
-  const sitemapIndexPath = 'sitemap_index.xml';
+  const sitemapIndexPath = 'sitemap-index.xml';
   const sitemapIndexHeader = '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   fs.writeFileSync(sitemapIndexPath, sitemapIndexHeader);
   console.log(`Initialized sitemap index file: ${sitemapIndexPath}`);
@@ -87,7 +87,7 @@ function initSitemapIndex() {
 
 // Funktion för att uppdatera sitemap index-fil med ny sitemap-fil
 function updateSitemapIndex(sitemapFile) {
-  const sitemapIndexPath = 'sitemap_index.xml';
+  const sitemapIndexPath = 'sitemap-index.xml';
   const sitemapEntry = `  <sitemap>\n    <loc>https://sok.folke.isof.se/${sitemapFile}</loc>\n  </sitemap>\n`;
   fs.appendFileSync(sitemapIndexPath, sitemapEntry);
   console.log(`Updated sitemap index with: ${sitemapFile}`);
@@ -95,7 +95,7 @@ function updateSitemapIndex(sitemapFile) {
 
 // Funktion för att avsluta sitemap index-fil
 function closeSitemapIndex() {
-  const sitemapIndexPath = 'sitemap_index.xml';
+  const sitemapIndexPath = 'sitemap-index.xml';
   fs.appendFileSync(sitemapIndexPath, '</sitemapindex>');
   console.log(`Closed sitemap index file: ${sitemapIndexPath}`);
 }
