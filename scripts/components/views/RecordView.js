@@ -276,7 +276,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                   )}
                 </div>
                 <div className="four columns">
-                  <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
+                  <div data-type="image" data-image={mediaItem.source} onClick={() => mediaImageClickHandler(mediaItem)} key={`image-${index}`} className="archive-image">
                     <img src={config.imageUrl + mediaItem.source} alt="" />
                     {
                       mediaItem.title
