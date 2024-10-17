@@ -58,30 +58,37 @@ frigg:
 cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
 ```
 
-## Upgrade node modules
-
-Bash script to upgrade all node modules:
+## Create or update sitemap
 
 ```bash
-npm outdated; npm install $(npm outdated | egrep '^[a-z0-9@/-]*' -o | tr '\r\n' ' ') && npm outdated
+node ./create-sitemap.js
 ```
 
-PowerShell script to upgrade all node modules:
+or in PowerShell:
 
 ```PowerShell
-npm outdated; npm install $(npm outdated | Select-String -Pattern '^[a-z@/-]*' -AllMatches -CaseSensitive | % { $_.Matches } | % { $_.Value } | Out-String -Width 1000000 | ForEach-Object { $_ -replace "`r`n", " " } | % {$_.TrimStart()}); npm outdated
+node .\create-sitemap.js
 ```
+
+To deploy the new sitemap to the server, see "Bundle code for deployment".
 
 ## Import new data
 
 See README.md in TradarkAdmin: https://vcs.its.uu.se/isof-devs/TradarkAdmin/src/master/README.md
 
-## Set up ssh by following github instructions
-
-### Example:
-https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
-
 # Documentation
+
+## How to display a warning message, e.g., when the server is slow
+
+To add a custom warning message to the application, follow these steps:
+
+1. **Create the `varning.html` file on the server**:
+   - Add a file named `varning.html` to the `www` folder of your project. 
+   - This file should contain the HTML structure of the warning message. You can include plain text or HTML tags (e.g., `<pre>`, `<strong>`, etc.) to style the message as needed.
+   
+2. **Display the warning message**:
+   - If the `varning.html` file exists, the warning message will be automatically rendered.
+
 
 ## css 
 Uses less. Every component states its main css in a comment 
@@ -93,6 +100,43 @@ Types:
 - scripts\components\collections
 - scripts\components\views
 - scripts\components\
+
+### Props
+
+### PropTypes
+See "Code style and conventions" and
+https://react.dev/reference/react/Component#static-proptypes
+
+```javascript
+import PropTypes from 'prop-types';
+```
+
+### State
+
+State as individual state-values or array
+Anything to think about???
+
+Example State as individual state-values in FeedbackOverlay:
+```javascript
+const [visible, setVisible] = useState(false);
+const [messageInputValue, setMessageInputValue] = useState('');
+  
+..
+setVisible(false);
+```
+
+Example State as array in TranscriptionHelpOverlay:
+```javascript
+const [state, setState] = useState({
+visible: false,
+messageInputValue: '',
+nameInputValue: '',
+emailInputValue: '',
+messageSent: false,
+});
+..
+setState((prevState) => ({ ...prevState, visible: false }));
+```
 
 ## Routing
 
@@ -143,3 +187,7 @@ Since, in the above example, the searchParams are a part of the component's **pr
 ### What is not controlled by the routes?
 
 Some states of the application are not in the scope of the routing. This affects all events that are triggered by eventBus, especially popups, overlays and `resize` events.
+
+## EventBus
+
+TODO

@@ -74,7 +74,7 @@ export default {
   // Parametrar som alltid skulle skickas till API:et, här passar vi på att sägenkartan alltid hämtar textar av typ arkiv eller tryckt och som finns i en kategori
   requiredParams: {
     // transcriptionstatus: 'readytotranscribe,undertranscription,transcribed,reviewing,needsimprovement,approved,published',
-    mark_metadata: 'transcriptionstatus',
+    // mark_metadata: 'transcriptionstatus',
     type: 'arkiv',
     categorytypes: 'tradark',
     publishstatus: 'published',

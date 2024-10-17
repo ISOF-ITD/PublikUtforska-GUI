@@ -3,7 +3,12 @@ import { animated, useSpring } from '@react-spring/web';
 import PropTypes from 'prop-types';
 import config from '../config';
 
-export default function ShortStatistics({ visible, params, label }) {
+export default function ShortStatistics({
+  params,
+  label,
+  compareAndUpdateStat,
+  shouldFetch = false,
+}) {
   const [value, setValue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -15,6 +20,7 @@ export default function ShortStatistics({ visible, params, label }) {
   });
 
   const fetchStatistics = () => {
+    // console.log("hämtar shortStatistics")
     const queryParams = { ...config.requiredParams, ...params };
     const paramString = new URLSearchParams(queryParams).toString();
 
@@ -26,6 +32,9 @@ export default function ShortStatistics({ visible, params, label }) {
         throw new Error('Fel vid hämtning av statistik');
       })
       .then((json) => {
+        if (compareAndUpdateStat) {
+          compareAndUpdateStat(json.data.value);
+        }
         setValue(json.data.value);
         setLoading(false);
         setError(false);
@@ -37,19 +46,26 @@ export default function ShortStatistics({ visible, params, label }) {
   };
 
   useEffect(() => {
-    if (visible) {
+    if (compareAndUpdateStat) {
+      // console.log("hämtar för att onDataChange is truthy")
       fetchStatistics();
       const timer = setInterval(fetchStatistics, 60000);
       return () => clearInterval(timer);
     }
-    return () => {}; // return a no-op function if no cleanup is necessary
-  }, [visible]);
+    return () => {}; // no-op cleanup
+  }, []);
+
+  useEffect(() => {
+    if (shouldFetch) {
+      fetchStatistics();
+    }
+  }, [shouldFetch]);
 
   return (
     <div className="short-statistics">
-      {!value && loading && <div className="loading">Hämtar statistik...</div>}
+      {loading && <div className="loading">Hämtar statistik...</div>}
       {error && <div className="error">Fel vid hämtning av statistik</div>}
-      {!loading && !error && visible && (
+      {!loading && !error && (
         <animated.div className="value">
           {animatedValue.number.to((num) => Math.floor(num).toLocaleString('sv-SE'))}
         </animated.div>
@@ -60,7 +76,9 @@ export default function ShortStatistics({ visible, params, label }) {
 }
 
 ShortStatistics.propTypes = {
-  visible: PropTypes.bool.isRequired,
   params: PropTypes.object.isRequired,
   label: PropTypes.string.isRequired,
+  compareAndUpdateStat: PropTypes.func,
+  shouldFetch: PropTypes.bool,
 };
+

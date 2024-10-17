@@ -54,19 +54,23 @@ module.exports = {
       },
     ],
   },
-  plugins: [new HtmlWebpackPlugin({
-    favicon: './img/favicon.ico',
-    lang: 'sv',
-    meta: {
-      viewport: 'width=device-width, initial-scale=1',
-      robots: 'index, follow',
-    },
-    template: './index.html',
-  }),
-  new CopyWebpackPlugin({
-    patterns: [
-      { from: 'robots.txt', to: 'robots.txt' },
-      { from: 'sitemap.xml', to: 'sitemap.xml' },
-    ],
-  })],
+  plugins: [
+    new HtmlWebpackPlugin({
+      favicon: './img/favicon.ico',
+      lang: 'sv',
+      meta: {
+        viewport: 'width=device-width, initial-scale=1',
+        robots: 'index, follow',
+      },
+      template: './index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'varning.template.html', to: '' }, // Copy varning.html to www-folder
+        { from: 'googlef01bc830ea17f73e.html', to: '' }, // Copy google site verification to www-folder
+        { from: 'robots.txt', to: '' }, // Copy robots.txt
+        { from: 'sitemap*.xml', to: '' }, // Copy all individual sitemaps (sitemap_0.txt, sitemap_1.txt, etc.)
+      ],
+    }),
+  ],
 };

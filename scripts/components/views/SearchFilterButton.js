@@ -1,9 +1,10 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 import CheckboxIcon from '../CheckboxIcon';
 import { l } from '../../lang/Lang';
 
 export default function SearchFilterButton({
-  handleFilterChange, label, categoryId, total, checked,
+  handleFilterChange, label, categoryId, total = null, checked,
 }) {
   return (
     <>
@@ -42,8 +43,4 @@ SearchFilterButton.propTypes = {
   categoryId: PropTypes.string.isRequired,
   total: PropTypes.object,
   checked: PropTypes.bool.isRequired,
-};
-
-SearchFilterButton.defaultProps = {
-  total: null,
 };

@@ -1,16 +1,16 @@
 import React from 'react';
-import config from '../../config';
-import ImageMap from './ImageMap';
-import { l } from '../../lang/Lang';
+import config from '../../../config';
+import ImageMap from '../ImageMap';
+import { l } from '../../../lang/Lang';
 
-import ContributeInfoButton from './ContributeInfoButton';
-import FeedbackButton from './FeedbackButton';
+import ContributeInfoButton from '../ContributeInfoButton';
+import FeedbackButton from '../FeedbackButton';
 import TranscriptionHelpButton from './TranscriptionHelpButton';
 
 import Uppteckningsblankett from './transcriptionForms/Uppteckningsblankett';
 import Fritext from './transcriptionForms/Fritext';
 
-import { getPlaceString } from '../../utils/helpers';
+import { getPlaceString } from '../../../utils/helpers';
 import TranscribeButton from './TranscribeButton';
 
 // Main CSS: ui-components/overlay.less
@@ -51,7 +51,7 @@ export default class TranscriptionOverlay extends React.Component {
 			//console.log('TranscriptionOverlay window.eventBus');
 			window.eventBus.addEventListener('overlay.transcribe', function(event) {
 				if(event.target.random){
-					fetch(`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&mark_metadata=transcriptionstatus&categorytypes=tradark&publishstatus=published`)
+					fetch(`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published`)
 					.then(function(response) {
 						return response.json()
 					})

@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { useEffect } from 'react';
 import { useLoaderData, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -9,14 +10,7 @@ import { l } from '../../lang/Lang';
 
 import config from '../../config';
 
-export default function PersonView({ mode }) {
-  PersonView.propTypes = {
-    mode: PropTypes.string,
-  };
-  PersonView.defaultProps = {
-    mode: 'material',
-  };
-
+export default function PersonView({ mode = 'material' }) {
   const {
     biography,
     birthplace,
@@ -74,7 +68,7 @@ export default function PersonView({ mode }) {
             <p>
               {
                 ((birthYear && birthYear > 0) || (places?.length > 0) || birthplace)
-                  && `${l('Föddes')}`
+                && `${l('Föddes')}`
               }
               {
                 birthYear && birthYear > 0 ? ` ${birthYear}` : ''
@@ -95,12 +89,12 @@ export default function PersonView({ mode }) {
         {
           !config.siteOptions.hideContactButton
           && (
-          <FeedbackButton
-            title={name || ''}
-            type="Person"
-            location={location}
-            country="sweden"
-          />
+            <FeedbackButton
+              title={name || ''}
+              type="Person"
+              location={location}
+              country="sweden"
+            />
           )
         }
         {
@@ -160,7 +154,7 @@ export default function PersonView({ mode }) {
               transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
             }}
             mode={mode}
-            hasFilter={mode === 'transcribe' ? false : true}
+            hasFilter={mode !== 'transcribe'}
           />
         </div>
       </div>
@@ -168,3 +162,7 @@ export default function PersonView({ mode }) {
     </div>
   );
 }
+
+PersonView.propTypes = {
+  mode: PropTypes.string,
+};

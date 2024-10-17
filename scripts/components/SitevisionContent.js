@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
@@ -34,7 +35,11 @@ const fetchContent = async (url) => {
   }
 };
 
-export default function SitevisionContent({ url, htmlContent, disableScriptExecution }) {
+export default function SitevisionContent({
+  url = '',
+  htmlContent = '',
+  disableScriptExecution = false,
+}) {
   const [content, setContent] = useState('');
 
   const parseHtml = useCallback(
@@ -80,10 +85,3 @@ SitevisionContent.propTypes = {
   htmlContent: PropTypes.string,
   disableScriptExecution: PropTypes.bool,
 };
-
-SitevisionContent.defaultProps = {
-  url: '',
-  htmlContent: '',
-  disableScriptExecution: false,
-};
-

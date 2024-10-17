@@ -1,4 +1,5 @@
-/* eslint-disable no-shadow */
+/* eslint-disable react/require-default-props */
+
 import {
   Await, useLoaderData, useParams, useNavigate,
 } from 'react-router-dom';
@@ -12,17 +13,7 @@ import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 import config from '../../config';
 import { l } from '../../lang/Lang';
 
-export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
-  PlaceView.propTypes = {
-    highlightRecordsWithMetadataField: PropTypes.string,
-    mode: PropTypes.string,
-  };
-
-  PlaceView.defaultProps = {
-    highlightRecordsWithMetadataField: null,
-    mode: 'material',
-  };
-
+export default function PlaceView({ highlightRecordsWithMetadataField = null, mode = 'material' }) {
   const { results } = useLoaderData();
   const params = useParams();
   const navigate = useNavigate();
@@ -151,7 +142,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                         transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
                       }}
                       mode={mode}
-                      hasFilter={mode === 'transcribe' ? false : true}
+                      hasFilter={mode !== 'transcribe'}
                     />
                   </div>
                 </div>
@@ -188,7 +179,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
                       transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
                     }}
                     mode={mode}
-                    hasFilter={mode === 'transcribe' ? false : true}
+                    hasFilter={mode !== 'transcribe'}
                     // add a random id to be able to have the same form twice on the same page
                   />
                 </div>
@@ -201,3 +192,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField, mode }) {
     </div>
   );
 }
+
+PlaceView.propTypes = {
+  highlightRecordsWithMetadataField: PropTypes.string,
+  mode: PropTypes.string,
+};

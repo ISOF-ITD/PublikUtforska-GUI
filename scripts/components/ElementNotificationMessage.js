@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, {
   useState, useEffect, useRef, useCallback,
 } from 'react';
@@ -5,44 +6,19 @@ import React, {
 import PropTypes from 'prop-types';
 
 export default function ElementNotificationMessage({
-  forgetAfterClick,
+  forgetAfterClick = false,
   messageId,
-  manuallyOpen,
-  openTimeout,
-  openDuration,
-  autoHide,
+  manuallyOpen = false,
+  openTimeout = 2000,
+  openDuration = 15000,
+  autoHide = false,
   closeTrigger,
-  placement,
-  placementOffsetY,
-  placementOffsetX,
+  placement = 'under',
+  placementOffsetY = 0,
+  placementOffsetX = 0,
   message,
   children,
 }) {
-  ElementNotificationMessage.propTypes = {
-    forgetAfterClick: PropTypes.bool,
-    messageId: PropTypes.string.isRequired,
-    manuallyOpen: PropTypes.bool,
-    openTimeout: PropTypes.number,
-    openDuration: PropTypes.number,
-    autoHide: PropTypes.bool,
-    closeTrigger: PropTypes.string,
-    placement: PropTypes.string,
-    placementOffsetY: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    placementOffsetX: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    message: PropTypes.string.isRequired,
-    children: PropTypes.node.isRequired,
-  };
-
-  ElementNotificationMessage.defaultProps = {
-    forgetAfterClick: false,
-    manuallyOpen: false,
-    openTimeout: 2000,
-    openDuration: 15000,
-    autoHide: false,
-    placement: 'under',
-    placementOffsetY: 0,
-    placementOffsetX: 0,
-  };
   const [messageContainerWidth, setMessageContainerWidth] = useState(0);
   const [messageContainerHeight, setMessageContainerHeight] = useState(0);
   const [elementContainerWidth, setElementContainerWidth] = useState(0);
@@ -157,3 +133,17 @@ export default function ElementNotificationMessage({
   );
 }
 
+ElementNotificationMessage.propTypes = {
+  forgetAfterClick: PropTypes.bool,
+  messageId: PropTypes.string.isRequired,
+  manuallyOpen: PropTypes.bool,
+  openTimeout: PropTypes.number,
+  openDuration: PropTypes.number,
+  autoHide: PropTypes.bool,
+  closeTrigger: PropTypes.string,
+  placement: PropTypes.string,
+  placementOffsetY: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  placementOffsetX: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  message: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+};

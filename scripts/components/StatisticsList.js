@@ -1,22 +1,27 @@
+/* eslint-disable react/require-default-props */
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import config from '../config';
 
 export default function StatisticsList({
-  params: rawParams = {}, visible, label, type,
+  params: rawParams = {},
+  label,
+  type,
+  shouldFetch = false,
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
 
   const fetchStatistics = async () => {
+    // console.log("hämtar statisticsList")
     const queryParams = { ...config.requiredParams, ...rawParams };
     const paramString = new URLSearchParams(queryParams).toString();
 
     let esApiEndpoint;
     switch (type) {
       case 'topTranscribersByPages':
-        esApiEndpoint = 'statistics/get_top_transcribers_by_pages';
+        esApiEndpoint = 'statistics/get_top_transcribers_by_pages/';
         break;
       default:
         setFetchError(`Unsupported type: ${type}`);
@@ -41,40 +46,37 @@ export default function StatisticsList({
   };
 
   useEffect(() => {
-    if (visible) {
+    if (shouldFetch) {
       fetchStatistics();
-      const timer = setInterval(fetchStatistics, 60000);
-      return () => clearInterval(timer);
     }
-    return undefined;
-  }, [visible]);
+  }, [shouldFetch]);
 
   return (
     <div className="statistics-list">
       {loading && <div className="loading">Hämtar statistik...</div>}
       {fetchError && (
-      <div className="error">
-        Fel vid hämtning av statistik:
-        {' '}
-        {fetchError}
-      </div>
+        <div className="error">
+          Fel vid hämtning av statistik:
+          {' '}
+          {fetchError}
+        </div>
       )}
       {!loading && !fetchError && <h3>{label}</h3>}
-      {!loading && !fetchError && visible && data && (
-      <ol>
-        {data.map((item) => (
-          <li key={`${item.key}-${item.value}`}>
-            <span className="key">
-              {item.key}
-            </span>
-            :
-            {' '}
-            {parseInt(item.value, 10).toLocaleString('sv-SE')}
-            {' '}
-            {item.value === 1 ? 'sida' : 'sidor'}
-          </li>
-        ))}
-      </ol>
+      {!loading && !fetchError && data && (
+        <ol>
+          {data.map((item) => (
+            <li key={`${item.key}-${item.value}`}>
+              <span className="key">
+                {item.key}
+              </span>
+              :
+              {' '}
+              {parseInt(item.value, 10).toLocaleString('sv-SE')}
+              {' '}
+              {item.value === 1 ? 'sida' : 'sidor'}
+            </li>
+          ))}
+        </ol>
       )}
     </div>
   );
@@ -82,11 +84,7 @@ export default function StatisticsList({
 
 StatisticsList.propTypes = {
   params: PropTypes.object,
-  visible: PropTypes.bool.isRequired,
   label: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
-};
-
-StatisticsList.defaultProps = {
-  params: {},
+  shouldFetch: PropTypes.bool,
 };

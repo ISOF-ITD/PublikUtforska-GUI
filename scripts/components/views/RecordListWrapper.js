@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 
 import { useRef } from 'react';
@@ -9,28 +10,12 @@ import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 import { l } from '../../lang/Lang';
 
 export default function RecordListWrapper({
-  disableListPagination,
-  disableRouterPagination,
-  highlightRecordsWithMetadataField,
-  mode,
-  openSwitcherHelptext,
+  disableListPagination = false,
+  disableRouterPagination = true,
+  highlightRecordsWithMetadataField = null,
+  mode = 'material',
+  openSwitcherHelptext = () => {},
 }) {
-  RecordListWrapper.propTypes = {
-    disableListPagination: PropTypes.bool,
-    disableRouterPagination: PropTypes.bool,
-    highlightRecordsWithMetadataField: PropTypes.string,
-    mode: PropTypes.string,
-    openSwitcherHelptext: PropTypes.func,
-  };
-
-  RecordListWrapper.defaultProps = {
-    disableListPagination: false,
-    disableRouterPagination: true,
-    highlightRecordsWithMetadataField: null,
-    mode: 'material',
-    openSwitcherHelptext: () => {},
-  };
-
   const params = useParams();
   const location = useLocation();
   const containerRef = useRef();
@@ -71,3 +56,11 @@ export default function RecordListWrapper({
     </div>
   );
 }
+
+RecordListWrapper.propTypes = {
+  disableListPagination: PropTypes.bool,
+  disableRouterPagination: PropTypes.bool,
+  highlightRecordsWithMetadataField: PropTypes.string,
+  mode: PropTypes.string,
+  openSwitcherHelptext: PropTypes.func,
+};

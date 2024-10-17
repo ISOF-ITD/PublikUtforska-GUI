@@ -29,6 +29,7 @@
 @import "tables.less";
 
 @import "ui-components/transcriptionform.less";
+@import "ui-components/transcription-page-overlay.less";
 
 @import "statistics.less";
 
@@ -305,6 +306,11 @@ audio::-webkit-media-controls-enclosure {
 	}
 }
 
+.records-list div.table-buttons-prefix > a, .records-list div.table-buttons-prefix {
+	padding: 2px 5px;
+	font-size: 0.8rem;
+}
+
 .records-list td.table-buttons > a, .records-list td.table-buttons > span {
 	display: inline-block;
 	padding: 2px 5px;
@@ -409,7 +415,8 @@ div.display-line-breaks {
 	flex-direction: column;
 }
 
-.record-text {
+.record-text-and-image {
+	// as old .record-text but for rows with "columns" image-text (transcribed text for image) and image
 	// div with a white background, a slight shadow to make
 	// it look like it's lifted off the page, rounded corners
 	// to give it a more organic feel, and some padding to 
@@ -417,7 +424,7 @@ div.display-line-breaks {
 	background-color: #fff;
 	border-radius: 10px;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-	display: inline-block;
+	// display: inline-block;
 	font-family: "Source Serif Pro", serif;
 	line-height: 1.5;
 	margin: 0 0 20px;
@@ -431,6 +438,19 @@ div.display-line-breaks {
 		margin: 6px 0 0;
 	}
 }
+
+
+
+.record-text {
+	// div with a white background, a slight shadow to make
+	// it look like it's lifted off the page, rounded corners
+	// to give it a more organic feel, and some padding to 
+	// separate the content from the edges.
+	&:extend(.record-text-and-image);
+
+	display: inline-block;
+}
+
 
 .next-random-record-button-container {
 	position: relative;
@@ -676,3 +696,8 @@ footer, header {
 span.highlight {
 	background: yellow;
 }
+
+input.invalid {
+	border: 2px solid red;
+  }
+  

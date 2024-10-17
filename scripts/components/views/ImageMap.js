@@ -1,18 +1,9 @@
+/* eslint-disable react/require-default-props */
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import PropTypes from 'prop-types';
 
-export default function ImageMap({ maxZoom, image }) {
-  ImageMap.propTypes = {
-    maxZoom: PropTypes.number,
-    image: PropTypes.string,
-  };
-
-  ImageMap.defaultProps = {
-    maxZoom: 3,
-    image: null,
-  };
-
+export default function ImageMap({ maxZoom = 3, image = null }) {
   const containerRef = useRef();
   const mapRef = useRef();
   const mapInstance = useRef();
@@ -35,9 +26,9 @@ export default function ImageMap({ maxZoom, image }) {
     imageOverlay.current.addTo(mapInstance.current);
 
     /*
-		Testing with leaflet geojson rectangle overlay on image
-		Note: No rectangle is shown! May be due to layer config, coordinates, layer order, or z-index
-		*/
+    Testing with leaflet geojson rectangle overlay on image
+    Note: No rectangle is shown! May be due to layer config, coordinates, layer order, or z-index
+    */
 
     mapInstance.current.setMaxBounds(bounds);
     mapInstance.current.setView([imageHeight, 0], 0);
@@ -55,7 +46,7 @@ export default function ImageMap({ maxZoom, image }) {
 
   useEffect(() => {
     mapInstance.current = L.map(mapRef.current, {
-      minZoom: 0,
+      minZoom: -5, // Allow zooming out further to see the whole image
       maxZoom: maxZoom || 3,
       zoom: 0,
       crs: L.CRS.Simple,
@@ -78,3 +69,8 @@ export default function ImageMap({ maxZoom, image }) {
     </div>
   );
 }
+
+ImageMap.propTypes = {
+  maxZoom: PropTypes.number,
+  image: PropTypes.string,
+};

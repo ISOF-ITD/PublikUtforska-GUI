@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import config from '../../config';
@@ -6,21 +7,11 @@ import { l } from '../../lang/Lang';
 // Main CSS: /ui-components/feedback-buttons.less";
 
 export default function ContributeInfoButton({
-  title, type, country, id,
+  title = '',
+  type,
+  country = undefined,
+  id = undefined,
 }) {
-  ContributeInfoButton.propTypes = {
-    title: PropTypes.string,
-    type: PropTypes.string.isRequired,
-    country: PropTypes.string,
-    id: PropTypes.string,
-  };
-
-  ContributeInfoButton.defaultProps = {
-    title: '',
-    country: undefined,
-    id: undefined,
-  };
-
   const { pathname } = useLocation();
 
   const contributeinfoButtonClick = () => {
@@ -47,3 +38,9 @@ export default function ContributeInfoButton({
   );
 }
 
+ContributeInfoButton.propTypes = {
+  title: PropTypes.string,
+  type: PropTypes.string.isRequired,
+  country: PropTypes.string,
+  id: PropTypes.string,
+};

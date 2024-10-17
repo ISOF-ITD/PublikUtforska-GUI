@@ -9,12 +9,12 @@ import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
 import RecordListWrapper from './views/RecordListWrapper';
-// import StatisticsOverlay from './StatisticsOverlay';
 import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
-import TranscriptionHelpOverlay from './views/TranscriptionHelpOverlay';
-import TranscriptionOverlay from './views/TranscriptionOverlay';
+import TranscriptionHelpOverlay from './views/transcribe/TranscriptionHelpOverlay';
+import TranscriptionOverlay from './views/transcribe/TranscriptionOverlay';
+import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPageByPageOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 
@@ -27,16 +27,12 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 import config from '../config';
 
 export default function Application({
-  children, mode, openSwitcherHelptext,
+  children, mode = 'material', openSwitcherHelptext,
 }) {
   Application.propTypes = {
     children: PropTypes.node.isRequired,
-    mode: PropTypes.string,
+    mode: PropTypes.string.isRequired,
     openSwitcherHelptext: PropTypes.func.isRequired,
-  };
-
-  Application.defaultProps = {
-    mode: 'material',
   };
 
   window.eventBus = EventBus;
@@ -48,6 +44,8 @@ export default function Application({
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: { } });
   const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: { } });
   const [loading, setLoading] = useState(true);
+  const [transcriptionPageByPageOverlayVisible, setTranscriptionPageByPageOverlayVisible] = useState(false);
+  const [transcriptionPageByPageEvent, setTranscriptionPageByPageEvent] = useState(null);
 
   const params = useParams();
 
@@ -80,7 +78,20 @@ export default function Application({
     });
   }, [pictureResults]);
 
+  const handleShowOverlay = (event) => {
+    setTranscriptionPageByPageOverlayVisible(true);
+    setTranscriptionPageByPageEvent(event);
+
+  };
+
+  const handleHideOverlay = () => {
+    setTranscriptionPageByPageOverlayVisible(false);
+  };
+
   useEffect(() => {
+    window.eventBus.addEventListener('overlay.transcribePageByPage', handleShowOverlay);
+    window.eventBus.addEventListener('overlay.hide', handleHideOverlay);
+
     // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
     window.eventBus.addEventListener('audio.playervisible', () => {
       // När GlobalAudioPlayer visas lägger vi till class till document.body för att
@@ -104,9 +115,13 @@ export default function Application({
       setLoading(false);
     });
 
+    // on unmount, remove listeners to clean as you always should do (might not be needed)
     return () => {
       window.eventBus.removeEventListener('audio.playervisible');
       window.eventBus.removeEventListener('audio.playerhidden');
+
+      window.eventBus.removeEventListener('overlay.transcribePageByPage', handleShowOverlay);
+      window.eventBus.removeEventListener('overlay.hide', handleHideOverlay);
     };
   }, []);
 
@@ -145,9 +160,16 @@ export default function Application({
         <FeedbackOverlay />
         <ContributeInfoOverlay />
         <TranscriptionOverlay />
+        {
+          transcriptionPageByPageOverlayVisible
+          && (
+            <TranscriptionPageByPageOverlay
+              event={transcriptionPageByPageEvent}
+            />
+          )
+        }
         <TranscriptionHelpOverlay />
         <SwitcherHelpTextOverlay />
-        {/* <StatisticsOverlay /> */}
         <Footer />
       </div>
     </AudioProvider>

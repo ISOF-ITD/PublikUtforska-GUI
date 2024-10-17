@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -6,7 +7,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from './ListPlayButton';
-import TranscribeButton from './TranscribeButton';
+import TranscribeButton from './transcribe/TranscribeButton';
 import HighlightedText from '../HighlightedText';
 
 import config from '../../config';
@@ -14,7 +15,7 @@ import { l } from '../../lang/Lang';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../../utils/routeHelper';
 import {
-  pageFromTo, getTitle, makeArchiveIdHumanReadable, getPlaceString,
+  pageFromTo, getTitle, makeArchiveIdHumanReadable, getPlaceString, fetchRecordMediaCount,
 } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
@@ -41,46 +42,31 @@ export default function RecordListItem({
       transcriptionstatus,
       transcriptiontype,
       year,
+      numberofpages,
+      numberofonerecord,
+      numberoftranscribedonerecord,
+      numberoftranscribedpages,
     },
     highlight,
   },
   searchParams,
   // useRouteParams: use the route params instead of the search params for the link
   // maybe this should be the default behaviour and search params via props should be optional?
-  useRouteParams,
+  useRouteParams = false,
   archiveIdClick,
-  columns,
+  columns = null,
   shouldRenderColumn,
-  highlightRecordsWithMetadataField,
-  mode,
-  smallTitle,
+  highlightRecordsWithMetadataField = null,
+  mode = 'material',
+  smallTitle = false,
 }) {
-  RecordListItem.propTypes = {
-    id: PropTypes.string.isRequired,
-    item: PropTypes.object.isRequired,
-    searchParams: PropTypes.object.isRequired,
-    archiveIdClick: PropTypes.func.isRequired,
-    columns: PropTypes.array,
-    shouldRenderColumn: PropTypes.func.isRequired,
-    highlightRecordsWithMetadataField: PropTypes.string,
-    mode: PropTypes.string,
-    useRouteParams: PropTypes.bool,
-    smallTitle: PropTypes.bool,
-  };
-
-  RecordListItem.defaultProps = {
-    highlightRecordsWithMetadataField: null,
-    mode: 'material',
-    columns: null,
-    useRouteParams: false,
-    smallTitle: false,
-  };
-
   const [subrecords, setSubrecords] = useState([]);
   const [fetchedSubrecords, setFetchedSubrecords] = useState(false);
   const [visibleSubrecords, setVisibleSubrecords] = useState(false);
   const [numberOfSubrecords, setNumberOfSubrecords] = useState(0);
   const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] = useState(0);
+  const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
+  const [numberOfTranscribedSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia] = useState(0);
 
   const navigate = useNavigate();
   const params = useParams();
@@ -117,8 +103,32 @@ export default function RecordListItem({
         recordtype: 'one_record',
         transcriptionstatus: 'published,transcribed',
       };
-      fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
-      fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
+      const oneRecordPagesParams = {
+        search: id,
+      };
+      const transcribedOneRecordPagesParams = {
+        search: id,
+        transcriptionstatus: 'published,transcribed',
+      };
+      if (transcriptiontype === 'sida') {
+        if (Number.isInteger(numberofpages)) {
+          // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
+          setNumberOfSubrecordsMedia(numberofpages);
+          setNumberOfTranscribedSubrecordsMedia(numberoftranscribedpages);
+        } else {
+          // We get new values from server
+          fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
+          // fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
+        }
+      } else if (Number.isInteger(numberofonerecord)) {
+        // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
+        setNumberOfSubrecords(numberofonerecord);
+        setNumberOfTranscribedSubrecords(numberoftranscribedonerecord);
+      } else {
+        // We get new values from server
+        fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
+        fetchRecordCount(transcribedOneRecordParams, setNumberOfTranscribedSubrecords);
+      }
     }
   }, []);
 
@@ -150,7 +160,7 @@ export default function RecordListItem({
       return (
         <td className="table-buttons" data-title={`${l('Arkivnummer')}:`}>
           <span>
-            {makeArchiveIdHumanReadable(archive.archive_id)}
+            {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
             {
               archive.page && (`:${archive.page}`)
             }
@@ -171,7 +181,7 @@ export default function RecordListItem({
               title={`Gå till accessionen ${archive.archive_id_row}`}
               style={{ cursor: archive.archive_id_row ? 'pointer' : 'inherit' }}
             >
-              {makeArchiveIdHumanReadable(archive.archive_id)}
+              {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
             </a>
             {
               archive.page && (`:${pageFromTo({ _source: { archive } })}`)
@@ -191,7 +201,7 @@ export default function RecordListItem({
             title={`Gå till ${searchParams.recordtype === 'one_accession_row' ? 'uppteckningarna' : 'accessionerna'}`}
             style={{ cursor: 'pointer' }}
           >
-            {makeArchiveIdHumanReadable(archive.archive_id)}
+            {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
           </a>
           {
             archive.page && (`:${archive.page}`)
@@ -321,10 +331,10 @@ export default function RecordListItem({
             if (['c', 'collector', 'interviewer', 'recorder'].includes(collectorPersonItem.relation)) {
               const collectorParams = { ...searchParams, page: undefined };
               const href = `#${mode === 'transcribe' ? '/transcribe' : ''
-              }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
-                search: collectorParams.search,
-                search_field: collectorParams.search_field,
-              })}`;
+                }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
+                  search: collectorParams.search,
+                  search_field: collectorParams.search_field,
+                })}`;
               return (
                 <a href={href} key={`record-list-item-${id}-${collectorPersonItem.id}`}>
                   {l(collectorPersonItem.name)}
@@ -362,6 +372,34 @@ export default function RecordListItem({
   let transcriptionStatusElement = <span className="transcriptionstatus empty" />;
   if (transcriptionstatus && transcriptionstatus !== 'accession') {
     transcriptionStatusElement = <span className={`transcriptionstatus ${transcriptionstatus}`}>{transcriptionstatus.replace(transcriptionstatus, transcriptionStatuses[transcriptionstatus])}</span>;
+  } else if (transcriptionstatus === 'accession' && transcriptiontype === 'sida' && numberOfSubrecordsMedia && Number.isInteger(numberOfTranscribedSubrecordsMedia)) {
+    const transcribedPercent = numberOfSubrecordsMedia === 0 ? 0 : Math.round(numberOfTranscribedSubrecordsMedia / numberOfSubrecordsMedia * 100);
+    transcriptionStatusElement = (
+      <div style={{ marginRight: 10 }}>
+        {`${numberOfTranscribedSubrecordsMedia} av ${numberOfSubrecordsMedia} sidor`}
+        <br />
+        <div
+          title={`${transcribedPercent}%`}
+          style={{
+            display: numberOfSubrecordsMedia === 0 ? 'none' : 'inline-block',
+            width: '100%',
+            maxWidth: 200,
+            backgroundColor: '#fff',
+            height: 10,
+            border: '1px solid #01535d',
+            borderRadius: 3,
+          }}
+        >
+          <span style={{
+            width: `${transcribedPercent}%`,
+            display: 'block',
+            background: '#01535d',
+            height: 10,
+          }}
+          />
+        </div>
+      </div>
+    );
   } else if (transcriptionstatus === 'accession' && numberOfSubrecords && Number.isInteger(numberOfTranscribedSubrecords)) {
     const transcribedPercent = numberOfSubrecords === 0 ? 0 : Math.round(numberOfTranscribedSubrecords / numberOfSubrecords * 100);
     transcriptionStatusElement = (
@@ -404,6 +442,14 @@ export default function RecordListItem({
     }
   } else {
     titleText = getTitle(title, contents);
+  }
+  // Default fallback for title to archive id and pages if archive.page exists
+  if (titleText) {
+    if (titleText.length < 1) {
+      titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org).concat(archive.page && (`:${pageFromTo({ _source: { archive } })}`))
+    }
+  } else {
+    titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org).concat(archive.page && (`:${pageFromTo({ _source: { archive } })}`))
   }
 
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
@@ -491,6 +537,10 @@ export default function RecordListItem({
             {
               places && places.length > 0
               && (
+                <div>
+                  <div className="table-buttons-prefix">
+                  {places[0].specification ? places[0].specification + ' i ' : ''}
+                  </div>
                 <a
                   target={config.embeddedApp ? '_parent' : '_self'}
                   href={`#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}${createSearchRoute(
@@ -509,6 +559,7 @@ export default function RecordListItem({
                     getPlaceString(places)
                   }
                 </a>
+                </div>
               )
             }
           </td>
@@ -558,3 +609,16 @@ export default function RecordListItem({
     </tr>
   );
 }
+
+RecordListItem.propTypes = {
+  id: PropTypes.string.isRequired,
+  item: PropTypes.object.isRequired,
+  searchParams: PropTypes.object.isRequired,
+  archiveIdClick: PropTypes.func.isRequired,
+  columns: PropTypes.array,
+  shouldRenderColumn: PropTypes.func.isRequired,
+  highlightRecordsWithMetadataField: PropTypes.string,
+  mode: PropTypes.string,
+  useRouteParams: PropTypes.bool,
+  smallTitle: PropTypes.bool,
+};

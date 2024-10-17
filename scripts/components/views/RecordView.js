@@ -6,7 +6,13 @@ import PropTypes from 'prop-types';
 import sanitizeHtml from 'sanitize-html';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronRight, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChevronDown,
+  faChevronRight,
+  faArrowUpRightFromSquare,
+  faLock,
+  faNewspaper,
+} from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 // import localLibrary from '../../utils/localLibrary';
 
@@ -17,14 +23,14 @@ import ListPlayButton from './ListPlayButton';
 import ContributeInfoButton from './ContributeInfoButton';
 import FeedbackButton from './FeedbackButton';
 
-import TranscribeButton from './TranscribeButton';
+import TranscribeButton from './transcribe/TranscribeButton';
 // import ElementNotificationMessage from '../ElementNotificationMessage';
 import SitevisionContent from '../SitevisionContent';
 import PdfViewer from '../PdfViewer';
 
 import { createSearchRoute, createParamsFromRecordRoute } from '../../utils/routeHelper';
 import {
-  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName,
+  getTitle, makeArchiveIdHumanReadable, getAudioTitle, getArchiveName, fetchRecordMediaCount,
 } from '../../utils/helpers';
 
 import RecordsCollection from '../collections/RecordsCollection';
@@ -35,26 +41,43 @@ import archiveLogoIkos from '../../../img/archive-logo-ikos.png';
 import { l } from '../../lang/Lang';
 import RecordList from './RecordList';
 
-export default function RecordView({ mode, openSwitcherHelptext }) {
-  RecordView.propTypes = {
-    mode: PropTypes.string,
-    openSwitcherHelptext: PropTypes.func.isRequired,
-  };
+const getIndicator = (item) => {
+  if (item.transcriptionstatus === 'transcribed') {
+    return (
+      <div className="thumbnail-indicator transcribed-indicator">
+        <FontAwesomeIcon icon={faLock} />
+      </div>
+    );
+  }
 
-  RecordView.defaultProps = {
-    mode: 'material',
-  };
+  if (item.transcriptionstatus === 'published') {
+    return (
+      <div className="thumbnail-indicator published-indicator">
+        <FontAwesomeIcon icon={faNewspaper} />
+      </div>
+    );
+  }
 
+  return null;
+};
+
+export default function RecordView({ mode = 'material', openSwitcherHelptext }) {
   const params = useParams();
   const navigate = useNavigate();
 
   // const [saved, setSaved] = useState(false);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
+  const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
+  const [numberOfTranscribedSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia] = useState(0);
 
   const [expandedHeadwords, setExpandedHeadwords] = useState(false);
   const toggleHeadwordsExpand = () => {
     setExpandedHeadwords(!expandedHeadwords);
+  };
+  const [expandedContents, setExpandedContents] = useState(false);
+  const toggleContentsExpand = () => {
+    setExpandedContents(!expandedContents);
   };
 
   const location = useLocation();
@@ -106,8 +129,28 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           10000,
         );
       });
+      // Update Recordview using event, as an easy fix as fetchRecord(recordId) is in app.js
+      // Maybe not needed as hide of overlay should call transcribecancel so
+      // transcriptionstatus should be back at "readytotranscribe"
+      // BUT maybe needed to get other record data as title back? But is title transcribed in page-by-page?
+      // KOMMENTAR (Rico): Följande rad triggrar en oönskad omladdning när man stänger
+      // transcriptionPageByPageOverlay, därför tar jag bort det:
+      // -----------------------
+      // eventBus.addEventListener('overlay.hide', forceUpdateFunc);
+      // -----------------------
+      // eventBus.addEventListener('overlay.hide-update-data', updateTranscribeButtonAndPageCounts);
     }
-    // on unnount, set the document title back to the site title
+    if (data?.recordtype === 'one_record') {
+      const oneRecordPagesParams = {
+        search: data.id,
+      };
+      // We get new values from server and do not use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
+      if (data.transcriptiontype === 'sida') {
+        fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
+        // fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
+      }
+    }
+    // on unmount, set the document title back to the site title
     return () => {
       document.title = config.siteTitle;
     };
@@ -158,8 +201,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       // Skickar overlay.viewimage till eventBus
       // ImageOverlay modulen lyssnar på det och visar bilden
       window.eventBus.dispatch('overlay.viewimage', {
-        imageUrl: e.currentTarget.dataset.image,
-        type: e.currentTarget.dataset.type,
+        imageUrl: e.source,
+        type: e.type,
       });
     }
   };
@@ -214,16 +257,56 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       const imageDataItems = data.media.filter((dataItem) => dataItem.type === 'image');
       imageItems = imageDataItems.map((mediaItem, index) => {
         if (mediaItem.source.indexOf('.pdf') === -1) {
+          if (data.transcriptiontype && data.transcriptiontype == 'sida' && data.transcriptionstatus && data.transcriptionstatus == 'published') {
+            // transcriptiontype = 'sida' and transcriptionstatus = 'published'
+            // Make rows with "columns": image-text and image
+            return (
+              <div className="row record-text-and-image">
+                <div className="eight columns display-line-breaks">
+                  <div>
+                    {mediaItem.text}
+                  </div>
+                  {mediaItem.comment && mediaItem.comment.trim() !== '' && (
+                    <div>
+                      <br />
+                      <strong>Kommentar:</strong>
+                      <br />
+                      {mediaItem.comment}
+                    </div>
+                  )}
+                </div>
+                <div className="four columns">
+                  <div data-type="image" data-image={mediaItem.source} onClick={() => mediaImageClickHandler(mediaItem)} key={`image-${index}`} className="archive-image">
+                    <img src={config.imageUrl + mediaItem.source} alt="" />
+                    {
+                      mediaItem.title
+                      && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
+                    }
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          // Independent columns: one with text and one with images
           return (
-            <div data-type="image" data-image={mediaItem.source} onClick={mediaImageClickHandler} key={`image-${index}`} className="archive-image">
+            <div
+              data-type="image"
+              data-image={mediaItem.source}
+              onClick={() => mediaImageClickHandler(mediaItem)}
+              key={`image-${index}`}
+              className="archive-image"
+              style={{ position: 'relative' }}
+            >
               <img src={config.imageUrl + mediaItem.source} alt="" />
+              {getIndicator(mediaItem)}
               {
-                mediaItem.title
-                && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
-              }
+                  mediaItem.title
+                  && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
+                }
             </div>
           );
         }
+        return null; // Return null to avoid undefined elements in the array
       });
 
       const audioDataItems = data.media.filter((dataItem) => dataItem.type === 'audio');
@@ -314,39 +397,102 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     // Förbereder lista över socknar
     const placeItems = data.places && data.places.length > 0 ? data.places.map((place) => (
       <tr key={place.id}>
-        <td><a href={`#/places/${place.id}${routeParams || ''}`}>{`${place.name}, ${place.fylke ? place.fylke : place.harad}`}</a></td>
+        <td>{place.specification ? place.specification + ' i ' : ''}<a href={`#/places/${place.id}${routeParams || ''}`}>{`${place.name}, ${place.fylke ? place.fylke : place.harad}`}</a></td>
       </tr>
     )) : [];
 
     let textElement;
     let headwordsElement;
+    let contentsElement;
 
     let forceFullWidth = false;
 
     const sitevisionUrl = data.metadata?.find((item) => item.type === 'sitevision_url');
 
-    // Om vi har sitevisionUrl definerad använder
-    // vi SitevisionContent modulen för att visa sidans innehåll
-    if (sitevisionUrl) {
+    // Om vi har en sitevision_url definierad, använd vi SitevisionContent modulen
+    const hasSitevisionUrl = sitevisionUrl;
+    const isReadyToTranscribe = data.transcriptionstatus === 'readytotranscribe';
+    const hasMedia = data.media.length > 0;
+
+    function getPages() {
+      let pages = '';
+    
+      if (data?.archive?.page) {
+        pages = data.archive.page;
+    
+        // Kontrollera om 'pages' inte är ett intervall och hantera det
+        if (pages && pages.indexOf('-') === -1) {
+          if (data.archive.total_pages) {
+            // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
+            if (typeof pages === 'string') {
+              pages = pages.replace(/\D/g, '');
+              pages = parseInt(pages, 10);
+            }
+    
+            const totalPages = parseInt(data.archive.total_pages, 10);
+    
+            // Om det finns fler än en sida, skapa intervall
+            if (totalPages > 1) {
+              let endPage = pages + totalPages - 1;
+              pages = `${pages}-${endPage}`;
+            }
+          }
+        }
+      }
+    
+      return pages;
+    }
+    
+
+    // Prepare title
+    let titleText;
+    const transcriptionStatusElement = data.transcriptionstatus;
+    if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
+      titleText = 'Titel granskas';
+    } else if (data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0) {
+      titleText = `Sida ${getPages()} (${numberOfTranscribedSubrecordsMedia} ${l(
+        numberOfTranscribedSubrecordsMedia === 1 ? 'sida avskriven' : 'sidor avskrivna',
+      )})`;
+    } else if (data.transcriptionstatus === 'readytotranscribe') {
+      titleText = 'Ej avskriven';
+      // If there is a title, use it, and put "Ej avskriven" in brackets
+      if (data.title) {
+        titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
+      }
+    } else {
+      titleText = getTitle(data.title, data.contents);
+    }
+    if (titleText) {
+      document.title = `${titleText} - ${config.siteTitle}`;
+    }
+
+    if (hasSitevisionUrl) {
       textElement = <SitevisionContent url={sitevisionUrl.value} />;
-    } else if (data.transcriptionstatus === 'readytotranscribe' && data.media.length > 0) {
-      // Gammal regel: Om "transkriberad" finns i texten lägger vi till
-      // transkriberings knappen istället för att visa textan
-      // else if (data.text && data.text.indexOf('transkriberad') > -1
-      // && data.text.length < 25 && data.media.length > 0) {
-      // Ny regel Om transcriptionstatus = readytotranscribe lägger vi till
-      // transkriberings knappen istället för att visa texten
+    } else if (isReadyToTranscribe && hasMedia) {
       textElement = (
         <div>
           <p>
-            <strong>{l('Den här uppteckningen är inte avskriven.')}</strong>
+            <strong>
+              {
+                data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0
+                ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor avskrivna')}`
+                : l('Den här uppteckningen är inte avskriven.')
+              }
+            </strong>
             <br />
             <br />
             {l('Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!')}
           </p>
           <TranscribeButton
             className="button button-primary"
-            label={l('Skriv av')}
+            label={
+              `${l('Skriv av')} ${data.transcriptiontype === 'sida' ? l('sida för sida') : ''}`
+            }
+            // helptext={
+            //   data.transcriptiontype === 'sida'
+            //     ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor avskrivna')}`
+            //     : ''
+            // }
             title={data.title}
             recordId={data.id}
             archiveId={data.archive.archive_id}
@@ -357,6 +503,12 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           />
         </div>
       );
+      // special case: all pages are transcribed:
+      if (data.transcriptiontype === 'sida' && data.media.every((page) => page.transcriptionstatus !== 'readytotranscribe')) {
+        textElement = <p>{l('Den här uppteckningen är avskriven och granskas.')}</p>;
+      }
+    } else if (data.transcriptionstatus === 'undertranscription') {
+      textElement = <p>{l('Den här uppteckningen håller på att transkriberas av annan användare.')}</p>;
     } else {
       // Om posten innehåller minst en pdf fil
       // (ingen text, inte ljudfiler och inte bilder), då visar vi pdf-filerna filen direkt
@@ -369,7 +521,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         // use the filter method to find all items of a certain type
         data.media?.filter((item) => item.type === 'pdf').length >= 1 // At least one PDF file
         && data.media.filter((item) => item.type === 'image').length === 0 // No images
-        && data.media.filter((item) => item.type === 'audio').length === 0 // No audio files
+        // Activate to not show pdf when audio exists
+        // && data.media.filter((item) => item.type === 'audio').length === 0 // No audio files
       ) {
         // Set the pdfObjects variable to all PDF files
         // Use the filter method to find all items of a certain type
@@ -434,6 +587,42 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         }
       }
 
+      // If content Is In Title do not show contents element
+      if (data?.contents && !titleText?.includes(data.contents)) {
+        contentsElement = (
+          <div>
+            <button
+              className="headwords-toggle"
+              type="button"
+              tabIndex={0}
+              style={{
+                textDecoration: 'underline',
+                cursor: 'pointer',
+              }}
+              onClick={toggleContentsExpand}
+              onKeyDown={(e) => {
+                // Aktiverar när "Enter" eller "Space" trycks ned
+                if (e.key === 'Enter' || e.key === ' ') {
+                  toggleContentsExpand();
+                }
+              }}
+            >
+              <FontAwesomeIcon icon={expandedContents ? faChevronDown : faChevronRight} />
+              &nbsp;
+              Innehållsuppgifter i register
+            </button>
+            <div className={`record-text realkatalog-content display-line-breaks ${expandedContents ? 'show' : 'hide'}`}>
+              <p />
+              <div
+                // Lösning med säkerhetsbrist! Fundera på bättre lösning!
+                dangerouslySetInnerHTML={{
+                  __html: data.contents,
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
       headwordsElement = (
         <div>
           <button
@@ -457,19 +646,24 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             Uppgifter från  äldre innehållsregister
           </button>
           <div className={`record-text realkatalog-content display-line-breaks ${expandedHeadwords ? 'show' : 'hide'}`}>
-            <i>
-              Delar av Isofs äldre arkivmaterial kan vara svårt att närma
-              sig och använda eftersom det återspeglar fördomar, stereotyper,
-              rasism och sexism. Här finns också ett förlegat och nedsättande
-              språkbruk som vi inte använder i dag.
-              <br />
-              <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
-                Läs mer om fördomar och äldre språkbruk i samlingarna.
-                &nbsp;
-                <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
-              </a>
-              <p />
-            </i>
+            <b>
+              Information till läsaren: denna arkivhandling kan innehålla
+              fördomar och språkbruk från en annan tid.
+            </b>
+            <br />
+            Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda
+            då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
+            <br />
+            <b>
+              Läs mer
+            </b>
+            <br />
+            <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna">
+              Fördomar och äldre språkbruk i samlingarna.
+              &nbsp;
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+            </a>
+            <p />
             <div
               // Lösning med säkerhetsbrist! Fundera på bättre lösning!
               dangerouslySetInnerHTML={{
@@ -551,47 +745,6 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
       });
     }
 
-    // Prepares pages
-    let pages = '';
-    if (data?.archive?.page) {
-      pages = data.archive.page;
-      // If pages is not an interval separated with '-': calculate interval
-      // pages can be recorded as interval in case of pages '10a-10b'
-      if (!!pages && pages.indexOf('-') === -1) {
-        if (data.archive.total_pages) {
-          // Remove uncommon non numeric characters in pages (like 10a) for simplicity
-          if (typeof pages === 'string') {
-            pages = pages.replace(/\D/g, '');
-            pages = parseInt(pages, 10);
-          }
-          const totalPages = parseInt(data.archive.total_pages, 10);
-          if (totalPages > 1) {
-            let endpage = pages;
-            endpage = endpage + totalPages - 1;
-            pages = `${pages.toString()}-${endpage.toString()}`;
-          }
-        }
-      }
-    }
-
-    // Prepare title
-    let titleText;
-    const transcriptionStatusElement = data.transcriptionstatus;
-    if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
-      titleText = 'Titel granskas';
-    } else if (data.transcriptionstatus === 'readytotranscribe') {
-      titleText = 'Ej avskriven';
-      // If there is a title, use it, and put "Ej avskriven" in brackets
-      if (data.title) {
-        titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
-      }
-    } else {
-      titleText = getTitle(data.title, data.contents);
-    }
-    if (titleText) {
-      document.title = `${titleText} - ${config.siteTitle}`;
-    }
-
     return (
       <div className={`container${data.id ? '' : ' loading'}`}>
 
@@ -665,11 +818,11 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                     : null
                 }
                 {
-                  !!data.archive && !!data.archive.archive && !!pages
+                  !!data.archive && !!data.archive.archive && !!getPages()
                   && (
                     <span style={{ marginLeft: 10 }}>
                       <strong>{l('Sidnummer')}</strong>
-                      {`: ${pages}`}
+                      {`: ${getPages()}`}
                     </span>
                   )
                 }
@@ -699,13 +852,46 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
         </div>
 
         <div className="row">
-
+          <div className="ten columns content-warning">
+            <small>
+              <i>
+                <b>Information till läsaren:</b>
+                {' '}
+                Denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
+                <br />
+                Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
+                <br />
+                <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna" target="_blank" rel="noreferrer">
+                  Läs mer om Fördomar och äldre språkbruk i samlingarna.
+                  &nbsp;
+                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+                </a>
+              </i>
+            </small>
+          </div>
+        </div>
+        <div className="row">
           {
             (data.text || textElement || data.headwords || headwordsElement)
             && (
               <div className={`${sitevisionUrl || imageItems.length === 0 || forceFullWidth || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
+                {/* audio items above text items that includes pdf */}
+                {
+                  audioItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under'))
+                  && (
+                    <div className="table-wrapper">
+                      <table width="100%">
+                        <tbody>
+                          {audioItems}
+                        </tbody>
+                      </table>
+                    </div>
+                  )
+                }
+
                 {
                   <>
+                    {data.contents && contentsElement}
                     {textElement}
                     {/* add a switch that toggles the state variable highlight */}
                     {highlightedText
@@ -756,19 +942,6 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 }
 
                 {
-                  audioItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under'))
-                  && (
-                    <div className="table-wrapper">
-                      <table width="100%">
-                        <tbody>
-                          {audioItems}
-                        </tbody>
-                      </table>
-                    </div>
-                  )
-                }
-
-                {
                   imageItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under'))
                   && (
                     <div>
@@ -809,8 +982,13 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 }
 
                 {
-                  (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
-                  && imageItems
+                  // transcriptiontype != 'sida'
+                  // If not transcribed page by page: Text and images in independent columns
+                  data.transcriptiontype && data.transcriptiontype !== 'sida'
+                  && (
+                    (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+                    && imageItems
+                  )
                 }
 
                 {
@@ -836,6 +1014,23 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
           )
         }
 
+        {
+          // transcriptiontype = 'sida' and transcriptionstatus = 'published'
+          // If transcribed page by page: Text and images in dependent columns each row with dependent text and image
+          data.transcriptiontype && data.transcriptiontype === 'sida' && data.transcriptionstatus && data.transcriptionstatus === 'published'
+          && (
+            imageItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under'))
+            && (
+              { imageItems }
+            )
+          )
+        }
+
+        {
+           data.transcriptiontype === 'sida' && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+          && <div className="record-view-thumbnails">{imageItems}</div>
+        }
+
         <div className="row">
 
           <div className="six columns">
@@ -846,7 +1041,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${pages ? `s. ${pages}, ` : ''}${getArchiveName(data.archive.archive_org)}`
+                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${getPages() ? `s. ${getPages()}, ` : ''}${getArchiveName(data.archive.archive_org)}`
               )}
               title={l('Källhänvisning')}
             />
@@ -993,7 +1188,7 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
                 <p>
                   <strong>{l('Sidnummer')}</strong>
                   <br />
-                  {pages}
+                  {getPages()}
                 </p>
               )
             }
@@ -1075,3 +1270,8 @@ export default function RecordView({ mode, openSwitcherHelptext }) {
     </div>
   );
 }
+
+RecordView.propTypes = {
+  mode: PropTypes.string,
+  openSwitcherHelptext: PropTypes.func.isRequired,
+};

@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import config from '../config';
@@ -21,22 +22,6 @@ const SearchSuggestions = forwardRef(
     },
     ref,
   ) => {
-    SearchSuggestions.propTypes = {
-      closeSuggestionsHandler: PropTypes.func.isRequired,
-      filteredPersonSuggestions: PropTypes.func.isRequired,
-      filteredPlaceSuggestions: PropTypes.func.isRequired,
-      filteredSearchSuggestions: PropTypes.func.isRequired,
-      filteredProvinceSuggestions: PropTypes.func.isRequired,
-      filteredArchiveIdSuggestions: PropTypes.func.isRequired,
-      inputKeyPressHandler: PropTypes.func.isRequired,
-      search: PropTypes.string.isRequired,
-      personClickHandler: PropTypes.func.isRequired,
-      placeClickHandler: PropTypes.func.isRequired,
-      provinceClickHandler: PropTypes.func.isRequired,
-      archiveIdClickHandler: PropTypes.func.isRequired,
-      suggestionClickHandler: PropTypes.func.isRequired,
-    };
-
     const renderSuggestions = (title, label, suggestions, clickHandler, field, maxHeight) => {
       const filteredSuggestions = config[`numberOf${title}Suggestions`]
         ? suggestions().filter((suggestion, index) => index < config[`numberOf${title}Suggestions`])
@@ -71,7 +56,7 @@ const SearchSuggestions = forwardRef(
                     >
                       {part}
                     </span>
-                ))
+                  ))
               }
               &nbsp;
               {
@@ -87,7 +72,7 @@ const SearchSuggestions = forwardRef(
                     >
                       {part}
                     </small>
-                ))
+                  ))
               }
               {/* make matching characters in item.comment bold. */}
               <br />
@@ -131,3 +116,19 @@ const SearchSuggestions = forwardRef(
 );
 
 export default SearchSuggestions;
+
+SearchSuggestions.propTypes = {
+  closeSuggestionsHandler: PropTypes.func.isRequired,
+  filteredPersonSuggestions: PropTypes.func.isRequired,
+  filteredPlaceSuggestions: PropTypes.func.isRequired,
+  filteredSearchSuggestions: PropTypes.func.isRequired,
+  filteredProvinceSuggestions: PropTypes.func.isRequired,
+  filteredArchiveIdSuggestions: PropTypes.func.isRequired,
+  inputKeyPressHandler: PropTypes.func.isRequired,
+  search: PropTypes.string,
+  personClickHandler: PropTypes.func.isRequired,
+  placeClickHandler: PropTypes.func.isRequired,
+  provinceClickHandler: PropTypes.func.isRequired,
+  archiveIdClickHandler: PropTypes.func.isRequired,
+  suggestionClickHandler: PropTypes.func.isRequired,
+};

@@ -17,9 +17,9 @@ export function getTitle(title, contents) {
     default:
       if (contents) {
         if (contents.length > 300) {
-          return `[${contents.substring(0, 284)} ${'(FÖRKORTAD TITEL)'}]`;
+          return `[${contents.substring(0, 284).replaceAll('\r', ' ')} ${'(FÖRKORTAD TITEL)'}]`;
         }
-        return `[${contents}]`;
+        return `[${contents.replaceAll('\r', ' ')}]`;
       }
       return null;
   }
@@ -211,6 +211,30 @@ export function getArchiveName(archiveOrg) {
 export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
   // Kontrollera att str är definierad
   if (!str) return '';
+
+  // Loopa över alla accessionsnummer utifall det finns flera accessionsnummer med separator semikolon ';'
+  let idparts = str.split(';');
+  let match = false;
+  idparts.forEach((part, index) => {
+    let trimmedPart = part.trim();
+    // console.log("Part " + (index + 1) + ": " + trimmedPart);
+    // Matcha första delen av strängen som inte är en siffra (bokstäver)
+    // och andra delen som är minst en siffra (0 eller flera siffror)
+    // och behåll alla tecken efter siffran/siffrorna i andra delen
+    let matchpart = makeArchiveIdElementHumanReadable(trimmedPart, archiveOrg);
+    if (match) {
+      match = match + ';' + matchpart;
+    } else {
+      match = matchpart;
+    }
+  });
+  // Returnera en sträng med alla delar
+  return match;
+}
+
+// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
+// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
+export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
   // och andra delen som är minst en siffra (0 eller flera siffror)
   // och behåll alla tecken efter siffran/siffrorna i andra delen
@@ -223,10 +247,32 @@ export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
 
   //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
   let prefix = '';
-  // inga dubbla bokstasvsprefix (prefix + letterPart)
+  // inga dubbla bokstavsprefix (prefix + letterPart)
   if (letterPart === '') {
     if (archiveOrg === 'Uppsala') {
+      // ULMA -> 39080
+      // SOFI 39081 – 39383
+      // DFU 39384 ->      
       prefix = 'ULMA';
+      i = str.length
+      // getFirstNonAlpha(str) {
+      for (var i = 0; i<str.length;i++) {
+          if (!isNaN(str[i])) {
+            break;
+          }
+      }
+      // return false;
+      if ((i - 1) < str.length) {
+        // Non numeric exists
+        var numericPart = str.substring(i);
+        var numericId = parseInt(numericPart)
+        if (numericId >= 39081 && numericId <= 39383) {
+          prefix = 'SOFI';
+        }
+        if (numericId > 39383) {
+          prefix = 'DFU';
+        }
+      }
     }
   }
 
@@ -389,3 +435,26 @@ export const getPlaceString = (places) => {
   // Return the final value of `placeString`
   return placeString;
 };
+
+// used for fetching number of subrecordmedias and transcribed subrecordmedias
+// normally after the component has mounted
+// it is normally called in the useEffect hook
+export const fetchRecordMediaCount = async (functionScopeParams, setValue, setValueTranscribed) => {
+  try {
+    const queryParams = { ...functionScopeParams };
+    const queryParamsString = Object.entries(queryParams)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
+    const response = await fetch(`${config.apiUrl}mediacount?${queryParamsString}`);
+    if (response.ok) {
+      const json = await response.json();
+      setValueTranscribed(json.data.value);
+      setValue(json.aggregations.media_count.doc_count);
+    } else {
+      throw new Error('Fel vid hämtning av antal sidor/filer');
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+

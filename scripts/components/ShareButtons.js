@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import {
   useEffect, useState, useCallback, useRef,
 } from 'react';
@@ -7,25 +8,11 @@ import { faCopy } from '@fortawesome/free-solid-svg-icons';
 import clipboard from '../utils/clipboard';
 
 export default function ShareButtons({
-  manualInit,
-  path,
-  title,
-  hideLink,
+  manualInit = false,
+  path = '',
+  title = '',
+  hideLink = false,
 }) {
-  ShareButtons.propTypes = {
-    manualInit: PropTypes.bool,
-    path: PropTypes.string,
-    title: PropTypes.string,
-    hideLink: PropTypes.bool,
-  };
-
-  ShareButtons.defaultProps = {
-    manualInit: false,
-    path: '',
-    title: '',
-    hideLink: false,
-  };
-
   //   const [initialized, setInitialized] = useState(false);
   const [copyMessageVisible, setCopyMessageVisible] = useState(false);
   const countdownRef = useRef(null);
@@ -62,50 +49,57 @@ export default function ShareButtons({
 
   return (
     <div className="share-buttons">
-      { title && title !== ''
+      {title && title !== ''
         && (
-        <div>
-          <label>{title}</label>
-          <div className="u-cf" />
-        </div>
+          <div>
+            <label>{title}</label>
+            <div className="u-cf" />
+          </div>
         )}
-      { !hideLink
+      {!hideLink
         && (
-        <div>
-          <a
-            onClick={linkClickHandler}
-            style={
-            {
-              cursor: 'pointer',
-            }
-          }
-          >
-            <FontAwesomeIcon icon={faCopy} />
-          </a>
-          &nbsp;
-          <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick}>
-            {copyMessageVisible
-              ? (
-                <>
-                  Kopierat till urklipp
-                  &nbsp;
-                  <svg viewBox="0 0 36 36" className="progress-ring" height="16" width={16}>
-                    <path
-                      className="progress-ring"
-                      stroke="grey"
-                      fill="none"
-                      strokeDasharray={`${countdown * 0.2}, 100`} // 100 / 500 = 0.2
-                      d="M18 2.0845
+          <div>
+            <a
+              onClick={linkClickHandler}
+              style={
+                {
+                  cursor: 'pointer',
+                }
+              }
+            >
+              <FontAwesomeIcon icon={faCopy} />
+            </a>
+            &nbsp;
+            <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick}>
+              {copyMessageVisible
+                ? (
+                  <>
+                    Kopierat till urklipp
+                    &nbsp;
+                    <svg viewBox="0 0 36 36" className="progress-ring" height="16" width={16}>
+                      <path
+                        className="progress-ring"
+                        stroke="grey"
+                        fill="none"
+                        strokeDasharray={`${countdown * 0.2}, 100`} // 100 / 500 = 0.2
+                        d="M18 2.0845
                         a 15.9155 15.9155 0 0 1 0 31.831
                         a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                </>
-              )
-              : path}
-          </span>
-        </div>
+                      />
+                    </svg>
+                  </>
+                )
+                : path}
+            </span>
+          </div>
         )}
     </div>
   );
 }
+
+ShareButtons.propTypes = {
+  manualInit: PropTypes.bool,
+  path: PropTypes.string,
+  title: PropTypes.string,
+  hideLink: PropTypes.bool,
+};

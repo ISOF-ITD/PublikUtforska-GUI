@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,15 +17,7 @@ import clipboard from '../../utils/clipboard';
 
 // Main CSS: ui-components/local-library.less
 
-export default function LocalLibraryView({ headerText }) {
-  LocalLibraryView.propTypes = {
-    headerText: PropTypes.string,
-  };
-
-  LocalLibraryView.defaultProps = {
-    headerText: 'Mina sparade uppteckningar',
-  };
-
+export default function LocalLibraryView({ headerText = 'Mina sparade uppteckningar' }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const savedRecords = useRef([]);
   const shareButtonsRef = useRef();
@@ -110,3 +103,7 @@ export default function LocalLibraryView({ headerText }) {
     </div>
   );
 }
+
+LocalLibraryView.propTypes = {
+  headerText: PropTypes.string,
+};
