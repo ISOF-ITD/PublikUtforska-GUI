@@ -1,32 +1,56 @@
+// Header.js
 import { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import IntroOverlay from './views/IntroOverlay';
 import { l } from '../lang/Lang';
+import config from '../config';
 
 export default function Header() {
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
-  const location = useLocation(); // Använd useLocation för att få tillgång till current route
-  const initialLoad = useRef(true); // En ref som håller koll på om appen precis laddats
+  const location = useLocation(); // Access current route
+  const navigate = useNavigate();
+  const initialLoad = useRef(true); // Tracks if the app has just loaded
 
+  // Function to check if 'k' parameter exists
+  const hasKParam = () => {
+    const params = new URLSearchParams(location.search);
+    return params.has('k');
+  };
 
-  // Kontrollera om användaren är på root-routen och uppdatera state.
+  // Handle showing the overlay by setting the 'k' parameter and local state
+  const handleShowIntro = () => {
+    setShowIntroOverlay(true); // Visa overlay omedelbart
+    const params = new URLSearchParams(location.search);
+    params.set('k', config.kontextStartPage);
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  // Handle closing the overlay by removing the 'k' parameter and updating local state
+  const handleCloseOverlay = () => {
+    setShowIntroOverlay(false); // Dölj overlay omedelbart
+    const params = new URLSearchParams(location.search);
+    params.delete('k');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  // Sync local state with URL on location changes
   useEffect(() => {
     if (initialLoad.current && location.pathname === '/') {
-      setShowIntroOverlay(true);
+      if (hasKParam()) {
+        setShowIntroOverlay(true);
+      }
     }
-    initialLoad.current = false; // Efter första laddningen sätter vi den till false
-  }, [location]); // Uppdatera när location förändras
+    initialLoad.current = false; // After first load, set to false
 
-  // Handle showing the overlay
-  const handleShowIntro = () => {
-    setShowIntroOverlay(true);
-  };
-
-  const handleCloseOverlay = () => {
-    setShowIntroOverlay(false);
-  };
+    // Om 'k' ändras, uppdatera lokal state
+    if (hasKParam()) {
+      setShowIntroOverlay(true);
+    } else {
+      setShowIntroOverlay(false);
+    }
+  }, [location]);
 
   // Handle keyboard interaction (Enter key)
   const handleKeyDown = (e) => {

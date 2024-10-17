@@ -1,3 +1,4 @@
+// IntroOverlay.js
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -19,6 +20,10 @@ function IntroOverlay({ show, onClose }) {
   const overlayClass = `overlay-container light-modal intro-overlay ${show ? 'visible' : ''}`;
 
   useEffect(() => {
+    setIframeSrc(getInitialSrc());
+  }, [location.search]);
+
+  useEffect(() => {
     const handleMessage = (event) => {
       try {
         if (event.data.newSrc?.startsWith('http')) {
@@ -27,7 +32,6 @@ function IntroOverlay({ show, onClose }) {
             config.kontextBasePath,
             ''
           );
-          console.log('Uppdaterar k-parametern med:', newPath, 'från meddelande');
 
           // Uppdatera endast URL:en, men inte iframeSrc
           const params = new URLSearchParams(location.search);
@@ -61,6 +65,10 @@ function IntroOverlay({ show, onClose }) {
   const handleClose = () => {
     if (onClose) onClose();
   };
+
+  if (!show) {
+    return null; // Do not render the overlay if 'show' is false
+  }
 
   return (
     <div className={overlayClass}>
