@@ -443,13 +443,13 @@ export default function RecordListItem({
   } else {
     titleText = getTitle(title, contents);
   }
-  // Default fallback for title to archive id
+  // Default fallback for title to archive id and pages if archive.page exists
   if (titleText) {
     if (titleText.length < 1) {
-      titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)
+      titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org).concat(archive.page && (`:${pageFromTo({ _source: { archive } })}`))
     }
   } else {
-    titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)
+    titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org).concat(archive.page && (`:${pageFromTo({ _source: { archive } })}`))
   }
 
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
