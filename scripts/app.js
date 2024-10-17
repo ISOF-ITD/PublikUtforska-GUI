@@ -130,6 +130,12 @@ function createRootRoute() {
         pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
+    shouldRevalidate: ({ currentParams, nextParams }) => {
+      // hämta inte om data om bara en url-parameter ändrats!
+      const currentQuery = createParamsFromSearchRoute(currentParams['*']);
+      const nextQuery = createParamsFromSearchRoute(nextParams['*']);
+      return JSON.stringify(currentQuery) !== JSON.stringify(nextQuery);
+    },
     id: 'root',
     element: <Application mode="material" openSwitcherHelptext={openSwitcherHelptext} />,
     children: createPopupRoutes(''),
@@ -150,6 +156,12 @@ function createTranscribeRoute() {
         audioResults: countRecords({ ...queryParams, category: 'contentG5' }),
         pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
+    },
+    shouldRevalidate: ({ currentParams, nextParams }) => {
+      // hämta inte om data om bara en url-parameter ändrats!
+      const currentQuery = createParamsFromSearchRoute(currentParams['*']);
+      const nextQuery = createParamsFromSearchRoute(nextParams['*']);
+      return JSON.stringify(currentQuery) !== JSON.stringify(nextQuery);
     },
     id: 'transcribe-root',
     element: <Application mode="transcribe" />,
