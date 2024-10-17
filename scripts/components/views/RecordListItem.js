@@ -110,7 +110,7 @@ export default function RecordListItem({
         search: id,
         transcriptionstatus: 'published,transcribed',
       };
-      if (transcriptiontype === 'sida') {
+      if (recordtype === 'one_record' && transcriptiontype === 'sida') {
         if (Number.isInteger(numberofpages)) {
           // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
           setNumberOfSubrecordsMedia(numberofpages);
@@ -265,8 +265,8 @@ export default function RecordListItem({
                       {/* if published, show the title, if not published,
                     but title exists, show title but add "ej transkriberad"
                     in brackets after the title */}
-                      {published && `: ${subItem._source.title}`}
-                      {!published && subItem._source.title && `: ${subItem._source.title} (ej avskriven)`}
+                      {published && `: ${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)}`}
+                      {!published && `: ${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)} (ej avskriven)`}
                     </a>
                   </small>
 
@@ -438,18 +438,10 @@ export default function RecordListItem({
     titleText = '';
     // if there is a title, write it
     if (title) {
-      titleText = getTitle(title, contents);
+      titleText = getTitle(title, contents, archive);
     }
   } else {
-    titleText = getTitle(title, contents);
-  }
-  // Default fallback for title to archive id and pages if archive.page exists
-  if (titleText) {
-    if (titleText.length < 1) {
-      titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org).concat(archive.page && (`:${pageFromTo({ _source: { archive } })}`))
-    }
-  } else {
-    titleText = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org).concat(archive.page && (`:${pageFromTo({ _source: { archive } })}`))
+    titleText = getTitle(title, contents, archive);
   }
 
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''

@@ -10,7 +10,7 @@ export function pageFromTo({ _source: { archive: { page, total_pages: totalPages
   return text;
 }
 
-export function getTitle(title, contents) {
+export function getTitle(title, contents, archive) {
   switch (!!title) {
     case true:
       return title;
@@ -20,6 +20,10 @@ export function getTitle(title, contents) {
           return `[${contents.substring(0, 284).replaceAll('\r', ' ')} ${'(FÖRKORTAD TITEL)'}]`;
         }
         return `[${contents.replaceAll('\r', ' ')}]`;
+      }
+      if (archive) {
+         // Default fallback for title to archive id and pages if archive.page exists
+          return makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org).concat(archive.page && (`:${pageFromTo({ _source: { archive } })}`))
       }
       return null;
   }
