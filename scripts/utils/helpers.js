@@ -91,10 +91,26 @@ export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
   return match;
 }
 
-export function getTitle(title, contents, archive) {
+// OBS: om `highlight` skickas medså innehåller return-strängen HTML-taggar
+// använd då `dangerouslySetInnerHTML`!
+export function getTitle(title, contents, archive, highlight) {
+  // om det finns en träff i `title`, visa med highlight
+  if (highlight?.title) {
+    const highlightedTitle = highlight.title[0];
+    return highlightedTitle;
+  }
+  // annars, testa med `title`
   if (title) {
     return title;
   }
+  // om det finns träff i `contents`, visa med highlight
+  if (highlight?.contents) {
+    // här behövs ingen teckenbegräsning eftersom es-api levererar highlights
+    // med max 300 tecken
+    const highlightedContents = highlight.contents[0].replace(/\r/g, ' ');
+    return `[${highlightedContents}]`;
+  }
+  // annars, testa med `contents`, och förkorta om nödvändigt
   if (contents) {
     if (contents.length > 300) {
       return `[${contents.substring(0, 282).replace(/\r/g, ' ')} ${' (FÖRKORTAD TITEL)'}]`;

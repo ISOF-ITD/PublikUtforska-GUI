@@ -265,8 +265,10 @@ export default function RecordListItem({
                       {/* if published, show the title, if not published,
                     but title exists, show title but add "ej transkriberad"
                     in brackets after the title */}
-                      {published && `: ${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)}`}
-                      {!published && `: ${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)} (ej avskriven)`}
+                      <span dangerouslySetInnerHTML={{
+                        __html: `: ${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)}${!published ? ' (ej avskriven)' : ''}`,
+                      }}
+                      />
                     </a>
                   </small>
 
@@ -441,7 +443,7 @@ export default function RecordListItem({
       titleText = getTitle(title, contents, archive);
     }
   } else {
-    titleText = getTitle(title, contents, archive);
+    titleText = getTitle(title, contents, archive, highlight);
   }
 
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
@@ -480,7 +482,9 @@ export default function RecordListItem({
                 media?.filter((m) => m.source && m.source.toLowerCase().includes('.mp3'))[0]
                 && <FontAwesomeIcon icon={faVolumeHigh} style={{ marginRight: 5 }} alt="jpg" title="Inspelning" />
               }
-              {titleText && titleText !== '[]' ? titleText : ''}
+              <span
+                dangerouslySetInnerHTML={{ __html: titleText && titleText !== '[]' ? titleText : '' }}
+              />
             </a>
             {
               displayTextSummary
