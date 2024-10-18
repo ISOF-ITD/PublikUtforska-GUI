@@ -1,9 +1,10 @@
+/* eslint-disable react/require-default-props */
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
 
-function IntroOverlay({ show, onClose }) {
+function IntroOverlay({ show = false, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const iframeRef = useRef(null);
@@ -115,11 +116,6 @@ function IntroOverlay({ show, onClose }) {
 IntroOverlay.propTypes = {
   show: PropTypes.bool,
   onClose: PropTypes.func,
-};
-
-IntroOverlay.defaultProps = {
-  show: false,
-  onClose: null,
 };
 
 export default IntroOverlay;
