@@ -48,6 +48,7 @@ export default function RecordListItem({
       numberoftranscribedpages,
     },
     highlight,
+    inner_hits: innerHits,
   },
   searchParams,
   // useRouteParams: use the route params instead of the search params for the link
@@ -492,6 +493,11 @@ export default function RecordListItem({
             }
             {
               highlight?.text?.[0] && <HighlightedText text={highlight.text[0]} surroundingCharsForHighlights={60} />
+            }
+            {
+              // inner hits for type="sida"
+              // TODO: multiple hits on multiple pages
+              innerHits?.media?.hits?.hits[0] && <HighlightedText text={innerHits.media.hits.hits[0].highlight['media.text'][0]} surroundingCharsForHighlights={60} />
             }
 
             {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}
