@@ -492,12 +492,19 @@ export default function RecordListItem({
               && <div className="item-summary">{textSummary}</div>
             }
             {
-              highlight?.text?.[0] && <HighlightedText text={highlight.text[0]} surroundingCharsForHighlights={60} />
+              highlight?.text?.[0] && <HighlightedText text={highlight.text[0]} />
             }
             {
               // inner hits for type="sida"
               // TODO: multiple hits on multiple pages
-              innerHits?.media?.hits?.hits[0] && <HighlightedText text={innerHits.media.hits.hits[0].highlight['media.text'][0]} surroundingCharsForHighlights={60} />
+              innerHits?.media?.hits?.hits.map((hit) => (
+                hit.highlight['media.text'] && (
+                  <HighlightedText
+                    key={`${hit.highlight['media.text'][0]}-${hit._id}`}
+                    text={hit.highlight['media.text'][0]}
+                  />
+                )
+              ))
             }
 
             {recordtype === 'one_accession_row' && numberOfSubrecords !== 0 && subrecordsElement}

@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -96,7 +97,7 @@ function HighlightedText({
 
 HighlightedText.propTypes = {
   text: PropTypes.string.isRequired,
-  surroundingCharsForHighlights: PropTypes.number.isRequired,
+  surroundingCharsForHighlights: PropTypes.number,
 };
 
 export default HighlightedText;

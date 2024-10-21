@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { l } from '../../lang/Lang';
@@ -94,7 +94,19 @@ export default function RecordList({
   const [totalPrefix, setTotalPrefix] = useState('');
   const [filter, setFilter] = useState('');
 
-  const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  /*
+  Genera unique id: Varför använda `useMemo`?
+  Om du använder useMemo genereras det unika ID
+  bara en gång när komponenten först laddas, vilket är exakt vad
+  du vill ha för att säkerställa att varje instans har ett stabilt
+  och unikt prefix under hela sin livstid.
+  Om du inte använder en hook:
+  Om du istället använder denna direkt i komponentkroppen utan en hook:
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  Så kommer uniqueId att genereras varje gång komponenten renderas, vilket kan orsaka
+  att nycklarna ändras varje gång och leda till problem med omrendering.
+  */
+  const uniqueId = useMemo(() => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, []);
 
   // för att begränsa bläddringen till 10 000 hits
   // detta pga begränsningar i Elasticsearch
@@ -280,7 +292,7 @@ export default function RecordList({
 
   const items = records.map((item) => (
     <RecordListItem
-      key={item._source.id}
+      key={`${uniqueId}-${item._source.id}`}
       id={item._source.id}
       item={item}
       routeParams={createSearchRoute(params)}
