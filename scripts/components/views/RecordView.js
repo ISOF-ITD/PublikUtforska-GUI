@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react/require-default-props */
+/* eslint-disable max-len */
+import { useState, useEffect, useMemo } from 'react';
 import {
   useNavigate, useLocation, useParams, useLoaderData,
 } from 'react-router-dom';
@@ -61,6 +63,35 @@ const getIndicator = (item) => {
   return null;
 };
 
+function getPages(data) {
+  let pages = '';
+
+  if (data?.archive?.page) {
+    pages = data.archive.page;
+
+    // Kontrollera om 'pages' inte är ett intervall och hantera det
+    if (pages && pages.indexOf('-') === -1) {
+      if (data.archive.total_pages) {
+        // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
+        if (typeof pages === 'string') {
+          pages = pages.replace(/\D/g, '');
+          pages = parseInt(pages, 10);
+        }
+
+        const totalPages = parseInt(data.archive.total_pages, 10);
+
+        // Om det finns fler än en sida, skapa intervall
+        if (totalPages > 1) {
+          const endPage = pages + totalPages - 1;
+          pages = `${pages}-${endPage}`;
+        }
+      }
+    }
+  }
+
+  return pages;
+}
+
 export default function RecordView({ mode = 'material', openSwitcherHelptext }) {
   const params = useParams();
   const navigate = useNavigate();
@@ -86,8 +117,35 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
   // the data is either in the _source property (if we used getRecordFetchLocation)
   // or in the data property (if we used getRecordsFetchLocation)
   // see app.js
-  const data = loaderData[0]?.data?.[0]?._source || loaderData[1]?._source || loaderData[0]?._source;
+  const data = loaderData[0]?.data?.[0]?._source
+    || loaderData[1]?._source
+    || loaderData[0]?._source;
   const highlightedText = loaderData[0]?.data?.[0]?.highlight?.text?.[0];
+
+  // take care of inner/nested hits in record.media.text:
+  const innerHits = loaderData[0]?.data?.[0]?.inner_hits?.media?.hits?.hits || [];
+  /* this reducer converts data like:
+    innerHits = [
+      { _nested: { offset: 1 }, highlight: { 'media.text': ["Highlighted text 1"] } },
+      { _nested: { offset: 2 }, highlight: { 'media.text': ["Highlighted text 2"] } },
+    ];
+  to:
+    highlightedMediaTexts = {
+      "1": "Highlighted text 1",
+      "2": "Highlighted text 2"
+    }
+  i.e. it uses the offset as key and media.text and value.
+  */
+  const highlightedMediaTexts = useMemo(() => innerHits.reduce((acc, hit) => {
+    const innerHitHighlightedText = hit?.highlight?.['media.text']?.[0];
+
+    if (innerHitHighlightedText) {
+      // eslint-disable-next-line no-underscore-dangle
+      acc[`${hit?._nested?.offset}`] = innerHitHighlightedText;
+    }
+
+    return acc;
+  }, {}), [innerHits]);
 
   const collections = new RecordsCollection((json) => {
     setSubrecords(json.data);
@@ -129,16 +187,6 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
           10000,
         );
       });
-      // Update Recordview using event, as an easy fix as fetchRecord(recordId) is in app.js
-      // Maybe not needed as hide of overlay should call transcribecancel so
-      // transcriptionstatus should be back at "readytotranscribe"
-      // BUT maybe needed to get other record data as title back? But is title transcribed in page-by-page?
-      // KOMMENTAR (Rico): Följande rad triggrar en oönskad omladdning när man stänger
-      // transcriptionPageByPageOverlay, därför tar jag bort det:
-      // -----------------------
-      // eventBus.addEventListener('overlay.hide', forceUpdateFunc);
-      // -----------------------
-      // eventBus.addEventListener('overlay.hide-update-data', updateTranscribeButtonAndPageCounts);
     }
     if (data?.recordtype === 'one_record') {
       const oneRecordPagesParams = {
@@ -256,16 +304,18 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
     if (data.media?.length > 0) {
       const imageDataItems = data.media.filter((dataItem) => dataItem.type === 'image');
       imageItems = imageDataItems.map((mediaItem, index) => {
-        if (mediaItem.source.indexOf('.pdf') === -1) {
-          if (data.transcriptiontype && data.transcriptiontype == 'sida' && data.transcriptionstatus && data.transcriptionstatus == 'published') {
+        if (!mediaItem.source.includes('.pdf')) {
+          if (data.transcriptiontype === 'sida' && data.transcriptionstatus === 'published') {
             // transcriptiontype = 'sida' and transcriptionstatus = 'published'
             // Make rows with "columns": image-text and image
             return (
               <div className="row record-text-and-image">
                 <div className="eight columns display-line-breaks">
-                  <div>
-                    {mediaItem.text}
-                  </div>
+                  <div dangerouslySetInnerHTML={{
+                    // visa highlights om highlight är true och träffar finns, annars visa texten:
+                    __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text,
+                  }}
+                  />
                   {mediaItem.comment && mediaItem.comment.trim() !== '' && (
                     <div>
                       <br />
@@ -276,11 +326,27 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                   )}
                 </div>
                 <div className="four columns">
-                  <div data-type="image" data-image={mediaItem.source} onClick={() => mediaImageClickHandler(mediaItem)} key={`image-${index}`} className="archive-image">
+                  <div
+                    data-type="image"
+                    data-image={mediaItem.source}
+                    onClick={() => mediaImageClickHandler(mediaItem)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        mediaImageClickHandler(mediaItem);
+                      }
+                    }}
+                    key={mediaItem.source}
+                    className="archive-image"
+                    role="button"
+                    tabIndex={0} // Gör elementet fokuserbart
+                  >
                     <img src={config.imageUrl + mediaItem.source} alt="" />
                     {
-                      mediaItem.title
-                      && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
+                      mediaItem.title && (
+                        <div className="media-title sv-portlet-image-caption">
+                          {mediaItem.title}
+                        </div>
+                      )
                     }
                   </div>
                 </div>
@@ -293,17 +359,28 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
               data-type="image"
               data-image={mediaItem.source}
               onClick={() => mediaImageClickHandler(mediaItem)}
-              key={`image-${index}`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  mediaImageClickHandler(mediaItem);
+                }
+              }}
+              key={mediaItem.source}
               className="archive-image"
               style={{ position: 'relative' }}
+              role="button"
+              tabIndex={0}
             >
               <img src={config.imageUrl + mediaItem.source} alt="" />
               {getIndicator(mediaItem)}
               {
-                  mediaItem.title
-                  && <div className="media-title sv-portlet-image-caption">{mediaItem.title}</div>
-                }
+                mediaItem.title && (
+                  <div className="media-title sv-portlet-image-caption">
+                    {mediaItem.title}
+                  </div>
+                )
+              }
             </div>
+
           );
         }
         return null; // Return null to avoid undefined elements in the array
@@ -397,7 +474,10 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
     // Förbereder lista över socknar
     const placeItems = data.places && data.places.length > 0 ? data.places.map((place) => (
       <tr key={place.id}>
-        <td>{place.specification ? place.specification + ' i ' : ''}<a href={`#/places/${place.id}${routeParams || ''}`}>{`${place.name}, ${place.fylke ? place.fylke : place.harad}`}</a></td>
+        <td>
+          {place.specification ? `${place.specification} i ` : ''}
+          <a href={`#/places/${place.id}${routeParams || ''}`}>{`${place.name}, ${place.fylke ? place.fylke : place.harad}`}</a>
+        </td>
       </tr>
     )) : [];
 
@@ -414,43 +494,13 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
     const isReadyToTranscribe = data.transcriptionstatus === 'readytotranscribe';
     const hasMedia = data.media.length > 0;
 
-    function getPages() {
-      let pages = '';
-    
-      if (data?.archive?.page) {
-        pages = data.archive.page;
-    
-        // Kontrollera om 'pages' inte är ett intervall och hantera det
-        if (pages && pages.indexOf('-') === -1) {
-          if (data.archive.total_pages) {
-            // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
-            if (typeof pages === 'string') {
-              pages = pages.replace(/\D/g, '');
-              pages = parseInt(pages, 10);
-            }
-    
-            const totalPages = parseInt(data.archive.total_pages, 10);
-    
-            // Om det finns fler än en sida, skapa intervall
-            if (totalPages > 1) {
-              let endPage = pages + totalPages - 1;
-              pages = `${pages}-${endPage}`;
-            }
-          }
-        }
-      }
-    
-      return pages;
-    }
-    
-
     // Prepare title
     let titleText;
     const transcriptionStatusElement = data.transcriptionstatus;
     if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
       titleText = 'Titel granskas';
     } else if (data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0) {
-      titleText = `Sida ${getPages()} (${numberOfTranscribedSubrecordsMedia} ${l(
+      titleText = `Sida ${getPages(data)} (${numberOfTranscribedSubrecordsMedia} ${l(
         numberOfTranscribedSubrecordsMedia === 1 ? 'sida avskriven' : 'sidor avskrivna',
       )})`;
     } else if (data.transcriptionstatus === 'readytotranscribe') {
@@ -475,8 +525,8 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
             <strong>
               {
                 data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0
-                ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor avskrivna')}`
-                : l('Den här uppteckningen är inte avskriven.')
+                  ? `${numberOfTranscribedSubrecordsMedia} ${l('av')} ${numberOfSubrecordsMedia} ${l('sidor avskrivna')}`
+                  : l('Den här uppteckningen är inte avskriven.')
               }
             </strong>
             <br />
@@ -774,7 +824,21 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                 {
                   data.recordtype === 'one_record' && l('Uppteckning')
                 }
-                <span className="switcher-help-button" onClick={openSwitcherHelptext} title="Om accessioner och uppteckningar">?</span>
+                <span
+                  className="switcher-help-button"
+                  onClick={openSwitcherHelptext}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      openSwitcherHelptext();
+                    }
+                  }}
+                  title="Om accessioner och uppteckningar"
+                  role="button"
+                  tabIndex={0} // Gör elementet fokuserbart
+                >
+                  ?
+                </span>
+
               </p>
               <p>
                 {
@@ -818,11 +882,11 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                     : null
                 }
                 {
-                  !!data.archive && !!data.archive.archive && !!getPages()
+                  !!data.archive && !!data.archive.archive && !!getPages(data)
                   && (
                     <span style={{ marginLeft: 10 }}>
                       <strong>{l('Sidnummer')}</strong>
-                      {`: ${getPages()}`}
+                      {`: ${getPages(data)}`}
                     </span>
                   )
                 }
@@ -894,7 +958,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                     {data.contents && contentsElement}
                     {textElement}
                     {/* add a switch that toggles the state variable highlight */}
-                    {highlightedText
+                    {(highlightedText || innerHits.length > 0)
                       && (
                         <label htmlFor="highlight">
                           <input
@@ -1027,7 +1091,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
         }
 
         {
-           data.transcriptiontype === 'sida' && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+          data.transcriptiontype === 'sida' && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
           && <div className="record-view-thumbnails">{imageItems}</div>
         }
 
@@ -1041,7 +1105,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
             {/* copies the citation to the clipboard */}
             <ShareButtons
               path={(
-                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${getPages() ? `s. ${getPages()}, ` : ''}${getArchiveName(data.archive.archive_org)}`
+                `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${getPages(data) ? `s. ${getPages(data)}, ` : ''}${getArchiveName(data.archive.archive_org)}`
               )}
               title={l('Källhänvisning')}
             />
@@ -1188,7 +1252,7 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
                 <p>
                   <strong>{l('Sidnummer')}</strong>
                   <br />
-                  {getPages()}
+                  {getPages(data)}
                 </p>
               )
             }
