@@ -465,7 +465,7 @@ export const fetchRecordMediaCount = async (functionScopeParams, setValue, setVa
     const queryParamsString = Object.entries(queryParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
-    const response = await fetch(`${config.apiUrl}mediacount?${queryParamsString}`);
+    const response = await fetch(`${config.apiUrl}mediacount/?${queryParamsString}`);
     if (response.ok) {
       const json = await response.json();
       setValueTranscribed(json.data.value);
