@@ -57,7 +57,7 @@ const matomoApiUrlObject = {
 };
 
 export default {
-  siteTitle: 'Folke sök - Institutet för språk och folkminnen',
+  siteTitle: 'Dialektkartan',
 
   hitsPerPage: 100,
 
@@ -68,8 +68,8 @@ export default {
   requiredParams: {
     // transcriptionstatus: 'readytotranscribe,undertranscription,transcribed,reviewing,needsimprovement,approved,published',
     // mark_metadata: 'transcriptionstatus',
-    type: 'arkiv',
-    categorytypes: 'tradark',
+    type: 'dialektkartan',
+    // categorytypes: 'tradark',
     publishstatus: 'published',
     has_media: 'true', // TODO: Bekräfta att vi ska använda detta
     add_aggregations: 'false', // default: 'true'. when false, saves transferred data
