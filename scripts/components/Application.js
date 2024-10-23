@@ -24,7 +24,7 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 import config from '../config';
 
 export default function Application({
-  children, mode = 'material'
+  mode = 'material',
 }) {
 
 
@@ -128,9 +128,10 @@ export default function Application({
         </RoutePopupWindow>
 
         <Outlet />
-        {
+        {/* unused: remove soon! */}
+        {/* {
           children
-        }
+        } */}
 
         <MapWrapper
           mapMarkerClick={mapMarkerClick}
@@ -165,6 +166,5 @@ export default function Application({
 }
 
 Application.propTypes = {
-  children: PropTypes.node.isRequired,
   mode: PropTypes.string.isRequired,
 };

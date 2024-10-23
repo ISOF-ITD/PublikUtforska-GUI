@@ -113,7 +113,6 @@ export default function RecordList({
   const MAX_TOTAL = 10000;
   const maxPage = Math.ceil(MAX_TOTAL / config.hitsPerPage);
 
-
   const handleFilterChange = (event) => {
     const { value } = event.target;
     setFilter(value);
@@ -194,7 +193,12 @@ export default function RecordList({
     }
 
     fetchData(fetchParams);
-  }, [currentPage, sort, order, filter, yearFilter, params, mode]);
+  }, [currentPage, sort, order, filter, yearFilter, mode]);
+
+  const loadMore = () => {
+    setCurrentPage(1);
+    setLoadedMore(true);
+  };
 
   // Hantera interval för datahämtning
   useEffect(() => {
@@ -209,12 +213,8 @@ export default function RecordList({
 
       return () => clearInterval(intervalId);
     }
+    return undefined;
   }, [interval, loadedMore, params]);
-
-  const loadMore = () => {
-    setCurrentPage(1);
-    setLoadedMore(true);
-  };
 
   const handleStepPage = (step) => {
     if (disableRouterPagination) {
@@ -236,7 +236,6 @@ export default function RecordList({
       }
     }
   };
-  
 
   const handleSort = (sortField) => {
     const newOrder = sort === sortField && order === 'asc' ? 'desc' : 'asc';

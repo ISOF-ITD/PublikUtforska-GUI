@@ -138,14 +138,14 @@ const RoutePopupWindow = memo(({
   }
 
   // when this component receives changes, scroll to top of popup
-  useEffect(() => {
-    // get all popup windows
-    const els = document.getElementsByClassName('popup-content-wrapper');
-    if (els.length > 0) {
-      // in the last popup window, scroll to top
-      els[els.length - 1].scrollTop = 0;
-    }
-  }, [children]);
+  // useEffect(() => {
+  //   // get all popup windows
+  //   const els = document.getElementsByClassName('popup-content-wrapper');
+  //   if (els.length > 0) {
+  //     // in the last popup window, scroll to top
+  //     els[els.length - 1].scrollTop = 0;
+  //   }
+  // }, [children]);
 
   if (windowOpen || manualOpen) {
     // TODO: do we want to render the popup even if it's not visible?

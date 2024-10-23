@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 
 import { useRef, useCallback } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import RecordList from './RecordList';
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
@@ -16,7 +16,6 @@ export default function RecordListWrapper({
   mode = 'material',
 }) {
   const params = useParams();
-  const location = useLocation();
   const containerRef = useRef();
 
     // Memoize openSwitcherHelptext för att undvika omrenderingar
@@ -41,7 +40,7 @@ export default function RecordListWrapper({
       <div className="row">
         <div className="records-list-wrapper" ref={containerRef}>
           <RecordList
-            key={`RecordListWrapper-RecordList-${location.pathname}`}
+            key={`RecordListWrapper-RecordList-${decodeURIComponent(params['*'])}`}
             // searchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
             highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
             disableListPagination={disableListPagination}
