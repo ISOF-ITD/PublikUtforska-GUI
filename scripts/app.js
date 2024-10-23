@@ -1,5 +1,6 @@
 import Client from 'react-dom/client';
 import { createHashRouter, RouterProvider, defer } from 'react-router-dom';
+import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './components/views/RecordView';
@@ -21,6 +22,8 @@ import NavigationContextProvider from './NavigationContext';
 
 const container = document.getElementById('app');
 const root = Client.createRoot(container);
+
+window.eventBus = EventBus;
 
 function fetchMapAndCountRecords(params) {
   const mapPromise = fetch(getMapFetchLocation(params)).then((resp) => resp.json());
@@ -55,13 +58,6 @@ function fetchPerson(personId) {
   return fetch(getPersonFetchLocation(personId));
 }
 
-const openSwitcherHelptext = () => {
-  if (window.eventBus) {
-    window.eventBus.dispatch('overlay.switcherHelpText', {
-    });
-  }
-};
-
 // prefix is either 'transcribe' or ''
 function createPopupRoutes(prefix) {
   return [
@@ -93,7 +89,7 @@ function createPopupRoutes(prefix) {
           }}
           routeId={`${prefix}record`}
         >
-          <RecordView mode={prefix.slice(0, -1) || 'material'} openSwitcherHelptext={openSwitcherHelptext} />
+          <RecordView mode={prefix.slice(0, -1) || 'material'} />
         </RoutePopupWindow>
       ),
     },
@@ -118,7 +114,7 @@ function createPopupRoutes(prefix) {
 
 function createRootRoute() {
   return {
-    path: '/*?',
+    path: '/*?', //TODO: remove wildcard, since this triggers re-rendering of <Application>!
     loader: ({ params }) => {
       const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
@@ -130,8 +126,14 @@ function createRootRoute() {
         pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
+    shouldRevalidate: ({ currentParams, nextParams }) => {
+      const current = currentParams['*'] || '';
+      const next = nextParams['*'] || '';
+      return current !== next;
+    },
+    // shouldProcessLinkClick: false,
     id: 'root',
-    element: <Application mode="material" openSwitcherHelptext={openSwitcherHelptext} />,
+    element: <Application mode="material" />,
     children: createPopupRoutes(''),
   };
 }
@@ -150,6 +152,11 @@ function createTranscribeRoute() {
         audioResults: countRecords({ ...queryParams, category: 'contentG5' }),
         pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
+    },
+    shouldRevalidate: ({ currentParams, nextParams }) => {
+      const current = currentParams['*'] || '';
+      const next = nextParams['*'] || '';
+      return JSON.stringify(current) !== JSON.stringify(next);
     },
     id: 'transcribe-root',
     element: <Application mode="transcribe" />,

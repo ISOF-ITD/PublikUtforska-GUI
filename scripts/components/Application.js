@@ -3,8 +3,6 @@ import {
   useNavigate, useLoaderData, useParams, Outlet,
 } from 'react-router-dom';
 
-import EventBus from 'eventbusjs';
-
 import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
@@ -26,15 +24,9 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 import config from '../config';
 
 export default function Application({
-  children, mode = 'material', openSwitcherHelptext,
+  children, mode = 'material'
 }) {
-  Application.propTypes = {
-    children: PropTypes.node.isRequired,
-    mode: PropTypes.string.isRequired,
-    openSwitcherHelptext: PropTypes.func.isRequired,
-  };
 
-  window.eventBus = EventBus;
 
   const navigate = useNavigate();
   const { results, audioResults, pictureResults } = useLoaderData();
@@ -132,7 +124,6 @@ export default function Application({
             openButtonLabel="Visa sökträffar som lista"
             disableRouterPagination
             mode={mode}
-            openSwitcherHelptext={openSwitcherHelptext}
           />
         </RoutePopupWindow>
 
@@ -172,3 +163,8 @@ export default function Application({
     </AudioProvider>
   );
 }
+
+Application.propTypes = {
+  children: PropTypes.node.isRequired,
+  mode: PropTypes.string.isRequired,
+};

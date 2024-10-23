@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, memo } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
@@ -18,7 +18,7 @@ const useNavigationCount = () => {
   return navigationCount;
 };
 
-export default function RoutePopupWindow({
+const RoutePopupWindow = memo(({
   children,
   onClose = null,
   manuallyOpenPopup = false,
@@ -26,7 +26,7 @@ export default function RoutePopupWindow({
   onShow = null,
   closeButtonStyle = 'white',
   routeId = null,
-}) {
+}) => {
   const [windowOpen, setWindowOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
@@ -166,7 +166,9 @@ export default function RoutePopupWindow({
     );
   }
   return null;
-}
+});
+
+export default RoutePopupWindow;
 
 RoutePopupWindow.propTypes = {
   children: PropTypes.node.isRequired,

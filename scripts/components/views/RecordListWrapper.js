@@ -1,7 +1,7 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 
 import RecordList from './RecordList';
@@ -14,14 +14,20 @@ export default function RecordListWrapper({
   disableRouterPagination = true,
   highlightRecordsWithMetadataField = null,
   mode = 'material',
-  openSwitcherHelptext = () => {},
 }) {
   const params = useParams();
   const location = useLocation();
   const containerRef = useRef();
 
+    // Memoize openSwitcherHelptext för att undvika omrenderingar
+    const openSwitcherHelptext = useCallback(() => {
+      if (window.eventBus) {
+        window.eventBus.dispatch('overlay.switcherHelpText', {});
+      }
+    }, []); // Tom array för att se till att funktionen inte återskapas varje gång
+
   return (
-    <div className="container">
+    <div className="container this-class-is-always-visible">
       <div className="container-header">
         <div className="row">
           <div className="twelve columns">
@@ -62,5 +68,4 @@ RecordListWrapper.propTypes = {
   disableRouterPagination: PropTypes.bool,
   highlightRecordsWithMetadataField: PropTypes.string,
   mode: PropTypes.string,
-  openSwitcherHelptext: PropTypes.func,
 };
