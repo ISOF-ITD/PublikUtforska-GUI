@@ -92,7 +92,13 @@ function getPages(data) {
   return pages;
 }
 
-export default function RecordView({ mode = 'material', openSwitcherHelptext }) {
+const openSwitcherHelptext = () => {
+  if (window.eventBus) {
+    window.eventBus.dispatch('overlay.switcherHelpText', {});
+  }
+};
+
+export default function RecordView({ mode = 'material' }) {
   const params = useParams();
   const navigate = useNavigate();
 
@@ -1337,5 +1343,4 @@ export default function RecordView({ mode = 'material', openSwitcherHelptext }) 
 
 RecordView.propTypes = {
   mode: PropTypes.string,
-  openSwitcherHelptext: PropTypes.func.isRequired,
 };

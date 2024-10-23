@@ -92,7 +92,7 @@ function Timeline({
     const paramString = paramStrings.join('&');
 
     // create fetchUrl. if value is undefined, it will be ignored
-    const fetchUrl = `${config.apiUrl}collection_years?${paramString}`;
+    const fetchUrl = `${config.apiUrl}collection_years/?${paramString}`;
 
     fetch(fetchUrl, {
       method: 'GET',
