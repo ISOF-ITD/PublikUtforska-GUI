@@ -40,8 +40,6 @@ export default function RecordListWrapper({
       <div className="row">
         <div className="records-list-wrapper" ref={containerRef}>
           <RecordList
-            key={`RecordListWrapper-RecordList-${decodeURIComponent(params['*'])}`}
-            // searchParams={routeHelper.createParamsFromPlacesRoute(this.props.location.pathname)}
             highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
             disableListPagination={disableListPagination}
             disableRouterPagination={disableRouterPagination}
