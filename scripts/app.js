@@ -80,7 +80,7 @@ function createPopupRoutes(prefix) {
     {
       path: 'records/:recordId/*?',
       id: `${prefix}record`,
-      loader: async ({ params: { recordId, '*': star } }) => fetchRecord(recordId, createParamsFromSearchRoute(star).search),
+      loader: ({ params: { recordId, '*': star } }) => defer({ results: fetchRecord(recordId, createParamsFromSearchRoute(star).search) }),
       element: (
         <RoutePopupWindow
           manuallyOpen={false}

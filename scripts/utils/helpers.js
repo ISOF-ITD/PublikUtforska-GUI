@@ -1,5 +1,7 @@
 import config from '../config';
 import { l } from '../lang/Lang';
+import archiveLogoIsof from '../../img/archive-logo-isof.png';
+import archiveLogoIkos from '../../img/archive-logo-ikos.png';
 
 export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
   let text = `${page}`;
@@ -305,6 +307,28 @@ export function getArchiveName(archiveOrg) {
   }
     
   return archiveName;
+}
+
+export function getArchiveLogo(archive) {
+  const archiveLogos = {};
+
+  archiveLogos['Dialekt-, namn- och folkminnesarkivet i Göteborg'] = archiveLogoIsof;
+  archiveLogos['Dialekt- och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
+  archiveLogos['Dialekt och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
+  archiveLogos.DAG = 'img/archive-logo-isof.png';
+  // Needs to be shrinked. By css?
+  // archiveLogos['Norsk folkeminnesamling'] = 'img/UiO_Segl_A.png';
+  archiveLogos['Norsk folkeminnesamling'] = archiveLogoIkos;
+  archiveLogos.NFS = archiveLogoIkos;
+  archiveLogos.DFU = archiveLogoIkos;
+  // archiveLogos['SLS'] = SlsLogga;
+  // archiveLogos['Svenska litteratursällskapet i Finland (SLS)'] = SlsLogga;
+
+  return (
+    archiveLogos[archive]
+      ? config.appUrl + archiveLogos[archive]
+      : config.appUrl + archiveLogos.DAG
+  );
 }
 
 // används inte i nuläget, istället används getRecordsCountLocation
