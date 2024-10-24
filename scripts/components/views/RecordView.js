@@ -648,7 +648,6 @@ function getTaxonomyElement(data, routeParams) {
 
 export default function RecordView({ mode = 'material' }) {
   const { results: resultsPromise } = useLoaderData(); // Loader data hanteras som en Promise
-  const [data, setData] = useState(null);
   const [subrecords, setSubrecords] = useState([]);
   const [highlight, setHighlight] = useState(true);
   const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
@@ -669,51 +668,9 @@ export default function RecordView({ mode = 'material' }) {
     createParamsFromRecordRoute(location.pathname),
   );
 
-  const collections = new RecordsCollection((json) => {
+  const collections = useMemo(() => new RecordsCollection((json) => {
     setSubrecords(json.data);
-  });
-
-  useEffect(() => {
-    if (data?.archive) {
-      const fetchSubrecords = () => {
-        const fetchParams = {
-          search: data.archive.archive_id_row,
-          recordtype: 'one_record',
-        };
-        collections.fetch(fetchParams);
-      };
-
-      fetchSubrecords();
-
-      const { eventBus } = window;
-      if (eventBus) {
-        eventBus.addEventListener('overlay.transcribe.sent', () => {
-          setTimeout(() => {
-            fetchSubrecords();
-          }, 3000);
-          setTimeout(() => {
-            fetchSubrecords();
-          }, 10000);
-        });
-      }
-
-      if (data.recordtype === 'one_record' && data.transcriptiontype === 'sida') {
-        const oneRecordPagesParams = {
-          search: data.id,
-        };
-        fetchRecordMediaCount(
-          oneRecordPagesParams,
-          setNumberOfSubrecordsMedia,
-          setNumberOfTranscribedSubrecordsMedia,
-        );
-      }
-    }
-
-    // Återställ sidans titel när komponenten avmonteras
-    return () => {
-      document.title = config.siteTitle;
-    };
-  }, [data, collections]); // Lägg till data som beroende
+  }), []);
 
   return (
     <div className="container">
@@ -728,12 +685,57 @@ export default function RecordView({ mode = 'material' }) {
         <Await resolve={resultsPromise}>
           {(loaderData) => {
             // Ladda upp och bearbeta datan från loader när den är tillgänglig
-            const fetchedData = loaderData[0]?.data?.[0]?._source
+            const data = loaderData[0]?.data?.[0]?._source
               || loaderData[1]?._source
               || loaderData[0]?._source;
-            setData(fetchedData); // Sätt data i state när den laddats
+
+            // Flytta useEffect inuti Await-blocket
+            useEffect(() => {
+              if (data?.archive) {
+                const fetchSubrecords = () => {
+                  const fetchParams = {
+                    search: data.archive.archive_id_row,
+                    recordtype: 'one_record',
+                  };
+                  collections.fetch(fetchParams);
+                };
+
+                fetchSubrecords();
+
+                const { eventBus } = window;
+                if (eventBus) {
+                  eventBus.addEventListener('overlay.transcribe.sent', () => {
+                    setTimeout(() => {
+                      fetchSubrecords();
+                    }, 3000);
+                    setTimeout(() => {
+                      fetchSubrecords();
+                    }, 10000);
+                  });
+                }
+
+                if (data.recordtype === 'one_record' && data.transcriptiontype === 'sida') {
+                  const oneRecordPagesParams = {
+                    search: data.id,
+                  };
+                  fetchRecordMediaCount(
+                    oneRecordPagesParams,
+                    setNumberOfSubrecordsMedia,
+                    setNumberOfTranscribedSubrecordsMedia,
+                  );
+                }
+              }
+
+              // Återställ sidans titel när komponenten avmonteras
+              return () => {
+                document.title = config.siteTitle;
+              };
+            }, [data, collections]);
+
+            // Resten av din renderingslogik, använd 'data' direkt
+            // Exempelvis:
             const titleText = getTitleText(
-              fetchedData,
+              data,
               numberOfSubrecordsMedia,
               numberOfTranscribedSubrecordsMedia,
             );
@@ -750,45 +752,41 @@ export default function RecordView({ mode = 'material' }) {
               return acc;
             }, {}), [innerHits]);
 
-            const sitevisionUrl = fetchedData.metadata?.find((item) => item.type === 'sitevision_url');
+            const sitevisionUrl = data.metadata?.find((item) => item.type === 'sitevision_url');
             const textElement = getTextElement(
-              fetchedData,
+              data,
               undefined,
               undefined,
               highlightedText,
               true,
               sitevisionUrl,
             );
-            const imageItems = getImageItems(fetchedData, highlightedMediaTexts, true);
-            const audioItems = getAudioItems(fetchedData);
+            const imageItems = getImageItems(data, highlightedMediaTexts, true);
+            const audioItems = getAudioItems(data);
             const contentsElement = getContentsElement(
-              fetchedData,
+              data,
               titleText,
               expandedContents,
               toggleContentsExpand,
             );
             const headwordsElement = getHeadwordsElement(
-              fetchedData,
+              data,
               expandedHeadwords,
               toggleHeadwordsExpand,
             );
-            const metadataItems = getMetadataItems(fetchedData);
-            const pdfItems = getPdfItems(fetchedData);
-            const personItems = getPersonItems(fetchedData, routeParams);
-            const placeItems = getPlaceItems(fetchedData, routeParams);
-            /* const taxonomyElement = getTaxonomyElement(fetchedData, routeParams); */
-            const country = fetchedData.archive?.country || 'unknown';
+            const metadataItems = getMetadataItems(data);
+            const pdfItems = getPdfItems(data);
+            const personItems = getPersonItems(data, routeParams);
+            const placeItems = getPlaceItems(data, routeParams);
+            /* const taxonomyElement = getTaxonomyElement(data, routeParams); */
+            const country = data.archive?.country || 'unknown';
 
-            if (!fetchedData) {
+            if (!data) {
               return <div>Posten finns inte.</div>;
             }
 
-            // Nuvarande rendering logik från din komponent
-            // ... (kopiera över logiken från din befintliga komponent här)
-
             return (
               <div>
-
                 <div className="container-header">
                   <div className="row">
                     <div className="twelve columns">
@@ -798,10 +796,10 @@ export default function RecordView({ mode = 'material' }) {
                       </h2>
                       <p>
                         {
-                          fetchedData.recordtype === 'one_accession_row' && l('Accession')
+                          data.recordtype === 'one_accession_row' && l('Accession')
                         }
                         {
-                          fetchedData.recordtype === 'one_record' && l('Uppteckning')
+                          data.recordtype === 'one_record' && l('Uppteckning')
                         }
                         <span
                           className="switcher-help-button"
@@ -822,36 +820,36 @@ export default function RecordView({ mode = 'material' }) {
                       <p>
                         {
 
-                          fetchedData.archive?.archive
+                          data.archive?.archive
                           && (
                             <span>
                               <strong>{l('Accessionsnummer')}</strong>
                               :&nbsp;
                               {
-                                fetchedData.recordtype === 'one_record'
+                                data.recordtype === 'one_record'
                                   ? (
                                     <a
-                                      data-archiveidrow={fetchedData.archive.archive_id_row}
+                                      data-archiveidrow={data.archive.archive_id_row}
                                       // create state.searchParams
                                       data-search={params.search || ''}
                                       data-recordtype={params.recordtype}
                                       onClick={archiveIdClick}
-                                      title={`Gå till accessionen ${fetchedData.archive.archive_id_row}`}
-                                      style={{ cursor: fetchedData.archive.archive_id_row ? 'pointer' : 'inherit', textDecoration: 'underline' }}
+                                      title={`Gå till accessionen ${data.archive.archive_id_row}`}
+                                      style={{ cursor: data.archive.archive_id_row ? 'pointer' : 'inherit', textDecoration: 'underline' }}
                                       href={
-                                        `#/records/${fetchedData.archive.archive_id_row}${createSearchRoute({ search: params.search || '', recordtype: params.recordtype })}`
+                                        `#/records/${data.archive.archive_id_row}${createSearchRoute({ search: params.search || '', recordtype: params.recordtype })}`
                                       }
                                     >
-                                      {makeArchiveIdHumanReadable(fetchedData.archive.archive_id)}
+                                      {makeArchiveIdHumanReadable(data.archive.archive_id)}
                                     </a>
-                                  ) : makeArchiveIdHumanReadable(fetchedData.archive.archive_id)
+                                  ) : makeArchiveIdHumanReadable(data.archive.archive_id)
                               }
 
                             </span>
                           )
                         }
                         {
-                          fetchedData.recordtype === 'one_accession_row' && subrecords?.length
+                          data.recordtype === 'one_accession_row' && subrecords?.length
                             ? (
                               <span style={{ marginLeft: 10 }}>
                                 <strong>{l('Antal uppteckningar')}</strong>
@@ -861,7 +859,7 @@ export default function RecordView({ mode = 'material' }) {
                             : null
                         }
                         {
-                          !!fetchedData.archive && !!fetchedData.archive.archive && !!getPages(data)
+                          !!data.archive && !!data.archive.archive && !!getPages(data)
                           && (
                             <span style={{ marginLeft: 10 }}>
                               <strong>{l('Sidnummer')}</strong>
@@ -876,7 +874,7 @@ export default function RecordView({ mode = 'material' }) {
                               <strong>Materialtyp</strong>
                               :
                               {' '}
-                              {fetchedData.materialtype}
+                              {data.materialtype}
                             </span>
                           )
                         }
@@ -886,11 +884,11 @@ export default function RecordView({ mode = 'material' }) {
 
                   {
                     !config.siteOptions.hideContactButton
-                    && <FeedbackButton title={fetchedData.title} type="Uppteckning" country={country} location={location} />
+                    && <FeedbackButton title={data.title} type="Uppteckning" country={country} location={location} />
                   }
                   {
                     !config.siteOptions.hideContactButton
-                    && <ContributeInfoButton title={fetchedData.title} type="Uppteckning" country={country} id={fetchedData.id} location={location} />
+                    && <ContributeInfoButton title={data.title} type="Uppteckning" country={country} id={data.id} location={location} />
                   }
                 </div>
 
@@ -917,7 +915,7 @@ export default function RecordView({ mode = 'material' }) {
                 </div>
                 <div className="row">
                   {
-                    (fetchedData.text || textElement || fetchedData.headwords || headwordsElement)
+                    (data.text || textElement || data.headwords || headwordsElement)
                     && (
                       <div className={`${sitevisionUrl || imageItems.length === 0 || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
                         {/* audio items above text items that includes pdf */}
@@ -936,7 +934,7 @@ export default function RecordView({ mode = 'material' }) {
 
                         {
                           <>
-                            {fetchedData.contents && contentsElement}
+                            {data.contents && contentsElement}
                             {textElement}
                             {/* add a switch that toggles the state variable highlight */}
                             {(highlightedText || innerHits.length > 0)
@@ -951,7 +949,7 @@ export default function RecordView({ mode = 'material' }) {
                                   <span style={{ marginLeft: 10 }}>Markera sökord</span>
                                 </label>
                               )}
-                            {fetchedData.headwords && headwordsElement}
+                            {data.headwords && headwordsElement}
                           </>
                         }
 
@@ -998,7 +996,7 @@ export default function RecordView({ mode = 'material' }) {
                         {
                           // transcriptiontype != 'sida'
                           // If not transcribed page by page: Text and images in independent columns
-                          fetchedData.transcriptiontype && fetchedData.transcriptiontype !== 'sida'
+                          data.transcriptiontype && data.transcriptiontype !== 'sida'
                           && (
                             (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
                             && imageItems
@@ -1032,7 +1030,7 @@ export default function RecordView({ mode = 'material' }) {
                   // transcriptiontype = 'sida' and transcriptionstatus = 'published'
                   // If transcribed page by page: Text and images in dependent columns
                   // each row with dependent text and image
-                  fetchedData.transcriptiontype && fetchedData.transcriptiontype === 'sida' && fetchedData.transcriptionstatus && fetchedData.transcriptionstatus === 'published'
+                  data.transcriptiontype && data.transcriptiontype === 'sida' && data.transcriptionstatus && data.transcriptionstatus === 'published'
                   && (
                     imageItems.length > 0 && (sitevisionUrl || (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under'))
                     && (
@@ -1042,36 +1040,36 @@ export default function RecordView({ mode = 'material' }) {
                 }
 
                 {
-                  fetchedData.transcriptiontype === 'sida' && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+                  data.transcriptiontype === 'sida' && (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
                   && <div className="record-view-thumbnails">{imageItems}</div>
                 }
 
                 {
-                  fetchedData.comment && fetchedData.comment !== ''
+                  data.comment && data.comment !== ''
                   && (
                     <div className="text-small">
                       <strong>{`${l('Kommentarer')}:`}</strong>
-                      <p className="display-line-breaks" dangerouslySetInnerHTML={{ __html: fetchedData.comment.split(';').join('<br/>') }} />
+                      <p className="display-line-breaks" dangerouslySetInnerHTML={{ __html: data.comment.split(';').join('<br/>') }} />
                     </div>
                   )
                 }
 
                 {
-                  fetchedData.transcribedby && fetchedData.transcribedby !== ''
+                  data.transcribedby && data.transcribedby !== ''
                   && (
                     <p className="text-small">
                       <strong>{`${l('Transkriberad av')}: `}</strong>
-                      <span dangerouslySetInnerHTML={{ __html: fetchedData.transcribedby }} />
+                      <span dangerouslySetInnerHTML={{ __html: data.transcribedby }} />
                     </p>
                   )
                 }
 
                 {
-                  fetchedData.source && fetchedData.materialtype === 'tryckt'
+                  data.source && data.materialtype === 'tryckt'
                   && (
                     <p className="text-small">
                       <strong>{`${l('Tryckt källa')}: `}</strong>
-                      <em>{fetchedData.source}</em>
+                      <em>{data.source}</em>
                     </p>
                   )
                 }
@@ -1079,14 +1077,14 @@ export default function RecordView({ mode = 'material' }) {
                 <div className="row">
 
                   <div className="six columns">
-                    <ShareButtons path={`${config.siteUrl}#/records/${fetchedData.id}`} title={l('Kopiera länk')} />
+                    <ShareButtons path={`${config.siteUrl}#/records/${data.id}`} title={l('Kopiera länk')} />
                   </div>
 
                   <div className="six columns">
                     {/* copies the citation to the clipboard */}
                     <ShareButtons
                       path={(
-                        `${makeArchiveIdHumanReadable(fetchedData.archive.archive_id, fetchedData.archive.archive_org)}, ${getPages(data) ? `s. ${getPages(data)}, ` : ''}${getArchiveName(fetchedData.archive.archive_org)}`
+                        `${makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}, ${getPages(data) ? `s. ${getPages(data)}, ` : ''}${getArchiveName(data.archive.archive_org)}`
                       )}
                       title={l('Källhänvisning')}
                     />
@@ -1094,10 +1092,10 @@ export default function RecordView({ mode = 'material' }) {
                 </div>
                 <div className="row">
                   {
-                    config.siteOptions?.copyrightContent && fetchedData.copyrightlicense
+                    config.siteOptions?.copyrightContent && data.copyrightlicense
                     && (
                       <div className="six columns offset-by-six">
-                        <div className="copyright" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[fetchedData.copyrightlicense] }} />
+                        <div className="copyright" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[data.copyrightlicense] }} />
                       </div>
                     )
                   }
@@ -1107,7 +1105,7 @@ export default function RecordView({ mode = 'material' }) {
                 <hr />
 
                 {
-                  fetchedData.recordtype === 'one_accession_row'
+                  data.recordtype === 'one_accession_row'
                   && subrecords.length > 0
                   && (
                     <div className="row">
@@ -1116,7 +1114,7 @@ export default function RecordView({ mode = 'material' }) {
                         <h3>{l('Uppteckningar')}</h3>
                         <RecordList
                           params={{
-                            search: fetchedData.archive.archive_id_row,
+                            search: data.archive.archive_id_row,
                             recordtype: 'one_record',
                           }}
                           useRouteParams
@@ -1192,7 +1190,7 @@ export default function RecordView({ mode = 'material' }) {
                       <div className="six columns">
                         {
                           data?.places?.[0].location.lat && data?.places?.[0].location.lon
-                          && <SimpleMap markers={fetchedData.places} />
+                          && <SimpleMap markers={data.places} />
                         }
                       </div>
 
@@ -1206,29 +1204,29 @@ export default function RecordView({ mode = 'material' }) {
 
                   <div className="four columns">
                     {
-                      fetchedData.archive && fetchedData.archive.archive
+                      data.archive && data.archive.archive
                       && (
                         <p>
                           <strong>{l('Arkiv')}</strong>
                           <br />
-                          {getArchiveName(fetchedData.archive.archive_org)}
+                          {getArchiveName(data.archive.archive_org)}
                         </p>
                       )
                     }
 
                     {
-                      fetchedData.archive && fetchedData.archive.archive
+                      data.archive && data.archive.archive
                       && (
                         <p>
                           <strong>{l('Acc. nr')}</strong>
                           <br />
-                          {makeArchiveIdHumanReadable(fetchedData.archive.archive_id)}
+                          {makeArchiveIdHumanReadable(data.archive.archive_id)}
                         </p>
                       )
                     }
 
                     {
-                      fetchedData.archive && fetchedData.archive.archive
+                      data.archive && data.archive.archive
                       && (
                         <p>
                           <strong>{l('Sidnummer')}</strong>
@@ -1241,12 +1239,12 @@ export default function RecordView({ mode = 'material' }) {
 
                   <div className="four columns">
                     {
-                      fetchedData.materialtype
+                      data.materialtype
                       && (
                         <p>
                           <strong>{l('Materialtyp')}</strong>
                           <br />
-                          {fetchedData.materialtype ? fetchedData.materialtype.charAt(0).toUpperCase() + fetchedData.materialtype.slice(1) : ''}
+                          {data.materialtype ? data.materialtype.charAt(0).toUpperCase() + data.materialtype.slice(1) : ''}
                         </p>
                       )
                     }
@@ -1259,35 +1257,35 @@ export default function RecordView({ mode = 'material' }) {
 
                   <div className="four columns">
                     {
-                      fetchedData.year
+                      data.year
                       && (
                         <p>
                           <strong>{l('År')}</strong>
                           <br />
-                          {fetchedData.year.substring(0, 4)}
+                          {data.year.substring(0, 4)}
                         </p>
                       )
                     }
 
                     {
-                      fetchedData.source
+                      data.source
                       && (
                         <p>
                           <strong>{l('Tryckt källa')}</strong>
                           <br />
-                          {fetchedData.source}
+                          {data.source}
                         </p>
                       )
                     }
 
                     {
-                      fetchedData.archive && fetchedData.archive.archive
+                      data.archive && data.archive.archive
                       && (
                         <p>
                           <img
-                            src={getArchiveLogo(fetchedData.archive.archive)}
+                            src={getArchiveLogo(data.archive.archive)}
                             style={{ width: '100%' }}
-                            alt={makeArchiveIdHumanReadable(fetchedData.archive.archive_id)}
+                            alt={makeArchiveIdHumanReadable(data.archive.archive_id)}
                           />
                         </p>
                       )

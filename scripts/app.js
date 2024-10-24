@@ -114,7 +114,7 @@ function createPopupRoutes(prefix) {
 
 function createRootRoute() {
   return {
-    path: '/*?', //TODO: remove wildcard, since this triggers re-rendering of <Application>!
+    path: '/*?',
     loader: ({ params }) => {
       const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
@@ -126,11 +126,11 @@ function createRootRoute() {
         pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
-    shouldRevalidate: ({ currentParams, nextParams }) => {
-      const current = currentParams['*'] || '';
-      const next = nextParams['*'] || '';
-      return current !== next;
-    },
+    // shouldRevalidate: ({ currentParams, nextParams }) => {
+    //   const current = currentParams['*'] || '';
+    //   const next = nextParams['*'] || '';
+    //   return current !== next;
+    // },
     // shouldProcessLinkClick: false,
     id: 'root',
     element: <Application mode="material" />,

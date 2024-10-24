@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-export default function PdfViewer({ url = null, height = 500 }) {
+export default function PdfViewer({ url = null, height = '500' }) {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfHeight, setPdfHeight] = useState(500);
 
@@ -27,5 +27,5 @@ export default function PdfViewer({ url = null, height = 500 }) {
 
 PdfViewer.propTypes = {
   url: PropTypes.string,
-  height: PropTypes.number,
+  height: PropTypes.string,
 };
