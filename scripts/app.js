@@ -3,7 +3,7 @@ import { createHashRouter, RouterProvider, defer } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
-import RecordView from './components/views/RecordView';
+import RecordView from './components/views/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
 
@@ -39,19 +39,23 @@ function fetchPlace(placeId) {
   return fetch(getPlaceFetchLocation(placeId)).then((resp) => resp.json());
 }
 
-function fetchRecord(recordId, searchValue = null) {
+function fetchRecordAndSubrecords(recordId, searchValue = null) {
   // if there is a search value, we use both the search and the document endpoint because
   // the search endpoint it will return highlighted text also
-  if (searchValue) {
-    const recordsPromise = fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }))
-      .then((resp) => resp.json());
-    const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
-    return Promise.all([recordsPromise, recordPromise]);
-  }
-  // otherwise we use the document endpoint, which will only return the document without
-  // performing a search
+  const recordsPromise = searchValue
+    ? fetch(
+      getRecordsFetchLocation({ search: searchValue, id: recordId }),
+    ).then((resp) => resp.json())
+    : Promise.resolve(null);
+
+  // Hämta huvudposten direkt
   const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
-  return Promise.all([recordPromise]);
+
+  // Hämta subrecords
+  const subrecordsPromise = fetch(getRecordsFetchLocation({ search: recordId, recordtype: 'one_record' }))
+    .then((resp) => resp.json());
+
+  return Promise.all([recordsPromise, recordPromise, subrecordsPromise]);
 }
 
 function fetchPerson(personId) {
@@ -80,7 +84,7 @@ function createPopupRoutes(prefix) {
     {
       path: 'records/:recordId/*?',
       id: `${prefix}record`,
-      loader: ({ params: { recordId, '*': star } }) => defer({ results: fetchRecord(recordId, createParamsFromSearchRoute(star).search) }),
+      loader: ({ params: { recordId, '*': star } }) => defer({ results: fetchRecordAndSubrecords(recordId, createParamsFromSearchRoute(star).search) }),
       element: (
         <RoutePopupWindow
           manuallyOpen={false}

@@ -502,3 +502,68 @@ export const fetchRecordMediaCount = async (functionScopeParams, setValue, setVa
   }
 };
 
+export function getTitleText(
+  data,
+  numberOfSubrecordsMedia,
+  numberOfTranscribedSubrecordsMedia,
+) {
+  let titleText;
+  const transcriptionStatusElement = data.transcriptionstatus;
+
+  if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
+    titleText = 'Titel granskas';
+  } else if (data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0) {
+    titleText = `Sida ${getPages(data)} (${numberOfTranscribedSubrecordsMedia} ${l(
+      numberOfTranscribedSubrecordsMedia === 1 ? 'sida avskriven' : 'sidor avskrivna',
+    )})`;
+  } else if (data.transcriptionstatus === 'readytotranscribe') {
+    titleText = 'Ej avskriven';
+    if (data.title) {
+      titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
+    }
+  } else {
+    titleText = getTitle(data.title, data.contents);
+  }
+
+  return titleText;
+}
+
+export function getPages(data) {
+  let pages = '';
+
+  if (data?.archive?.page) {
+    pages = data.archive.page;
+
+    // Kontrollera om 'pages' inte är ett intervall och hantera det
+    if (pages && pages.indexOf('-') === -1) {
+      if (data.archive.total_pages) {
+        // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
+        if (typeof pages === 'string') {
+          pages = pages.replace(/\D/g, '');
+          pages = parseInt(pages, 10);
+        }
+
+        const totalPages = parseInt(data.archive.total_pages, 10);
+
+        // Om det finns fler än en sida, skapa intervall
+        if (totalPages > 1) {
+          const endPage = pages + totalPages - 1;
+          pages = `${pages}-${endPage}`;
+        }
+      }
+    }
+  }
+
+  return pages;
+}
+
+export function getRecordtypeLabel(recordType) {
+  switch (recordType) {
+    case 'one_accession_row':
+      return l('Accession');
+    case 'one_record':
+      return l('Uppteckning');
+    default:
+      return null; // eller en standardetikett om det behövs, t.ex. l('Okänd')
+  }
+}
