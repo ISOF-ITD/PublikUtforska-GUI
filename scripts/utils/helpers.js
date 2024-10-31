@@ -26,10 +26,7 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
   let prefix = '';
 
-  // Ta bort delen efter kolon som inte ingår i accessionsnummer
-  if (numberPart) {
-    numberPart = numberPart.split(':')[0]
-  }
+  // OBS: Delen efter kolon ingår i accessionsnummer
 
   // inga dubbla bokstavsprefix (prefix + letterPart) hanteras genom:
   // 1. Arkivort Göteborg ska inte få prefix då prefix ingår i id, d.v.s har letterpart
