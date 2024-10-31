@@ -929,7 +929,7 @@ export default function RecordView({ mode = 'material' }) {
                 {' '}
                 Denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
                 <br />
-                Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar fördomsfulla synsätt och ett språkbruk som vi inte bör använda i dag.
+                Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar det vi idag upplever som fördomsfulla synsätt och ett språkbruk som kan väcka anstöt.
                 <br />
                 <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna" target="_blank" rel="noreferrer">
                   Läs mer om Fördomar och äldre språkbruk i samlingarna.
