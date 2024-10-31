@@ -869,9 +869,9 @@ export default function RecordView({ mode = 'material' }) {
                                 `#/records/${data.archive.archive_id_row}${createSearchRoute({ search: params.search || '', recordtype: params.recordtype })}`
                               }
                             >
-                              {makeArchiveIdHumanReadable(data.archive.archive_id)}
+                              {makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}
                             </a>
-                          ) : makeArchiveIdHumanReadable(data.archive.archive_id)
+                          ) : makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)
                       }
 
                     </span>
@@ -1247,7 +1247,7 @@ export default function RecordView({ mode = 'material' }) {
                 <p>
                   <strong>{l('Acc. nr')}</strong>
                   <br />
-                  {makeArchiveIdHumanReadable(data.archive.archive_id)}
+                  {makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}
                 </p>
               )
             }
