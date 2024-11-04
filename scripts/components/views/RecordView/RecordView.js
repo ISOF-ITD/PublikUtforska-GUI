@@ -1,35 +1,29 @@
 import {
-  Suspense, useState, useEffect, useMemo,
+  Suspense, useState, useEffect,
 } from 'react';
 import {
   Await, useLoaderData, useLocation, useNavigate, useParams,
 } from 'react-router-dom';
-import RecordViewHeader from './RecordViewHeader';
-import FeedbackButton from '../FeedbackButton';
-import ContributeInfoButton from '../ContributeInfoButton';
-import ContentWarning from '../ContentWarning.js';
-import TextElement from './TextElement';
-import RecordViewThumbnails from './RecordViewThumbnails';
-import ContentsElement from './ContentsElement';
+import CommentsElement from './CommentsElement';
+import Disclaimer from '../Disclaimer';
 import HeadwordsElement from './HeadwordsElement';
+import loaderSpinner from '../../../../img/loader.gif';
 import MetadataItems from './MetadataItems';
+import PdfElement from './PdfElement';
 import PersonItems from './PersonItems';
 import PlaceItems from './PlaceItems';
-import RecordsCollection from '../../collections/RecordsCollection';
+import RecordViewHeader from './RecordViewHeader';
+import RecordViewThumbnails from './RecordViewThumbnails';
+import TextElement from './TextElement';
+import TranscriptionPrompt from './TranscriptionPrompt';
 import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
-import loaderSpinner from '../../../../img/loader.gif';
 import {
   getTitleText,
   getPages,
-  makeArchiveIdHumanReadable,
-  getRecordtypeLabel,
 } from '../../../utils/helpers';
-import { l } from '../../../lang/Lang';
-import config from '../../../config';
 
 function RecordView({ mode = 'material' }) {
   const { results: resultsPromise } = useLoaderData();
-  const [highlight, setHighlight] = useState(true);
   const [expandedContents, setExpandedContents] = useState(false);
   const [expandedHeadwords, setExpandedHeadwords] = useState(false);
   const location = useLocation();
@@ -84,14 +78,12 @@ function RecordView({ mode = 'material' }) {
           }
         >
           {([
-            records,
+            highlightData,
             { _source: data },
             { data: subrecords },
           ]) => {
             // i records[0] finns highlights!
-            // debugger;
             if (!data) return <div>Posten finns inte.</div>;
-
             const titleText = getTitleText(data);
             const country = data.archive?.country || 'unknown';
             const mediaItems = data.media || [];
@@ -103,24 +95,26 @@ function RecordView({ mode = 'material' }) {
 
             return (
               <>
+              <small>RecordViewHeader</small>
                 <RecordViewHeader
                   data={data}
                   subrecords={subrecords}
                   location={location}
                 />
                 <div className="container-body">
-                  <ContentWarning />
+                  <Disclaimer />
                   { /* alla one_record: översiktsvy som man kan fälla ut, finns alltid med */ }
                   {/* bläddra funktion? */}
-                  <RecordViewThumbnails
-                    data={data}
-                    mediaImageClickHandler={mediaImageClickHandler}
-                  />
-                  <TextElement data={data} highlight={highlight} />
-                  <ContentsElement data={data} expanded={expandedContents} toggle={() => setExpandedContents(!expandedContents)} />
+                  <RecordViewThumbnails {...{ data, mediaImageClickHandler }} />
+                  <TranscriptionPrompt data={data} />
+                  <PdfElement data={data} />
+                  <TextElement {...{ data, highlightData, mediaImageClickHandler }} />
                   <HeadwordsElement data={data} expanded={expandedHeadwords} toggle={() => setExpandedHeadwords(!expandedHeadwords)} />
+                  <CommentsElement data={data} />
                   <MetadataItems data={data} />
+                  <hr />
                   <PersonItems data={data} routeParams={routeParams} />
+                  <hr />
                   <PlaceItems data={data} routeParams={routeParams} />
                 </div>
               </>

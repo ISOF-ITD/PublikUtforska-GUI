@@ -893,7 +893,7 @@ export default function RecordView({ mode = 'material' }) {
                 </div>
 
                 <div className="row">
-                  <div className="ten columns content-warning">
+                  <div className="ten columns disclaimer">
                     <small>
                       <i>
                         <b>Information till läsaren:</b>

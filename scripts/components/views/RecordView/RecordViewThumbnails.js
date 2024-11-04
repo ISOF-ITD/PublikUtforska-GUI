@@ -100,7 +100,7 @@ function RecordViewThumbnails({ data, mediaImageClickHandler }) {
       </button>
       {hasLoadedImages && (
         <div
-          className="recordview-thumbnails"
+          className="record-view-thumbnails"
           style={{ display: expanded ? 'block' : 'none' }}
         >
           {imageItems}

@@ -209,9 +209,32 @@
 				line-height: 1.5rem;
 			}
 
+			.pdf-wrapper {
+				display: flex;
+				gap: 20px; /* Mellanrum mellan varje pdf-element */
+				flex-wrap: wrap;
+			}
+
+			.pdf-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center; /* Justerar texten och ikonen till centrum */
+			width: 100px; /* Samma bredd för både ikonen och texten - du kan justera bredden efter behov */
+			}
+
+			.pdf-icon {
+				width: 100%; /* Fyller hela container-bredden */
+			  }
+			  
+			  .media-title {
+				text-align: center; /* Gör att texten centrerar under ikonen */
+				word-wrap: break-word; /* Bryter texten om den är för lång */
+				max-width: 100%; /* Ser till att texten inte överstiger ikonens bredd */
+				overflow-wrap: break-word; /* Bryter långa ord för att undvika att de går utanför */
+			  }
+
 			.archive-image {
 				display: inline-block;
-
 				max-width: 100%;
 
 				margin: 0 15px 15px 0;
@@ -225,7 +248,7 @@
 				}
 
 				.pdf-icon {
-					width: 115px;
+					width: 100%;
 					height: 115px;
 
 					background-color: #fafbfc;
