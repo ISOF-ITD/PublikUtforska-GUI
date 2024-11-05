@@ -18,7 +18,7 @@ import {
 import config from '../../config';
 // import localLibrary from '../../utils/localLibrary';
 
-import ShareButtons from '../ShareButtons';
+import ShareButtons from './RecordView/ShareButtons';
 import SimpleMap from './SimpleMap';
 import ListPlayButton from './ListPlayButton';
 
@@ -1122,7 +1122,7 @@ export default function RecordView({ mode = 'material' }) {
             config.siteOptions && config.siteOptions.copyrightContent && data.copyrightlicense
             && (
               <div className="six columns offset-by-six">
-                <div className="copyright" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[data.copyrightlicense] }} />
+                <div className="license" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[data.copyrightlicense] }} />
               </div>
             )
           }

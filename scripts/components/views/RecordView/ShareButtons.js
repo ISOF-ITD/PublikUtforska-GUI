@@ -5,7 +5,7 @@ import {
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
-import clipboard from '../utils/clipboard';
+import clipboard from '../../../utils/clipboard';
 
 export default function ShareButtons({
   manualInit = false,

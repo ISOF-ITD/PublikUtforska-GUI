@@ -1,57 +1,62 @@
+/* eslint-disable react/require-default-props */
 import {
-  Suspense, useState, useEffect,
+  Suspense, useEffect, // useState,
 } from 'react';
 import {
-  Await, useLoaderData, useLocation, useNavigate, useParams,
+  Await, useLoaderData, useLocation, // useNavigate, //useParams,
 } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import CommentsElement from './CommentsElement';
 import Disclaimer from '../Disclaimer';
 import HeadwordsElement from './HeadwordsElement';
 import loaderSpinner from '../../../../img/loader.gif';
-import MetadataItems from './MetadataItems';
+// import MetadataItems from './MetadataItems';
+import RecordViewFooter from './RecordViewFooter.js';
 import PdfElement from './PdfElement';
 import PersonItems from './PersonItems';
 import PlaceItems from './PlaceItems';
 import RecordViewHeader from './RecordViewHeader';
 import RecordViewThumbnails from './RecordViewThumbnails';
 import TextElement from './TextElement';
+import SubrecordsElement from './SubrecordsElement';
+import ReferenceLinks from './ReferenceLinks';
 import TranscriptionPrompt from './TranscriptionPrompt';
+import License from './License';
 import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
-import {
-  getTitleText,
-  getPages,
-} from '../../../utils/helpers';
+// import {
+//   getTitleText,
+//   getPages,
+// } from '../../../utils/helpers';
 
 function RecordView({ mode = 'material' }) {
   const { results: resultsPromise } = useLoaderData();
-  const [expandedContents, setExpandedContents] = useState(false);
-  const [expandedHeadwords, setExpandedHeadwords] = useState(false);
+  // const [expandedHeadwords, setExpandedHeadwords] = useState(false);
   const location = useLocation();
-  const params = useParams();
+  // const params = useParams();
   const routeParams = createSearchRoute(createParamsFromRecordRoute(location.pathname));
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const archiveIdClick = (e) => {
-    e.preventDefault();
-    const archiveIdRow = e.target.dataset.archiveidrow;
-    const { recordtype } = e.target.dataset;
-    const { search } = e.target.dataset;
-    const localparams = {
-      search,
-      recordtype,
-    };
-    if (archiveIdRow) {
-      navigate(`/records/${archiveIdRow}${createSearchRoute(localparams)}`);
-    }
-  };
+  // const archiveIdClick = (e) => {
+  //   e.preventDefault();
+  //   const archiveIdRow = e.target.dataset.archiveidrow;
+  //   const { recordtype } = e.target.dataset;
+  //   const { search } = e.target.dataset;
+  //   const localparams = {
+  //     search,
+  //     recordtype,
+  //   };
+  //   if (archiveIdRow) {
+  //     navigate(`/records/${archiveIdRow}${createSearchRoute(localparams)}`);
+  //   }
+  // };
 
-  const mediaImageClickHandler = (e) => {
+  const mediaImageClickHandler = (mediaItem, mediaList, currentIndex) => {
     if (window.eventBus) {
-      // Skickar overlay.viewimage till eventBus
-      // ImageOverlay modulen lyssnar på det och visar bilden
       window.eventBus.dispatch('overlay.viewimage', {
-        imageUrl: e.source,
-        type: e.type,
+        imageUrl: mediaItem.source,
+        type: mediaItem.type,
+        mediaList, // Skicka hela listan
+        currentIndex, // Skicka index för aktuell bild
       });
     }
   };
@@ -80,42 +85,45 @@ function RecordView({ mode = 'material' }) {
           {([
             highlightData,
             { _source: data },
-            { data: subrecords },
+            { data: subrecordsCount },
           ]) => {
             // i records[0] finns highlights!
             if (!data) return <div>Posten finns inte.</div>;
-            const titleText = getTitleText(data);
-            const country = data.archive?.country || 'unknown';
-            const mediaItems = data.media || [];
-            const pages = getPages(data);
-
-            // if (data?.archive?.archive_id_row) {
-            //   fetchSubrecords(data.archive.archive_id_row); // Anropa fetchSubrecords när archive_id_row finns
-            // }
+            // const titleText = getTitleText(data);
+            // const country = data.archive?.country || 'unknown';
+            // const mediaItems = data.media || [];
+            // const pages = getPages(data);
 
             return (
               <>
-              <small>RecordViewHeader</small>
+                <small>RecordViewHeader</small>
                 <RecordViewHeader
                   data={data}
-                  subrecords={subrecords}
+                  subrecordsCount={subrecordsCount}
                   location={location}
                 />
                 <div className="container-body">
                   <Disclaimer />
-                  { /* alla one_record: översiktsvy som man kan fälla ut, finns alltid med */ }
-                  {/* bläddra funktion? */}
-                  <RecordViewThumbnails {...{ data, mediaImageClickHandler }} />
+                  <RecordViewThumbnails
+                    data={data}
+                    mediaImageClickHandler={mediaImageClickHandler}
+                  />
                   <TranscriptionPrompt data={data} />
                   <PdfElement data={data} />
-                  <TextElement {...{ data, highlightData, mediaImageClickHandler }} />
-                  <HeadwordsElement data={data} expanded={expandedHeadwords} toggle={() => setExpandedHeadwords(!expandedHeadwords)} />
+                  <TextElement
+                    data={data}
+                    highlightData={highlightData}
+                    mediaImageClickHandler={mediaImageClickHandler}
+                  />
+                  <HeadwordsElement data={data} />
                   <CommentsElement data={data} />
-                  <MetadataItems data={data} />
-                  <hr />
+                  <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
                   <PersonItems data={data} routeParams={routeParams} />
-                  <hr />
                   <PlaceItems data={data} routeParams={routeParams} />
+                  <ReferenceLinks data={data} />
+                  <License data={data} />
+                  <RecordViewFooter data={data} />
+                  {/* <MetadataItems data={data} /> */}
                 </div>
               </>
             );
@@ -127,3 +135,7 @@ function RecordView({ mode = 'material' }) {
 }
 
 export default RecordView;
+
+RecordView.propTypes = {
+  mode: PropTypes.string,
+};

@@ -39,7 +39,7 @@ function fetchPlace(placeId) {
   return fetch(getPlaceFetchLocation(placeId)).then((resp) => resp.json());
 }
 
-function fetchRecordAndSubrecords(recordId, searchValue = null) {
+function fetchRecordAndCountSubrecords(recordId, searchValue = null) {
   // if there is a search value, we use both the search and the document endpoint because
   // the search endpoint it will return highlighted text also
   const recordsPromise = searchValue
@@ -51,11 +51,11 @@ function fetchRecordAndSubrecords(recordId, searchValue = null) {
   // Hämta huvudposten direkt
   const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
 
-  // Hämta subrecords
-  const subrecordsPromise = fetch(getRecordsFetchLocation({ search: recordId, recordtype: 'one_record' }))
+  // Hämta subrecords count
+  const subrecordsCountPromise = fetch(getRecordsCountLocation({ search: recordId, recordtype: 'one_record' }))
     .then((resp) => resp.json());
 
-  return Promise.all([recordsPromise, recordPromise, subrecordsPromise]);
+  return Promise.all([recordsPromise, recordPromise, subrecordsCountPromise]);
 }
 
 function fetchPerson(personId) {
@@ -84,7 +84,7 @@ function createPopupRoutes(prefix) {
     {
       path: 'records/:recordId/*?',
       id: `${prefix}record`,
-      loader: ({ params: { recordId, '*': star } }) => defer({ results: fetchRecordAndSubrecords(recordId, createParamsFromSearchRoute(star).search) }),
+      loader: ({ params: { recordId, '*': star } }) => defer({ results: fetchRecordAndCountSubrecords(recordId, createParamsFromSearchRoute(star).search) }),
       element: (
         <RoutePopupWindow
           manuallyOpen={false}

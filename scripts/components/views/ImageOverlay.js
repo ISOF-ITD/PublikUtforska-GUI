@@ -8,19 +8,45 @@ export default function ImageOverlay() {
   const [imageUrl, setImageUrl] = useState(null);
   const [type, setType] = useState(null);
   const [visible, setVisible] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [mediaList, setMediaList] = useState([]);
 
-  // Funktion för att stänga overlayen
-  // useCallback förhindrar att closeOverlay skapas om vid varje render,
-  // vilket förbättrar prestandan och säkerställer att useEffect inte körs i onödan.
   const closeOverlay = useCallback(() => {
     setVisible(false);
   }, []);
 
+  const showNext = useCallback(() => {
+    const nextIndex = currentIndex + 1;
+    if (!mediaList || mediaList.length === 0 || nextIndex >= mediaList.length) return;
+    const nextMediaItem = mediaList[nextIndex];
+    setCurrentIndex(nextIndex);
+    setImageUrl(nextMediaItem.source);
+    setType(nextMediaItem.type);
+  }, [mediaList, currentIndex]);
+
+  const showPrev = useCallback(() => {
+    const prevIndex = currentIndex - 1;
+    if (!mediaList || mediaList.length === 0 || prevIndex < 0) return;
+    const prevMediaItem = mediaList[prevIndex];
+    setCurrentIndex(prevIndex);
+    setImageUrl(prevMediaItem.source);
+    setType(prevMediaItem.type);
+  }, [mediaList, currentIndex]);
+
   useEffect(() => {
     const viewImageHandler = (event) => {
-      setImageUrl(event.target.imageUrl);
-      setType(event.target.type);
+      const {
+        imageUrl: newImageUrl,
+        type: newType,
+        mediaList: newMediaList = [],
+        currentIndex: newCurrentIndex,
+      } = event.target;
+
+      setImageUrl(newImageUrl);
+      setType(newType);
       setVisible(true);
+      setMediaList(newMediaList);
+      setCurrentIndex(newCurrentIndex);
     };
 
     const hideHandler = () => {
@@ -32,16 +58,19 @@ export default function ImageOverlay() {
       window.eventBus.addEventListener('overlay.hide', hideHandler);
     }
 
-    // Hantera ESC-tangenttryck
     const handleKeyDown = (event) => {
+      if (!visible) return;
       if (event.key === 'Escape') {
         closeOverlay();
+      } else if (event.key === 'ArrowRight') {
+        showNext();
+      } else if (event.key === 'ArrowLeft') {
+        showPrev();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
 
-    // Cleanup
     return () => {
       if (window.eventBus) {
         window.eventBus.removeEventListener('overlay.viewimage', viewImageHandler);
@@ -49,24 +78,19 @@ export default function ImageOverlay() {
       }
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [closeOverlay]);
+  }, [closeOverlay, visible, showNext, showPrev]);
 
   const closeButtonClickHandler = () => {
     setVisible(false);
   };
 
-  // Klickhanterare för att stänga overlayen när man klickar utanför innehållet
   const overlayClickHandler = (event) => {
-    // Kontrollera om klicket är direkt på overlay-containern
     if (event.target.classList.contains('overlay-container')) {
       closeOverlay();
     }
   };
 
-  // Tangentbordshanterare för overlay-containern
   const overlayKeyDownHandler = (event) => {
-    // Du kan definiera specifika tangenter som ska stänga overlayen
-    // Här stänger vi overlayen om användaren trycker på Enter eller Space
     if (event.key === 'Enter' || event.key === ' ') {
       closeOverlay();
     }
@@ -101,6 +125,27 @@ export default function ImageOverlay() {
           aria-label="Stäng overlay"
           type="button"
         />
+        {/* TODO: add buttons and create styling */}
+        {/* {mediaList && mediaList.length > 1 && (
+          <>
+            <button
+              className="prev-button"
+              onClick={showPrev}
+              aria-label="Föregående bild"
+              type="button"
+            >
+              ‹
+            </button>
+            <button
+              className="next-button"
+              onClick={showNext}
+              aria-label="Nästa bild"
+              type="button"
+            >
+              ›
+            </button>
+          </>
+        )} */}
       </div>
     </div>
   );

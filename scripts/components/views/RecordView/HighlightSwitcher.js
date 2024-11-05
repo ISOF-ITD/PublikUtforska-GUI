@@ -8,7 +8,7 @@ export default function HighlightSwitcher({ highlight, setHighlight }) {
         checked={highlight}
         onChange={() => setHighlight(!highlight)}
       />
-      <span style={{ marginLeft: 10 }}>Markera sökord</span>
+      <span style={{ marginLeft: 10, userSelect: 'none' }}>Markera sökord</span>
     </label>
 
   );

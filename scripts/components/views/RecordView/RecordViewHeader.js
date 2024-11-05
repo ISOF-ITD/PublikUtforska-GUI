@@ -2,7 +2,7 @@
 import propTypes from 'prop-types';
 import { l } from '../../../lang/Lang';
 import {
-  makeArchiveIdHumanReadable, getRecordtypeLabel, getPages, getTitleText
+  makeArchiveIdHumanReadable, getRecordtypeLabel, getPages, getTitleText, getArchiveName,
 } from '../../../utils/helpers';
 import FeedbackButton from '../FeedbackButton';
 import ContributeInfoButton from '../ContributeInfoButton';
@@ -14,17 +14,24 @@ const openSwitcherHelptext = () => {
   }
 };
 
-const renderSubrecordCount = (subrecords) => (
-  subrecords?.length ? (
+const renderArchiveName = (data) => (
+  <span className="ml-10">
+    <strong>{l('Arkiv')}</strong>
+    {`: ${getArchiveName(data.archive.archive_org)}`}
+  </span>
+)
+
+const renderSubrecordCount = (subrecordsCount) => (
+  subrecordsCount?.value ? (
     <span className="ml-10">
       <strong>{l('Antal uppteckningar')}</strong>
-      {`: ${subrecords.length}`}
+      {`: ${subrecordsCount.value}`}
     </span>
   ) : null
 );
 
 const renderAccessionsNumber = (recordtype, archive) => (
-  <span>
+  <span className="ml-10">
     <strong>{l('Accessionsnummer')}</strong>
     :&nbsp;
     {recordtype === 'one_record' ? (
@@ -56,7 +63,7 @@ const renderPageCount = (pages) => (
 
 export default function RecordViewHeader({
   data,
-  subrecords = [],
+  subrecordsCount,
 }) {
   const {
     title, recordtype, materialtype, archive, country, id,
@@ -71,7 +78,7 @@ export default function RecordViewHeader({
       <div className="row">
         <div className="twelve columns">
           <h2>{titleText && titleText !== '[]' ? titleText : l('(Utan titel)')}</h2>
-          <p>
+          <p className="ml-10">
             {recordTypeLabel}
             <span
               className="switcher-help-button"
@@ -88,15 +95,16 @@ export default function RecordViewHeader({
           </p>
           <p>
             {renderAccessionsNumber(recordtype, archive)}
-            {recordtype === 'one_accession_row' && renderSubrecordCount(subrecords)}
+            {recordtype === 'one_accession_row' && renderSubrecordCount(subrecordsCount)}
             {renderPageCount(pages)}
             {shouldShowMaterialType && (
               <span className="ml-10">
                 <strong>Materialtyp</strong>
-                :
+                {': '}
                 {materialtype}
               </span>
             )}
+            {renderArchiveName(data)}
           </p>
         </div>
       </div>
@@ -119,5 +127,5 @@ RecordViewHeader.propTypes = {
     country: propTypes.string,
     id: propTypes.string.isRequired,
   }).isRequired,
-  subrecords: propTypes.arrayOf(propTypes.object),
+  subrecordsCount: propTypes.object,
 };

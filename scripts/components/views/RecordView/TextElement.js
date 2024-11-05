@@ -15,31 +15,31 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const { imageUrl } = config;
   const [highlight, setHighlight] = useState(true);
 
-  // Händelsehanterare för bildklick
-  const handleMediaClick = useCallback(
-    (mediaItem) => {
-      mediaImageClickHandler(mediaItem);
-    },
-    [mediaImageClickHandler],
-  );
+ // Händelsehanterare för bildklick
+ const handleMediaClick = useCallback(
+  (mediaItem, index) => {
+    mediaImageClickHandler(mediaItem, media, index);
+  },
+  [mediaImageClickHandler, media],
+);
 
-  // Händelsehanterare för keydown
-  const handleKeyDown = useCallback(
-    (e, mediaItem) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        mediaImageClickHandler(mediaItem);
-      }
-    },
-    [mediaImageClickHandler],
-  );
+// Händelsehanterare för keydown
+const handleKeyDown = useCallback(
+  (e, mediaItem, index) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      mediaImageClickHandler(mediaItem, media, index);
+    }
+  },
+  [mediaImageClickHandler, media],
+);
 
-  const renderMedia = (mediaItem) => (
+  const renderMedia = (mediaItem, index) => (
     <div className="four columns">
       <div
         data-type="image"
         data-image={mediaItem.source}
-        onClick={() => handleMediaClick(mediaItem)}
-        onKeyDown={(e) => handleKeyDown(e, mediaItem)}
+        onClick={() => handleMediaClick(mediaItem, index)}
+        onKeyDown={(e) => handleKeyDown(e, mediaItem, index)}
         className="archive-image"
         role="button"
         tabIndex="0"
@@ -98,7 +98,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
                 }}
               />
             </div>
-            { renderMedia(mediaItem) }
+            { renderMedia(mediaItem, index) }
           </div>
         ))}
       </>

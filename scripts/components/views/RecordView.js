@@ -31,7 +31,7 @@ import SitevisionContent from '../SitevisionContent';
 import TranscribeButton from './transcribe/TranscribeButton';
 import ListPlayButton from './ListPlayButton';
 import PdfViewer from '../PdfViewer';
-import ShareButtons from '../ShareButtons';
+import ShareButtons from './RecordView/ShareButtons';
 import SimpleMap from './SimpleMap';
 import RecordsCollection from '../collections/RecordsCollection';
 import RecordList from './RecordList';
@@ -1095,7 +1095,7 @@ export default function RecordView({ mode = 'material' }) {
                     config.siteOptions?.copyrightContent && data.copyrightlicense
                     && (
                       <div className="six columns offset-by-six">
-                        <div className="copyright" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[data.copyrightlicense] }} />
+                        <div className="license" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[data.copyrightlicense] }} />
                       </div>
                     )
                   }

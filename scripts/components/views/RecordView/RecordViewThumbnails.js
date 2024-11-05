@@ -28,15 +28,15 @@ const getIndicator = (item) => {
 
 function getImageItems(data, mediaImageClickHandler) {
   const imageDataItems = data?.media?.filter((dataItem) => dataItem.type === 'image');
-  return imageDataItems.map((mediaItem) => (
+  return imageDataItems.map((mediaItem, index) => (
     <div
       key={mediaItem.source}
       data-type="image"
       data-image={mediaItem.source}
-      onClick={() => mediaImageClickHandler(mediaItem)}
+      onClick={() => mediaImageClickHandler(mediaItem, imageDataItems, index)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          mediaImageClickHandler(mediaItem);
+          mediaImageClickHandler(mediaItem, imageDataItems, index);
         }
       }}
       className="archive-image"
