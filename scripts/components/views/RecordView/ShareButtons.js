@@ -70,7 +70,10 @@ export default function ShareButtons({
               <FontAwesomeIcon icon={faCopy} />
             </a>
             &nbsp;
-            <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick}>
+            <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick} style={{
+              wordBreak: 'break-all',
+              overflowWrap: 'break-word',
+            }}>
               {copyMessageVisible
                 ? (
                   <>

@@ -6,49 +6,31 @@ import {
   Await, useLoaderData, useLocation, // useNavigate, //useParams,
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
+import AudioItemsElement from './AudioItemsElement';
 import CommentsElement from './CommentsElement';
+import ContentsElement from './ContentsElement';
 import Disclaimer from '../Disclaimer';
 import HeadwordsElement from './HeadwordsElement';
+import License from './License';
 import loaderSpinner from '../../../../img/loader.gif';
-// import MetadataItems from './MetadataItems';
-import RecordViewFooter from './RecordViewFooter.js';
 import PdfElement from './PdfElement';
 import PersonItems from './PersonItems';
 import PlaceItems from './PlaceItems';
+import RecordViewFooter from './RecordViewFooter';
 import RecordViewHeader from './RecordViewHeader';
 import RecordViewThumbnails from './RecordViewThumbnails';
-import TextElement from './TextElement';
-import SubrecordsElement from './SubrecordsElement';
 import ReferenceLinks from './ReferenceLinks';
+import SubrecordsElement from './SubrecordsElement';
+import TextElement from './TextElement';
 import TranscriptionPrompt from './TranscriptionPrompt';
-import License from './License';
-import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
-// import {
-//   getTitleText,
-//   getPages,
-// } from '../../../utils/helpers';
+import { getTitleText } from '../../../utils/helpers';
+import config from '../../../config';
 
 function RecordView({ mode = 'material' }) {
   const { results: resultsPromise } = useLoaderData();
-  // const [expandedHeadwords, setExpandedHeadwords] = useState(false);
   const location = useLocation();
-  // const params = useParams();
   const routeParams = createSearchRoute(createParamsFromRecordRoute(location.pathname));
-  // const navigate = useNavigate();
-
-  // const archiveIdClick = (e) => {
-  //   e.preventDefault();
-  //   const archiveIdRow = e.target.dataset.archiveidrow;
-  //   const { recordtype } = e.target.dataset;
-  //   const { search } = e.target.dataset;
-  //   const localparams = {
-  //     search,
-  //     recordtype,
-  //   };
-  //   if (archiveIdRow) {
-  //     navigate(`/records/${archiveIdRow}${createSearchRoute(localparams)}`);
-  //   }
-  // };
 
   const mediaImageClickHandler = (mediaItem, mediaList, currentIndex) => {
     if (window.eventBus) {
@@ -62,7 +44,7 @@ function RecordView({ mode = 'material' }) {
   };
 
   useEffect(() => {
-    document.title = 'Arkiv Uppteckning'; // Justera efter datan om så behövs
+    document.title = config.siteTitle; // Justera efter datan om så behövs
   }, []);
 
   return (
@@ -93,7 +75,7 @@ function RecordView({ mode = 'material' }) {
             // const country = data.archive?.country || 'unknown';
             // const mediaItems = data.media || [];
             // const pages = getPages(data);
-
+            document.title = `${getTitleText(data, 0, 0)} - ${config.siteTitle}`;
             return (
               <>
                 <small>RecordViewHeader</small>
@@ -110,19 +92,29 @@ function RecordView({ mode = 'material' }) {
                   />
                   <TranscriptionPrompt data={data} />
                   <PdfElement data={data} />
+                  {/* TODO: audio items */}
                   <TextElement
                     data={data}
                     highlightData={highlightData}
                     mediaImageClickHandler={mediaImageClickHandler}
                   />
                   <HeadwordsElement data={data} />
+                  <ContentsElement data={data} />
+                  <AudioItemsElement data={data} />
                   <CommentsElement data={data} />
                   <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
                   <PersonItems data={data} routeParams={routeParams} />
                   <PlaceItems data={data} routeParams={routeParams} />
-                  <ReferenceLinks data={data} />
-                  <License data={data} />
-                  <RecordViewFooter data={data} />
+                  <div className="row">
+                    <div className="eight columns">
+                      <ReferenceLinks data={data} />
+                    </div>
+                    <div className="four columns">
+                      <License data={data} />
+                    </div>
+                    <RecordViewFooter data={data} />
+
+                  </div>
                   {/* <MetadataItems data={data} /> */}
                 </div>
               </>

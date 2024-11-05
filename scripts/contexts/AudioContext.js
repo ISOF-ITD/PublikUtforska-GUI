@@ -1,4 +1,6 @@
-import { createContext, useState, useRef } from 'react';
+import {
+  createContext, useState, useRef, useMemo,
+} from 'react';
 import PropTypes from 'prop-types';
 import config from '../config';
 
@@ -13,12 +15,14 @@ export function AudioProvider({ children }) {
   const [currentAudio, setCurrentAudio] = useState(null);
   const audioRef = useRef(new Audio());
 
-  const playAudio = ({ record, audio }) => {
+  const playAudio = ({ record, audio, time = 0 }) => {
     const audioSrc = config.audioUrl + audio.source;
     audioRef.current.src = audioSrc;
     audioRef.current.label = record.title;
     setPlayerLabelText(record.title);
     audioRef.current.load();
+    audioRef.current.currentTime = time;
+    setCurrentTime(time);
     setPlaying(true);
     setVisible(true);
     setCurrentAudio({ record, audio });
@@ -35,25 +39,29 @@ export function AudioProvider({ children }) {
     setPlaying(!playing);
   };
 
+  // Vi använder useMemo för att skapa context-värdet endast när någon av dess beroenden ändras.
+  // Detta förhindrar att ett nytt objekt skapas vid varje render, vilket minskar onödiga
+  // omrenderingar i komponenter som konsumerar AudioContext och förbättrar prestandan.
+  const contextValue = useMemo(() => ({
+    audioRef,
+    playing,
+    setPlaying,
+    togglePlay,
+    currentTime,
+    setCurrentTime,
+    durationTime,
+    setDurationTime,
+    playAudio,
+    playerLabelText,
+    setPlayerLabelText,
+    visible,
+    setVisible,
+    currentAudio,
+    setCurrentAudio,
+  }), [playing, currentTime, durationTime, playerLabelText, visible, currentAudio]);
+
   return (
-    <AudioContext.Provider value={{
-      audioRef,
-      playing,
-      setPlaying,
-      togglePlay,
-      currentTime,
-      setCurrentTime,
-      durationTime,
-      setDurationTime,
-      playAudio,
-      playerLabelText,
-      setPlayerLabelText,
-      visible,
-      setVisible,
-      currentAudio,
-      setCurrentAudio,
-    }}
-    >
+    <AudioContext.Provider value={contextValue}>
       {children}
     </AudioContext.Provider>
   );

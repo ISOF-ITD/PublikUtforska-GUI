@@ -15,15 +15,15 @@ const openSwitcherHelptext = () => {
 };
 
 const renderArchiveName = (data) => (
-  <span className="ml-10">
+  <span className="mr-10">
     <strong>{l('Arkiv')}</strong>
     {`: ${getArchiveName(data.archive.archive_org)}`}
   </span>
 )
 
-const renderSubrecordCount = (subrecordsCount) => (
-  subrecordsCount?.value ? (
-    <span className="ml-10">
+const renderSubrecordCount = (recordtype, subrecordsCount) => (
+  recordtype === 'one_accession_row' && subrecordsCount?.value ? (
+    <span className="mr-10">
       <strong>{l('Antal uppteckningar')}</strong>
       {`: ${subrecordsCount.value}`}
     </span>
@@ -31,7 +31,7 @@ const renderSubrecordCount = (subrecordsCount) => (
 );
 
 const renderAccessionsNumber = (recordtype, archive) => (
-  <span className="ml-10">
+  <span className="mr-10">
     <strong>{l('Accessionsnummer')}</strong>
     :&nbsp;
     {recordtype === 'one_record' ? (
@@ -51,9 +51,19 @@ const renderAccessionsNumber = (recordtype, archive) => (
   </span>
 );
 
+const renderYear = (year) => {
+  if (!year) return null;
+  return (
+    <span className="mr-10">
+      <strong>{l('År')}</strong>
+      {`: ${year.substring(0, 4)}`}
+    </span>
+  );
+};
+
 const renderPageCount = (pages) => (
   pages ? (
-    <span className="ml-10">
+    <span className="mr-10">
       <strong>{l('Sidnummer')}</strong>
       :
       {pages}
@@ -66,7 +76,7 @@ export default function RecordViewHeader({
   subrecordsCount,
 }) {
   const {
-    title, recordtype, materialtype, archive, country, id,
+    title, recordtype, materialtype, archive, country, id, year = null,
   } = data;
   const shouldShowMaterialType = config.siteOptions?.recordView?.hideMaterialType !== true;
   const pages = getPages(data);
@@ -78,7 +88,7 @@ export default function RecordViewHeader({
       <div className="row">
         <div className="twelve columns">
           <h2>{titleText && titleText !== '[]' ? titleText : l('(Utan titel)')}</h2>
-          <p className="ml-10">
+          <p className="mr-10">
             {recordTypeLabel}
             <span
               className="switcher-help-button"
@@ -95,10 +105,11 @@ export default function RecordViewHeader({
           </p>
           <p>
             {renderAccessionsNumber(recordtype, archive)}
-            {recordtype === 'one_accession_row' && renderSubrecordCount(subrecordsCount)}
+            {renderYear(year)}
+            {renderSubrecordCount(recordtype, subrecordsCount)}
             {renderPageCount(pages)}
             {shouldShowMaterialType && (
-              <span className="ml-10">
+              <span className="mr-10">
                 <strong>Materialtyp</strong>
                 {': '}
                 {materialtype}
@@ -126,6 +137,7 @@ RecordViewHeader.propTypes = {
     }).isRequired,
     country: propTypes.string,
     id: propTypes.string.isRequired,
+    year: propTypes.string,
   }).isRequired,
   subrecordsCount: propTypes.object,
 };

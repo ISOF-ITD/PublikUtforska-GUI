@@ -98,6 +98,6 @@ TranscribeButton.propTypes = {
   places: PropTypes.array,
   className: PropTypes.string,
   onClick: PropTypes.func,
-  label: PropTypes.object.isRequired,
+  label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   helptext: PropTypes.string,
 };

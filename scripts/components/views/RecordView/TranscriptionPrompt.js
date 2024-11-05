@@ -17,10 +17,10 @@ const STRINGS = {
 
 export default function TranscriptionPrompt({ data }) {
   const {
-    transcriptiontype,
+    transcriptiontype = null,
     transcriptionstatus,
     media = [],
-    title,
+    title = '',
     id,
     archive,
     places = [],
@@ -91,19 +91,19 @@ export default function TranscriptionPrompt({ data }) {
 
 TranscriptionPrompt.propTypes = {
   data: PropTypes.shape({
-    transcriptiontype: PropTypes.string.isRequired,
+    transcriptiontype: PropTypes.string,
     transcriptionstatus: PropTypes.string.isRequired,
     media: PropTypes.arrayOf(
       PropTypes.shape({
         transcriptionstatus: PropTypes.string.isRequired,
       }),
     ),
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     archive: PropTypes.shape({
       archive_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     }).isRequired,
-    places: PropTypes.arrayOf(PropTypes.string),
+    places: PropTypes.arrayOf(PropTypes.object),
     recordtype: PropTypes.string.isRequired,
   }).isRequired,
 };

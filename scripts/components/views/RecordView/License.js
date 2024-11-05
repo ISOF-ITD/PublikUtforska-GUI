@@ -1,5 +1,5 @@
-import config from '../../../config';
 import PropTypes from 'prop-types';
+import config from '../../../config';
 
 export default function License({ data }) {
   const {
