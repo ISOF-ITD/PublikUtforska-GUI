@@ -8,6 +8,7 @@ import { faCopy } from '@fortawesome/free-solid-svg-icons';
 import clipboard from '../../../utils/clipboard';
 
 export default function ShareButtons({
+  breakAll = false,
   manualInit = false,
   path = '',
   title = '',
@@ -71,7 +72,7 @@ export default function ShareButtons({
             </a>
             &nbsp;
             <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick} style={{
-              wordBreak: 'break-all',
+              wordBreak: breakAll ? 'break-all' : 'normal',
               overflowWrap: 'break-word',
             }}>
               {copyMessageVisible
@@ -101,6 +102,7 @@ export default function ShareButtons({
 }
 
 ShareButtons.propTypes = {
+  breakAll: PropTypes.bool.isRequired,
   manualInit: PropTypes.bool,
   path: PropTypes.string,
   title: PropTypes.string,

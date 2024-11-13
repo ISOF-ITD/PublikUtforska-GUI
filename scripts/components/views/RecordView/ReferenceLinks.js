@@ -15,7 +15,7 @@ export default function ReferenceLinks({ data }) {
   return (
     <div className="row">
       <div className="six columns">
-        <ShareButtons path={`${config.siteUrl}#/records/${id}`} title={l('Kopiera länk')} />
+        <ShareButtons breakAll path={`${config.siteUrl}#/records/${id}`} title={l('Kopiera länk')} />
       </div>
 
       <div className="six columns">
