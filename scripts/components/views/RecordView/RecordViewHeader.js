@@ -65,8 +65,7 @@ const renderPageCount = (pages) => (
   pages ? (
     <span className="mr-10">
       <strong>{l('Sidnummer')}</strong>
-      :
-      {pages}
+      {`: ${pages}`}
     </span>
   ) : null
 );
