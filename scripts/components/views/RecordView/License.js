@@ -3,16 +3,20 @@ import config from '../../../config';
 
 export default function License({ data }) {
   const {
-    copyrightlicense = 'https://creativecommons.org/licenses/by-nd/2.5/se/',
+    copyrightlicense,
   } = data;
+
+  // Sätt standardvärdet om copyrightlicense är en tom sträng eller falsy
+  const effectiveLicense = copyrightlicense
+  || 'https://creativecommons.org/licenses/by-nd/2.5/se/';
 
   return (
     <div className="row">
       {
-            config.siteOptions && config.siteOptions.copyrightContent && copyrightlicense
+            config.siteOptions?.copyrightContent
             && (
               <div className="twelve columns">
-                <div className="license" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[copyrightlicense] }} />
+                <div className="license" dangerouslySetInnerHTML={{ __html: config.siteOptions.copyrightContent[effectiveLicense] }} />
               </div>
             )
           }
