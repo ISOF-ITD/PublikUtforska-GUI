@@ -23,35 +23,71 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   // Om ingen matchning hittades, returnera en tom sträng
   if (!match) return '';
 
-  const [letterPart = '', numberPart = ''] = match.slice(1);
+  let [letterPart = '', numberPart = ''] = match.slice(1);
 
   //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
   let prefix = '';
-  // inga dubbla bokstavsprefix (prefix + letterPart)
-  if (letterPart === '') {
-    if (archiveOrg === 'Uppsala') {
-      // ULMA -> 39080
-      // SOFI 39081 – 39383
-      // DFU 39384 ->      
-      prefix = 'ULMA';
-      i = str.length
-      // getFirstNonAlpha(str) {
-      for (var i = 0; i<str.length;i++) {
-          if (!isNaN(str[i])) {
-            break;
-          }
+
+  // OBS: Delen efter kolon ingår i accessionsnummer
+
+  // inga dubbla bokstavsprefix (prefix + letterPart) hanteras genom:
+  // 1. Arkivort Göteborg ska inte få prefix då prefix ingår i id, d.v.s har letterpart
+  // 2. För övriga arkivorter: 
+  //    Får prefix enligt ortens regler
+  //    Om numberpart inte tom så sätts letterpart till tom sträng
+  if (archiveOrg === 'Lund') {
+    if (numberPart && numberPart.length > 0) letterPart = ''
+    prefix = 'DAL';
+  }
+  if (archiveOrg === 'Umeå') {
+    if (numberPart && numberPart.length > 0) letterPart = ''
+    // getFirstNonAlpha(str) {
+    for (var i = 0; i<str.length;i++) {
+      if (!isNaN(str[i])) {
+        break;
       }
-      // return false;
-      if ((i - 1) < str.length) {
-        // Non numeric exists
-        var numericPart = str.substring(i);
-        var numericId = parseInt(numericPart)
-        if (numericId >= 39081 && numericId <= 39383) {
-          prefix = 'SOFI';
+    }
+    // return false;
+    if ((i - 1) < str.length) {
+      // Non numeric exists
+      var numericPart = str.substring(i);
+      var numericId = parseInt(numericPart)
+      if (numericId < 1166) {
+        prefix = 'FFÖN';
+      } else {
+        prefix = 'DAUM';
+      }
+    }
+  }
+  if (archiveOrg === 'Uppsala') {
+    // ULMA -> 39080
+    // SOFI 39081 – 39383
+    // DFU 39384 ->      
+    prefix = 'ULMA';
+    i = str.length
+    // getFirstNonAlpha(str) {
+    for (var i = 0; i<str.length;i++) {
+        if (!isNaN(str[i])) {
+          break;
         }
-        if (numericId > 39383) {
-          prefix = 'DFU';
+    }
+    // return false;
+    if ((i - 1) < str.length) {
+      // Non numeric exists
+      var numericPart = str.substring(i);
+      var numericId = parseInt(numericPart)
+      if (numericId >= 39081 && numericId <= 39383) {
+        prefix = 'SOFI';
+      }
+      if (numericId > 39383) {
+        prefix = 'DFU';
+      }
+      if (numberPart && numberPart.length > 0) {
+        // Alla med letterPart som ljud ska alltid ha prefix ULMA
+        if (letterPart.toLowerCase().includes('b') || letterPart.toLowerCase().includes('gr') || letterPart.toLowerCase().includes('ss')) {
+          prefix = 'ULMA';
         }
+        letterPart = ''
       }
     }
   }

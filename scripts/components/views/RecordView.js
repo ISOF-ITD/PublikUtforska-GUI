@@ -820,30 +820,30 @@ export default function RecordView({ mode = 'material' }) {
                       <p>
                         {
 
-                          data.archive?.archive
-                          && (
-                            <span>
-                              <strong>{l('Accessionsnummer')}</strong>
-                              :&nbsp;
-                              {
-                                data.recordtype === 'one_record'
-                                  ? (
-                                    <a
-                                      data-archiveidrow={data.archive.archive_id_row}
-                                      // create state.searchParams
-                                      data-search={params.search || ''}
-                                      data-recordtype={params.recordtype}
-                                      onClick={archiveIdClick}
-                                      title={`Gå till accessionen ${data.archive.archive_id_row}`}
-                                      style={{ cursor: data.archive.archive_id_row ? 'pointer' : 'inherit', textDecoration: 'underline' }}
-                                      href={
-                                        `#/records/${data.archive.archive_id_row}${createSearchRoute({ search: params.search || '', recordtype: params.recordtype })}`
-                                      }
-                                    >
-                                      {makeArchiveIdHumanReadable(data.archive.archive_id)}
-                                    </a>
-                                  ) : makeArchiveIdHumanReadable(data.archive.archive_id)
+                  data.archive?.archive
+                  && (
+                    <span>
+                      <strong>{l('Accessionsnummer')}</strong>
+                      :&nbsp;
+                      {
+                        data.recordtype === 'one_record'
+                          ? (
+                            <a
+                              data-archiveidrow={data.archive.archive_id_row}
+                              // create state.searchParams
+                              data-search={params.search || ''}
+                              data-recordtype={params.recordtype}
+                              onClick={archiveIdClick}
+                              title={`Gå till accessionen ${data.archive.archive_id_row}`}
+                              style={{ cursor: data.archive.archive_id_row ? 'pointer' : 'inherit', textDecoration: 'underline' }}
+                              href={
+                                `#/records/${data.archive.archive_id_row}${createSearchRoute({ search: params.search || '', recordtype: params.recordtype })}`
                               }
+                            >
+                              {makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}
+                            </a>
+                          ) : makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)
+                      }
 
                             </span>
                           )
@@ -931,6 +931,43 @@ export default function RecordView({ mode = 'material' }) {
                             </div>
                           )
                         }
+        <div className="row">
+          <div className="ten columns content-warning">
+            <small>
+              <i>
+                <b>Information till läsaren:</b>
+                {' '}
+                Denna arkivhandling kan innehålla fördomar och språkbruk från en annan tid.
+                <br />
+                Delar av Isofs äldre arkivmaterial kan vara svårt att närma sig och använda då det återspeglar det vi idag upplever som fördomsfulla synsätt och ett språkbruk som kan väcka anstöt.
+                <br />
+                <a href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna" target="_blank" rel="noreferrer">
+                  Läs mer om Fördomar och äldre språkbruk i samlingarna.
+                  &nbsp;
+                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+                </a>
+              </i>
+            </small>
+          </div>
+        </div>
+        <div className="row">
+          {
+            (data.text || textElement || data.headwords || headwordsElement)
+            && (
+              <div className={`${sitevisionUrl || imageItems.length === 0 || forceFullWidth || ((config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.imagePosition === 'under') && (config.siteOptions.recordView && config.siteOptions.recordView.pdfIconsPosition === 'under')) ? 'twelve' : 'eight'} columns`}>
+                {/* audio items above text items that includes pdf */}
+                {
+                  audioItems.length > 0 && (sitevisionUrl || forceFullWidth || (config.siteOptions.recordView && config.siteOptions.recordView.audioPlayerPosition === 'under'))
+                  && (
+                    <div className="table-wrapper">
+                      <table width="100%">
+                        <tbody>
+                          {audioItems}
+                        </tbody>
+                      </table>
+                    </div>
+                  )
+                }
 
                         {
                           <>
@@ -980,43 +1017,43 @@ export default function RecordView({ mode = 'material' }) {
                     && (
                       <div className={`columns ${audioItems.length > 0 ? 'twelve' : 'four'} u-pull-left`}>
 
-                        {
-                          (!config.siteOptions.recordView || !config.siteOptions.recordView.audioPlayerPosition || config.siteOptions.recordView.audioPlayerPosition === 'right') && audioItems.length > 0
-                          && (
-                            <div className="table-wrapper">
-                              <table width="100%">
-                                <tbody>
-                                  {audioItems}
-                                </tbody>
-                              </table>
-                            </div>
-                          )
-                        }
-
-                        {
-                          // transcriptiontype != 'sida'
-                          // If not transcribed page by page: Text and images in independent columns
-                          data.transcriptiontype && data.transcriptiontype !== 'sida'
-                          && (
-                            (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
-                            && imageItems
-                          )
-                        }
-
-                        {
-                          (!config.siteOptions.recordView || !config.siteOptions.recordView.pdfIconsPosition || config.siteOptions.recordView.pdfIconsPosition === 'right') && pdfItems.length > 0
-                          && pdfItems
-                        }
-
-                      </div>
-                    )
-                  }
-
-                </div>
                 {
-                  metadataItems.length > 0
+                  (!config.siteOptions.recordView || !config.siteOptions.recordView.audioPlayerPosition || config.siteOptions.recordView.audioPlayerPosition === 'right') && audioItems.length > 0
                   && (
-                    <div className="grid-items">
+                    <div className="table-wrapper">
+                      <table width="100%">
+                        <tbody>
+                          {audioItems}
+                        </tbody>
+                      </table>
+                    </div>
+                  )
+                }
+
+                {
+                  // transcriptiontype != 'sida'
+                  // If not transcribed page by page: Text and images in independent columns
+                  data.transcriptiontype && data.transcriptiontype !== 'sida'
+                  && (
+                    (!config.siteOptions.recordView || !config.siteOptions.recordView.imagePosition || config.siteOptions.recordView.imagePosition === 'right') && imageItems.length > 0
+                    && imageItems
+                  )
+                }
+
+                {
+                  (!config.siteOptions.recordView || !config.siteOptions.recordView.pdfIconsPosition || config.siteOptions.recordView.pdfIconsPosition === 'right') && pdfItems.length > 0
+                  && pdfItems
+                }
+
+              </div>
+            )
+          }
+
+        </div>
+        {
+          metadataItems.length > 0
+          && (
+            <div className="grid-items">
 
                       {metadataItems}
 
@@ -1214,91 +1251,102 @@ export default function RecordView({ mode = 'material' }) {
                       )
                     }
 
-                    {
-                      data.archive && data.archive.archive
-                      && (
-                        <p>
-                          <strong>{l('Acc. nr')}</strong>
-                          <br />
-                          {makeArchiveIdHumanReadable(data.archive.archive_id)}
-                        </p>
-                      )
-                    }
+            {
+              data.archive && data.archive.archive
+              && (
+                <p>
+                  <strong>{l('Acc. nr')}</strong>
+                  <br />
+                  {makeArchiveIdHumanReadable(data.archive.archive_id, data.archive.archive_org)}
+                </p>
+              )
+            }
 
-                    {
-                      data.archive && data.archive.archive
-                      && (
-                        <p>
-                          <strong>{l('Sidnummer')}</strong>
-                          <br />
-                          {getPages(data)}
-                        </p>
-                      )
-                    }
-                  </div>
+            {
+              data.archive && data.archive.archive
+              && (
+                <p>
+                  <strong>{l('Sidnummer')}</strong>
+                  <br />
+                  {getPages(data)}
+                </p>
+              )
+            }
+          </div>
 
-                  <div className="four columns">
-                    {
-                      data.materialtype
-                      && (
-                        <p>
-                          <strong>{l('Materialtyp')}</strong>
-                          <br />
-                          {data.materialtype ? data.materialtype.charAt(0).toUpperCase() + data.materialtype.slice(1) : ''}
-                        </p>
-                      )
-                    }
+          <div className="four columns">
+            {
+              data.materialtype
+              && (
+                <p>
+                  <strong>{l('Materialtyp')}</strong>
+                  <br />
+                  {data.materialtype ? data.materialtype.charAt(0).toUpperCase() + data.materialtype.slice(1) : ''}
+                </p>
+              )
+            }
 
-                    {/* {
-                      deactivate categories
-                      taxonomyElement
-                    } */}
-                  </div>
+            {
+              taxonomyElement
+            }
+          </div>
 
-                  <div className="four columns">
-                    {
-                      data.year
-                      && (
-                        <p>
-                          <strong>{l('År')}</strong>
-                          <br />
-                          {data.year.substring(0, 4)}
-                        </p>
-                      )
-                    }
+          <div className="four columns">
+            {
+              data.year
+              && (
+                <p>
+                  <strong>{l('År')}</strong>
+                  <br />
+                  {data.year.substring(0, 4)}
+                </p>
+              )
+            }
 
-                    {
-                      data.source
-                      && (
-                        <p>
-                          <strong>{l('Tryckt källa')}</strong>
-                          <br />
-                          {data.source}
-                        </p>
-                      )
-                    }
+            {
+              data.source
+              && (
+                <p>
+                  <strong>{l('Tryckt källa')}</strong>
+                  <br />
+                  {data.source}
+                </p>
+              )
+            }
 
-                    {
-                      data.archive && data.archive.archive
-                      && (
-                        <p>
-                          <img
-                            src={getArchiveLogo(data.archive.archive)}
-                            style={{ width: '100%' }}
-                            alt={makeArchiveIdHumanReadable(data.archive.archive_id)}
-                          />
-                        </p>
-                      )
-                    }
-                  </div>
+            {
+              data.archive && data.archive.archive
+              && (
+                <p>
+                  <img
+                    src={getArchiveLogo(data.archive.archive)}
+                    style={{ width: '100%' }}
+                    alt={makeArchiveIdHumanReadable(data.archive.archive_id)}
+                  />
+                </p>
+              )
+            }
+          </div>
 
-                </div>
+        </div>
 
-              </div>
-            );
-          }}
-        </Await>
-      </Suspense>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container">
+      <div className="container-header">
+        <div className="row">
+          <div className="twelve columns">
+            <h2>{l('Finns inte')}</h2>
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <p>{`Post ${params.record_id} finns inte.`}</p>
+      </div>
     </div>
   );
 }
