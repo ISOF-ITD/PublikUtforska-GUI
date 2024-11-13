@@ -86,11 +86,11 @@ function RecordView({ mode = 'material' }) {
                 />
                 <div className="container-body">
                   <Disclaimer />
+                  <TranscriptionPrompt data={data} />
                   <RecordViewThumbnails
                     data={data}
                     mediaImageClickHandler={mediaImageClickHandler}
                   />
-                  <TranscriptionPrompt data={data} />
                   <PdfElement data={data} />
                   {/* TODO: audio items */}
                   <TextElement
@@ -105,6 +105,7 @@ function RecordView({ mode = 'material' }) {
                   <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
                   <PersonItems data={data} routeParams={routeParams} />
                   <PlaceItems data={data} routeParams={routeParams} />
+                  <hr />
                   <div className="row">
                     <div className="eight columns">
                       <ReferenceLinks data={data} />

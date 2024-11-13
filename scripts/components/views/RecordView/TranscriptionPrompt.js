@@ -34,24 +34,29 @@ export default function TranscriptionPrompt({ data }) {
 
   // Använd useMemo för att optimera beräkningar
   const {
-    numberOfSubrecordsMedia,
-    numberOfTranscribedSubrecordsMedia,
+    numberOfMedia,
+    numberOfTranscribedMedia,
     isUnderReview,
   } = useMemo(() => {
     let transcribedCount = 0;
     media.forEach((page) => {
-      if (page.transcriptionstatus === 'transcribed') transcribedCount += 1;
+      if (page.transcriptionstatus === 'transcribed' || page.transcriptionstatus === 'published') {
+        transcribedCount += 1;
+      }
     });
-    const allReviewed = transcriptiontype === 'sida'
-      && media.length > 0
-      && media.every((page) => page.transcriptionstatus !== 'readytotranscribe');
 
     return {
-      numberOfSubrecordsMedia: media.length,
-      numberOfTranscribedSubrecordsMedia: transcribedCount,
-      isUnderReview: !allReviewed,
+      numberOfMedia: media.length,
+      numberOfTranscribedMedia: transcribedCount,
+      isUnderReview: [
+        'undertranscription',
+        'transcribed',
+        'reviewing',
+        'needsimprovement',
+        'approved',
+      ].includes(transcriptionstatus),
     };
-  }, [media, transcriptiontype]);
+  }, [media, transcriptiontype, transcriptionstatus]);
 
   // Hantera olika renderingsfall
   if (transcriptionstatus === 'undertranscription') {
@@ -60,8 +65,8 @@ export default function TranscriptionPrompt({ data }) {
     return <p>{l(STRINGS.underReview)}</p>;
   }
 
-  const transcribedText = transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0
-    ? `${numberOfTranscribedSubrecordsMedia} ${l(STRINGS.of)} ${numberOfSubrecordsMedia} ${l(STRINGS.pagesTranscribed)}`
+  const transcribedText = transcriptiontype === 'sida' && numberOfMedia > 0
+    ? `${numberOfTranscribedMedia} ${l(STRINGS.of)} ${numberOfMedia} ${l(STRINGS.pagesTranscribed)}`
     : l(STRINGS.notTranscribed);
 
   return (

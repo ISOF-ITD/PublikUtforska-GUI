@@ -54,7 +54,7 @@ export default function ContentsElement({ data }) {
 
   // Replace timestamps in contents with clickable buttons
   const parseContentWithClickableTimeslots = (text) => {
-    const timestampRegex = /\((\d{2}:\d{2})\)/g;
+    const timestampRegex = /\((\d{2}:\d{2})\)/g; // Matchar tidsangivelser med parenteser
     return text.split(timestampRegex).map((part, index) => {
       if (timestampRegex.test(`(${part})`)) {
         const seconds = timeToSeconds(part);
@@ -68,15 +68,14 @@ export default function ContentsElement({ data }) {
             style={{ cursor: 'pointer' }}
             type="button"
           >
-            {part}
-            {' '}
-            {/* Renderar tidsangivelsen utan parentes */}
+            {part} {/* Renderar tidsangivelsen utan parentes */}
           </button>
         );
       }
       return part;
     });
   };
+  
 
   return (
     <div className="row">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faLock, faNewspaper, faChevronDown, faChevronRight, faTh,
@@ -65,6 +65,13 @@ function RecordViewThumbnails({ data, mediaImageClickHandler }) {
     }
     setExpanded(!expanded);
   };
+
+  useEffect(() => {
+    // expandera översikten direkt om record är readytotranscribe
+    // eftersom det är det enda stället bilderna visas
+    setExpanded(data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype !== 'sida');
+    setHasLoadedImages(data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype !== 'sida');
+  }, [data.transcriptionstatus, data.transcriptiontype]);
 
   const handleKeyDownToggle = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {

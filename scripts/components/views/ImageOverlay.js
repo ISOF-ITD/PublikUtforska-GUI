@@ -39,7 +39,7 @@ export default function ImageOverlay() {
         imageUrl: newImageUrl,
         type: newType,
         mediaList: newMediaList = [],
-        currentIndex: newCurrentIndex,
+        currentIndex: newCurrentIndex = 0,
       } = event.target;
 
       setImageUrl(newImageUrl);
@@ -109,7 +109,7 @@ export default function ImageOverlay() {
           <img
             className="overlay-image"
             src={config.imageUrl + imageUrl}
-            alt="Overlay"
+            alt={ mediaList[currentIndex].text || "Overlay Image"}
           />
         )}
         {imageUrl && type === 'pdf' && (

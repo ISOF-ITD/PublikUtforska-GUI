@@ -3,10 +3,12 @@ import PropTypes from 'prop-types';
 import { useState, useMemo, useCallback } from 'react';
 import config from '../../../config';
 import HighlightSwitcher from './HighlightSwitcher';
+import { l } from '../../../lang/Lang';
 
 function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const {
     text,
+    transcribedby,
     transcriptiontype,
     transcriptionstatus,
     media,
@@ -15,23 +17,23 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const { imageUrl } = config;
   const [highlight, setHighlight] = useState(true);
 
- // Händelsehanterare för bildklick
- const handleMediaClick = useCallback(
-  (mediaItem, index) => {
-    mediaImageClickHandler(mediaItem, media, index);
-  },
-  [mediaImageClickHandler, media],
-);
-
-// Händelsehanterare för keydown
-const handleKeyDown = useCallback(
-  (e, mediaItem, index) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+  // Händelsehanterare för bildklick
+  const handleMediaClick = useCallback(
+    (mediaItem, index) => {
       mediaImageClickHandler(mediaItem, media, index);
-    }
-  },
-  [mediaImageClickHandler, media],
-);
+    },
+    [mediaImageClickHandler, media],
+  );
+
+  // Händelsehanterare för keydown
+  const handleKeyDown = useCallback(
+    (e, mediaItem, index) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        mediaImageClickHandler(mediaItem, media, index);
+      }
+    },
+    [mediaImageClickHandler, media],
+  );
 
   const renderMedia = (mediaItem, index) => (
     <div className="four columns">
@@ -47,26 +49,26 @@ const handleKeyDown = useCallback(
         <img
           src={imageUrl + mediaItem.source}
           alt={mediaItem.title || mediaItem.source.split('/').pop()}
-                  // lazy loading for long texts with many images
+          // lazy loading for long texts with many images
           loading="lazy"
         />
 
         <div className="media-title sv-portlet-image-caption">
           {mediaItem.title || mediaItem.source.split('/').pop()}
           {mediaItem.comment && mediaItem.comment.trim() !== '' && (
-          <div>
-            <br />
-            <strong>Kommentar:</strong>
-            <br />
-            {mediaItem.comment}
-          </div>
+            <div>
+              <br />
+              <strong>Kommentar:</strong>
+              <br />
+              {mediaItem.comment}
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 
-  if (recordtype === 'accession_row' || transcriptionstatus !== 'published') {
+  if (recordtype === 'accession_row' || (transcriptionstatus !== 'published' && transcriptiontype !== 'sida')) {
     return null;
   }
 
@@ -98,7 +100,7 @@ const handleKeyDown = useCallback(
                 }}
               />
             </div>
-            { renderMedia(mediaItem, index) }
+            {renderMedia(mediaItem, index)}
           </div>
         ))}
       </>
@@ -124,9 +126,17 @@ const handleKeyDown = useCallback(
               }}
             />
           </div>
-          { renderMedia(mediaItem) }
+          {renderMedia(mediaItem)}
         </div>
       ))}
+      {transcribedby && (
+        <p className="text-small">
+          <strong>{`${l('Transkriberad av')}: `}</strong>
+          <span>
+            {transcribedby}
+          </span>
+        </p>
+      )}
     </>
   );
 }
