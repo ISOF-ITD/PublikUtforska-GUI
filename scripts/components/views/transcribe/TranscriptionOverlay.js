@@ -313,6 +313,7 @@ export default class TranscriptionOverlay extends React.Component {
 	}
 
 	render() {
+		if(!this.state.visible) return null;
 		let _props = this.props;
 
 		if (this.state.messageSent) {
@@ -374,7 +375,7 @@ export default class TranscriptionOverlay extends React.Component {
 
 			</div>;
 		}
-		if(!this.state.visible) return null;
+
 		return <div className='overlay-container visible'>
 			<div className="overlay-window large">
 
