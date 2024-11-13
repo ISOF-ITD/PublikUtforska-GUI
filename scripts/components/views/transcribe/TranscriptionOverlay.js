@@ -374,8 +374,8 @@ export default class TranscriptionOverlay extends React.Component {
 
 			</div>;
 		}
-
-		return <div className={'overlay-container'+(this.state.visible ? ' visible' : '')}>
+		if(!this.state.visible) return null;
+		return <div className='overlay-container visible'>
 			<div className="overlay-window large">
 
 				<div className="overlay-header">
