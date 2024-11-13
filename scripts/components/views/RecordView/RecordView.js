@@ -102,10 +102,6 @@ function RecordView({ mode = 'material' }) {
                   <ContentsElement data={data} />
                   <AudioItemsElement data={data} />
                   <CommentsElement data={data} />
-                  <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
-                  <PersonItems data={data} routeParams={routeParams} />
-                  <PlaceItems data={data} routeParams={routeParams} />
-                  <hr />
                   <div className="row">
                     <div className="eight columns">
                       <ReferenceLinks data={data} />
@@ -113,9 +109,13 @@ function RecordView({ mode = 'material' }) {
                     <div className="four columns">
                       <License data={data} />
                     </div>
-                    <RecordViewFooter data={data} />
-
                   </div>
+                  <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
+                  <PersonItems data={data} routeParams={routeParams} />
+                  <PlaceItems data={data} routeParams={routeParams} />
+                  <hr />
+                  <RecordViewFooter data={data} />
+
                   {/* <MetadataItems data={data} /> */}
                 </div>
               </>
