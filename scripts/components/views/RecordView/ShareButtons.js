@@ -53,7 +53,7 @@ export default function ShareButtons({
       {title && title !== ''
         && (
           <div>
-            <label>{title}</label>
+            <span className="label">{title}</span>
             <div className="u-cf" />
           </div>
         )}
