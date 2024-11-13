@@ -561,7 +561,7 @@ export function getTitleText(
     titleText = getTitle(data.title, data.contents);
   }
 
-  return titleText;
+  return titleText || l('(Utan titel)');
 }
 
 export function getPages(data) {
