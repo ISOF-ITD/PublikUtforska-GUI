@@ -96,7 +96,7 @@ export default function MapMenu({
   const [menuExpanded, setMenuExpanded] = useState(!isMobile);
 
   const paramsLatest = {
-    size: 10,
+    size: 20,
     recordtype: 'one_record',
     transcriptionstatus: 'published',
     sort: 'changedate', // 'transcriptiondate', // 'approvedate',
@@ -153,7 +153,7 @@ export default function MapMenu({
               columns={['title', 'year', 'place', 'transcribedby']}
               tableClass="table-compressed"
                 // möjliggör att visa 50 poster efter en klick på "visa fler"
-              sizeMore={50}
+              // sizeMore={50}
                 // interval is 60 sec, if visible is true and the web browser is in focus
               interval={60000}
               hasFilter={false}

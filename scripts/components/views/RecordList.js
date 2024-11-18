@@ -1,5 +1,7 @@
 /* eslint-disable react/require-default-props */
-import { useState, useEffect, useMemo } from 'react';
+import {
+  useState, useEffect, useMemo, useCallback,
+} from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { l } from '../../lang/Lang';
@@ -80,7 +82,7 @@ export default function RecordList({
   highlightRecordsWithMetadataField = null,
   interval = null,
   openSwitcherHelptext = () => { },
-  sizeMore = null,
+  // sizeMore = null,
   tableClass = null,
   params = {},
   mode = 'material',
@@ -100,7 +102,6 @@ export default function RecordList({
   const [order, setOrder] = useState('asc');
   const [loadedMore, setLoadedMore] = useState(false);
   const [total, setTotal] = useState(0);
-  // const [totalPrefix, setTotalPrefix] = useState('');
   const [filter, setFilter] = useState('');
 
   /*
@@ -134,7 +135,7 @@ export default function RecordList({
     }
   }, [location]);
 
-  const collections = new RecordsCollection((json) => {
+  const collections = useMemo(() => new RecordsCollection((json) => {
     // const totalPrefixValue = json.metadata.total.relation !== 'eq' ? 'mer än ' : '';
 
     setRecords(json.data);
@@ -146,64 +147,77 @@ export default function RecordList({
       window.eventBus.dispatch('recordList.totalRecords', json.metadata.total.value, json.metadata.total.value);
       window.eventBus.dispatch('recordList.fetchingPage', false);
     }
-  });
+  }), []);
 
-  const fetchData = (fetchParams) => {
+  const fetchData = useCallback((fetchParams) => {
     setFetchingPage(true);
     collections.fetch(fetchParams);
-  };
+  }, [collections]);
+
+  // Funktion för att generera fetchParams
+  const getFetchParams = useCallback(() => ({
+    from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),
+    size: params.size || hitsPerPage,
+    search: params.search ? encodeURIComponent(params.search) : undefined,
+    search_field: params.search_field || undefined,
+    type: params.type,
+    category: params.category
+      ? `${params.category}${params.subcategory ? `,${params.subcategory}` : ''}`
+      : undefined,
+    collection_years: yearFilter?.join(',') || undefined,
+    gender: params.gender
+      ? params.person_relation
+        ? `${params.person_relation}:${params.gender}`
+        : params.gender
+      : undefined,
+    birth_years: params.birth_years
+      ? params.person_relation
+        ? `${params.person_relation}:${params.gender ? `${params.gender}:` : ''}${params.birth_years}`
+        : params.birth_years
+      : undefined,
+    record_ids: params.record_ids || undefined,
+    has_metadata: params.has_metadata || undefined,
+    has_media: params.has_media || undefined,
+    has_transcribed_records: params.has_transcribed_records || undefined,
+    has_untranscribed_records: params.has_untranscribed_records || undefined,
+    recordtype:
+      params.recordtype
+      || (mode === 'transcribe' ? 'one_accession_row' : filter || null),
+    person_id: params.person_id || undefined,
+    socken_id: params.place_id || undefined,
+    transcriptionstatus: params.transcriptionstatus || undefined,
+    sort: params.sort || sort || undefined,
+    order: params.order || order || undefined,
+    // Lägg till applikationsdefinierade filterparametrar
+    ...(filterParameterName && filterParameterValues && 'filter' in params
+      ? {
+        [filterParameterName]: params.filter === 'true' || params.filter === true
+          ? filterParameterValues[1]
+          : filterParameterValues[0],
+      }
+      : {}),
+  }), [
+    currentPage,
+    hitsPerPage,
+    maxTotal,
+    params,
+    yearFilter,
+    mode,
+    filter,
+    sort,
+    order,
+    filterParameterName,
+    filterParameterValues,
+  ]);
 
   // Hämta data vid initial render och när relevanta beroenden ändras
   useEffect(() => {
-    const fetchParams = {
-      from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),
-      size: hitsPerPage,
-      search: params.search ? encodeURIComponent(params.search) : undefined,
-      search_field: params.search_field || undefined,
-      type: params.type,
-      category: params.category
-        ? `${params.category}${params.subcategory ? `,${params.subcategory}` : ''}`
-        : undefined,
-      collection_years: yearFilter?.join(',') || undefined,
-      gender: params.gender
-        ? params.person_relation
-          ? `${params.person_relation}:${params.gender}`
-          : params.gender
-        : undefined,
-      birth_years: params.birth_years
-        ? params.person_relation
-          ? `${params.person_relation}:${params.gender ? `${params.gender}:` : ''}${params.birth_years}`
-          : params.birth_years
-        : undefined,
-      record_ids: params.record_ids || undefined,
-      has_metadata: params.has_metadata || undefined,
-      has_media: params.has_media || undefined,
-      has_transcribed_records: params.has_transcribed_records || undefined,
-      has_untranscribed_records: params.has_untranscribed_records || undefined,
-      recordtype:
-        params.recordtype
-        || (mode === 'transcribe' ? 'one_accession_row' : filter || null),
-      person_id: params.person_id || undefined,
-      socken_id: params.place_id || undefined,
-      transcriptionstatus: params.transcriptionstatus || undefined,
-      sort: sort || undefined,
-      order: order || undefined,
-    };
-
-    // Lägg till applikationsdefinierade filterparametrar
-    if (filterParameterName && filterParameterValues) {
-      if ('filter' in params) {
-        fetchParams[filterParameterName] = params.filter === 'true' || params.filter === true
-          ? filterParameterValues[1]
-          : filterParameterValues[0];
-      }
-    }
-
+    const fetchParams = getFetchParams();
     fetchData(fetchParams);
-  }, [currentPage, sort, order, filter, yearFilter, mode]);
+  }, [getFetchParams, fetchData]);
 
   const loadMore = () => {
-    setCurrentPage(1);
+    setCurrentPage((prevPage) => prevPage + 1);
     setLoadedMore(true);
   };
 
@@ -214,14 +228,15 @@ export default function RecordList({
         if (loadedMore) {
           loadMore();
         } else {
-          fetchData(params);
+          const fetchParams = getFetchParams();
+          fetchData(fetchParams);
         }
       }, interval);
 
       return () => clearInterval(intervalId);
     }
     return undefined;
-  }, [interval, loadedMore, params]);
+  }, [interval, loadedMore, getFetchParams, fetchData]);
 
   const handleStepPage = (step) => {
     if (disableRouterPagination) {
@@ -278,15 +293,15 @@ export default function RecordList({
     )
   );
 
-  const renderMoreButton = () => (
-    sizeMore && records.length < sizeMore && (
-      <div>
-        <button className="button" onClick={loadMore} type="button">
-          {l('Visa fler')}
-        </button>
-      </div>
-    )
-  );
+  // const renderMoreButton = () => (
+  //   sizeMore && records.length < sizeMore && (
+  //     <div>
+  //       <button className="button" onClick={loadMore} type="button">
+  //         {l('Visa fler')}
+  //       </button>
+  //     </div>
+  //   )
+  // );
 
   const shouldRenderColumn = (columnName) => {
     if (columns) {
@@ -397,7 +412,7 @@ export default function RecordList({
           </table>
 
           {!disableListPagination && renderListPagination()}
-          {renderMoreButton()}
+          {/* {renderMoreButton()} */}
         </div>
       )}
       {fetchingPage && <p className="page-info"><strong>Söker...</strong></p>}
@@ -419,7 +434,7 @@ RecordList.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   interval: PropTypes.number,
   openSwitcherHelptext: PropTypes.func,
-  sizeMore: PropTypes.number,
+  // sizeMore: PropTypes.number,
   tableClass: PropTypes.string,
   params: PropTypes.objectOf(PropTypes.any),
   mode: PropTypes.string,
