@@ -61,6 +61,7 @@ function Timeline({
       search: params.search ? encodeURIComponent(params.search) : undefined,
       recordtype: params.recordtype || (mode === 'transcribe' ? 'one_accession_row' : (filter || null)),
       transcriptionstatus: 'published,accession',
+      category: params.category ? encodeURIComponent(params.category) : undefined,
     };
 
     const paramStrings = [];
