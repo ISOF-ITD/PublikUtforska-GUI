@@ -61,6 +61,9 @@ export default {
 
   hitsPerPage: 100,
 
+  // för att begränsa bläddringen till 10 000 hits. detta pga begränsningar i Elasticsearch
+  maxTotal: 10000,
+
   // Namn på localStorage som lagrar sparade accessioner/uppteckningar
   localLibraryName: 'publikutforska_library',
 

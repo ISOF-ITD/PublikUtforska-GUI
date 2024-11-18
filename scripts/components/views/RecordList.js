@@ -6,12 +6,20 @@ import { l } from '../../lang/Lang';
 import RecordsCollection from '../collections/RecordsCollection';
 import RecordListItem from './RecordListItem';
 import Timeline from './Timeline';
-import config from '../../config';
 import { createSearchRoute } from '../../utils/routeHelper';
 import Filter from './Filter';
+import config from '../../config';
+
+const {
+  filterParameterName,
+  filterParameterValues,
+  hitsPerPage,
+  maxTotal,
+  siteOptions,
+} = config;
 
 function Pagination({
-  currentPage, total, hitsPerPage, onStep, maxPage,
+  currentPage, total, onStep, maxPage,
 }) {
   const from = (currentPage - 1) * hitsPerPage + 1;
   const to = currentPage * hitsPerPage > total ? total : currentPage * hitsPerPage;
@@ -46,8 +54,10 @@ function Pagination({
             </button>
           </>
         )}
-        {currentPage >= maxPage && (
-          <span className="limit-message">{l('Du har nått det maximala antalet sidor (10 000 poster).')}</span>
+        {total >= maxTotal && currentPage >= maxPage && (
+          <span className="limit-message">
+            {l(`Du har nått det maximala antalet sidor (${maxTotal.toLocaleString('sv-SE')} poster).`)}
+          </span>
         )}
       </div>
     )
@@ -57,7 +67,6 @@ function Pagination({
 Pagination.propTypes = {
   currentPage: PropTypes.number.isRequired,
   total: PropTypes.number.isRequired,
-  hitsPerPage: PropTypes.number.isRequired,
   onStep: PropTypes.func.isRequired,
   maxPage: PropTypes.number.isRequired,
 };
@@ -91,7 +100,7 @@ export default function RecordList({
   const [order, setOrder] = useState('asc');
   const [loadedMore, setLoadedMore] = useState(false);
   const [total, setTotal] = useState(0);
-  const [totalPrefix, setTotalPrefix] = useState('');
+  // const [totalPrefix, setTotalPrefix] = useState('');
   const [filter, setFilter] = useState('');
 
   /*
@@ -108,10 +117,8 @@ export default function RecordList({
   */
   const uniqueId = useMemo(() => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, []);
 
-  // för att begränsa bläddringen till 10 000 hits
-  // detta pga begränsningar i Elasticsearch
-  const MAX_TOTAL = 10000;
-  const maxPage = Math.ceil(MAX_TOTAL / config.hitsPerPage);
+  // Anpassa maxPage så att det alltid är baserat på det minsta värdet mellan maxTotal och total
+  const maxPage = Math.ceil(Math.min(maxTotal, total) / hitsPerPage);
 
   const handleFilterChange = (event) => {
     const { value } = event.target;
@@ -128,12 +135,12 @@ export default function RecordList({
   }, [location]);
 
   const collections = new RecordsCollection((json) => {
-    const totalPrefixValue = json.metadata.total.relation !== 'eq' ? 'mer än ' : '';
+    // const totalPrefixValue = json.metadata.total.relation !== 'eq' ? 'mer än ' : '';
 
     setRecords(json.data);
     setTotal(json.metadata.total.value);
     setFetchingPage(false);
-    setTotalPrefix(totalPrefixValue);
+    // setTotalPrefix(totalPrefixValue);
 
     if (window.eventBus) {
       window.eventBus.dispatch('recordList.totalRecords', json.metadata.total.value, json.metadata.total.value);
@@ -149,8 +156,8 @@ export default function RecordList({
   // Hämta data vid initial render och när relevanta beroenden ändras
   useEffect(() => {
     const fetchParams = {
-      from: Math.min((currentPage - 1) * config.hitsPerPage, MAX_TOTAL - config.hitsPerPage),
-      size: config.hitsPerPage,
+      from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),
+      size: hitsPerPage,
       search: params.search ? encodeURIComponent(params.search) : undefined,
       search_field: params.search_field || undefined,
       type: params.type,
@@ -184,11 +191,11 @@ export default function RecordList({
     };
 
     // Lägg till applikationsdefinierade filterparametrar
-    if (config.filterParameterName && config.filterParameterValues) {
+    if (filterParameterName && filterParameterValues) {
       if ('filter' in params) {
-        fetchParams[config.filterParameterName] = params.filter === 'true' || params.filter === true
-          ? config.filterParameterValues[1]
-          : config.filterParameterValues[0];
+        fetchParams[filterParameterName] = params.filter === 'true' || params.filter === true
+          ? filterParameterValues[1]
+          : filterParameterValues[0];
       }
     }
 
@@ -265,7 +272,6 @@ export default function RecordList({
       <Pagination
         currentPage={currentPage}
         total={total}
-        hitsPerPage={config.hitsPerPage}
         onStep={handleStepPage}
         maxPage={maxPage}
       />
@@ -329,7 +335,7 @@ export default function RecordList({
       {!fetchingPage && (
         <div
           className={`${tableClass || ''} table-wrapper records-list list-container${records.length === 0 ? ' loading' : fetchingPage ? ' loading-page' : ''
-            }`}
+          }`}
         >
           {!disableListPagination && renderListPagination()}
 
@@ -338,8 +344,8 @@ export default function RecordList({
               <tr>
                 {shouldRenderColumn('title') && <th scope="col">{l('Titel')}</th>}
                 {shouldRenderColumn('archive_id')
-                  && (!config.siteOptions.recordList
-                    || config.siteOptions.recordList.hideAccessionpage !== true) && (
+                  && (!siteOptions.recordList
+                    || siteOptions.recordList.hideAccessionpage !== true) && (
                     <th scope="col">
                       <button
                         type="button"
@@ -351,11 +357,11 @@ export default function RecordList({
                         {params.recordtype === 'one_record' && ':Sida'}
                       </button>
                     </th>
-                  )}
+                )}
                 {shouldRenderColumn('place') && <th scope="col">{l('Ort')}</th>}
                 {shouldRenderColumn('collector')
-                  && (!config.siteOptions.recordList
-                    || config.siteOptions.recordList.visibleCollecorPersons !== false) && <th scope="col">{l('Insamlare')}</th>}
+                  && (!siteOptions.recordList
+                    || siteOptions.recordList.visibleCollecorPersons !== false) && <th scope="col">{l('Insamlare')}</th>}
                 {shouldRenderColumn('year') && (
                   <th scope="col">
                     <button type="button" className="sort" onClick={() => handleSort('year')}>
@@ -365,12 +371,12 @@ export default function RecordList({
                   </th>
                 )}
                 {shouldRenderColumn('material_type')
-                  && (!config.siteOptions.recordList || config.siteOptions.recordList.hideMaterialType !== true) && (
+                  && (!siteOptions.recordList || siteOptions.recordList.hideMaterialType !== true) && (
                     <th scope="col">{l('Materialtyp')}</th>
-                  )}
+                )}
                 {shouldRenderColumn('transcriptionstatus')
-                  && (!config.siteOptions.recordList
-                    || config.siteOptions.recordList.hideTranscriptionStatus !== true) && (
+                  && (!siteOptions.recordList
+                    || siteOptions.recordList.hideTranscriptionStatus !== true) && (
                     <th scope="col">
                       <button
                         type="button"
@@ -381,7 +387,7 @@ export default function RecordList({
                         {l('Avskriven')}
                       </button>
                     </th>
-                  )}
+                )}
                 {columns && columns.includes('transcribedby') && (
                   <th scope="col">{l('Transkriberad av')}</th>
                 )}
