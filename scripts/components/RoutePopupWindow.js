@@ -34,6 +34,12 @@ const RoutePopupWindow = memo(({
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      closeButtonClick();
+    }
+  };
+
   const backButtonClick = () => {
     if (window.history.length > 1) {
       window.history.back();
@@ -85,6 +91,7 @@ const RoutePopupWindow = memo(({
           window.eventBus.dispatch('popup.open');
         }, 100);
       }
+      window.addEventListener('keydown', handleKeyDown);
     } else {
       if (onHide) {
         onHide();
@@ -94,6 +101,7 @@ const RoutePopupWindow = memo(({
           window.eventBus.dispatch('popup.close');
         }, 100);
       }
+      window.removeEventListener('keydown', handleKeyDown);
     }
   }, [windowOpen, manualOpen, onShow, onHide]);
 
@@ -101,8 +109,16 @@ const RoutePopupWindow = memo(({
 
   if (windowOpen || manualOpen) {
     return (
-      <div className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}>
-        <div className="popup-content-wrapper">
+      <div
+        className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}
+      >
+        {/* eslint-disable jsx-a11y/click-events-have-key-events */ }
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+        <div
+          className="popup-content-wrapper"
+          // klick utanför page content stänger popup
+          onClick={(e) => { if (e.target.className.includes('popup-content-wrapper')) closeButtonClick(); }}
+        >
           <div className="page-content">
             <button
               type="button"
