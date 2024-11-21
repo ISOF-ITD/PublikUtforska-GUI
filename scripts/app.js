@@ -72,9 +72,6 @@ function createPopupRoutes(prefix) {
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
-          onClose={() => {
-            window.history.back();
-          }}
           routeId={`${prefix}place`}
         >
           <PlaceView mode={prefix.slice(0, -1) || 'material'} />
@@ -88,9 +85,6 @@ function createPopupRoutes(prefix) {
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
-          onClose={() => {
-            window.history.back();
-          }}
           routeId={`${prefix}record`}
         >
           <RecordView mode={prefix.slice(0, -1) || 'material'} />
@@ -104,9 +98,6 @@ function createPopupRoutes(prefix) {
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
-          onClose={() => {
-            window.history.back();
-          }}
           routeId={`${prefix}person`}
         >
           <PersonView mode={prefix.slice(0, -1) || 'material'} />
@@ -130,12 +121,11 @@ function createRootRoute() {
         pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
       });
     },
-    // shouldRevalidate: ({ currentParams, nextParams }) => {
-    //   const current = currentParams['*'] || '';
-    //   const next = nextParams['*'] || '';
-    //   return current !== next;
-    // },
-    // shouldProcessLinkClick: false,
+    shouldRevalidate: ({ currentParams, nextParams }) => {
+      const current = currentParams['*'] || '';
+      const next = nextParams['*'] || '';
+      return current !== next;
+    },
     id: 'root',
     element: <Application mode="material" />,
     children: createPopupRoutes(''),
@@ -174,6 +164,7 @@ const router = createHashRouter([
 ]);
 
 root.render(
+  // vi vill hålla koll på Navigationen i hela appen
   <NavigationContextProvider>
     <RouterProvider router={router} />
   </NavigationContextProvider>,

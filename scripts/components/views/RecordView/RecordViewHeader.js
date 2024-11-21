@@ -85,7 +85,7 @@ export default function RecordViewHeader({
   return (
     <div className="container-header">
       <div className="row">
-        <div className="twelve columns">
+        <div className="eleven columns">
           <h2>{titleText && titleText !== '[]' ? titleText : l('(Utan titel)')}</h2>
           <p className="mr-10">
             {recordTypeLabel}
