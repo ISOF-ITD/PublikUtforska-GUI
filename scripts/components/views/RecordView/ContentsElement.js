@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
@@ -25,6 +25,13 @@ export default function ContentsElement({ data }) {
   const {
     playAudio,
   } = useContext(AudioContext);
+
+  useEffect(() => {
+    const timestampRegex = /\((\d{2}:\d{2})\)/g;
+    if (timestampRegex.test(contents)) {
+      setExpanded(true); // Sätt endast `expanded` en gång om det finns tidsangivelser
+    }
+  }, [contents]);
 
   const timeslotClickHandler = (e, time) => {
     e.preventDefault();
@@ -68,14 +75,15 @@ export default function ContentsElement({ data }) {
             style={{ cursor: 'pointer' }}
             type="button"
           >
-            {part} {/* Renderar tidsangivelsen utan parentes */}
+            {part}
+            {' '}
+            {/* Renderar tidsangivelsen utan parentes */}
           </button>
         );
       }
       return part;
     });
   };
-  
 
   return (
     <div className="row">
