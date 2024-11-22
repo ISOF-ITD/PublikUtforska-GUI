@@ -96,7 +96,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
               <div
                 className="display-line-breaks"
                 dangerouslySetInnerHTML={{
-                  __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text,
+                  __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text || '&nbsp;',
                 }}
               />
             </div>
@@ -122,7 +122,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
             <div
               className="display-line-breaks"
               dangerouslySetInnerHTML={{
-                __html: textParts[index],
+                __html: textParts[index] || '&nbsp;',
               }}
             />
           </div>
