@@ -91,6 +91,8 @@ function RecordView({ mode = 'material' }) {
                     data={data}
                     mediaImageClickHandler={mediaImageClickHandler}
                   />
+                  <ContentsElement data={data} />
+                  <HeadwordsElement data={data} />
                   <AudioItemsElement data={data} />
                   <PdfElement data={data} />
                   {/* TODO: audio items */}
@@ -99,8 +101,6 @@ function RecordView({ mode = 'material' }) {
                     highlightData={highlightData}
                     mediaImageClickHandler={mediaImageClickHandler}
                   />
-                  <HeadwordsElement data={data} />
-                  <ContentsElement data={data} />
                   <CommentsElement data={data} />
                   <div className="row">
                     <div className="eight columns">
