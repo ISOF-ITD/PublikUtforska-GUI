@@ -117,7 +117,7 @@ const RoutePopupWindow = memo(({
         <div
           className="popup-content-wrapper"
           // klick utanför page content stänger popup
-          onClick={(e) => { if (e.target.className.includes('popup-content-wrapper')) closeButtonClick(); }}
+          onClick={(e) => { if (e.target.classList?.contains('popup-content-wrapper')) { closeButtonClick(); }}}
         >
           <div className="page-content">
             <button
