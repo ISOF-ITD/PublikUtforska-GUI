@@ -3,10 +3,10 @@ import React, { useRef, useEffect, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import '../../lib/leaflet-heat';
+import PropTypes from 'prop-types';
 import iconMarkers from '../../../img/icon-markers.png';
 import iconCircles from '../../../img/icon-circles.png';
 
-import PropTypes from 'prop-types';
 import MapBase from './MapBase';
 
 import mapHelper from '../../utils/mapHelper';
@@ -32,22 +32,24 @@ export default function MapView({
         mapView.current.map.removeLayer(layer);
       }
     });
-  
+
     if (currentView === 'clusters') {
       // Kluster-lagret
       const markers = [];
       const markerGroup = L.layerGroup();
-  
+
       mapData?.data?.forEach((obj) => {
         const marker = L.marker([obj.location[0], obj.location[1]], {
           title: obj.name,
-          icon: obj.has_metadata ? (highlightedMarkerIcon || mapHelper.markerIconHighlighted) : (defaultMarkerIcon || mapHelper.markerIcon),
+          icon: obj.has_metadata
+            ? (highlightedMarkerIcon || mapHelper.markerIconHighlighted)
+            : (defaultMarkerIcon || mapHelper.markerIcon),
         });
         marker.on('click', () => onMarkerClick(obj.id));
         markers.push(marker);
         markerGroup.addLayer(marker);
       });
-  
+
       const clusterGroup = L.markerClusterGroup({
         showCoverageOnHover: false,
         maxClusterRadius: 45,
@@ -68,21 +70,21 @@ export default function MapView({
           });
         },
       });
-  
+
       clusterGroup.addLayers(markers.filter((marker) => marker.getLatLng().lat !== 0));
-  
+
       if (clusterGroup.getLayers().length > 0) {
         mapView.current.map.addLayer(clusterGroup);
       }
     } else if (currentView === 'circles') {
       // Cirkel-lagret
       const circleGroup = L.layerGroup();
-  
+
       mapData?.data?.forEach((obj) => {
         // debugger;
         // Kontrollera om `obj.count` är ett nummer, annars sätt ett standardvärde.
-        const count = typeof obj.doc_count === 'number' && !isNaN(obj.doc_count) ? obj.doc_count : 1; // Sätter standard till 1 om count inte finns.
-  
+        const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count) ? obj.doc_count : 1;// Sätter standard till 1 om count inte finns.
+
         const circle = L.circleMarker([obj.location[0], obj.location[1]], {
           color: '#01666e',
           fillColor: 'black',
@@ -127,7 +129,7 @@ export default function MapView({
   return (
     <div>
       <button
-        type='button'
+        type="button"
         tabIndex={0}
         onClick={() => setCurrentView(currentView === 'clusters' ? 'circles' : 'clusters')}
         style={{
@@ -140,7 +142,8 @@ export default function MapView({
           padding: 5,
           height: 'auto',
           lineHeight: 'normal',
-        }}>
+        }}
+      >
         {/* Byt till {currentView === 'clusters' ? 'cirkel-vy' : 'kluster-vy'} */}
         <img
           alt={`Byt till ${currentView === 'clusters' ? 'cirkel-vy' : 'kluster-vy'}`}
