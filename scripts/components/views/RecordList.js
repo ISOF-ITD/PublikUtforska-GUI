@@ -129,7 +129,7 @@ export default function RecordList({
 
   // Hantera URL-parametrar för att visa listan
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
+    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('showlist') && window.eventBus) {
       window.eventBus.dispatch('routePopup.show');
     }
