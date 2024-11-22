@@ -93,7 +93,7 @@ export default function MapView({
           weight: 1,
           radius: Math.max(count / 14, 2), // Anpassa radien efter antal träffar och zoomnivå
           interactive: true,
-        }).bindTooltip(`${obj.name}: ${obj.doc_count} träffar`, {
+        }).bindTooltip(`${obj.name.replace(/ sn$/, ' socken')}: ${obj.doc_count} träffar`, {
           permanent: false, // Tooltip visas när man hovrar
           direction: 'top', // Visar tooltip ovanför cirkeln
         });
