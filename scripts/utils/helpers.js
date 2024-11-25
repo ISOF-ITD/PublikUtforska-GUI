@@ -36,7 +36,8 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   //    Får prefix enligt ortens regler
   //    Om numberpart inte tom så sätts letterpart till tom sträng
   if (archiveOrg === 'Lund') {
-    if (numberPart && numberPart.length > 0) letterPart = ''
+    // Visa alltid bokstavsprefix/letterpart - fråga AFG!
+    // if (numberPart && numberPart.length > 0) letterPart = ''
     prefix = 'DAL';
   }
   if (archiveOrg === 'Umeå') {
@@ -87,7 +88,8 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
         if (letterPart.toLowerCase().includes('b') || letterPart.toLowerCase().includes('gr') || letterPart.toLowerCase().includes('ss')) {
           prefix = 'ULMA';
         }
-        letterPart = ''
+        // Visa alltid bokstavsprefix/letterpart
+        //letterPart = ''
       }
     }
   }
