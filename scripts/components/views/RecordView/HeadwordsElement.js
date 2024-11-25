@@ -66,7 +66,7 @@ function HeadwordsElement({ data }) {
         >
           <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
           {' '}
-          <span>Uppgifter från äldre, utförliga innehållsregister</span>
+          <span>Uppgifter från äldre innehållsregister</span>
         </button>
         <div className={`record-text realkatalog-content display-line-breaks ${expanded ? 'show' : 'hide'}`}>
           <div
