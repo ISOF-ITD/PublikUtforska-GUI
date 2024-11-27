@@ -36,7 +36,8 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   //    Får prefix enligt ortens regler
   //    Om numberpart inte tom så sätts letterpart till tom sträng
   if (archiveOrg === 'Lund') {
-    if (numberPart && numberPart.length > 0) letterPart = ''
+    // Visa alltid bokstavsprefix/letterpart - fråga AFG!
+    // if (numberPart && numberPart.length > 0) letterPart = ''
     prefix = 'DAL';
   }
   if (archiveOrg === 'Umeå') {
@@ -87,7 +88,8 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
         if (letterPart.toLowerCase().includes('b') || letterPart.toLowerCase().includes('gr') || letterPart.toLowerCase().includes('ss')) {
           prefix = 'ULMA';
         }
-        letterPart = ''
+        // Visa alltid bokstavsprefix/letterpart
+        //letterPart = ''
       }
     }
   }
@@ -215,6 +217,46 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
           }
           // Set audio title according to archive patterns using archiveOrg
           if (archiveOrg === 'Uppsala') {
+            // Clean different row breaks:
+            let cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            // Currently the pipe delimiter is only used for Uppsala material
+            let contentRows = cleanContent.split('|');
+
+            // Loop until last segment
+            for (let i = 0; i < contentRows.length; i += 1) {
+              // Get parts delineated by first space " ":
+              const delimiter = " "
+              let elements = contentRows[i].trim().split(delimiter)
+              let thisSegmentFileId = elements[0];
+              let thisSegmentContent = elements.slice(1).join(delimiter);
+              if (thisSegmentFileId.length > 0) {
+                // Clean unwanted characters:
+                let fileidElements = thisSegmentFileId.split(':')
+                if (fileidElements.length > 0) {
+                  // Clean unwanted numerals and dash
+                  let cleanElement = fileidElements[1].replace(/[0-9]/g, '').replaceAll(":","").replaceAll("-","");
+                  thisSegmentFileId = fileidElements[0] + cleanElement
+                }
+                let fileId = thisSegmentFileId.replaceAll(':', '');
+                let filenameParts = fileName.split('/');
+                if (filenameParts) {
+                  // Clean filename accordning to pattern in content field:
+                  let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '')
+                  cleanFilename = cleanFilename.replace(' D ', '').replace('D ', '').replace(' ', '');
+                  // Remove trailing filename after underscore
+                  cleanFilename = cleanFilename.split('_')[0];
+                  // Match archive id with filename:
+                  if (cleanFilename.toUpperCase().includes(fileId.toUpperCase())) {
+                    if (thisSegmentFileId.slice(-1) === ':') {
+                      // Remove colon as last character
+                      thisSegmentFileId = thisSegmentFileId.slice(0, -1)
+                    }
+                    let fileTitle = `${thisSegmentFileId}: ${thisSegmentContent}`;
+                    return fileTitle;
+                  }
+                }
+              }
+            }
             if (contents.length > 100) {
               return `[${contents.substring(0, 84)} ${'(FÖRKORTAD TITEL)'}]`;
             }
