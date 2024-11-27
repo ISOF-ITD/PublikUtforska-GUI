@@ -22,15 +22,20 @@ function IntroOverlay({ show = false, onClose }) {
   useEffect(() => {
     const handleMessage = (event) => {
       try {
+        if (event.data.type === 'navigateAway') {
+          // Anropa onClose med en liten fördröjning för att låta navigeringen ske
+          setTimeout(() => {
+            if (onClose) onClose();
+          }, 100); // Fördröjning i millisekunder, justera vid behov
+        }
+
         if (event.data.newSrc?.startsWith('http')) {
           const newUrlObject = new URL(event.data.newSrc);
           const newPath = newUrlObject.href.replace(
             config.kontextBasePath,
-            ''
+            '',
           );
-          console.log('Uppdaterar k-parametern med:', newPath, 'från meddelande');
 
-          // Uppdatera endast URL:en, men inte iframeSrc
           const params = new URLSearchParams(location.search);
           if (params.get('k') !== newPath) {
             params.set('k', newPath);
@@ -38,7 +43,7 @@ function IntroOverlay({ show = false, onClose }) {
           }
         }
       } catch (error) {
-        console.error('Fel vid konstruktion av URL:', error);
+        console.error('Fel vid hantering av meddelande:', error);
       }
     };
 
@@ -46,11 +51,9 @@ function IntroOverlay({ show = false, onClose }) {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [navigate, location.search]);
+  }, [navigate, location.search, onClose]);
 
   const handleIntroductionClick = () => {
-    console.log('Återställer k-parametern till startvärdet:', config.kontextStartPage, 'från handleIntroductionClick()');
-
     // Uppdatera både iframeSrc och URL:en
     const newSrc = config.kontextBasePath + config.kontextStartPage;
     setIframeSrc(newSrc);

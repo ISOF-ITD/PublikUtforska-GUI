@@ -210,9 +210,6 @@ export default {
   numberOfProvinceSuggestions: null,
 
   // för intro-overlayen
-  // kontextBasePath: 'folke-kontext/',
-  // kontextStartPage: 'sida-1',
-  // kontextBasePath: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/',
-  kontextBasePath: 'https://www.isof.se/',
-  kontextStartPage: 'test-och-utveckling-isof/testsidor-webbredaktion/folkminnen/folke-kontext/folke-start',
+  kontextBasePath: 'https://www.isof.se/folke/',
+  kontextStartPage: 'start',
 };
