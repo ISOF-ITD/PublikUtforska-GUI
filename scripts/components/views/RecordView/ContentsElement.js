@@ -20,18 +20,18 @@ export default function ContentsElement({ data }) {
   } = data;
   const [expanded, setExpanded] = useState(false);
 
-  if (!contents) return null;
+  // Always call useContext, even if contents is null
+  const { playAudio } = useContext(AudioContext);
 
-  const {
-    playAudio,
-  } = useContext(AudioContext);
-
+  // Always set up the effect, even if contents is null
   useEffect(() => {
     const timestampRegex = /\((\d{2}:\d{2})\)/g;
     if (timestampRegex.test(contents)) {
       setExpanded(true); // Sätt endast `expanded` en gång om det finns tidsangivelser
     }
   }, [contents]);
+
+  if (!contents) return null; // Early return after all hooks are called
 
   const timeslotClickHandler = (e, time) => {
     e.preventDefault();
@@ -63,7 +63,8 @@ export default function ContentsElement({ data }) {
   const parseContentWithClickableTimeslots = (text) => {
     const timestampRegex = /\((\d{2}:\d{2})\)/g; // Matchar tidsangivelser med parenteser
     return text.split(timestampRegex).map((part, index) => {
-      if (timestampRegex.test(`(${part})`)) {
+      // Check if the current part matches the timestamp pattern
+      if (/^\d{2}:\d{2}$/.test(part)) {
         const seconds = timeToSeconds(part);
         const uniqueKey = `timeslot-${seconds}-${text.slice(index, index + 5)}`;
 
@@ -124,5 +125,6 @@ export default function ContentsElement({ data }) {
 ContentsElement.propTypes = {
   data: PropTypes.shape({
     contents: PropTypes.string,
+    // Include other prop types as needed
   }).isRequired,
 };
