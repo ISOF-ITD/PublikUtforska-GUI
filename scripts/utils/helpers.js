@@ -63,14 +63,14 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   if (archiveOrg === 'Uppsala') {
     // ULMA -> 39080
     // SOFI 39081 – 39383
-    // DFU 39384 ->      
+    // DFU 39384 ->
     prefix = 'ULMA';
     i = str.length
     // getFirstNonAlpha(str) {
     for (var i = 0; i<str.length;i++) {
-        if (!isNaN(str[i])) {
-          break;
-        }
+      if (!isNaN(str[i])) {
+        break;
+      }
     }
     // return false;
     if ((i - 1) < str.length) {
@@ -232,7 +232,7 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
               if (thisSegmentFileId.length > 0) {
                 // Clean unwanted characters:
                 let fileidElements = thisSegmentFileId.split(':')
-                if (fileidElements.length > 0) {
+                if (fileidElements.length > 1) {
                   // Clean unwanted numerals and dash
                   let cleanElement = fileidElements[1].replace(/[0-9]/g, '').replaceAll(":","").replaceAll("-","");
                   thisSegmentFileId = fileidElements[0] + cleanElement

@@ -78,7 +78,6 @@ function RecordView({ mode = 'material' }) {
             document.title = `${getTitleText(data, 0, 0)} - ${config.siteTitle}`;
             return (
               <>
-                <small>RecordViewHeader</small>
                 <RecordViewHeader
                   data={data}
                   subrecordsCount={subrecordsCount}
@@ -95,7 +94,6 @@ function RecordView({ mode = 'material' }) {
                   <HeadwordsElement data={data} />
                   <AudioItemsElement data={data} />
                   <PdfElement data={data} />
-                  {/* TODO: audio items */}
                   <TextElement
                     data={data}
                     highlightData={highlightData}

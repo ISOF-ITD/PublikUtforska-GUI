@@ -9,6 +9,8 @@ function getCleanHtmlHeadwords(headwords, archive) {
 
   const formattedHeadwords = headwords.trim().replace(/( Sida| Sidor)/g, '\n$1');
 
+  // Just nu är kontroll på arkiv egentligen onödig, då bara Uppsala har länkar, 
+  // markerade med [[]], till publika inskannande kort
   if (archive.archive_org === 'Uppsala') {
     const anchorStart = '<a href="https://www5.sprakochfolkminnen.se/Realkatalogen/';
     const anchorEnd = '" target="_blank">Visa indexkort</a>';
