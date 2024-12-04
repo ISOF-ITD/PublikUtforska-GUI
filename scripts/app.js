@@ -41,7 +41,8 @@ function fetchPlace(placeId) {
 
 function fetchRecordAndCountSubrecords(recordId, searchValue = null) {
   // if there is a search value, we use both the search and the document endpoint because
-  // the search endpoint it will return highlighted text also
+  // the search endpoint will return highlighted text also
+  // making sure to use the same search and highlight logic including stemmers
   const recordsPromise = searchValue
     ? fetch(
       getRecordsFetchLocation({ search: searchValue, id: recordId }),
@@ -62,7 +63,7 @@ function fetchPerson(personId) {
   return fetch(getPersonFetchLocation(personId));
 }
 
-// prefix is either 'transcribe' or ''
+// prefix is either 'transcribe' or '' for respectively Application mode trnascribe or material
 function createPopupRoutes(prefix) {
   return [
     {
@@ -107,6 +108,7 @@ function createPopupRoutes(prefix) {
   ];
 }
 
+// Main Application mode 'material' (empty route) routes
 function createRootRoute() {
   return {
     path: '/*?',
@@ -132,6 +134,7 @@ function createRootRoute() {
   };
 }
 
+// Main Application mode 'transcribe' routes
 function createTranscribeRoute() {
   return {
     path: '/transcribe/*?',
@@ -159,6 +162,7 @@ function createTranscribeRoute() {
 }
 
 const router = createHashRouter([
+  // Main routes changes Application mode: material or transcribe
   createRootRoute(),
   createTranscribeRoute(),
 ]);
