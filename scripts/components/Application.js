@@ -20,6 +20,7 @@ import TranscriptionHelpOverlay from './views/transcribe/TranscriptionHelpOverla
 import TranscriptionOverlay from './views/transcribe/TranscriptionOverlay';
 import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPageByPageOverlay';
 import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
+import SimilarRecordsHelpTextOverlay from './views/SimilarRecordsHelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
 
@@ -171,6 +172,7 @@ export default function Application({
         }
         <TranscriptionHelpOverlay />
         <SwitcherHelpTextOverlay />
+        <SimilarRecordsHelpTextOverlay />
         <Footer />
       </div>
     </AudioProvider>

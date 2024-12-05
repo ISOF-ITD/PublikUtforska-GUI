@@ -24,6 +24,7 @@ import ReferenceLinks from './ReferenceLinks';
 import SubrecordsElement from './SubrecordsElement';
 import TextElement from './TextElement';
 import TranscriptionPrompt from './TranscriptionPrompt';
+import SimilarRecords from './SimilarRecords';
 import { getTitleText } from '../../../utils/helpers';
 import config from '../../../config';
 
@@ -111,6 +112,8 @@ function RecordView({ mode = 'material' }) {
                   <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
                   <PersonItems data={data} routeParams={routeParams} />
                   <PlaceItems data={data} routeParams={routeParams} />
+                  <hr />
+                  <SimilarRecords data={data} />
                   <hr />
                   <RecordViewFooter data={data} />
 
