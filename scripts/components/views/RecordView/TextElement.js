@@ -54,7 +54,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
         />
 
         <div className="media-title sv-portlet-image-caption">
-          {mediaItem.title || mediaItem.source.split('/').pop()}
+          {mediaItem.title || ''}
           {mediaItem.comment && mediaItem.comment.trim() !== '' && (
             <div>
               <br />
