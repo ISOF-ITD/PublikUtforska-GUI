@@ -1,4 +1,7 @@
 import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDownload } from '@fortawesome/free-solid-svg-icons';
+import config from '../../../config';
 import { getAudioTitle } from '../../../utils/helpers';
 import ListPlayButton from '../ListPlayButton';
 
@@ -43,6 +46,11 @@ export default function AudioItems({ data }) {
           year,
           persons,
         )}
+      </td>
+      <td>
+        <a href={config.audioUrl + mediaItem.source} download title="Ladda ner ljudfilen">
+          <FontAwesomeIcon icon={faDownload} />
+        </a>
       </td>
     </tr>
   ));
