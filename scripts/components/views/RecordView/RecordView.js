@@ -113,7 +113,7 @@ function RecordView({ mode = 'material' }) {
                   <PersonItems data={data} routeParams={routeParams} />
                   <PlaceItems data={data} routeParams={routeParams} />
                   <hr />
-                  {/* <SimilarRecords data={data} /> */}
+                  <SimilarRecords data={data} />
                   <hr />
                   <RecordViewFooter data={data} />
 
