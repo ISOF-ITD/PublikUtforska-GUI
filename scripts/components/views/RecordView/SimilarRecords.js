@@ -53,10 +53,6 @@ function SimilarRecords({ data: { id, recordtype } }) {
     );
   }
 
-  if (recordtype !== 'one_record') {
-    return null;
-  }
-
   if (similarRecords.length === 0) {
     // return <div className="similar-records no-results">Inga liknande uppteckningar hittades.</div>;
     return null;
