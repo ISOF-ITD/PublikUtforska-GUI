@@ -85,7 +85,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
       return acc;
     }, {}), [innerHits]);
     return (
-      <>
+      <article>
         {
           innerHits.length > 0
           && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
@@ -103,7 +103,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
             {renderMedia(mediaItem, index)}
           </div>
         ))}
-      </>
+      </article>
     );
   }
 
@@ -111,7 +111,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || '';
   const textParts = highlightedText && highlight ? highlightedText.split(/\/\s*$/m) : text.split(/\/\s*$/m);
   return (
-    <>
+    <article>
       {
         highlightedText
         && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
@@ -137,7 +137,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           </span>
         </p>
       )}
-    </>
+    </article>
   );
 }
 
