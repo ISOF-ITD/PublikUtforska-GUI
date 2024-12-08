@@ -21,7 +21,7 @@ export default function RecordListWrapper({
     // Memoize openSwitcherHelptext för att undvika omrenderingar
     const openSwitcherHelptext = useCallback(() => {
       if (window.eventBus) {
-        window.eventBus.dispatch('overlay.switcherHelpText', {});
+        window.eventBus.dispatch('overlay.HelpText', { kind: 'switcher' });
       }
     }, []); // Tom array för att se till att funktionen inte återskapas varje gång
 

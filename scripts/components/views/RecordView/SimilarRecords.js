@@ -13,7 +13,7 @@ function SimilarRecords({ data: { id, recordtype } }) {
 
   const openHelp = useCallback(() => {
     if (window.eventBus) {
-      window.eventBus.dispatch('overlay.similarRecordsHelpText', {});
+      window.eventBus.dispatch('overlay.HelpText', { kind: 'similarRecords' });
     }
   }, []); // Tom array för att se till att funktionen inte återskapas varje gång
 

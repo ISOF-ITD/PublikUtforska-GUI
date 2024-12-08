@@ -10,7 +10,7 @@ import config from '../../../config';
 
 const openSwitcherHelptext = () => {
   if (window.eventBus) {
-    window.eventBus.dispatch('overlay.switcherHelpText', {});
+    window.eventBus.dispatch('overlay.HelpText', { kind: 'switcher' });
   }
 };
 
@@ -19,7 +19,7 @@ const renderArchiveName = (data) => (
     <strong>{l('Arkiv')}</strong>
     {`: ${getArchiveName(data.archive.archive_org)}`}
   </span>
-)
+);
 
 const renderSubrecordCount = (recordtype, subrecordsCount) => (
   recordtype === 'one_accession_row' && subrecordsCount?.value ? (
