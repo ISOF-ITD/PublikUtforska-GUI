@@ -129,7 +129,16 @@ export default function RecordList({
 
   // Hantera URL-parametrar för att visa listan
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    // Get the URL search parameters (non-hash parameters)
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // Get the hash parameters (after #)
+    const { hash } = window.location;
+    const hashParams = hash.includes('?') ? new URLSearchParams(hash.split('?')[1]) : new URLSearchParams();
+
+    // Combine both sets of parameters
+    const urlParams = new Map([...searchParams.entries(), ...hashParams.entries()]);
+
     if (urlParams.has('showlist') && window.eventBus) {
       window.eventBus.dispatch('routePopup.show');
     }
