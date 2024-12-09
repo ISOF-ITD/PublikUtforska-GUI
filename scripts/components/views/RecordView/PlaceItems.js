@@ -10,9 +10,9 @@ function PlaceItems({ data, routeParams = '' }) {
 
   const placeItems = places.map((place) => {
     const {
-      id, specification, name, fylke, harad,
+      id, specification, name, fylke, harad, landskap,
     } = place;
-    const placeName = `${specification ? `${specification} i ` : ''}${name}, ${fylke || harad}`;
+    const placeName = `${specification ? `${specification} i ` : ''}${name}, ${fylke || harad}, ${landskap || ''}`;
     const linkUrl = `#/places/${id}${routeParams}`;
 
     return (

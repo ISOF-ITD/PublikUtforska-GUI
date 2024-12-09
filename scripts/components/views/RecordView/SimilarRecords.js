@@ -5,8 +5,9 @@ import { Link } from 'react-router-dom';
 import config from '../../../config';
 import loaderSpinner from '../../../../img/loader.gif';
 import { l } from '../../../lang/Lang';
+import { getTitleText } from '../../../utils/helpers';
 
-function SimilarRecords({ data: { id, recordtype } }) {
+function SimilarRecords({ data: { id } }) {
   const [similarRecords, setSimilarRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +16,7 @@ function SimilarRecords({ data: { id, recordtype } }) {
     if (window.eventBus) {
       window.eventBus.dispatch('overlay.HelpText', { kind: 'similarRecords' });
     }
-  }, []); // Tom array för att se till att funktionen inte återskapas varje gång
+  }, []);
 
   useEffect(() => {
     const fetchSimilarRecords = async () => {
@@ -54,7 +55,6 @@ function SimilarRecords({ data: { id, recordtype } }) {
   }
 
   if (similarRecords.length === 0) {
-    // return <div className="similar-records no-results">Inga liknande uppteckningar hittades.</div>;
     return null;
   }
 
@@ -63,32 +63,47 @@ function SimilarRecords({ data: { id, recordtype } }) {
       <h3>
         Liknande uppteckningar
         <span
+          role="button"
+          tabIndex={0}
           className="switcher-help-button"
           title="Liknande uppteckningar genereras genom att analysera innehållet i den valda posten och identifiera andra uppteckningar med liknande ord och teman."
           onClick={openHelp}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openHelp();
+            }
+          }}
+          aria-label="Visa hjälptext för liknande uppteckningar"
         >
           ?
         </span>
+
       </h3>
       <div className="similar-records-list">
-        {similarRecords.map((record) => {
-          const { _id, _source: recordData } = record;
-          if (!recordData.media || recordData.media.length === 0) {
-            return null;
-          }
+        {similarRecords.map(({ _id, _source }) => {
+          const { media, title, places = [] } = _source;
+          if (!media?.length) return null;
 
-          const thumbnail = config.imageUrl + recordData.media[0].source;
+          const thumbnail = `${config.imageUrl}${media[0].source}`;
+          const titleText = getTitleText(_source) || l('(Utan titel)');
+
+          const place = places[0];
+          const placeName = place ? `${place.name}, ${place.landskap || ''}` : '';
 
           return (
             <div key={_id} className="similar-record">
               <Link to={`/records/${_id}`}>
                 <img
                   src={thumbnail}
-                  alt={recordData.title || l('Liknande uppteckning')}
+                  alt={title || l('Liknande uppteckning')}
                   className="similar-record-thumbnail"
                   loading="lazy"
                 />
-                <div className="similar-record-title">{recordData.title}</div>
+                <div className="similar-record-title">
+                  {titleText}
+                  {placeName && ` (${placeName})`}
+                </div>
               </Link>
             </div>
           );
@@ -101,7 +116,6 @@ function SimilarRecords({ data: { id, recordtype } }) {
 SimilarRecords.propTypes = {
   data: PropTypes.shape({
     id: PropTypes.string.isRequired,
-    recordtype: PropTypes.string,
   }).isRequired,
 };
 
