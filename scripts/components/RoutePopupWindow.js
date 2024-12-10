@@ -3,9 +3,10 @@ import {
   useEffect, useState, useContext, memo,
 } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { l } from '../lang/Lang';
 import { NavigationContext } from '../NavigationContext';
+import { removeViewParamsFromRoute } from '../utils/routeHelper';
 
 // Main CSS: ui-components/popupwindow.less
 
@@ -20,6 +21,7 @@ const RoutePopupWindow = memo(({
   const [manualOpen, setManualOpen] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     previousNavigation,
@@ -30,7 +32,8 @@ const RoutePopupWindow = memo(({
       setWindowOpen(false);
       setManualOpen(false);
     } else {
-      navigate('/');
+      const path = removeViewParamsFromRoute(location.pathname);
+      navigate(path);
     }
   };
 

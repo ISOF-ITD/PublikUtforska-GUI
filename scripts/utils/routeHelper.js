@@ -4,6 +4,7 @@ const searchRoute = '(/record_ids/:record_ids)(/search/:search)(/search_field/:s
 const placesRoute = '/places(/:place_id)(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/recordtype/:recordtype)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)(/has_media/:has_media)(/has_transcribed_records/:has_transcribed_records)(/transcriptionstatus/:transcriptionstatus)(/page/:page)';
 const placeRoute = '(/transcribe)/places/:place_id(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/recordtype/:recordtype)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)(/has_media/:has_media)(/has_transcribed_records/:has_transcribed_records)(/transcriptionstatus/:transcriptionstatus)(/page/:page)';
 const recordRoute = '(/transcribe)/records/:record_id(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/recordtype/:recordtype)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)(/has_media/:has_media)(/has_transcribed_records/:has_transcribed_records)(/transcriptionstatus/:transcriptionstatus)(/page/:page)';
+const personRoute = '(/transcribe)/persons/:person_id(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/recordtype/:recordtype)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)(/has_media/:has_media)(/has_transcribed_records/:has_transcribed_records)(/transcriptionstatus/:transcriptionstatus)(/page/:page)';
 
 // export default {
 export function createPlacePathFromPlaces(placeId, placesPath) {
@@ -63,7 +64,27 @@ export function createSearchRoute(params) {
   // on the search parameter, decode and re-encode to make sure it's encoded properly
   newParams.search = newParams.search ? encodeURIComponent(decodeURIComponent(newParams.search)) : undefined;
 
-  return router.reverse(newParams) || '';
+  return router.reverse(newParams) || '/';
+}
+
+export function removeViewParamsFromRoute(path) {
+  let newPath = path.startsWith('/') ? path : `/${path}`;
+  [newPath] = newPath.split('?');
+  // Handle placeview
+  const placesRouter = new RouteParser(placeRoute);
+  let newParams = placesRouter.match(newPath.replace(/\/$/, ''));
+  if (newParams) { delete newParams.place_id; }
+  // Handle personview
+  const personRouter = new RouteParser(personRoute);
+  newParams = personRouter.match(newPath.replace(/\/$/, ''));
+  if (newParams) { delete newParams.person_id; }
+  // Handle recordview
+  const recordRouter = new RouteParser(recordRoute);
+  newParams = recordRouter.match(newPath.replace(/\/$/, ''));
+  if (newParams) { delete newParams.record_id; }
+
+  const searchRoutePath = createSearchRoute(newParams);
+  return searchRoutePath;
 }
 
 export function createParamsFromPlacesRoute(path) {
