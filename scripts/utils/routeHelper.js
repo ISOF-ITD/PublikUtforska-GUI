@@ -73,18 +73,28 @@ export function removeViewParamsFromRoute(path) {
   // Handle placeview
   const placesRouter = new RouteParser(placeRoute);
   let newParams = placesRouter.match(newPath.replace(/\/$/, ''));
-  if (newParams) { delete newParams.place_id; }
+  if (newParams) {
+    delete newParams.place_id;
+    const searchRoutePath = createSearchRoute(newParams);
+    return searchRoutePath;
+  }
   // Handle personview
   const personRouter = new RouteParser(personRoute);
   newParams = personRouter.match(newPath.replace(/\/$/, ''));
-  if (newParams) { delete newParams.person_id; }
+  if (newParams) {
+    delete newParams.person_id;
+    const searchRoutePath = createSearchRoute(newParams);
+    return searchRoutePath;
+  }
   // Handle recordview
   const recordRouter = new RouteParser(recordRoute);
   newParams = recordRouter.match(newPath.replace(/\/$/, ''));
-  if (newParams) { delete newParams.record_id; }
-
-  const searchRoutePath = createSearchRoute(newParams);
-  return searchRoutePath;
+  if (newParams) {
+    delete newParams.record_id;
+    const searchRoutePath = createSearchRoute(newParams);
+    return searchRoutePath;
+  }
+  return path;
 }
 
 export function createParamsFromPlacesRoute(path) {
