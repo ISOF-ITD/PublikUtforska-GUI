@@ -115,6 +115,8 @@ const SearchSuggestions = forwardRef(
   },
 );
 
+SearchSuggestions.displayName = 'SearchSuggestions';
+
 export default SearchSuggestions;
 
 SearchSuggestions.propTypes = {
