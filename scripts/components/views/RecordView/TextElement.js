@@ -4,9 +4,14 @@ import { useState, useMemo, useCallback } from 'react';
 import config from '../../../config';
 import HighlightSwitcher from './HighlightSwitcher';
 import { l } from '../../../lang/Lang';
+import TranscribeButton from '../transcribe/TranscribeButton';
 
 function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const {
+    id: recordId,
+    title,
+    archive,
+    places,
     text,
     transcribedby,
     transcriptiontype,
@@ -93,12 +98,26 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
         {media.map((mediaItem, index) => (
           <div className="row record-text-and-image" key={mediaItem.source || index}>
             <div className="eight columns">
-              <div
-                className="display-line-breaks"
-                dangerouslySetInnerHTML={{
-                  __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text || '&nbsp;',
-                }}
-              />
+              { mediaItem.text ? (
+                <div
+                  className="display-line-breaks"
+                  dangerouslySetInnerHTML={{
+                    __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text,
+                  }}
+                />
+              ) : (
+                <TranscribeButton
+                  className="button button-primary"
+                  label={l('Skriv av')}
+                  title={title}
+                  recordId={recordId}
+                  archiveId={archive.archive_id}
+                  places={places}
+                  images={media}
+                  transcriptionType={transcriptiontype}
+                  random={false}
+                />
+              )}
             </div>
             {renderMedia(mediaItem, index)}
           </div>
