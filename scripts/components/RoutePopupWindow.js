@@ -151,6 +151,8 @@ const RoutePopupWindow = memo(({
   return null;
 });
 
+RoutePopupWindow.displayName = 'RoutePopupWindow';
+
 export default RoutePopupWindow;
 
 RoutePopupWindow.propTypes = {
