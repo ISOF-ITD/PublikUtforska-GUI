@@ -59,6 +59,9 @@ const matomoApiUrlObject = {
 export default {
   siteTitle: 'Folke sök - Institutet för språk och folkminnen',
 
+  // aktivera transkriptionsfunktioner
+  activateTranscription: true,
+  
   hitsPerPage: 100,
 
   // för att begränsa bläddringen till 10 000 hits. detta pga begränsningar i Elasticsearch

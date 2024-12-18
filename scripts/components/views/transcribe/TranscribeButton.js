@@ -65,6 +65,11 @@ export default function TranscribeButton({
 
   const effectiveOnClick = onClick || transcribeButtonClick;
 
+  if (!config.activateTranscription) {
+    // Ingen knapp
+    return null;
+  }
+  // else visa knapp
   return (
     // Render a button with a dynamic class name based on the passed-in props.
     // The button's click event is tied to the transcribeButtonClick function,
