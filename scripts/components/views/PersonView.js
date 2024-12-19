@@ -64,7 +64,7 @@ export default function PersonView({ mode = 'material' }) {
       <div className="container-header">
         <div className="row">
           <div className="twelve columns">
-            <h2>{name || ''}</h2>
+            <h1>{name || ''}</h1>
             <p>
               {
                 ((birthYear && birthYear > 0) || (places?.length > 0) || birthplace)
