@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import '../../lib/leaflet-heat';
@@ -114,9 +114,7 @@ export default function MapView({
   useEffect(() => {
     if (mapView.current && mapView.current.map) {
       mapView.current.map.on('zoomend', () => {
-        if (currentView === 'circles') {
-          updateMap();
-        }
+        updateMap();
       });
     }
   }, [currentView]);
