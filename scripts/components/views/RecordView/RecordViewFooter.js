@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
-import { makeArchiveIdHumanReadable } from '../../../utils/helpers';
+import { Link } from 'react-router-dom';
 import archiveLogoIsof from '../../../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../../../img/archive-logo-ikos.png';
+import logotypNationellaSprakbanken from '../../../../img/logotyp_nationella_sprakbanken.svg';
 import config from '../../../config';
 
 const getArchiveLogo = (archive) => {
@@ -30,20 +31,34 @@ export default function RecordViewFooter({ data }) {
   const {
     archive: {
       archive = '',
-      archive_id: archiveId,
     },
   } = data;
 
   return (
     <div className="row">
-      <div className="four columns">
-        <p>
-        <img
-          src={getArchiveLogo(archive)}
-        //   style={{ width: '100%' }}
-          alt={makeArchiveIdHumanReadable(archiveId)}
-        />
-        </p>
+      <div
+        className="twelve columns"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Link to="https://isof.se" target="_blank" rel="noopener noreferrer">
+          <img
+            src={getArchiveLogo(archive)}
+            width="150"
+            height="auto"
+            alt="Logga för arkiv"
+          />
+        </Link>
+        <Link to="https://sprakbanken.se/" target="_blank" rel="noopener noreferrer">
+          <img
+            src={logotypNationellaSprakbanken}
+            height="auto"
+            width="150"
+            alt="Logga för Nationella språkbanken"
+          />
+        </Link>
       </div>
     </div>
   );
@@ -52,7 +67,6 @@ RecordViewFooter.propTypes = {
   data: PropTypes.shape({
     archive: PropTypes.shape({
       archive: PropTypes.string, // Typ för `archive`, som är en sträng
-      archive_id: PropTypes.string, // Typ för `archive_id`, som också är en sträng
     }).isRequired, // Kräver att `archive`-objektet finns
   }).isRequired, // Kräver att `data`-objektet finns
 };
