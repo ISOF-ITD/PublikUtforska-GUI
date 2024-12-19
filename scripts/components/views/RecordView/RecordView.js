@@ -78,7 +78,7 @@ function RecordView({ mode = 'material' }) {
             // const pages = getPages(data);
             document.title = `${getTitleText(data, 0, 0)} - ${config.siteTitle}`;
             return (
-              <>
+              <article>
                 <RecordViewHeader
                   data={data}
                   subrecordsCount={subrecordsCount}
@@ -119,7 +119,7 @@ function RecordView({ mode = 'material' }) {
 
                   {/* <MetadataItems data={data} /> */}
                 </div>
-              </>
+              </article>
             );
           }}
         </Await>

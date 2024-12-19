@@ -83,10 +83,10 @@ export default function RecordViewHeader({
   const recordTypeLabel = getRecordtypeLabel(recordtype);
 
   return (
-    <div className="container-header">
+    <header className="container-header">
       <div className="row">
         <div className="eleven columns">
-          <h2>{titleText && titleText !== '[]' ? titleText : l('(Utan titel)')}</h2>
+          <h1>{titleText && titleText !== '[]' ? titleText : l('(Utan titel)')}</h1>
           <p className="mr-10">
             {recordTypeLabel}
             <span
@@ -120,7 +120,7 @@ export default function RecordViewHeader({
       </div>
       <FeedbackButton title={title} type="Uppteckning" country={country} />
       <ContributeInfoButton title={title} type="Uppteckning" country={country} id={id} />
-    </div>
+    </header>
   );
 }
 

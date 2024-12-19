@@ -90,7 +90,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
       return acc;
     }, {}), [innerHits]);
     return (
-      <article>
+      <main>
         {
           innerHits.length > 0
           && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
@@ -99,7 +99,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           <div className="row record-text-and-image" key={mediaItem.source || index}>
             <div className="eight columns">
               { mediaItem.text ? (
-                <div
+                <p
                   className="display-line-breaks"
                   dangerouslySetInnerHTML={{
                     __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text,
@@ -122,7 +122,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
             {renderMedia(mediaItem, index)}
           </div>
         ))}
-      </article>
+      </main>
     );
   }
 
@@ -130,7 +130,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || '';
   const textParts = highlightedText && highlight ? highlightedText.split(/\/\s*$/m) : text.split(/\/\s*$/m);
   return (
-    <article>
+    <main>
       {
         highlightedText
         && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
@@ -138,7 +138,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
       {media.map((mediaItem, index) => (
         <div className="row record-text-and-image" key={mediaItem.source || index}>
           <div className="eight columns">
-            <div
+            <p
               className="display-line-breaks"
               dangerouslySetInnerHTML={{
                 __html: textParts[index] || '&nbsp;',
@@ -156,7 +156,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           </span>
         </p>
       )}
-    </article>
+    </main>
   );
 }
 
