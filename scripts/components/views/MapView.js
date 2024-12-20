@@ -25,18 +25,28 @@ export default function MapView({
   const [currentView, setCurrentView] = useState('clusters');
   const mapView = useRef();
 
+  // Refs för att hålla överlagrar
+  const clusterGroupRef = useRef(null);
+  const circleGroupRef = useRef(null);
+
   const updateMap = () => {
-    // Ta bort alla befintliga lager på kartan
-    mapView.current.map.eachLayer((layer) => {
-      if (layer._url === undefined) {
-        mapView.current.map.removeLayer(layer);
-      }
-    });
+    if (!mapView.current || !mapView.current.map) return;
+
+    const { map } = mapView.current;
+
+    // Ta bort de tidigare överlagrarna
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current);
+      clusterGroupRef.current = null;
+    }
+    if (circleGroupRef.current) {
+      map.removeLayer(circleGroupRef.current);
+      circleGroupRef.current = null;
+    }
 
     if (currentView === 'clusters') {
       // Kluster-lagret
       const markers = [];
-      const markerGroup = L.layerGroup();
 
       mapData?.data?.forEach((obj) => {
         const marker = L.marker([obj.location[0], obj.location[1]], {
@@ -47,7 +57,6 @@ export default function MapView({
         });
         marker.on('click', () => onMarkerClick(obj.id));
         markers.push(marker);
-        markerGroup.addLayer(marker);
       });
 
       const clusterGroup = L.markerClusterGroup({
@@ -74,14 +83,14 @@ export default function MapView({
       clusterGroup.addLayers(markers.filter((marker) => marker.getLatLng().lat !== 0));
 
       if (clusterGroup.getLayers().length > 0) {
-        mapView.current.map.addLayer(clusterGroup);
+        map.addLayer(clusterGroup);
+        clusterGroupRef.current = clusterGroup; // Spara referensen
       }
     } else if (currentView === 'circles') {
       // Cirkel-lagret
       const circleGroup = L.layerGroup();
 
       mapData?.data?.forEach((obj) => {
-        // debugger;
         // Kontrollera om `obj.count` är ett nummer, annars sätt ett standardvärde.
         const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count) ? obj.doc_count : 1;// Sätter standard till 1 om count inte finns.
 
@@ -102,22 +111,32 @@ export default function MapView({
       });
 
       if (circleGroup.getLayers().length > 0) {
-        mapView.current.map.addLayer(circleGroup);
+        map.addLayer(circleGroup);
+        circleGroupRef.current = circleGroup; // Spara referensen
       }
     }
   };
 
+  // Bind zoomend när map är tillgänglig och när currentView ändras
+  useEffect(() => {
+    if (mapView.current && mapView.current.map) {
+      const handleZoomEnd = () => {
+        updateMap();
+      };
+      mapView.current.map.on('zoomend', handleZoomEnd);
+
+      // Rensa upp eventlistener när komponenten avmonteras eller map ändras
+      return () => {
+        mapView.current.map.off('zoomend', handleZoomEnd);
+      };
+    }
+    return undefined;
+  }, [mapView.current?.map, currentView, mapData]);
+
+  // Uppdatera kartan när mapData eller currentView ändras
   useEffect(() => {
     updateMap();
   }, [mapData, currentView]);
-
-  useEffect(() => {
-    if (mapView.current && mapView.current.map) {
-      mapView.current.map.on('zoomend', () => {
-        updateMap();
-      });
-    }
-  }, [currentView]);
 
   const mapBaseLayerChangeHandler = () => {
     // Uppdaterar kartan om underlagret ändras
