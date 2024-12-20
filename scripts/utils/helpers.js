@@ -102,7 +102,7 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   ];
 
   // Returnera en sträng med båda delarna separerade med ett mellanslag
-  return parts.join(' ');
+  return parts.join(' ').trim();
 }
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
