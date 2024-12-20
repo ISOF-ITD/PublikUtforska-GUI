@@ -83,7 +83,6 @@ function Warning() {
   );
 }
 
-
 export default function MapMenu({
   mode = 'material',
   params,
@@ -123,7 +122,7 @@ export default function MapMenu({
       <div className="popup-wrapper">
 
         <TranscribeButton
-          className="dummy popup-open-button visible ignore-expand-menu"
+          className="popup-open-button visible ignore-expand-menu"
           label={(
             <>
               <FontAwesomeIcon icon={faPen} />
@@ -135,9 +134,9 @@ export default function MapMenu({
         />
       </div>
       <div className="mapmenu-trigger-button">
-        <a onClick={() => setMenuExpanded(!menuExpanded)}>
+        <button onClick={() => setMenuExpanded(!menuExpanded)} type="button">
           <FontAwesomeIcon icon={menuExpanded ? faChevronLeft : faChevronRight} />
-        </a>
+        </button>
       </div>
       <div className="puffar">
         <div className="statistics puff">
@@ -161,21 +160,6 @@ export default function MapMenu({
             />
           </div>
         </div>
-
-         {/* <div className="puff news">
-          <h4>Nyheter och information</h4>
-          <p>
-            Hur används Isofs digitala arkivtjänst Folke?
-            Ordmolnet visar det senaste årets vanligaste sökningar.
-            På Folke finns delar av Isofs äldre folkminnessamlingar
-            tillgängliga för att läsa, ladda ned eller hjälpa till
-            att skriva av. Du hittar Folke här:&nbsp;
-            <a href="https://sok.folke.isof.se/">
-              https://sok.folke.isof.se/
-            </a>
-          </p>
-          <img src="https://i.ibb.co/0Z0Nwxs/M44mm8W.jpg" border="0" alt="" style={{ width: 250 }} />
-        </div> */}
       </div>
     </div>
   );

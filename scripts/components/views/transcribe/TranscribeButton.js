@@ -81,13 +81,13 @@ export default function TranscribeButton({
           {helptext}
         </div>
       )}
-      <div
+      <button
         className={`transcribe-button${className ? ` ${className}` : ''}`}
         onClick={effectiveOnClick}
         type="button"
       >
         {label}
-      </div>
+      </button>
     </div>
   );
 }
