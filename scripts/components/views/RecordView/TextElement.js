@@ -134,9 +134,11 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
 
   // if transcriptiontype !== 'sida'
   const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || '';
-  let textParts = highlightedText && highlight ? highlightedText.split(/\/\s*$/m) : text.split(/\/\s*$/m);
-  // Remove leading newline from text parts
-  textParts = textParts.map((part) => part.replace(/^\n/, ''));
+  // If there is highlighted text, use it, otherwise use the original text
+  const finalTextOutput = highlightedText && highlight ? highlightedText : text;
+  // Split the text into parts based on the string '/' (slash)
+  // and remove any leading newlines from each part
+  const textParts = finalTextOutput.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, ''));
   return (
     <main>
       {
