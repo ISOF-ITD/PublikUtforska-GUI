@@ -53,7 +53,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
       >
         <img
           src={imageUrl + mediaItem.source}
-          alt={mediaItem.title || mediaItem.source.split('/').pop()}
+          alt={mediaItem.title || ''}
           // lazy loading for long texts with many images
           loading="lazy"
         />
