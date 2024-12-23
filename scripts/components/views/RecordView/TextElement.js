@@ -56,6 +56,12 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           alt={mediaItem.title || ''}
           // lazy loading for long texts with many images
           loading="lazy"
+          style={{
+            // Förhindrar att bilden blir markerad
+            // när man markerar texten
+            userSelect: 'none',
+            pointerEvents: 'none',
+          }}
         />
 
         <div className="media-title sv-portlet-image-caption">
