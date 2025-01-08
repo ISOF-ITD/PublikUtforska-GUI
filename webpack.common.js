@@ -11,6 +11,7 @@ module.exports = {
     chunkFilename: 'chnk.[contenthash].js',
     path: path.resolve(__dirname, 'www'),
     clean: true,
+    publicPath: '/',
   },
   module: {
     rules: [

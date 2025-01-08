@@ -14,7 +14,7 @@ export default function FeedbackButton({
   const feedbackButtonClick = () => {
     if (window.eventBus) {
       window.eventBus.dispatch('overlay.feedback', {
-        url: `${config.siteUrl}#${pathname}`,
+        url: `${config.siteUrl}${pathname}`,
         title,
         type,
         country,

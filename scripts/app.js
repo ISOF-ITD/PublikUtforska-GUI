@@ -1,5 +1,5 @@
 import Client from 'react-dom/client';
-import { createHashRouter, RouterProvider, defer } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, defer } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
@@ -161,7 +161,7 @@ function createTranscribeRoute() {
   };
 }
 
-const router = createHashRouter([
+const router = createBrowserRouter([
   // Main routes changes Application mode: material or transcribe
   createRootRoute(),
   createTranscribeRoute(),

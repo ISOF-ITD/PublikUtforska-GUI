@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
 
@@ -123,7 +123,7 @@ export default function FeedbackOverlay() {
         <p>{config.siteOptions.feedbackText || 'Har du frågor eller synpunkter på hur applikationen fungerar? Har du hittat fel, till exempel i avskrifterna? Kontakta oss gärna!'}</p>
         <p>
           Du är nu på sidan '
-          <a href={location.pathname}>{location.pathname}</a>
+          <Link to={location.pathname}>{location.pathname}</Link>
           ' men kan också använda formuläret för mer generella förslag och synpunkter.
           <br />
           <br />

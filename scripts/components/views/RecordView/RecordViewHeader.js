@@ -35,16 +35,16 @@ const renderAccessionsNumber = (recordtype, archive) => (
     <strong>{l('Accessionsnummer')}</strong>
     :&nbsp;
     {recordtype === 'one_record' ? (
-      <a
+      <Link
         title={`Gå till accessionen ${archive.archive_id_row}`}
         style={{
           cursor: archive.archive_id_row ? 'pointer' : 'inherit',
           textDecoration: 'underline',
         }}
-        href={`#/records/${archive.archive_id_row}`}
+        to={`/records/${archive.archive_id_row}`}
       >
         {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
-      </a>
+      </Link>
     ) : (
       makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)
     )}

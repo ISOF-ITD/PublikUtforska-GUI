@@ -71,8 +71,8 @@ export default function LocalLibraryView({ headerText = 'Mina sparade upptecknin
 
   const footerContent = (
     <div className="drowdown-footer">
-      <ShareButton ref={shareButtonsRef} hideLink manualInit path={`${config.siteUrl}#/${shareLink}`} text={l('Några intressanta sägner på sägenkartan: ')} />
-      <a className="u-pull-right u-cursor-pointer" onClick={copyLinkClickHandler} data-url={`${config.siteUrl}#/${shareLink}`}>{l('Kopiera länk')}</a>
+      <ShareButton ref={shareButtonsRef} hideLink manualInit path={`${config.siteUrl}/${shareLink}`} text={l('Några intressanta sägner på sägenkartan: ')} />
+      <a className="u-pull-right u-cursor-pointer" onClick={copyLinkClickHandler} data-url={`${config.siteUrl}/${shareLink}`}>{l('Kopiera länk')}</a>
     </div>
   );
 

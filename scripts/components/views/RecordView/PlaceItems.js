@@ -13,7 +13,7 @@ function PlaceItems({ data, routeParams = '' }) {
       id, specification, name, fylke, harad, landskap,
     } = place;
     const placeName = `${specification ? `${specification} i ` : ''}${name}, ${fylke || harad}, ${landskap || ''}`;
-    const linkUrl = `#/places/${id}${routeParams}`;
+    const linkUrl = `/places/${id}${routeParams}`;
 
     return (
       <tr key={id}>
