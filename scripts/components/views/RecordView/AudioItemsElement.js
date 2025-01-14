@@ -26,7 +26,7 @@ export default function AudioItems({ data }) {
           media={mediaItem}
           recordId={id}
           recordTitle={getAudioTitle(
-            title,
+            mediaItem.title,
             contents,
             archiveOrg,
             archive,
@@ -38,7 +38,7 @@ export default function AudioItems({ data }) {
       </td>
       <td>
         {getAudioTitle(
-          title,
+          mediaItem.title,
           contents,
           archiveOrg,
           archive,
