@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import SimpleMap from '../SimpleMap';
 import { l } from '../../../lang/Lang';
@@ -18,7 +19,7 @@ function PlaceItems({ data, routeParams = '' }) {
     return (
       <tr key={id}>
         <td>
-          <a href={linkUrl}>{placeName}</a>
+          <Link to={linkUrl}>{placeName}</Link>
         </td>
       </tr>
     );
