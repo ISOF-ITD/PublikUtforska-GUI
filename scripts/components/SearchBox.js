@@ -67,6 +67,22 @@ export default function SearchBox({
   const { metadata: { total: pictureTotal } } = pictureRecordsData;
   // : totalFromSearchRoute || totalFromRecordsRoute || totalFromRootRoute;
 
+  function getSearchLabel() {
+    if (person) {
+      const name = person.name || search;
+      const birthInfo = person.birth_year ? ` (född ${person.birth_year})` : '';
+      return `${name}${birthInfo}`;
+    }
+
+    if (place) {
+      const name = place.name || search;
+      const landskapInfo = place.landskap ? ` (${place.landskap})` : '';
+      return `${name}${landskapInfo}`;
+    }
+
+    return search;
+  }
+
   const executeSearch = (keywordParam, searchFieldValueParam = null, categoryToToggle = null) => {
     // Initialize newCategories with the current categories
     let newCategories = categories;
@@ -118,7 +134,7 @@ export default function SearchBox({
     fetch(url, { mode: 'cors' }).then((response) => response.json()).then((json) => {
       // Check if the JSON is valid and in the expected format
       if (!Array.isArray(json)) {
-        throw new Error("Invalid JSON format");
+        throw new Error('Invalid JSON format');
       }
       // for every row in json, copy row["label"] to row["value"]
       const newJson = json.map((row) => ({ ...row, value: row.label }));
@@ -177,7 +193,8 @@ export default function SearchBox({
 
   const getProvinceAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
-    // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/landskap
+    // fetch data from api,
+    // sending the keyword as query "search" parameter to /autocomplete/landskap
     fetch(`${path}autocomplete/landskap?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
@@ -191,7 +208,8 @@ export default function SearchBox({
 
   const getArchiveIdAutocomplete = (keywordParam) => {
     const path = config.apiUrl;
-    // fetch data from api, sending the keyword as query "search" parameter to /autocomplete/archive_ids and add required params
+    // fetch data from api, sending the keyword as query "search" parameter
+    // to /autocomplete/archive_ids and add required params
     fetch(`${path}autocomplete/archive_ids?search=${keywordParam}`, { mode: 'cors' }).then((response) => response.json()).then(({ data }) => {
       // for every row in data, add row["name"] to search suggestions
       const suggestions = data.map((row) => ({
@@ -560,11 +578,7 @@ export default function SearchBox({
             }
             <strong>
               {
-                person
-                  ? `${person.name || search}${person.birth_year ? ` (född ${person.birth_year})` : ''}`
-                  : place
-                    ? `${place.name || search} ${place.landskap ? `(${place.landskap})` : ''}`
-                    : search
+                getSearchLabel()
               }
             </strong>
             <br />
@@ -609,8 +623,9 @@ export default function SearchBox({
           }
         </div>
         <div className="search-field-buttons">
-          {/* only show clear button when there is text to clear or if there is text in the input field */}
           {
+            // only show clear button when there is text to clear
+            // or if there is text in the input field
             (search || document.getElementById('searchInputMapMenu')?.value)
             && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
           }
@@ -631,8 +646,7 @@ export default function SearchBox({
           {
             loading
             && (
-              <button
-                type="button"
+              <div
                 className="search-spinner"
                 style={{
                   visibility: person || place ? 'hidden' : 'unset',
@@ -676,43 +690,31 @@ export default function SearchBox({
               total.value > 0
               && !loading
               && (
-                <div
-                  className={[
-                    'popup-open-button',
-                    'visible',
-                    'ignore-expand-menu',
-                  ].join(' ')}
+                <button
+                  className="popup-open-button"
+                  type="button"
                   onClick={openButtonClickHandler}
                   onKeyUp={openButtonKeyUpHandler}
                   tabIndex={0}
-                  type="button"
                 >
-                  <span className="ignore-expand-menu">
-                    <FontAwesomeIcon icon={faList} />
-                    {' '}
-                    Visa
-                    {' '}
-                    {total.value}
-                    {total.relation === 'gte' ? '+' : ''}
-                    {' '}
-                    sökträffar som lista
-                  </span>
-                </div>
+                  <FontAwesomeIcon icon={faList} />
+                  {` Visa ${total.value}${total.relation === 'gte' ? '+' : ''} sökträffar som lista`}
+                </button>
               )
             }
             {loading
               && (
-                <div className="popup-open-button visible ignore-expand-menu" style={{ cursor: 'unset' }}>
-                  <span className="ignore-expand-menu">Söker...</span>
-                </div>
+                <button className="popup-open-button disabled" type="button">
+                  <span>Söker...</span>
+                </button>
               )}
             {
               total.value === 0
               && !loading
               && (
-                <div className="popup-open-button visible ignore-expand-menu" style={{ cursor: 'unset' }}>
-                  <span className="ignore-expand-menu">0 sökträffar</span>
-                </div>
+                <button className="popup-open-button visible disabled" type="button">
+                  <span>0 sökträffar</span>
+                </button>
               )
             }
           </div>

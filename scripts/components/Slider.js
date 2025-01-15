@@ -13,6 +13,7 @@ export default function Slider({
   useEffect(() => {
     const slider = noUiSlider.create(sliderRef.current, {
       start,
+      connect: [true, false],
       behaviour,
       range: {
         min: [0],

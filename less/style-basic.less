@@ -21,6 +21,7 @@
 @import "nouislider.min.less";
 @import "./ui-components/element-notification-message.less";
 @import "ui-components/share-buttons.less";
+@import "ui-components/similar-records.less";
 @import "ui-components/feedback-buttons.less";
 @import "ui-components/image-map.less";
 @import "ui-components/records-list.less";
@@ -32,6 +33,10 @@
 @import "ui-components/transcription-page-overlay.less";
 
 @import "statistics.less";
+
+html {
+	-webkit-text-size-adjust: 100%; /* Förhindra Safari från att automatiskt justera textstorleken */
+  }
 
 // @import "accessibility.less";
 // Accessibility
@@ -140,7 +145,7 @@ button {
 	font-size: 0.7rem;
 }
 
-h2 {
+h1, h2 {
 	font-size: 2rem;
 	.lighter {
 		font-size: 1.4rem;
@@ -404,8 +409,7 @@ audio::-webkit-media-controls-enclosure {
 	}
 }
 
-// used in comment in records
-div.display-line-breaks {
+.display-line-breaks {
 	white-space: pre-wrap;
 	word-wrap: break-word;
 }
@@ -441,7 +445,7 @@ div.display-line-breaks {
 
 
 
-.record-text {
+.record-text, .record-view-thumbnails {
 	// div with a white background, a slight shadow to make
 	// it look like it's lifted off the page, rounded corners
 	// to give it a more organic feel, and some padding to 
@@ -530,7 +534,7 @@ header .logo, footer .logo {
 	}
 }
 
-footer, header {
+footer {
 	visibility: hidden;
 
 	background: transparent !important;

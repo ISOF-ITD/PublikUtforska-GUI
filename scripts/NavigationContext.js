@@ -2,7 +2,12 @@ import { createContext, useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
 
-export const NavigationContext = createContext([]);
+export const NavigationContext = createContext({
+  previousNavigation: null,
+  addToNavigationHistory: () => {},
+  removeLatestFromNavigationHistory: () => {},
+  clearNavigationHistory: () => {},
+});
 
 function NavigationContextProvider({ children }) {
   NavigationContextProvider.propTypes = {
@@ -11,10 +16,12 @@ function NavigationContextProvider({ children }) {
 
   const [navigationHistory, setNavigationHistory] = useState([]);
 
-  const previousNavigation = navigationHistory[navigationHistory.length - 2];
+  const previousNavigation = navigationHistory.length >= 2
+    ? navigationHistory[navigationHistory.length - 2]
+    : null;
 
-  const addToNavigationHistory = (type, id) => {
-    setNavigationHistory([...navigationHistory, { type, id }]);
+  const addToNavigationHistory = (path) => {
+    setNavigationHistory([...navigationHistory, path]);
   };
 
   const removeLatestFromNavigationHistory = () => {

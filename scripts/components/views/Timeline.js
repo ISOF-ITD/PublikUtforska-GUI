@@ -61,6 +61,7 @@ function Timeline({
       search: params.search ? encodeURIComponent(params.search) : undefined,
       recordtype: params.recordtype || (mode === 'transcribe' ? 'one_accession_row' : (filter || null)),
       transcriptionstatus: 'published,accession',
+      category: params.category ? encodeURIComponent(params.category) : undefined,
     };
 
     const paramStrings = [];
@@ -92,7 +93,7 @@ function Timeline({
     const paramString = paramStrings.join('&');
 
     // create fetchUrl. if value is undefined, it will be ignored
-    const fetchUrl = `${config.apiUrl}collection_years?${paramString}`;
+    const fetchUrl = `${config.apiUrl}collection_years/?${paramString}`;
 
     fetch(fetchUrl, {
       method: 'GET',
@@ -160,16 +161,17 @@ function Timeline({
       .attr('transform', `translate(0,${svgHeight})`) // svgHeight höjden på din SVG.
       .call(xAxis);
 
-    // Draw bars with blue color
-    svg.selectAll('rect')
+    const minBarHeight = 3; // Minsta stapelhöjd i pixlar
+
+    svg.selectAll('rect.bar')
       .data(data)
       .enter()
       .append('rect')
       .attr('x', (d) => xScale(d.year))
-      .attr('y', (d) => yScale(d.doc_count))
-      .attr('height', (d) => svgHeight - yScale(d.doc_count))
+      .attr('y', (d) => (d.doc_count > 0 ? Math.min(yScale(d.doc_count), svgHeight - minBarHeight) : yScale(d.doc_count)))
+      .attr('height', (d) => (d.doc_count > 0 ? Math.max(svgHeight - yScale(d.doc_count), minBarHeight) : svgHeight - yScale(d.doc_count)))
       .attr('width', xScale.bandwidth())
-      .attr('fill', '#01535d'); // Bars are blue
+      .attr('fill', '#01535d');
 
     const verticalLine = svg.append('line')
       .style('display', 'none')

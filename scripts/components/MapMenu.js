@@ -83,7 +83,6 @@ function Warning() {
   );
 }
 
-
 export default function MapMenu({
   mode = 'material',
   params,
@@ -96,7 +95,7 @@ export default function MapMenu({
   const [menuExpanded, setMenuExpanded] = useState(!isMobile);
 
   const paramsLatest = {
-    size: 10,
+    size: 20,
     recordtype: 'one_record',
     transcriptionstatus: 'published',
     sort: 'changedate', // 'transcriptiondate', // 'approvedate',
@@ -123,7 +122,7 @@ export default function MapMenu({
       <div className="popup-wrapper">
 
         <TranscribeButton
-          className="dummy popup-open-button visible ignore-expand-menu"
+          className="popup-open-button visible ignore-expand-menu"
           label={(
             <>
               <FontAwesomeIcon icon={faPen} />
@@ -135,9 +134,9 @@ export default function MapMenu({
         />
       </div>
       <div className="mapmenu-trigger-button">
-        <a onClick={() => setMenuExpanded(!menuExpanded)}>
+        <button onClick={() => setMenuExpanded(!menuExpanded)} type="button">
           <FontAwesomeIcon icon={menuExpanded ? faChevronLeft : faChevronRight} />
-        </a>
+        </button>
       </div>
       <div className="puffar">
         <div className="statistics puff">
@@ -152,8 +151,8 @@ export default function MapMenu({
               disableListPagination
               columns={['title', 'year', 'place', 'transcribedby']}
               tableClass="table-compressed"
-              // möjliggör att visa 50 poster efter en klick på "visa fler"
-              sizeMore={50}
+                // möjliggör att visa 50 poster efter en klick på "visa fler"
+              // sizeMore={50}
                 // interval is 60 sec, if visible is true and the web browser is in focus
               interval={60000}
               hasFilter={false}
@@ -161,21 +160,6 @@ export default function MapMenu({
             />
           </div>
         </div>
-
-         {/* <div className="puff news">
-          <h4>Nyheter och information</h4>
-          <p>
-            Hur används Isofs digitala arkivtjänst Folke?
-            Ordmolnet visar det senaste årets vanligaste sökningar.
-            På Folke finns delar av Isofs äldre folkminnessamlingar
-            tillgängliga för att läsa, ladda ned eller hjälpa till
-            att skriva av. Du hittar Folke här:&nbsp;
-            <a href="https://sok.folke.isof.se/">
-              https://sok.folke.isof.se/
-            </a>
-          </p>
-          <img src="https://i.ibb.co/0Z0Nwxs/M44mm8W.jpg" border="0" alt="" style={{ width: 250 }} />
-        </div> */}
       </div>
     </div>
   );

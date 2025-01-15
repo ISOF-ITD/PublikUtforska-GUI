@@ -1,8 +1,9 @@
 import Client from 'react-dom/client';
 import { createHashRouter, RouterProvider, defer } from 'react-router-dom';
+import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
-import RecordView from './components/views/RecordView';
+import RecordView from './components/views/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
 
@@ -22,6 +23,8 @@ import NavigationContextProvider from './NavigationContext';
 const container = document.getElementById('app');
 const root = Client.createRoot(container);
 
+window.eventBus = EventBus;
+
 function fetchMapAndCountRecords(params) {
   const mapPromise = fetch(getMapFetchLocation(params)).then((resp) => resp.json());
   const recordsPromise = fetch(getRecordsCountLocation(params)).then((resp) => resp.json());
@@ -36,33 +39,31 @@ function fetchPlace(placeId) {
   return fetch(getPlaceFetchLocation(placeId)).then((resp) => resp.json());
 }
 
-function fetchRecord(recordId, searchValue = null) {
+function fetchRecordAndCountSubrecords(recordId, searchValue = null) {
   // if there is a search value, we use both the search and the document endpoint because
-  // the search endpoint it will return highlighted text also
-  if (searchValue) {
-    const recordsPromise = fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }))
-      .then((resp) => resp.json());
-    const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
-    return Promise.all([recordsPromise, recordPromise]);
-  }
-  // otherwise we use the document endpoint, which will only return the document without
-  // performing a search
+  // the search endpoint will return highlighted text also
+  // making sure to use the same search and highlight logic including stemmers
+  const recordsPromise = searchValue
+    ? fetch(
+      getRecordsFetchLocation({ search: searchValue, id: recordId }),
+    ).then((resp) => resp.json())
+    : Promise.resolve(null);
+
+  // Hämta huvudposten direkt
   const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
-  return Promise.all([recordPromise]);
+
+  // Hämta subrecords count
+  const subrecordsCountPromise = fetch(getRecordsCountLocation({ search: recordId, recordtype: 'one_record' }))
+    .then((resp) => resp.json());
+
+  return Promise.all([recordsPromise, recordPromise, subrecordsCountPromise]);
 }
 
 function fetchPerson(personId) {
   return fetch(getPersonFetchLocation(personId));
 }
 
-const openSwitcherHelptext = () => {
-  if (window.eventBus) {
-    window.eventBus.dispatch('overlay.switcherHelpText', {
-    });
-  }
-};
-
-// prefix is either 'transcribe' or ''
+// prefix is either 'transcribe' or '' for respectively Application mode trnascribe or material
 function createPopupRoutes(prefix) {
   return [
     {
@@ -72,9 +73,6 @@ function createPopupRoutes(prefix) {
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
-          onClose={() => {
-            window.history.back();
-          }}
           routeId={`${prefix}place`}
         >
           <PlaceView mode={prefix.slice(0, -1) || 'material'} />
@@ -84,16 +82,13 @@ function createPopupRoutes(prefix) {
     {
       path: 'records/:recordId/*?',
       id: `${prefix}record`,
-      loader: async ({ params: { recordId, '*': star } }) => fetchRecord(recordId, createParamsFromSearchRoute(star).search),
+      loader: ({ params: { recordId, '*': star } }) => defer({ results: fetchRecordAndCountSubrecords(recordId, createParamsFromSearchRoute(star).search) }),
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
-          onClose={() => {
-            window.history.back();
-          }}
           routeId={`${prefix}record`}
         >
-          <RecordView mode={prefix.slice(0, -1) || 'material'} openSwitcherHelptext={openSwitcherHelptext} />
+          <RecordView mode={prefix.slice(0, -1) || 'material'} />
         </RoutePopupWindow>
       ),
     },
@@ -104,9 +99,6 @@ function createPopupRoutes(prefix) {
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
-          onClose={() => {
-            window.history.back();
-          }}
           routeId={`${prefix}person`}
         >
           <PersonView mode={prefix.slice(0, -1) || 'material'} />
@@ -116,6 +108,7 @@ function createPopupRoutes(prefix) {
   ];
 }
 
+// Main Application mode 'material' (empty route) routes
 function createRootRoute() {
   return {
     path: '/*?',
@@ -131,17 +124,17 @@ function createRootRoute() {
       });
     },
     shouldRevalidate: ({ currentParams, nextParams }) => {
-      // hämta inte om data om bara en url-parameter ändrats!
-      const currentQuery = createParamsFromSearchRoute(currentParams['*']);
-      const nextQuery = createParamsFromSearchRoute(nextParams['*']);
-      return JSON.stringify(currentQuery) !== JSON.stringify(nextQuery);
+      const current = currentParams['*'] || '';
+      const next = nextParams['*'] || '';
+      return current !== next;
     },
     id: 'root',
-    element: <Application mode="material" openSwitcherHelptext={openSwitcherHelptext} />,
+    element: <Application mode="material" />,
     children: createPopupRoutes(''),
   };
 }
 
+// Main Application mode 'transcribe' routes
 function createTranscribeRoute() {
   return {
     path: '/transcribe/*?',
@@ -158,10 +151,9 @@ function createTranscribeRoute() {
       });
     },
     shouldRevalidate: ({ currentParams, nextParams }) => {
-      // hämta inte om data om bara en url-parameter ändrats!
-      const currentQuery = createParamsFromSearchRoute(currentParams['*']);
-      const nextQuery = createParamsFromSearchRoute(nextParams['*']);
-      return JSON.stringify(currentQuery) !== JSON.stringify(nextQuery);
+      const current = currentParams['*'] || '';
+      const next = nextParams['*'] || '';
+      return JSON.stringify(current) !== JSON.stringify(next);
     },
     id: 'transcribe-root',
     element: <Application mode="transcribe" />,
@@ -170,11 +162,13 @@ function createTranscribeRoute() {
 }
 
 const router = createHashRouter([
+  // Main routes changes Application mode: material or transcribe
   createRootRoute(),
   createTranscribeRoute(),
 ]);
 
 root.render(
+  // vi vill hålla koll på Navigationen i hela appen
   <NavigationContextProvider>
     <RouterProvider router={router} />
   </NavigationContextProvider>,

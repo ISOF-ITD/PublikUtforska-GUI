@@ -102,7 +102,7 @@ function TranscriptionForm({
           <label htmlFor="transcription_email">Din e-post adress (frivilligt):</label>
           <input
             id="transcription_email"
-            autoComplete=""
+            autoComplete="email"
             name="emailInput"
             className={`u-full-width ${emailValid ? '' : 'invalid'}`}
             type="email"

@@ -35,7 +35,7 @@
 		left: 422px;
 		position: absolute;
 
-		a {
+		button {
 			pointer-events: all;
 			box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
 			padding: 0;
@@ -45,6 +45,7 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
+			border: none;
 			border-radius: 0 4px 4px 0;
 		}
 	}
@@ -398,8 +399,9 @@
 				right: 16px;
 			}
 
-			button {
+			button, .search-spinner {
 				border: none;
+				display: inline-block;
 
 				width: 30px;
 				height: 30px;
@@ -425,6 +427,7 @@
 				background-repeat: no-repeat;
 				// animate spinner, rotate it
 				animation: spin 1s infinite linear;
+				width: 60px;
 			}
 
 			@keyframes spin {
@@ -524,7 +527,8 @@
 
 			input[type="text"] {
 				opacity: 1;
-
+				font-family: 'Source Sans Pro', sans-serif;
+				font-size: 16px;
 				pointer-events: all;
 			}
 

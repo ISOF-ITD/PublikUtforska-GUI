@@ -1,97 +1,65 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useState, useContext } from 'react';
+import {
+  useEffect, useState, useContext, memo,
+} from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { l } from '../lang/Lang';
 import { NavigationContext } from '../NavigationContext';
+import { removeViewParamsFromRoute } from '../utils/routeHelper';
 
-// Main CSS: ui-components/poupwindow.less
+// Main CSS: ui-components/popupwindow.less
 
-const useNavigationCount = () => {
-  const [navigationCount, setNavigationCount] = useState(0);
-  const location = useLocation();
-
-  useEffect(() => {
-    setNavigationCount((prevCount) => prevCount + 1);
-  }, [location]);
-
-  return navigationCount;
-};
-
-export default function RoutePopupWindow({
+const RoutePopupWindow = memo(({
   children,
-  onClose = null,
   manuallyOpenPopup = false,
   onHide = null,
   onShow = null,
   closeButtonStyle = 'white',
-  routeId = null,
-}) {
+}) => {
   const [windowOpen, setWindowOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
-  const navigationCount = useNavigationCount();
-
   const navigate = useNavigate();
-  const params = useParams();
+  const location = useLocation();
 
   const {
     previousNavigation,
-    addToNavigationHistory,
-    removeLatestFromNavigationHistory,
-    clearNavigationHistory,
   } = useContext(NavigationContext);
 
-  useEffect(() => {
-    const { recordId, placeId, personId } = params;
-    if (recordId || placeId || personId) {
-      addToNavigationHistory(
-        recordId
-          ? 'record'
-          : placeId
-            ? 'place'
-            : 'person',
-        recordId || placeId || personId,
-      );
-    }
-  }, [params.recordId, params.placeId, params.personId]);
-
-  // on unmount, clear navigation history
-  useEffect(() => () => clearNavigationHistory(), []);
-
   const closeButtonClick = () => {
-    if (children.props.manuallyOpenPopup || manuallyOpenPopup) {
+    if (manuallyOpenPopup) {
       setWindowOpen(false);
       setManualOpen(false);
-    } else if (routeId === 'record' || routeId === 'transcribe-record' || routeId === 'place' || routeId === 'transcribe-place' || routeId === 'person' || routeId === 'transcribe-person') {
-      // remove latest navigation from navigationHistory
-      const { type, id } = previousNavigation || { type: null, id: null };
-      const navigationPath = `${routeId.startsWith('transcribe') ? '/transcribe/' : '/'}${
-        // add placeId to search route if it exists in context
-        id
-          ? `${type}s/${id}/`
-          : ''
-      }${
-        createSearchRoute(createParamsFromSearchRoute(params['*'])).replace(/^\//, '')
-      }`;
-      // Check if a back navigation would navigate out of our app
-      if (window.history.length - 1 > navigationCount) {
-        // It would not, so we can safely use window.history.back()
-        window.history.back();
-      } else {
-        // It would, so we navigate programmatically instead
-        navigate(navigationPath);
-      }
+    } else {
+      const path = removeViewParamsFromRoute(location.pathname);
+      navigate(path);
+    }
+  };
 
-      removeLatestFromNavigationHistory();
-    } else if (onClose) {
-      onClose();
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      closeButtonClick();
+    }
+  };
+
+  const backButtonClick = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate('/');
     }
   };
 
   const closeButtonKeyUp = (event) => {
-    if (event.keyCode === 13) {
+    if (event.key === 'Enter') {
       closeButtonClick(event);
+    }
+  };
+
+  const backButtonKeyUp = (event) => {
+    if (event.key === 'Enter') {
+      backButtonClick(event);
     }
   };
 
@@ -106,7 +74,6 @@ export default function RoutePopupWindow({
     }
     setWindowOpen(!manuallyOpenPopup);
 
-    // componentWillUnmount
     return () => {
       if (onHide) {
         onHide();
@@ -115,50 +82,66 @@ export default function RoutePopupWindow({
         window.eventBus.dispatch('popup.close');
       }
     };
-  }, []);
+  }, [manuallyOpenPopup, onHide]);
 
-  if (windowOpen || manualOpen) {
-    if (onShow) {
-      onShow();
-    }
-    if (window.eventBus) {
-      setTimeout(() => {
-        window.eventBus.dispatch('popup.open');
-      }, 100);
-    }
-  } else {
-    if (onHide) {
-      onHide();
-    }
-    if (window.eventBus) {
-      setTimeout(() => {
-        window.eventBus.dispatch('popup.close');
-      }, 100);
-    }
-  }
-
-  // when this component receives changes, scroll to top of popup
   useEffect(() => {
-    // get all popup windows
-    const els = document.getElementsByClassName('popup-content-wrapper');
-    if (els.length > 0) {
-      // in the last popup window, scroll to top
-      els[els.length - 1].scrollTop = 0;
+    if (windowOpen || manualOpen) {
+      if (onShow) {
+        onShow();
+      }
+      if (window.eventBus) {
+        setTimeout(() => {
+          window.eventBus.dispatch('popup.open');
+        }, 100);
+      }
+      window.addEventListener('keydown', handleKeyDown);
+    } else {
+      if (onHide) {
+        onHide();
+      }
+      if (window.eventBus) {
+        setTimeout(() => {
+          window.eventBus.dispatch('popup.close');
+        }, 100);
+      }
+      window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [children]);
+  }, [windowOpen, manualOpen, onShow, onHide]);
+
+  const shouldShowBackButton = previousNavigation;
 
   if (windowOpen || manualOpen) {
-    // TODO: do we want to render the popup even if it's not visible?
     return (
-      <div className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}>
-        <div className="popup-content-wrapper">
+      <div
+        className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}
+      >
+        {/* eslint-disable jsx-a11y/click-events-have-key-events */ }
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+        <div
+          className="popup-content-wrapper"
+          // klick utanför page content stänger popup
+          onClick={(e) => { if (e.target.classList?.contains('popup-content-wrapper')) { closeButtonClick(); }}}
+        >
           <div className="page-content">
-            <a
+            <button
+              type="button"
               tabIndex={0}
-              className={`close-button${closeButtonStyle == 'dark' ? '' : closeButtonStyle == 'white' ? ' white' : ' white'}`}
+              aria-label="Close"
+              title={l('Stäng')}
+              className={`close-button${closeButtonStyle === 'dark' ? '' : ' white'}`}
               onClick={closeButtonClick}
               onKeyUp={closeButtonKeyUp}
             />
+            {shouldShowBackButton && !(children.props.manuallyOpenPopup || manuallyOpenPopup) && (
+              <button
+                type="button"
+                aria-label="Back"
+                title={l('Gå tillbaka')}
+                className="back-button white"
+                onClick={backButtonClick}
+                onKeyUp={backButtonKeyUp}
+              />
+            )}
             {children}
           </div>
         </div>
@@ -166,14 +149,16 @@ export default function RoutePopupWindow({
     );
   }
   return null;
-}
+});
+
+RoutePopupWindow.displayName = 'RoutePopupWindow';
+
+export default RoutePopupWindow;
 
 RoutePopupWindow.propTypes = {
   children: PropTypes.node.isRequired,
-  onClose: PropTypes.func,
   manuallyOpenPopup: PropTypes.bool,
   onHide: PropTypes.func,
   onShow: PropTypes.func,
   closeButtonStyle: PropTypes.string,
-  routeId: PropTypes.string,
 };

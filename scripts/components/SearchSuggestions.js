@@ -78,7 +78,7 @@ const SearchSuggestions = forwardRef(
               <br />
               {
                 // show comment if it exists and if it matches the search
-                item.comment?.toLowerCase().includes(search.toLowerCase())
+                search && item.comment?.toLowerCase().includes(search.toLowerCase())
                 && item.comment.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
                   <small
                     key={i}
@@ -114,6 +114,8 @@ const SearchSuggestions = forwardRef(
     );
   },
 );
+
+SearchSuggestions.displayName = 'SearchSuggestions';
 
 export default SearchSuggestions;
 

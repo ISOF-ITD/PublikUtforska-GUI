@@ -2,8 +2,19 @@
 <html lang="sv">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Folke sök - Institutet för språk och folkminnen</title>
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png"/>
+    <style>
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: 80px;
+        }
+    </style>
     <script type="text/javascript">
         const hostname = window.location.hostname;
         const is_dev = ["127.0.0.1", "localhost", "0.0.0.0"].some((element) =>
@@ -90,7 +101,9 @@
 
 <body>
     <!-- Page content starts here -->
-    <div id="app"></div>
+    <div id="app">
+        <img src="img/loader.gif" class="loader">
+    </div>
     <!-- Page content stops here -->
 
     <!-- add a overlay on the top right corner that is always above all other elements and shows

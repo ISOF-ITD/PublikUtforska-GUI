@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
 import {
-  useNavigate, useLoaderData, useParams, Outlet,
+  useState, useEffect, useContext,
+} from 'react';
+import {
+  useNavigate,
+  useLoaderData,
+  useParams,
+  Outlet,
+  useLocation,
 } from 'react-router-dom';
-
-import EventBus from 'eventbusjs';
 
 import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
@@ -15,8 +19,9 @@ import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/transcribe/TranscriptionHelpOverlay';
 import TranscriptionOverlay from './views/transcribe/TranscriptionOverlay';
 import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPageByPageOverlay';
-import SwitcherHelpTextOverlay from './views/SwitcherHelpTextOverlay';
+import HelpTextOverlay from './views/HelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
+import { NavigationContext } from '../NavigationContext';
 
 import MapWrapper from './MapWrapper';
 import Header from './Header';
@@ -27,27 +32,27 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 import config from '../config';
 
 export default function Application({
-  children, mode = 'material', openSwitcherHelptext,
+  mode = 'material',
 }) {
-  Application.propTypes = {
-    children: PropTypes.node.isRequired,
-    mode: PropTypes.string.isRequired,
-    openSwitcherHelptext: PropTypes.func.isRequired,
-  };
-
-  window.eventBus = EventBus;
-
   const navigate = useNavigate();
+  const location = useLocation(); // Added useLocation
   const { results, audioResults, pictureResults } = useLoaderData();
   const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: { } });
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: { } });
   const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: { } });
   const [loading, setLoading] = useState(true);
-  const [transcriptionPageByPageOverlayVisible, setTranscriptionPageByPageOverlayVisible] = useState(false);
+  const [
+    transcriptionPageByPageOverlayVisible,
+    setTranscriptionPageByPageOverlayVisible,
+  ] = useState(false);
   const [transcriptionPageByPageEvent, setTranscriptionPageByPageEvent] = useState(null);
 
   const params = useParams();
+
+  const {
+    addToNavigationHistory,
+  } = useContext(NavigationContext);
 
   const mapMarkerClick = (placeId) => {
     let target = `/places/${(placeId)}${createSearchRoute(createParamsFromSearchRoute(params['*']))}`;
@@ -81,7 +86,6 @@ export default function Application({
   const handleShowOverlay = (event) => {
     setTranscriptionPageByPageOverlayVisible(true);
     setTranscriptionPageByPageEvent(event);
-
   };
 
   const handleHideOverlay = () => {
@@ -92,13 +96,12 @@ export default function Application({
     window.eventBus.addEventListener('overlay.transcribePageByPage', handleShowOverlay);
     window.eventBus.addEventListener('overlay.hide', handleHideOverlay);
 
-    // Lyssna på event när ljudspelare syns, lägger till .has-docked-control till body class
+    // Listen for events when the audio player becomes visible
     window.eventBus.addEventListener('audio.playervisible', () => {
-      // När GlobalAudioPlayer visas lägger vi till class till document.body för att
-      // få utrymme för ljudspelaren i gränssnittet
+      // When GlobalAudioPlayer is visible, add class to document.body to make space for the audio player in the UI
       document.body.classList.add('has-docked-control');
     });
-    // lyssna på när ljudspelaren stängs, ta bort .has-docked-control från body class
+    // Listen for when the audio player is hidden, remove .has-docked-control from body class
     window.eventBus.addEventListener('audio.playerhidden', () => {
       document.body.classList.remove('has-docked-control');
     });
@@ -115,7 +118,7 @@ export default function Application({
       setLoading(false);
     });
 
-    // on unmount, remove listeners to clean as you always should do (might not be needed)
+    // Cleanup event listeners on unmount
     return () => {
       window.eventBus.removeEventListener('audio.playervisible');
       window.eventBus.removeEventListener('audio.playerhidden');
@@ -123,7 +126,12 @@ export default function Application({
       window.eventBus.removeEventListener('overlay.transcribePageByPage', handleShowOverlay);
       window.eventBus.removeEventListener('overlay.hide', handleHideOverlay);
     };
-  }, []);
+  }, [location.pathname, location.search, results]);
+
+  // Separate useEffect to handle location changes, tracking for "back"-button in RoutePopupWindow
+  useEffect(() => {
+    addToNavigationHistory(`${location.pathname}${location.search}`);
+  }, [location]);
 
   return (
     <AudioProvider>
@@ -133,14 +141,10 @@ export default function Application({
             openButtonLabel="Visa sökträffar som lista"
             disableRouterPagination
             mode={mode}
-            openSwitcherHelptext={openSwitcherHelptext}
           />
         </RoutePopupWindow>
 
         <Outlet />
-        {
-          children
-        }
 
         <Header />
 
@@ -169,9 +173,13 @@ export default function Application({
           )
         }
         <TranscriptionHelpOverlay />
-        <SwitcherHelpTextOverlay />
+        <HelpTextOverlay />
         <Footer />
       </div>
     </AudioProvider>
   );
 }
+
+Application.propTypes = {
+  mode: PropTypes.string.isRequired,
+};

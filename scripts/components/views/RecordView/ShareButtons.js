@@ -5,9 +5,10 @@ import {
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
-import clipboard from '../utils/clipboard';
+import clipboard from '../../../utils/clipboard';
 
 export default function ShareButtons({
+  breakAll = false,
   manualInit = false,
   path = '',
   title = '',
@@ -52,7 +53,7 @@ export default function ShareButtons({
       {title && title !== ''
         && (
           <div>
-            <label>{title}</label>
+            <span className="label">{title}</span>
             <div className="u-cf" />
           </div>
         )}
@@ -70,7 +71,10 @@ export default function ShareButtons({
               <FontAwesomeIcon icon={faCopy} />
             </a>
             &nbsp;
-            <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick}>
+            <span className={`copy-link ${copyMessageVisible ? 'copy-message' : ''}`} onClick={handleCopyLinkClick} style={{
+              wordBreak: breakAll ? 'break-all' : 'normal',
+              overflowWrap: 'break-word',
+            }}>
               {copyMessageVisible
                 ? (
                   <>
@@ -98,6 +102,7 @@ export default function ShareButtons({
 }
 
 ShareButtons.propTypes = {
+  breakAll: PropTypes.bool.isRequired,
   manualInit: PropTypes.bool,
   path: PropTypes.string,
   title: PropTypes.string,

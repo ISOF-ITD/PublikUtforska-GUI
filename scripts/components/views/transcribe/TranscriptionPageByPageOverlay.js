@@ -255,7 +255,8 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
       })
         .then((response) => response.json())
         .then((responseData) => {
-          if (responseData.success || responseData.success === 'true') {
+          // Kolla att värdet på success är 'true' och inte 'false'
+          if (responseData.success && responseData.success === 'true') {
             // Markera sidan som skickad och sparad
             setPages((prevPages) => {
               const newPages = [...prevPages];
@@ -269,7 +270,7 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
             }
 
             if (window.eventBus) {
-              window.eventBus.dispatch('overlay.transcribePageByPage.sent');
+              window.eventBus.dispatch('overlay.transcribe.sent');
             }
 
             // setComment('');

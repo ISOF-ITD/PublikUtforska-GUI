@@ -1,5 +1,7 @@
 import config from '../config';
 import { l } from '../lang/Lang';
+import archiveLogoIsof from '../../img/archive-logo-isof.png';
+import archiveLogoIkos from '../../img/archive-logo-ikos.png';
 
 export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
   let text = `${page}`;
@@ -10,19 +12,158 @@ export function pageFromTo({ _source: { archive: { page, total_pages: totalPages
   return text;
 }
 
-export function getTitle(title, contents) {
-  switch (!!title) {
-    case true:
-      return title;
-    default:
-      if (contents) {
-        if (contents.length > 300) {
-          return `[${contents.substring(0, 284).replaceAll('\r', ' ')} ${'(FÖRKORTAD TITEL)'}]`;
-        }
-        return `[${contents.replaceAll('\r', ' ')}]`;
-      }
-      return null;
+// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
+// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
+export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
+  // Matcha första delen av strängen som inte är en siffra (bokstäver)
+  // och andra delen som är minst en siffra (0 eller flera siffror)
+  // och behåll alla tecken efter siffran/siffrorna i andra delen
+  const match = str.match(/^(\D*)([0-9:]+.*)?/);
+
+  // Om ingen matchning hittades, returnera en tom sträng
+  if (!match) return '';
+
+  let [letterPart = '', numberPart = ''] = match.slice(1);
+
+  //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
+  let prefix = '';
+
+  // OBS: Delen efter kolon ingår i accessionsnummer
+
+  // inga dubbla bokstavsprefix (prefix + letterPart) hanteras genom:
+  // 1. Arkivort Göteborg ska inte få prefix då prefix ingår i id, d.v.s har letterpart
+  // 2. För övriga arkivorter: 
+  //    Får prefix enligt ortens regler
+  //    Om numberpart inte tom så sätts letterpart till tom sträng
+  if (archiveOrg === 'Lund') {
+    // Visa alltid bokstavsprefix/letterpart - fråga AFG!
+    // if (numberPart && numberPart.length > 0) letterPart = ''
+    prefix = 'DAL';
   }
+  if (archiveOrg === 'Umeå') {
+    if (numberPart && numberPart.length > 0) letterPart = ''
+    // getFirstNonAlpha(str) {
+    for (var i = 0; i<str.length;i++) {
+      if (!isNaN(str[i])) {
+        break;
+      }
+    }
+    // return false;
+    if ((i - 1) < str.length) {
+      // Non numeric exists
+      var numericPart = str.substring(i);
+      var numericId = parseInt(numericPart)
+      if (numericId < 1166) {
+        prefix = 'FFÖN';
+      } else {
+        prefix = 'DAUM';
+      }
+    }
+  }
+  if (archiveOrg === 'Uppsala') {
+    // ULMA -> 39080
+    // SOFI 39081 – 39383
+    // DFU 39384 ->
+    prefix = 'ULMA';
+    i = str.length
+    // getFirstNonAlpha(str) {
+    for (var i = 0; i<str.length;i++) {
+      if (!isNaN(str[i])) {
+        break;
+      }
+    }
+    // return false;
+    if ((i - 1) < str.length) {
+      // Non numeric exists
+      var numericPart = str.substring(i);
+      var numericId = parseInt(numericPart)
+      if (numericId >= 39081 && numericId <= 39383) {
+        prefix = 'SOFI';
+      }
+      if (numericId > 39383) {
+        prefix = 'DFU';
+      }
+      if (numberPart && numberPart.length > 0) {
+        // Alla med letterPart som ljud ska alltid ha prefix ULMA
+        if (letterPart.toLowerCase().includes('b') || letterPart.toLowerCase().includes('gr') || letterPart.toLowerCase().includes('ss')) {
+          prefix = 'ULMA';
+        }
+        // Visa alltid bokstavsprefix/letterpart
+        //letterPart = ''
+      }
+    }
+  }
+
+  // Omvandla bokstäver till versaler och ta bort inledande nollor
+  const parts = [
+    prefix,
+    letterPart.toUpperCase(),
+    numberPart.replace(/^0+/, ''),
+  ];
+
+  // Returnera en sträng med båda delarna separerade med ett mellanslag
+  return parts.join(' ').trim();
+}
+
+// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
+// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
+export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
+  // Kontrollera att str är definierad
+  if (!str) return '';
+
+  // Loopa över alla accessionsnummer utifall det finns flera accessionsnummer med separator semikolon ';'
+  let idparts = str.split(';');
+  let match = false;
+  idparts.forEach((part, index) => {
+    let trimmedPart = part.trim();
+    // console.log("Part " + (index + 1) + ": " + trimmedPart);
+    // Matcha första delen av strängen som inte är en siffra (bokstäver)
+    // och andra delen som är minst en siffra (0 eller flera siffror)
+    // och behåll alla tecken efter siffran/siffrorna i andra delen
+    let matchpart = makeArchiveIdElementHumanReadable(trimmedPart, archiveOrg);
+    if (match) {
+      match = match + ';' + matchpart;
+    } else {
+      match = matchpart;
+    }
+  });
+  // Returnera en sträng med alla delar
+  return match;
+}
+
+// OBS: om `highlight` skickas medså innehåller return-strängen HTML-taggar
+// använd då `dangerouslySetInnerHTML`!
+export function getTitle(title, contents, archive, highlight) {
+  // om det finns en träff i `title`, visa med highlight
+  if (highlight?.title) {
+    const highlightedTitle = highlight.title[0];
+    return highlightedTitle;
+  }
+  // annars, testa med `title`
+  if (title) {
+    return title;
+  }
+  // om det finns träff i `contents`, visa med highlight
+  if (highlight?.contents) {
+    // här behövs ingen teckenbegräsning eftersom es-api levererar highlights
+    // med max 300 tecken
+    const highlightedContents = highlight.contents[0].replace(/\r/g, ' ');
+    return `[${highlightedContents}]`;
+  }
+  // annars, testa med `contents`, och förkorta om nödvändigt
+  if (contents) {
+    if (contents.length > 300) {
+      return `[${contents.substring(0, 282).replace(/\r/g, ' ')} ${' (FÖRKORTAD TITEL)'}]`;
+    }
+    return `[${contents.replace(/\r/g, ' ')}]`;
+  }
+  if (archive) {
+    // Default fallback for title to archive id and pages if archive.page exists
+    const humanReadableId = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org);
+    const pageInfo = archive.page ? `:${pageFromTo({ _source: { archive } })}` : '';
+    return `${humanReadableId}${pageInfo}`;
+  }
+  return null;
 }
 
 /* Funktion för att skapa titel för ljudfil
@@ -76,6 +217,46 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
           }
           // Set audio title according to archive patterns using archiveOrg
           if (archiveOrg === 'Uppsala') {
+            // Clean different row breaks:
+            let cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            // Currently the pipe delimiter is only used for Uppsala material
+            let contentRows = cleanContent.split('|');
+
+            // Loop until last segment
+            for (let i = 0; i < contentRows.length; i += 1) {
+              // Get parts delineated by first space " ":
+              const delimiter = " "
+              let elements = contentRows[i].trim().split(delimiter)
+              let thisSegmentFileId = elements[0];
+              let thisSegmentContent = elements.slice(1).join(delimiter);
+              if (thisSegmentFileId.length > 0) {
+                // Clean unwanted characters:
+                let fileidElements = thisSegmentFileId.split(':')
+                if (fileidElements.length > 1) {
+                  // Clean unwanted numerals and dash
+                  let cleanElement = fileidElements[1].replace(/[0-9]/g, '').replaceAll(":","").replaceAll("-","");
+                  thisSegmentFileId = fileidElements[0] + cleanElement
+                }
+                let fileId = thisSegmentFileId.replaceAll(':', '');
+                let filenameParts = fileName.split('/');
+                if (filenameParts) {
+                  // Clean filename accordning to pattern in content field:
+                  let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '')
+                  cleanFilename = cleanFilename.replace(' D ', '').replace('D ', '').replace(' ', '');
+                  // Remove trailing filename after underscore
+                  cleanFilename = cleanFilename.split('_')[0];
+                  // Match archive id with filename:
+                  if (cleanFilename.toUpperCase().includes(fileId.toUpperCase())) {
+                    if (thisSegmentFileId.slice(-1) === ':') {
+                      // Remove colon as last character
+                      thisSegmentFileId = thisSegmentFileId.slice(0, -1)
+                    }
+                    let fileTitle = `${thisSegmentFileId}: ${thisSegmentContent}`;
+                    return fileTitle;
+                  }
+                }
+              }
+            }
             if (contents.length > 100) {
               return `[${contents.substring(0, 84)} ${'(FÖRKORTAD TITEL)'}]`;
             }
@@ -206,85 +387,26 @@ export function getArchiveName(archiveOrg) {
   return archiveName;
 }
 
-// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
-// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
-export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
-  // Kontrollera att str är definierad
-  if (!str) return '';
+export function getArchiveLogo(archive) {
+  const archiveLogos = {};
 
-  // Loopa över alla accessionsnummer utifall det finns flera accessionsnummer med separator semikolon ';'
-  let idparts = str.split(';');
-  let match = false;
-  idparts.forEach((part, index) => {
-    let trimmedPart = part.trim();
-    // console.log("Part " + (index + 1) + ": " + trimmedPart);
-    // Matcha första delen av strängen som inte är en siffra (bokstäver)
-    // och andra delen som är minst en siffra (0 eller flera siffror)
-    // och behåll alla tecken efter siffran/siffrorna i andra delen
-    let matchpart = makeArchiveIdElementHumanReadable(trimmedPart, archiveOrg);
-    if (match) {
-      match = match + ';' + matchpart;
-    } else {
-      match = matchpart;
-    }
-  });
-  // Returnera en sträng med alla delar
-  return match;
-}
+  archiveLogos['Dialekt-, namn- och folkminnesarkivet i Göteborg'] = archiveLogoIsof;
+  archiveLogos['Dialekt- och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
+  archiveLogos['Dialekt och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
+  archiveLogos.DAG = 'img/archive-logo-isof.png';
+  // Needs to be shrinked. By css?
+  // archiveLogos['Norsk folkeminnesamling'] = 'img/UiO_Segl_A.png';
+  archiveLogos['Norsk folkeminnesamling'] = archiveLogoIkos;
+  archiveLogos.NFS = archiveLogoIkos;
+  archiveLogos.DFU = archiveLogoIkos;
+  // archiveLogos['SLS'] = SlsLogga;
+  // archiveLogos['Svenska litteratursällskapet i Finland (SLS)'] = SlsLogga;
 
-// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
-// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
-export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
-  // Matcha första delen av strängen som inte är en siffra (bokstäver)
-  // och andra delen som är minst en siffra (0 eller flera siffror)
-  // och behåll alla tecken efter siffran/siffrorna i andra delen
-  const match = str.match(/^(\D*)([0-9:]+.*)?/);
-
-  // Om ingen matchning hittades, returnera en tom sträng
-  if (!match) return '';
-
-  const [letterPart = '', numberPart = ''] = match.slice(1);
-
-  //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
-  let prefix = '';
-  // inga dubbla bokstavsprefix (prefix + letterPart)
-  if (letterPart === '') {
-    if (archiveOrg === 'Uppsala') {
-      // ULMA -> 39080
-      // SOFI 39081 – 39383
-      // DFU 39384 ->      
-      prefix = 'ULMA';
-      i = str.length
-      // getFirstNonAlpha(str) {
-      for (var i = 0; i<str.length;i++) {
-          if (!isNaN(str[i])) {
-            break;
-          }
-      }
-      // return false;
-      if ((i - 1) < str.length) {
-        // Non numeric exists
-        var numericPart = str.substring(i);
-        var numericId = parseInt(numericPart)
-        if (numericId >= 39081 && numericId <= 39383) {
-          prefix = 'SOFI';
-        }
-        if (numericId > 39383) {
-          prefix = 'DFU';
-        }
-      }
-    }
-  }
-
-  // Omvandla bokstäver till versaler och ta bort inledande nollor
-  const parts = [
-    prefix,
-    letterPart.toUpperCase(),
-    numberPart.replace(/^0+/, ''),
-  ];
-
-  // Returnera en sträng med båda delarna separerade med ett mellanslag
-  return parts.join(' ');
+  return (
+    archiveLogos[archive]
+      ? config.appUrl + archiveLogos[archive]
+      : config.appUrl + archiveLogos.DAG
+  );
 }
 
 // används inte i nuläget, istället används getRecordsCountLocation
@@ -445,7 +567,7 @@ export const fetchRecordMediaCount = async (functionScopeParams, setValue, setVa
     const queryParamsString = Object.entries(queryParams)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
-    const response = await fetch(`${config.apiUrl}mediacount?${queryParamsString}`);
+    const response = await fetch(`${config.apiUrl}mediacount/?${queryParamsString}`);
     if (response.ok) {
       const json = await response.json();
       setValueTranscribed(json.data.value);
@@ -458,3 +580,68 @@ export const fetchRecordMediaCount = async (functionScopeParams, setValue, setVa
   }
 };
 
+export function getTitleText(
+  data,
+  numberOfSubrecordsMedia,
+  numberOfTranscribedSubrecordsMedia,
+) {
+  let titleText;
+  const transcriptionStatusElement = data.transcriptionstatus;
+
+  if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
+    titleText = 'Titel granskas';
+  } else if (data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0) {
+    titleText = `Sida ${getPages(data)} (${numberOfTranscribedSubrecordsMedia} ${l(
+      numberOfTranscribedSubrecordsMedia === 1 ? 'sida avskriven' : 'sidor avskrivna',
+    )})`;
+  } else if (data.transcriptionstatus === 'readytotranscribe') {
+    titleText = 'Ej avskriven';
+    if (data.title) {
+      titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
+    }
+  } else {
+    titleText = getTitle(data.title, data.contents);
+  }
+
+  return titleText || l('(Utan titel)');
+}
+
+export function getPages(data) {
+  let pages = '';
+
+  if (data?.archive?.page) {
+    pages = data.archive.page;
+
+    // Kontrollera om 'pages' inte är ett intervall och hantera det
+    if (pages && pages.indexOf('-') === -1) {
+      if (data.archive.total_pages) {
+        // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
+        if (typeof pages === 'string') {
+          pages = pages.replace(/\D/g, '');
+          pages = parseInt(pages, 10);
+        }
+
+        const totalPages = parseInt(data.archive.total_pages, 10);
+
+        // Om det finns fler än en sida, skapa intervall
+        if (totalPages > 1) {
+          const endPage = pages + totalPages - 1;
+          pages = `${pages}-${endPage}`;
+        }
+      }
+    }
+  }
+
+  return pages;
+}
+
+export function getRecordtypeLabel(recordType) {
+  switch (recordType) {
+    case 'one_accession_row':
+      return l('Accession');
+    case 'one_record':
+      return l('Uppteckning');
+    default:
+      return null; // eller en standardetikett om det behövs, t.ex. l('Okänd')
+  }
+}

@@ -51,7 +51,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                 }
                 return (
                   <div className="twelve columns">
-                    <h2>{results.name && results.name.replace(/ sn$/, ' socken')}</h2>
+                    <h1>{results.name && results.name.replace(/ sn$/, ' socken')}</h1>
                     <p>
                       {
                       results.fylke && (

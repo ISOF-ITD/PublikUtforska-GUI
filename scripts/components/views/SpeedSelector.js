@@ -19,23 +19,28 @@ function SpeedSelector({ audioRef }) {
 
   const speedChangeHandler = (e) => {
     const audio = audioRef.current;
-    audio.playbackRate = e.target.value;
-    setSpeed(e.target.value);
+    const newSpeed = parseFloat(e.target.value); // Parse to number
+    audio.playbackRate = newSpeed;
+    setSpeed(newSpeed);
   };
 
   return (
-    <select
-      className="speed-buttons"
-      value={speed}
-      onChange={speedChangeHandler}
-    >
-      {speedOptions.map((option) => (
-        <option key={option} value={option}>
-          {option.toLocaleString('sv-SE')}
-          x
-        </option>
-      ))}
-    </select>
+    <div className="speed-selector">
+      <select
+        id="playback-speed"
+        name="playback-speed"
+        className="speed-buttons"
+        value={speed}
+        onChange={speedChangeHandler}
+      >
+        {speedOptions.map((option) => (
+          <option key={option} value={option}>
+            {option.toLocaleString('sv-SE')}
+            x
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 

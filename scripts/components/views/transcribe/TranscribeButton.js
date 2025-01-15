@@ -65,6 +65,11 @@ export default function TranscribeButton({
 
   const effectiveOnClick = onClick || transcribeButtonClick;
 
+  if (!config.activateTranscription) {
+    // Ingen knapp
+    return null;
+  }
+  // else visa knapp
   return (
     // Render a button with a dynamic class name based on the passed-in props.
     // The button's click event is tied to the transcribeButtonClick function,
@@ -76,13 +81,13 @@ export default function TranscribeButton({
           {helptext}
         </div>
       )}
-      <div
+      <button
         className={`transcribe-button${className ? ` ${className}` : ''}`}
         onClick={effectiveOnClick}
         type="button"
       >
         {label}
-      </div>
+      </button>
     </div>
   );
 }
@@ -98,6 +103,6 @@ TranscribeButton.propTypes = {
   places: PropTypes.array,
   className: PropTypes.string,
   onClick: PropTypes.func,
-  label: PropTypes.object.isRequired,
+  label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   helptext: PropTypes.string,
 };

@@ -1,9 +1,9 @@
-import React from 'react';
-
+import { Component, createRef } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import 'leaflet.locatecontrol';
 import '../../lib/leaflet.active-layers';
+import * as d3 from 'd3';
 
 import mapHelper from '../../utils/mapHelper';
 
@@ -13,10 +13,10 @@ import mapHelper from '../../utils/mapHelper';
 // Leaflet CSS: leaflet.less
 //              MarkerCluster.Default.less
 
-export default class MapBase extends React.Component {
+export default class MapBase extends Component {
   constructor(props) {
     super(props);
-    this.mapView = React.createRef();
+    this.mapView = createRef();
 
     this.nordicLegendsUpdateHandler = this.nordicLegendsUpdateHandler.bind(this);
 
@@ -119,8 +119,22 @@ export default class MapBase extends React.Component {
 
     this.layersControl = L.control.activeLayers(layers, overlayLayers, {
       position: this.props.layersControlPosition || 'topright',
-      collapsed: !this.props.layersControlStayOpen,
     }).addTo(this.map);
+
+    // make sure that the layers control is
+    //  -not opened on mouse over (only on click)
+    //  -not closed on mouse out
+    // - not visible on mount
+    d3.select('.leaflet-control-layers-toggle').style('display', 'block').style('opacity', 1);
+    d3.select('.leaflet-control-layers-list').style('display', 'none');
+    d3.select('.leaflet-control-layers-toggle').on('click', () => {
+      d3.select('.leaflet-control-layers-list').style('display', 'block');
+      d3.select('.leaflet-control-layers-toggle').style('display', 'none');
+    });
+    d3.select('.leaflet-control-layers-list').on('mouseleave', () => {
+      d3.select('.leaflet-control-layers-list').style('display', 'none');
+      d3.select('.leaflet-control-layers-toggle').style('display', 'block');
+    });
 
     this.map.on('baselayerchange', this.mapBaseLayerChangeHandler.bind(this));
 
