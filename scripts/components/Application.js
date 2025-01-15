@@ -49,6 +49,15 @@ export default function Application({
 
   const params = useParams();
 
+  // fallback for old hash routes
+  useEffect(() => {
+    const { hash } = location;
+    if (hash.match(/^#\/?/)) {
+      const target = hash.replace(/^#\/?/, '');
+      navigate(target);
+    }
+  }, []);
+
   const {
     addToNavigationHistory,
   } = useContext(NavigationContext);
