@@ -166,6 +166,12 @@ export function getTitle(title, contents, archive, highlight) {
   return null;
 }
 
+
+export function removeUnderscoresBeforeFirstNumber(input) {
+  // Replace all underscores before the first number
+  return input.replace(/^([^0-9]*)_+/g, '$1');
+}
+
 /* Funktion för att skapa titel för ljudfil
 
 Mediafil Titel
@@ -235,7 +241,7 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
                 if (fileidElements.length > 1) {
                   // Clean unwanted numerals and dash
                   let cleanElement = fileidElements[1].replace(/[0-9]/g, '').replaceAll(":","").replaceAll("-","");
-                  thisSegmentFileId = fileidElements[0] + cleanElement
+                  thisSegmentFileId = fileidElements[0] + cleanElement;
                 }
                 let fileId = thisSegmentFileId.replaceAll(':', '');
                 let filenameParts = fileName.split('/');
@@ -243,13 +249,15 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
                   // Clean filename accordning to pattern in content field:
                   let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '')
                   cleanFilename = cleanFilename.replace(' D ', '').replace('D ', '').replace(' ', '');
+                  // Remove underscore if underscore before numbers: https://sok.folke-test.isof.se/#/records/gr01471:a_33465
+                  cleanFilename = removeUnderscoresBeforeFirstNumber(cleanFilename);
                   // Remove trailing filename after underscore
                   cleanFilename = cleanFilename.split('_')[0];
                   // Match archive id with filename:
                   if (cleanFilename.toUpperCase().includes(fileId.toUpperCase())) {
                     if (thisSegmentFileId.slice(-1) === ':') {
                       // Remove colon as last character
-                      thisSegmentFileId = thisSegmentFileId.slice(0, -1)
+                      thisSegmentFileId = thisSegmentFileId.slice(0, -1);
                     }
                     let fileTitle = `${thisSegmentFileId}: ${thisSegmentContent}`;
                     return fileTitle;
