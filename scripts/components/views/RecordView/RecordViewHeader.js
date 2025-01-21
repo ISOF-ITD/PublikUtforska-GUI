@@ -1,4 +1,5 @@
 /* eslint-disable react/require-default-props */
+import { Link } from 'react-router-dom';
 import propTypes from 'prop-types';
 import { l } from '../../../lang/Lang';
 import {
@@ -35,16 +36,16 @@ const renderAccessionsNumber = (recordtype, archive) => (
     <strong>{l('Accessionsnummer')}</strong>
     :&nbsp;
     {recordtype === 'one_record' ? (
-      <a
+      <Link
         title={`Gå till accessionen ${archive.archive_id_row}`}
         style={{
           cursor: archive.archive_id_row ? 'pointer' : 'inherit',
           textDecoration: 'underline',
         }}
-        href={`#/records/${archive.archive_id_row}`}
+        to={`/records/${archive.archive_id_row}`}
       >
         {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
-      </a>
+      </Link>
     ) : (
       makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)
     )}

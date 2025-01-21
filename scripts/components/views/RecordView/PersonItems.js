@@ -1,5 +1,6 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { l } from '../../../lang/Lang';
 import config from '../../../config';
 
@@ -8,14 +9,14 @@ function renderPersonItem(person, routeParams) {
     <tr key={person.id}>
       <td data-title="">
         {!config.siteOptions.disablePersonLinks && config.siteOptions.disableInformantLinks && ['i', 'informant'].includes(person.relation) && person.name}
-        {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && ['i', 'informant'].includes(person.relation)) && <a href={`#/persons/${person.id}${routeParams}`}>{person.name || ''}</a>}
+        {!config.siteOptions.disablePersonLinks && !(config.siteOptions.disableInformantLinks && ['i', 'informant'].includes(person.relation)) && <Link to={`/persons/${person.id}${routeParams}`}>{person.name || ''}</Link>}
         {config.siteOptions.disablePersonLinks && person.name}
       </td>
       <td data-title="Födelseår">{person.birth_year && person.birth_year > 0 ? person.birth_year : ''}</td>
       <td data-title="Födelseort">
         {
           person.home && person.home.length > 0
-          && <a href={`#/places/${person.home[0].id}${routeParams}`}>{`${person.home[0].name}, ${person.home[0].harad}`}</a>
+          && <Link to={`/places/${person.home[0].id}${routeParams}`}>{`${person.home[0].name}, ${person.home[0].harad}`}</Link>
         }
         {person.birthplace ? ` ${person.birthplace}` : ''}
       </td>

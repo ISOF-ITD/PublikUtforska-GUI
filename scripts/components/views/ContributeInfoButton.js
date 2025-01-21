@@ -17,7 +17,7 @@ export default function ContributeInfoButton({
   const contributeinfoButtonClick = () => {
     if (window.eventBus) {
       window.eventBus.dispatch('overlay.contributeinfo', {
-        url: `${config.siteUrl}#${pathname}`,
+        url: `${config.siteUrl}${pathname}`,
         title,
         type,
         country,

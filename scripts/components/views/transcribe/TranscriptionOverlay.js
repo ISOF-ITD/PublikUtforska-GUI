@@ -59,7 +59,7 @@ export default class TranscriptionOverlay extends React.Component {
 						const randomDocument = json.hits.hits[0]._source;
 						this.setState({
 							visible: true,
-							url: config.siteUrl+'#/records/'+randomDocument.id,
+							url: config.siteUrl+'/records/'+randomDocument.id,
 							id: randomDocument.id,
 							archiveId: randomDocument.archive.archive_id,
 							title: randomDocument.title,

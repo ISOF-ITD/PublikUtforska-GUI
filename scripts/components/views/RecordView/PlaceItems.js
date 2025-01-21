@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import SimpleMap from '../SimpleMap';
 import { l } from '../../../lang/Lang';
@@ -13,12 +14,12 @@ function PlaceItems({ data, routeParams = '' }) {
       id, specification, name, fylke, harad, landskap,
     } = place;
     const placeName = `${specification ? `${specification} i ` : ''}${name}, ${fylke || harad}, ${landskap || ''}`;
-    const linkUrl = `#/places/${id}${routeParams}`;
+    const linkUrl = `/places/${id}${routeParams}`;
 
     return (
       <tr key={id}>
         <td>
-          <a href={linkUrl}>{placeName}</a>
+          <Link to={linkUrl}>{placeName}</Link>
         </td>
       </tr>
     );
