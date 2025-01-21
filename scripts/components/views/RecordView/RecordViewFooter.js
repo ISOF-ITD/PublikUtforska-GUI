@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import archiveLogoIsof from '../../../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../../../img/archive-logo-ikos.png';
-import logotypNationellaSprakbanken from '../../../../img/logotyp_nationella_sprakbanken.svg';
+import logotypSprakbanken from '../../../../img/logotyp_sprakbanken.svg';
 import config from '../../../config';
 
 const getArchiveLogo = (archive) => {
@@ -53,10 +53,10 @@ export default function RecordViewFooter({ data }) {
         </Link>
         <Link to="https://sprakbanken.se/" target="_blank" rel="noopener noreferrer">
           <img
-            src={logotypNationellaSprakbanken}
+            src={logotypSprakbanken}
             height="auto"
             width="150"
-            alt="Logga för Nationella språkbanken"
+            alt="Logga för Språkbanken"
           />
         </Link>
       </div>
