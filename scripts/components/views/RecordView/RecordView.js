@@ -23,6 +23,7 @@ import RecordViewThumbnails from './RecordViewThumbnails';
 import ReferenceLinks from './ReferenceLinks';
 import SubrecordsElement from './SubrecordsElement';
 import TextElement from './TextElement';
+import RequestToTranscribePrompt from './RequestToTranscribePrompt';
 import TranscriptionPrompt from './TranscriptionPrompt';
 import SimilarRecords from './SimilarRecords';
 import { getTitleText } from '../../../utils/helpers';
@@ -87,6 +88,7 @@ function RecordView({ mode = 'material' }) {
                 <div className="container-body">
                   <Disclaimer />
                   <TranscriptionPrompt data={data} />
+                  {/* <RequestToTranscribePrompt data={data} /> */}
                   <RecordViewThumbnails
                     data={data}
                     mediaImageClickHandler={mediaImageClickHandler}
