@@ -159,23 +159,22 @@ export default function RequestToTranscribeOverlay() {
     overlayContent = (
       <div>
         <p>
-          {config.siteOptions.contributeInfoText || 'Känner du till någon av personerna som nämns: en upptecknare, någon som intervjuats eller som nämns i en berättelse? Vid 1900-talets början var arkiven framför allt intresserade av berättelserna, inte berättarna. Därför vet vi idag ganska lite om människorna i arkiven. Kontakta oss gärna nedan om du har information om eller fotografier på någon av personerna som nämns på uppteckningen! Vill du vara med och bevara minnen och berättelser från vår tid till framtiden? På Institutets webbplats publiceras regelbundet frågelistor om olika ämnen. '}
-          <a href="https://www.isof.se/folkminnen/beratta-for-oss.html"><strong>{l('Läs mer.')}</strong></a>
-        </p>
-        <p>
-          Du är nu på sidan '
-          <a href={location.pathname}>{location.pathname}</a>
-          ' men kan också använda formuläret för mer generella förslag och synpunkter.
+          Önskar du transkribera materialet på sidan '
+          <strong>{state.id}</strong>
+          '?
+          <br />
+          Skicka då in detta formulär. Isof behandlar inkomna förfrågningar i mån av tid.
           <br />
           <br />
+          Tack för visat intresse!
         </p>
         <hr />
         <label htmlFor="contribute_name">Ditt namn:</label>
         <input id="contribute_name" autoComplete="name" className="u-full-width" type="text" value={state.nameInputValue} onChange={nameInputChangeHandler} />
         <label htmlFor="contribute_email">Din e-post adress:</label>
-        <input id="contribute_email" autoComplete="email" className="u-full-width" type="email" value={state.emailInputValue} onChange={emailInputChangeHandler} />
+        <input id="contribute_email" autoComplete="email" className="u-full-width" type="email" required value={state.emailInputValue} onChange={emailInputChangeHandler} />
         <label htmlFor="contribute_message">Meddelande:</label>
-        <textarea lang="sv" spellCheck="false" id="contribute_message" className="u-full-width" value={state.messageInputValue} onChange={messageInputChangeHandler} />
+        <textarea lang="sv" spellCheck="false" id="contribute_message" className="u-full-width" required value={state.messageInputValue} onChange={messageInputChangeHandler} />
         <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
       </div>
     );

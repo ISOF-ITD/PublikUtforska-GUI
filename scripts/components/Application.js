@@ -22,6 +22,7 @@ import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPage
 import HelpTextOverlay from './views/HelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
+import RequestToTranscribeOverlay from './views/RequestToTranscribeOverlay';
 
 import MapWrapper from './MapWrapper';
 import Footer from './Footer';
@@ -170,6 +171,7 @@ export default function Application({
         <FeedbackOverlay />
         <ContributeInfoOverlay />
         <TranscriptionOverlay />
+        <RequestToTranscribeOverlay />
         {
           transcriptionPageByPageOverlayVisible
           && (
