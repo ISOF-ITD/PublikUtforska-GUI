@@ -22,14 +22,14 @@ export default function RequestToTranscribeButton({
         type,
         country,
         appUrl: config.appUrl,
-        id,
+        id: id,
       });
     }
   };
 
   return (
     <button
-      className="feedback-button contributeinfo-button"
+      className="button button-primary"
       onClick={contributeinfoButtonClick}
       type="button"
     >

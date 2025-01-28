@@ -51,7 +51,7 @@ function Warning() {
 
   useEffect(() => {
     // Hämta innehållet från varning.html och sätt det som varningMessage
-    fetch('varning.html')
+    fetch('/varning.html')
       .then((response) => {
         if (response.ok) {
           return response.text();

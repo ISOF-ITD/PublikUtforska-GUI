@@ -29,6 +29,7 @@ export default function RequestToTranscribePrompt({ data }) {
   } = data;
 
   // Returnera tidigt om recordtype inte är 'one_accession_row'
+  // Alltså: Visa bara knapp om recordtype === 'one_accesion_row' OCH den inte har några onerecords
   if (!(recordtype === 'one_accession_row' && transcriptionstatus === 'accession' && numberofonerecord === 0)) {
     return null;
   }
@@ -82,8 +83,7 @@ export default function RequestToTranscribePrompt({ data }) {
           transcriptiontype === 'sida' ? l(STRINGS.perPage) : ''
         }`}
         title={title}
-        title={title}
-        //recordId={id}
+        id={id}
       />
     </div>
   );
