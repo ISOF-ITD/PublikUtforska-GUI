@@ -319,14 +319,23 @@ export default function SearchBox({
   );
 
   // filter keywords by search input value
-  const filteredSearchSuggestions = () => searchSuggestions
-    // filter out keywords that don't contain the search input value
-    .filter((k) => k.label.toLowerCase().indexOf(search?.toLowerCase() || '') > -1)
-    // remove out keywords that are duplicates, but only different in case
-    .filter((item, index, arr) => {
-      const label = item.label.toLowerCase();
-      return arr.findIndex((i) => i.label.toLowerCase() === label) === index;
-    });
+  const filteredSearchSuggestions = () => {
+    const seen = new Set();
+    return searchSuggestions
+      // remove keywords that don't contain the search input value
+      .filter((k) => k.label.toLowerCase().includes(search?.toLowerCase() || ''))
+      // remove keywords that start with a string followed by a colon, e.g. "place:"
+      .filter((k) => !k.label.match(/^[^:]+:/))
+      // remove keywords that are duplicates, but only different in case
+      .filter((item) => {
+        const label = item.label.toLowerCase();
+        if (seen.has(label)) {
+          return false;
+        }
+        seen.add(label);
+        return true;
+      });
+  };
 
   const filteredPersonSuggestions = () => filterAndSortSuggestions(personSuggestions);
   const filteredPlaceSuggestions = () => filterAndSortSuggestions(placeSuggestions);
