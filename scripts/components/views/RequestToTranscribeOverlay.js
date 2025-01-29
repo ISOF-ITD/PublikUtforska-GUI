@@ -105,7 +105,7 @@ export default function RequestToTranscribeOverlay() {
       from_name: state.nameInputValue,
       subject: `${subject.split(/[/]+/).pop()}: RequestToTranscribe`,
       recordid: state.id,
-      message: `${state.type}: ${state.title}\n${
+      message: `${(state.type) ? state.type: ''} ${(state.title) ? state.title : ''}\n${
         location.pathname}\n\n${
         state.url}\n\n`
                 + `Från: ${state.nameInputValue} (${state.emailInputValue})\n\n${
@@ -188,7 +188,7 @@ export default function RequestToTranscribeOverlay() {
         <hr />
         <label htmlFor="contribute_name">Ditt namn:</label>
         <input id="contribute_name" autoComplete="name" className="u-full-width" type="text" value={state.nameInputValue} onChange={nameInputChangeHandler} />
-        <label htmlFor="contribute_email">Din e-post adress:</label>
+        <label htmlFor="contribute_email">Din e-post adress*:</label>
         <input 
           id="contribute_email" 
           autoComplete="email" 
@@ -201,6 +201,9 @@ export default function RequestToTranscribeOverlay() {
         />
         <label htmlFor="contribute_message">Meddelande:</label>
         <textarea lang="sv" spellCheck="false" id="contribute_message" className="u-full-width" required value={state.messageInputValue} onChange={messageInputChangeHandler} />
+        <p>
+        * Obligatoriskt fält
+        </p>
         <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
       </div>
     );
