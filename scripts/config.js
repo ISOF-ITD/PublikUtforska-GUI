@@ -244,7 +244,7 @@ export default {
   },
   // här går det att begränsa antalet sökförslag för varje typ av sökförslag
   // sätt till null för att inte begränsa
-  numberOfSearchSuggestions: 6,
+  numberOfSearchSuggestions: 8,
   numberOfPlaceSuggestions: null,
   numberOfPersonSuggestions: null,
   numberOfProvinceSuggestions: null,
