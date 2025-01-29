@@ -88,7 +88,7 @@ function RecordView({ mode = 'material' }) {
                 <div className="container-body">
                   <Disclaimer />
                   <TranscriptionPrompt data={data} />
-                  {/* <RequestToTranscribePrompt data={data} /> */}
+                  <RequestToTranscribePrompt data={data} />
                   <RecordViewThumbnails
                     data={data}
                     mediaImageClickHandler={mediaImageClickHandler}

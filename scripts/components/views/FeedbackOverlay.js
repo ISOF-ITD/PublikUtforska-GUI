@@ -18,6 +18,19 @@ export default function FeedbackOverlay() {
 
   const location = useLocation();
 
+  const [emailValid, setEmailValid] = useState(true);
+
+  const validateEmail = (email) => {
+    // En enkel regex för att validera e-postadresser
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return email === '' || regex.test(email);
+  };
+
+  const handleEmailBlur = (event) => {
+    const isValid = validateEmail(event.target.value);
+    setEmailValid(isValid);
+  };
+
   useEffect(() => {
     const feedbackHandler = (event) => {
       setVisible(true);
@@ -132,7 +145,15 @@ export default function FeedbackOverlay() {
         <label htmlFor="feedback_name">Ditt namn:</label>
         <input id="feedback_name" autoComplete="name" className="u-full-width" type="text" value={nameInputValue} onChange={nameInputChangeHandler} />
         <label htmlFor="feedback_email">Din e-post adress:</label>
-        <input id="feedback_email" className="u-full-width" type="email" value={emailInputValue} onChange={emailInputChangeHandler} />
+        <input 
+          id="feedback_email" 
+          autoComplete="email" 
+          className={`u-full-width ${emailValid ? '' : 'invalid'}`} 
+          type="email" 
+          onBlur={handleEmailBlur}
+          value={emailInputValue} 
+          onChange={emailInputChangeHandler} 
+        />
         <label htmlFor="feedback_message">Meddelande:</label>
         <textarea lang="sv" spellCheck="false" id="feedback_message" className="u-full-width" value={messageInputValue} onChange={messageInputChangeHandler} />
         <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>

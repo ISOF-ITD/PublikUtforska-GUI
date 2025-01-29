@@ -21,10 +21,8 @@ export default function RequestToTranscribePrompt({ data }) {
     transcriptiontype = null,
     transcriptionstatus,
     media = [],
-    title = '',
+    title,
     id,
-    archive,
-    places = [],
     recordtype,
   } = data;
 
@@ -36,8 +34,6 @@ export default function RequestToTranscribePrompt({ data }) {
 
   // Använd useMemo för att optimera beräkningar
   const {
-    numberOfMedia,
-    numberOfTranscribedMedia,
     isUnderReview,
   } = useMemo(() => {
     let transcribedCount = 0;

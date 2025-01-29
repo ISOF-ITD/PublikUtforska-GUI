@@ -19,6 +19,19 @@ export default function ContributeinfoOverlay() {
     id: '',
   });
 
+  const [emailValid, setEmailValid] = useState(true);
+
+  const validateEmail = (email) => {
+    // En enkel regex för att validera e-postadresser
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return email === '' || regex.test(email);
+  };
+
+  const handleEmailBlur = (event) => {
+    const isValid = validateEmail(event.target.value);
+    setEmailValid(isValid);
+  };
+
   const location = useLocation();
 
   useEffect(() => {
@@ -173,7 +186,15 @@ export default function ContributeinfoOverlay() {
         <label htmlFor="contribute_name">Ditt namn:</label>
         <input id="contribute_name" autoComplete="name" className="u-full-width" type="text" value={state.nameInputValue} onChange={nameInputChangeHandler} />
         <label htmlFor="contribute_email">Din e-post adress:</label>
-        <input id="contribute_email" autoComplete="email" className="u-full-width" type="email" value={state.emailInputValue} onChange={emailInputChangeHandler} />
+        <input 
+          id="contribute_email" 
+          autoComplete="email" 
+          className={`u-full-width ${emailValid ? '' : 'invalid'}`} 
+          type="email" 
+          value={state.emailInputValue} 
+          onBlur={handleEmailBlur}
+          onChange={emailInputChangeHandler} 
+        />
         <label htmlFor="contribute_message">Meddelande:</label>
         <textarea lang="sv" spellCheck="false" id="contribute_message" className="u-full-width" value={state.messageInputValue} onChange={messageInputChangeHandler} />
         <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
