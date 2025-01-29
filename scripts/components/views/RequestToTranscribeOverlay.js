@@ -95,6 +95,9 @@ export default function RequestToTranscribeOverlay() {
   };
 
   const sendButtonClickHandler = () => {
+    // Send message only if email address is valid
+    if (!state.emailInputValue || !validateEmail(state.emailInputValue)) return;
+
     let subject = state.appUrl;
     if (subject.charAt(subject.length - 1) == '/') subject = subject.substr(0, subject.length - 1);
     const data = {
@@ -139,7 +142,7 @@ export default function RequestToTranscribeOverlay() {
   if (state.messageSent === true && state.messageSentError === false) {
     overlayContent = (
       <div>
-        <p>{l('Tack för ditt bidrag. Meddelande skickat.')}</p>
+        <p>{l('Formulär inskickat.')}</p>
         <p>
           <br />
           <button
