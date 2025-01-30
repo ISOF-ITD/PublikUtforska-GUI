@@ -56,46 +56,58 @@
         }, 1000);
 
         var currentUrl = location.pathname;
-        // listen to 'popstate' to handle BrowserRouter navigation
-        window.addEventListener('popstate', function () {
+
+        // Function to handle page view tracking
+        function trackPageView() {
+            console.log("Tracking page view for URL:", window.location.pathname);
+            _paq.push(['setReferrerUrl', currentUrl]);
+            currentUrl = window.location.pathname;
+            _paq.push(['setCustomUrl', currentUrl]);
+            _paq.push(['setDocumentTitle', document.title]);
+
+            // remove all previously assigned custom variables, requires Matomo (formerly Piwik) 3.0.2
+            _paq.push(['deleteCustomVariables', 'page']);
+            _paq.push(['trackPageView']);
+
+            // make Matomo aware of newly added content
+            var content = document.getElementById('app');
+            _paq.push(['MediaAnalytics::scanForMedia', content]);
+            _paq.push(['FormAnalytics::scanForForms', content]);
+            _paq.push(['trackContentImpressionsWithinNode', content]);
+            _paq.push(['enableLinkTracking']);
+        }
+
+        // Listen to popstate event for back/forward navigation
+        window.addEventListener('popstate', function (event) {
+            console.log("popstate event triggered");
             //wait for new title before sending data to matomo
             setTimeout(function () {
-                _paq.push(['setReferrerUrl', currentUrl]);
-                currentUrl = window.location.pathname;
-                _paq.push(['setCustomUrl', currentUrl]);
-                _paq.push(['setDocumentTitle', document.title]);
-
-                // remove all previously assigned custom variables, requires Matomo (formerly Piwik) 3.0.2
-                _paq.push(['deleteCustomVariables', 'page']);
-                _paq.push(['trackPageView']);
-
-                // make Matomo aware of newly added content
-                var content = document.getElementById('app');
-                _paq.push(['MediaAnalytics::scanForMedia', content]);
-                _paq.push(['FormAnalytics::scanForForms', content]);
-                _paq.push(['trackContentImpressionsWithinNode', content]);
-                _paq.push(['enableLinkTracking']);
+                trackPageView();
             }, 1000);
         });
 
-        // Additional listener to catch programmatic navigation changes
+        // Patch pushState and replaceState to detect navigation
         (function(history){
-            var pushState = history.pushState;
+            const pushState = history.pushState;
+            const replaceState = history.replaceState;
+
             history.pushState = function(state) {
-                if (typeof history.onpushstate == "function") {
-                    history.onpushstate({state: state});
-                }
-                // Call original pushState method
-                return pushState.apply(history, arguments);
+                console.log("pushState called");
+                const result = pushState.apply(history, arguments);
+                const popStateEvent = new PopStateEvent('popstate', { state: state });
+                window.dispatchEvent(popStateEvent);
+                return result;
+            };
+
+            history.replaceState = function(state) {
+                console.log("replaceState called");
+                const result = replaceState.apply(history, arguments);
+                const popStateEvent = new PopStateEvent('popstate', { state: state });
+                window.dispatchEvent(popStateEvent);
+                return result;
             };
         })(window.history);
 
-        // Listen for pushState events to handle BrowserRouter navigation
-        window.history.onpushstate = function(e) {
-            // Trigger popstate event manually
-            var popStateEvent = new PopStateEvent('popstate', { state: e.state });
-            window.dispatchEvent(popStateEvent);
-        };
     </script>
      
     <!-- End Matomo Code -->
