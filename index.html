@@ -39,7 +39,7 @@
 
         var _paq = window._paq = window._paq || [];
         /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-        currentUrl = '/' + window.location.hash.substr(1);
+        currentUrl = window.location.pathname;
         //wait for new title before sending data to matomo
         setTimeout(function () {
             _paq.push(['setCustomUrl', currentUrl]);
@@ -55,12 +55,13 @@
             })();
         }, 1000);
 
-        var currentUrl = location.href;
-        window.addEventListener('hashchange', function () {
+        var currentUrl = location.pathname;
+        // listen to 'popstate' to handle BrowserRouter navigation
+        window.addEventListener('popstate', function () {
             //wait for new title before sending data to matomo
             setTimeout(function () {
                 _paq.push(['setReferrerUrl', currentUrl]);
-                currentUrl = '/' + window.location.hash.substr(1);
+                currentUrl = window.location.pathname;
                 _paq.push(['setCustomUrl', currentUrl]);
                 _paq.push(['setDocumentTitle', document.title]);
 
@@ -76,6 +77,25 @@
                 _paq.push(['enableLinkTracking']);
             }, 1000);
         });
+
+        // Additional listener to catch programmatic navigation changes
+        (function(history){
+            var pushState = history.pushState;
+            history.pushState = function(state) {
+                if (typeof history.onpushstate == "function") {
+                    history.onpushstate({state: state});
+                }
+                // Call original pushState method
+                return pushState.apply(history, arguments);
+            };
+        })(window.history);
+
+        // Listen for pushState events to handle BrowserRouter navigation
+        window.history.onpushstate = function(e) {
+            // Trigger popstate event manually
+            var popStateEvent = new PopStateEvent('popstate', { state: e.state });
+            window.dispatchEvent(popStateEvent);
+        };
     </script>
      
     <!-- End Matomo Code -->
