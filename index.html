@@ -39,7 +39,7 @@
 
         var _paq = window._paq = window._paq || [];
         /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-        currentUrl = window.location.pathname;
+        currentUrl = window.location.pathname + window.location.search; // Inkluderar query-parametrar
         //wait for new title before sending data to matomo
         setTimeout(function () {
             _paq.push(['setCustomUrl', currentUrl]);
@@ -55,13 +55,13 @@
             })();
         }, 1000);
 
-        var currentUrl = location.pathname;
+        var currentUrl = location.pathname + location.search; // Inkluderar query-parametrar
 
         // Function to handle page view tracking
         function trackPageView() {
-            console.log("Tracking page view for URL:", window.location.pathname);
+            console.log("Tracking page view for URL:", window.location.pathname + window.location.search);
             _paq.push(['setReferrerUrl', currentUrl]);
-            currentUrl = window.location.pathname;
+            currentUrl = window.location.pathname + window.location.search; // Inkluderar query-parametrar
             _paq.push(['setCustomUrl', currentUrl]);
             _paq.push(['setDocumentTitle', document.title]);
 
