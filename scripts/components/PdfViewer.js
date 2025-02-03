@@ -2,40 +2,67 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
 export default function PdfViewer({ url = null, height = '500' }) {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfHeight, setPdfHeight] = useState(500);
   const [error, setError] = useState('');
+  const [fileSizeMB, setFileSizeMB] = useState(null); // lagrar filstorleken i MB
 
   useEffect(() => {
     if (url) {
-      let size;
+      // Återställ tidigare status vid url-ändring
+      setError('');
+      setFileSizeMB(null);
+      setPdfUrl(null);
+
       // Gör en HEAD-förfrågan för att hämta headers och kolla content-length
       fetch(url, { method: 'HEAD' })
         .then((res) => {
-          size = res.headers.get('content-length');
-          if (size && parseInt(size, 10) > MAX_FILE_SIZE) {
-            setError(`PDF-filen är för stor (${(parseInt(size, 10) / (1024 * 1024)).toFixed(2)} MB)`);
-            setPdfUrl(null);
+          const size = res.headers.get('content-length');
+          if (size) {
+            const sizeNum = parseInt(size, 10);
+            const sizeInMB = sizeNum / (1024 * 1024);
+            if (sizeNum > MAX_FILE_SIZE) {
+              setFileSizeMB(sizeInMB.toFixed(1));
+              // pdfUrl lämnas null tills användaren väljer att ladda filen
+            } else {
+              setPdfUrl(url);
+              setPdfHeight(height || 500);
+            }
           } else {
-            setError('');
-            setPdfUrl(url);
-            setPdfHeight(height || 500);
+            // Om vi inte får storleksinfo, låt användaren välja att ladda ändå
+            setFileSizeMB('okänd');
           }
         })
         .catch((err) => {
-          // visa pdfen ändå
-          setPdfUrl(url);
-          setPdfHeight(height || 500);
+          // Vid fel, låt användaren välja att ladda ändå
+          setFileSizeMB('okänd');
         });
     }
   }, [url, height]);
 
+  const handleLoadLargePdf = () => {
+    // Användaren väljer att ladda filen trots storleken
+    setError('');
+    setPdfUrl(url);
+    setPdfHeight(height || 500);
+  };
+
   return (
     <div className="pdf-viewer">
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error">
+          <p>{error}</p>
+        </div>
+      )}
+      {/* Visa knappen endast om pdfUrl inte är satt, dvs. filen inte har laddats */}
+      {!pdfUrl && fileSizeMB && (
+        <button onClick={handleLoadLargePdf} type="button">
+          Ladda PDF ({fileSizeMB} MB)
+        </button>
+      )}
       {pdfUrl && (
         <object data={pdfUrl} width="100%" height={pdfHeight} type="application/pdf">
           <a href={pdfUrl}>Öppna pdf</a>
