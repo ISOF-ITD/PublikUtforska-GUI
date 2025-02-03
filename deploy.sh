@@ -4,6 +4,9 @@
 npm install
 npm run build
 
+# Kopiera sitemap*.xml-filerna från www till www-deploy
+cp www/sitemap*.xml www-deploy/
+
 # Skapa en backup av den nuvarande www-mappen med en tidsstämpel
 if [ -d "www" ]; then
   mv www www-backup_$(date +%Y%m%d%H%M%S)

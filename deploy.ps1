@@ -2,6 +2,9 @@
 npm install
 npm run build
 
+# Kopiera sitemap*.xml-filerna från www till www-deploy
+Copy-Item -Path "www/sitemap*.xml" -Destination "www-deploy"
+
 # Skapa en tidsstämpel i formatet yyyyMMddHHmmss
 $timestamp = Get-Date -Format "yyyyMMddHHmmss"
 
