@@ -40,3 +40,6 @@ www/tiles
 
 # Output of npm create-sitemap
 www/sitemap*.xml
+
+# www
+www
