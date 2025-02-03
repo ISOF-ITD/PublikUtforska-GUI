@@ -60,12 +60,12 @@ export default function PdfViewer({ url = null, height = '500' }) {
       {/* Visa knappen endast om pdfUrl inte är satt, dvs. filen inte har laddats */}
       {!pdfUrl && fileSizeMB && (
         <button onClick={handleLoadLargePdf} type="button">
-          Ladda PDF ({fileSizeMB} MB)
+          Visa Pdf ({fileSizeMB} MB)
         </button>
       )}
       {pdfUrl && (
         <object data={pdfUrl} width="100%" height={pdfHeight} type="application/pdf">
-          <a href={pdfUrl}>Öppna pdf</a>
+          <a href={pdfUrl}>Öppna Pdf</a>
         </object>
       )}
     </div>
