@@ -6,14 +6,14 @@ npm run build
 
 # Skapa en backup av den nuvarande www-mappen med en tidsstämpel
 if [ -d "www" ]; then
-  mv www www_backup_$(date +%Y%m%d%H%M%S)
+  mv www www-backup_$(date +%Y%m%d%H%M%S)
 fi
 
 # Byt namn på mappen www-deploy till www
 mv www-deploy www
 
 # Hitta alla backup-mappar som matchar mönstret, sortera dem och ta bort de äldsta om det finns fler än 10
-backups=( $(ls -d www_backup_* 2>/dev/null | sort) )
+backups=( $(ls -d www-backup_* 2>/dev/null | sort) )
 
 if [ ${#backups[@]} -gt 10 ]; then
   removeCount=$((${#backups[@]} - 10))
