@@ -60,17 +60,12 @@ cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
 
 ## Create or update sitemap
 
+Run on server:
+
 ```bash
-node ./create-sitemap.js
+npm run create-sitemap
 ```
 
-or in PowerShell:
-
-```PowerShell
-node .\create-sitemap.js
-```
-
-To deploy the new sitemap to the server, see "Bundle code for deployment".
 
 ## Import new data
 
