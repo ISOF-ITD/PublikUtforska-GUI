@@ -20,8 +20,6 @@ import TranscribeButton from './TranscribeButton';
 // Main CSS: ui-components/overlay.less
 // ImageMap CSS: ui-components/image-map.less
 
-export default class TranscriptionOverlay extends React.Component {
-	constructor(props) {
 export default function TranscriptionOverlay(props) {
 	const [visible, setVisible] = useState(false);
 	const [informantNameInput, setInformantNameInput] = useState('');
@@ -47,9 +45,8 @@ export default function TranscriptionOverlay(props) {
 	const [transcribeSession, setTranscribeSession] = useState(null); // not used as input value
 	const [type, setType] = useState('');
 
-	// -----------------------
 	// Helper functions
-	// -----------------------
+
 	const transcribeStart = useCallback(async (recordId) => {
 		const data = { recordid: recordId };
 
@@ -127,9 +124,8 @@ export default function TranscriptionOverlay(props) {
 		[messageSent, id, transcribeSession]
 	);
 
-	// -----------------------
 	// Event handlers
-	// -----------------------
+
 	const closeButtonClickHandler = useCallback(() => {
 		// Explicitly call our cancel logic when the user hits "Stäng"
 		transcribeCancel(false);
@@ -257,9 +253,8 @@ export default function TranscriptionOverlay(props) {
 		messageCommentInput,
 	]);
 
-	// -----------------------
 	// Form rendering logic
-	// -----------------------
+
 	const renderTranscribeForm = useCallback(() => {
 		switch (transcriptionType) {
 			case 'uppteckningsblankett':
@@ -306,9 +301,9 @@ export default function TranscriptionOverlay(props) {
 		inputChangeHandler,
 	]);
 
-	// -----------------------
+
 	// useEffect for eventBus listeners
-	// -----------------------
+
 	useEffect(() => {
 		// Handler for overlay.transcribe
 		const handleOverlayTranscribe = (event) => {
@@ -372,14 +367,11 @@ export default function TranscriptionOverlay(props) {
 		};
 	}, [transcribeStart]);
 
-	// -----------------------
 	// Note: We removed the auto-cancel on unmount to prevent flicker.
 	//       We only call `transcribeCancel()` when the user explicitly closes or randomizes.
-	// -----------------------
 
-	// -----------------------
 	// Render
-	// -----------------------
+
 	if (!visible) return null;
 
 	let overlayContent;
