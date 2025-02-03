@@ -30,47 +30,22 @@ or in PowerShell:
 npm run start
 ```
 
-## Bundle code for deployment with webpack, commit and push (make sure you know what you are doing)
+## Deploy code on server
 
-Enter the correct path to the ES-API in config.js (frigg-test or frigg). Otherwise it must be done on the server afterwards. Then run:
-
-```bash
-npm run build && git add www && git commit -m 'fresh compile' && git push origin master
-```
-
-or in PowerShell:
-
-```PowerShell
-npm run build; git add www; git commit -m 'fresh compile'; git push origin master
-```
-
-Deploy code on server:
-
-frigg-test:
+Run on server:
 
 ```bash
-cd /var/www/react/PublikUtforska-GUI/ && ./gitupdate.sh
-```
-
-frigg:
-
-```bash
-cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
+cd /var/www/react/PublikUtforska-GUI/ && ./gitupdate.sh && ./deploy.sh
 ```
 
 ## Create or update sitemap
 
+Run on server:
+
 ```bash
-node ./create-sitemap.js
+npm run create-sitemap
 ```
 
-or in PowerShell:
-
-```PowerShell
-node .\create-sitemap.js
-```
-
-To deploy the new sitemap to the server, see "Bundle code for deployment".
 
 ## Import new data
 

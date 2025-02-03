@@ -39,7 +39,7 @@
 
         var _paq = window._paq = window._paq || [];
         /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-        currentUrl = '/' + window.location.hash.substr(1);
+        currentUrl = window.location.pathname + window.location.search; // Inkluderar query-parametrar
         //wait for new title before sending data to matomo
         setTimeout(function () {
             _paq.push(['setCustomUrl', currentUrl]);
@@ -55,27 +55,59 @@
             })();
         }, 1000);
 
-        var currentUrl = location.href;
-        window.addEventListener('hashchange', function () {
+        var currentUrl = location.pathname + location.search; // Inkluderar query-parametrar
+
+        // Function to handle page view tracking
+        function trackPageView() {
+            console.log("Tracking page view for URL:", window.location.pathname + window.location.search);
+            _paq.push(['setReferrerUrl', currentUrl]);
+            currentUrl = window.location.pathname + window.location.search; // Inkluderar query-parametrar
+            _paq.push(['setCustomUrl', currentUrl]);
+            _paq.push(['setDocumentTitle', document.title]);
+
+            // remove all previously assigned custom variables, requires Matomo (formerly Piwik) 3.0.2
+            _paq.push(['deleteCustomVariables', 'page']);
+            _paq.push(['trackPageView']);
+
+            // make Matomo aware of newly added content
+            var content = document.getElementById('app');
+            _paq.push(['MediaAnalytics::scanForMedia', content]);
+            _paq.push(['FormAnalytics::scanForForms', content]);
+            _paq.push(['trackContentImpressionsWithinNode', content]);
+            _paq.push(['enableLinkTracking']);
+        }
+
+        // Listen to popstate event for back/forward navigation
+        window.addEventListener('popstate', function (event) {
+            console.log("popstate event triggered");
             //wait for new title before sending data to matomo
             setTimeout(function () {
-                _paq.push(['setReferrerUrl', currentUrl]);
-                currentUrl = '/' + window.location.hash.substr(1);
-                _paq.push(['setCustomUrl', currentUrl]);
-                _paq.push(['setDocumentTitle', document.title]);
-
-                // remove all previously assigned custom variables, requires Matomo (formerly Piwik) 3.0.2
-                _paq.push(['deleteCustomVariables', 'page']);
-                _paq.push(['trackPageView']);
-
-                // make Matomo aware of newly added content
-                var content = document.getElementById('app');
-                _paq.push(['MediaAnalytics::scanForMedia', content]);
-                _paq.push(['FormAnalytics::scanForForms', content]);
-                _paq.push(['trackContentImpressionsWithinNode', content]);
-                _paq.push(['enableLinkTracking']);
+                trackPageView();
             }, 1000);
         });
+
+        // Patch pushState and replaceState to detect navigation
+        (function(history){
+            const pushState = history.pushState;
+            const replaceState = history.replaceState;
+
+            history.pushState = function(state) {
+                console.log("pushState called");
+                const result = pushState.apply(history, arguments);
+                const popStateEvent = new PopStateEvent('popstate', { state: state });
+                window.dispatchEvent(popStateEvent);
+                return result;
+            };
+
+            history.replaceState = function(state) {
+                console.log("replaceState called");
+                const result = replaceState.apply(history, arguments);
+                const popStateEvent = new PopStateEvent('popstate', { state: state });
+                window.dispatchEvent(popStateEvent);
+                return result;
+            };
+        })(window.history);
+
     </script>
      
     <!-- End Matomo Code -->
