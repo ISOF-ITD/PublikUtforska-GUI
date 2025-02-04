@@ -35,7 +35,11 @@ npm run start
 Run on server:
 
 ```bash
-cd /var/www/react/PublikUtforska-GUI/ && ./gitupdate.sh && ./deploy.sh
+cd /var/www/react/PublikUtforska-GUI/
+# We have not integrated gitupdate.sh in deploy.sh yet
+# to be able to deploy an older version.
+./gitupdate.sh
+./deploy.sh
 ```
 
 ## Create or update sitemap
