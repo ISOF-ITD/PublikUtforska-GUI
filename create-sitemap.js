@@ -2,6 +2,15 @@
 
 const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
+
+// Skapa mappen "www" om den inte redan finns
+const wwwPath = path.join(__dirname, 'www');
+if (!fs.existsSync(wwwPath)) {
+  fs.mkdirSync(wwwPath);
+  console.log('Created folder: www');
+}
+
 
 // Gemensamma API-parametrar som ett objekt
 const API_PARAMS = {
@@ -117,8 +126,9 @@ async function createSitemaps() {
   // Funktion för att skapa ny sitemap-fil
   const initNewSitemap = () => {
     currentSitemapPath = `www/sitemap${sitemapCount}.xml`;
+    const currentSitemapPathWithoutWWW = `sitemap${sitemapCount}.xml`;
     fs.writeFileSync(currentSitemapPath, '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n');
-    updateSitemapIndex(currentSitemapPath); // Lägg till den nya sitemap-filen i index
+    updateSitemapIndex(currentSitemapPathWithoutWWW); // Uppdatera sitemap index-fil
     console.log(`Created new sitemap file: ${currentSitemapPath}`);
     currentUrlCount = 0;
     currentFileSize = Buffer.byteLength('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n', 'utf8');

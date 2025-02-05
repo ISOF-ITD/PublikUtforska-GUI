@@ -24,10 +24,10 @@ get code style warnings and errors while you type. You can run "Fix all auto-fix
 npm run start
 ```
 
-or in PowerShell:
+## Analyze bundle sizes
 
-```PowerShell
-npm run start
+```bash
+npm run analyze-bundle
 ```
 
 ## Deploy code on server
@@ -35,7 +35,11 @@ npm run start
 Run on server:
 
 ```bash
-cd /var/www/react/PublikUtforska-GUI/ && ./gitupdate.sh && ./deploy.sh
+cd /var/www/react/PublikUtforska-GUI/
+# We have not integrated gitupdate.sh in deploy.sh yet
+# to be able to deploy an older version.
+./gitupdate.sh
+./deploy.sh
 ```
 
 ## Create or update sitemap
@@ -63,6 +67,43 @@ To add a custom warning message to the application, follow these steps:
    
 2. **Display the warning message**:
    - If the `varning.html` file exists, the warning message will be automatically rendered.
+
+## Managing Robots.txt with Apache Proxy
+
+To manage different `robots.txt` files for different environments (test or production), an Apache proxy configuration is used. This setup ensures that search engines do not index the test environment while allowing proper indexing of the production environment, following the rules specified in `/robots/robots.production.txt`.
+
+### Apache Configuration
+
+#### Test Environment (garm-test)
+
+In the test environment, the proxy is configured to serve robots.test.txt:
+
+```apache
+Alias /robots.txt /var/www/react/PublikUtforska-GUI/robots/robots.test.txt
+
+<Directory "/var/www/react/PublikUtforska-GUI/config">
+    Require all granted
+</Directory>
+```
+
+#### Production Environment (garm)
+
+In the production environment, the proxy serves `robots.production.txt`:
+
+```apache
+Alias /robots.txt /var/www/react/PublikUtforska-GUI/robots/robots.production.txt
+
+<Directory "/var/www/react/PublikUtforska-GUI/config">
+    Require all granted
+</Directory>
+```
+
+This configuration ensures that the appropriate robots.txt file is used depending on the environment.
+
+### Updating robots.txt
+
+If modifications to `robots.txt` are required, update the corresponding file in the `/robots/` directory and verify that the proxy correctly points to the intended version. 
+
 
 
 ## css 
