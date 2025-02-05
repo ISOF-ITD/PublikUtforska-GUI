@@ -24,12 +24,6 @@ get code style warnings and errors while you type. You can run "Fix all auto-fix
 npm run start
 ```
 
-or in PowerShell:
-
-```PowerShell
-npm run start
-```
-
 ## Analyze bundle sizes
 
 ```bash
