@@ -24,6 +24,8 @@ export default function Footer() {
             <img
               src={logoIsof}
               alt="Institutet för språk och folkminnen"
+              width="116"
+              height="80"
             />
           </a>
         </div>
