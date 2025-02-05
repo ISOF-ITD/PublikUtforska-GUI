@@ -4,13 +4,16 @@ import PropTypes from 'prop-types';
 import { Map, imageOverlay, CRS } from 'leaflet'; // Only import the necessary parts of Leaflet
 
 export default function ImageMap({ maxZoom = 3, image = null }) {
-  const containerRef = useRef();
-  const mapRef = useRef();
-  const mapInstance = useRef();
-  const imageOverlayRef = useRef();
-  const imageEl = useRef();
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const imageOverlayRef = useRef(null);
+  const imageEl = useRef(null);
 
   const imageLoadedHandler = () => {
+    // Guard: if containerRef is null, do nothing
+    if (!containerRef.current) return;
+
     const containerWidth = containerRef.current.clientWidth;
     const imageWidth = imageEl.current.width;
     const imageHeight = imageEl.current.height;
@@ -39,9 +42,11 @@ export default function ImageMap({ maxZoom = 3, image = null }) {
       mapInstance.current.removeLayer(imageOverlayRef.current);
     }
 
-    imageEl.current = new Image();
-    imageEl.current.onload = imageLoadedHandler;
-    imageEl.current.src = url;
+    const img = new Image();
+    img.onload = imageLoadedHandler;
+    img.src = url;
+    // Keep a reference to the <img> so we can clean up later
+    imageEl.current = img;
   };
 
   useEffect(() => {
@@ -52,12 +57,25 @@ export default function ImageMap({ maxZoom = 3, image = null }) {
       crs: CRS.Simple,
     });
 
+    // If we have an image initially
     if (image) {
       loadImage(image);
     }
+
+    return () => {
+      // Cleanup: remove the onload listener
+      if (imageEl.current) {
+        imageEl.current.onload = null;
+      }
+      // Also, if you want to destroy the map entirely:
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+      }
+    };
   }, []);
 
   useEffect(() => {
+    // Re-load the image if the 'image' prop changes
     if (image) {
       loadImage(image);
     }
