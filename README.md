@@ -30,6 +30,12 @@ or in PowerShell:
 npm run start
 ```
 
+## Analyze bundle sizes
+
+```bash
+npm run analyze-bundle
+```
+
 ## Deploy code on server
 
 Run on server:
