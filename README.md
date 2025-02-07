@@ -49,7 +49,17 @@ Run on server:
 ```bash
 npm run create-sitemap
 ```
+## Automated Sitemap Updates via Cron on garm
 
+A cron job on the production server garm runs the sitemap generation script every Monday at 04:00 AM:
+
+```bash	
+cd /var/www/react/PublikUtforska-GUI/ && npm run create-sitemap > /var/www/react/PublikUtforska-GUI/logs/sitemap.log 2> /var/www/react/PublikUtforska-GUI/logs/sitemap-error.log
+```
+
+This command changes to the project directory, runs the create-sitemap script, and logs output and errors separately.
+
+You can check the logs in the `logs` directory of the project. You can change the cron job by running `crontab -e` and editing the cron jobs.
 
 ## Import new data
 
