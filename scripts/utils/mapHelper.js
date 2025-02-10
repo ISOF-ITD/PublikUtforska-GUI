@@ -1,6 +1,6 @@
 // import turfInside from '@turf/boolean-point-in-polygon';
 
-import L from 'leaflet';
+import { icon, tileLayer, bounds, Proj } from 'leaflet'; // Import only what's needed
 // import Proj from 'proj4leaflet';
 
 // import config from '../config';
@@ -13,43 +13,43 @@ import markerBlue from '../../img/marker-blue.png';
 import markerRed from '../../img/marker-red.png';
 
 export default {
-  markerIcon: L.icon({
+  markerIcon: icon({
     iconUrl: mapMarkerBlueLocation,
     shadowUrl: mapMarkerShadow,
 
-    iconSize: [28, 36],	// size of the icon
-    shadowSize: [41, 41],	// size of the shadow
-    iconAnchor: [14, 35],	// point of the icon which will correspond to marker's location
-    shadowAnchor: [12, 40], // the same for the shadow
-    popupAnchor: [-1, -15], // point from which the popup should open relative to the iconAnchor
+    iconSize: [28, 36], // Size of the icon
+    shadowSize: [41, 41], // Size of the shadow
+    iconAnchor: [14, 35], // Point of the icon corresponding to marker's location
+    shadowAnchor: [12, 40], // Same for the shadow
+    popupAnchor: [-1, -15], // Point from which the popup should open relative to the iconAnchor
   }),
 
-  markerIconHighlighted: L.icon({
+  markerIconHighlighted: icon({
     iconUrl: mapMarkerBlueHighlighted,
     shadowUrl: mapMarkerShadow,
 
-    iconSize: [28, 36],	// size of the icon
-    shadowSize: [41, 41],	// size of the shadow
-    iconAnchor: [14, 35],	// point of the icon which will correspond to marker's location
-    shadowAnchor: [12, 40], // the same for the shadow
-    popupAnchor: [-1, -15], // point from which the popup should open relative to the iconAnchor
+    iconSize: [28, 36],
+    shadowSize: [41, 41],
+    iconAnchor: [14, 35],
+    shadowAnchor: [12, 40],
+    popupAnchor: [-1, -15],
   }),
 
-  orangeIcon: L.icon({
+  orangeIcon: icon({
     iconUrl: mapMarkerOrange,
     iconSize: [27, 27],
     iconAnchor: [15, 15],
     popupAnchor: [0, 0],
   }),
 
-  blueIcon: L.icon({
+  blueIcon: icon({
     iconUrl: markerBlue,
     iconSize: [27, 27],
     iconAnchor: [15, 15],
     popupAnchor: [0, 0],
   }),
 
-  redIcon: L.icon({
+  redIcon: icon({
     iconUrl: markerRed,
     iconSize: [27, 27],
     iconAnchor: [15, 15],
@@ -213,19 +213,20 @@ export default {
       var newLayer;
 
       if (this.tileLayers[i].isWms) {
-        newLayer = L.tileLayer.wms(this.tileLayers[i].url, {
+        newLayer = tileLayer.wms(this.tileLayers[i].url, {
           layers: this.tileLayers[i].layerName,
           minZoom: this.tileLayers[i].minZoom || 3,
           maxZoom: this.tileLayers[i].maxZoom,
           attribution: this.tileLayers[i].attribution,
         });
       } else {
-        newLayer = L.tileLayer(this.tileLayers[i].url, this.tileLayers[i].options);
+        newLayer = tileLayer(this.tileLayers[i].url, this.tileLayers[i].options);
       }
       ret[this.tileLayers[i].label] = newLayer;
     }
     return ret;
   },
+
   createOverlayLayers() {
     const ret = {};
     if (this.overlayTileLayers) {
@@ -233,7 +234,7 @@ export default {
         var newLayer;
 
         if (this.overlayTileLayers[i].isWms) {
-          newLayer = L.tileLayer.wms(this.overlayTileLayers[i].url, {
+          newLayer = tileLayer.wms(this.overlayTileLayers[i].url, {
             layers: this.overlayTileLayers[i].layers,
             minZoom: this.overlayTileLayers[i].minZoom || 3,
             maxZoom: this.overlayTileLayers[i].maxZoom,
@@ -245,7 +246,7 @@ export default {
             TILESORIGIN: this.overlayTileLayers[i].TILESORIGIN,
           });
         } else {
-          newLayer = L.tileLayer(this.overlayTileLayers[i].url, this.overlayTileLayers[i].options);
+          newLayer = tileLayer(this.overlayTileLayers[i].url, this.overlayTileLayers[i].options);
         }
         ret[this.overlayTileLayers[i].label] = newLayer;
       }
@@ -265,7 +266,7 @@ export default {
 	},
 */
   getSweref99crs() {
-    const crs = new L.Proj.CRS(
+    const crs = new Proj.CRS(
       'EPSG:3006',
       '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
       {
@@ -273,7 +274,7 @@ export default {
           4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5,
         ],
         origin: [-1200000.000000, 8500000.000000],
-        bounds: L.bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000]),
+        bounds: bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000]),
       },
     );
     return crs;

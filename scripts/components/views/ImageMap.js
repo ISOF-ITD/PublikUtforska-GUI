@@ -1,13 +1,13 @@
 /* eslint-disable react/require-default-props */
 import { useEffect, useRef } from 'react';
-import L from 'leaflet';
 import PropTypes from 'prop-types';
+import { Map, imageOverlay, CRS } from 'leaflet'; // Only import the necessary parts of Leaflet
 
 export default function ImageMap({ maxZoom = 3, image = null }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
-  const imageOverlay = useRef(null);
+  const imageOverlayRef = useRef(null);
   const imageEl = useRef(null);
 
   const imageLoadedHandler = () => {
@@ -21,12 +21,12 @@ export default function ImageMap({ maxZoom = 3, image = null }) {
     const factor = containerWidth / imageWidth;
     const bounds = [[0, 0], [imageHeight * factor, imageWidth * factor]];
 
-    if (imageOverlay.current) {
-      mapInstance.current.removeLayer(imageOverlay.current);
+    if (imageOverlayRef.current) {
+      mapInstance.current.removeLayer(imageOverlayRef.current);
     }
 
-    imageOverlay.current = L.imageOverlay(imageEl.current.src, bounds);
-    imageOverlay.current.addTo(mapInstance.current);
+    imageOverlayRef.current = imageOverlay(imageEl.current.src, bounds);
+    imageOverlayRef.current.addTo(mapInstance.current);
 
     /*
     Testing with leaflet geojson rectangle overlay on image
@@ -38,8 +38,8 @@ export default function ImageMap({ maxZoom = 3, image = null }) {
   };
 
   const loadImage = (url) => {
-    if (imageOverlay.current) {
-      mapInstance.current.removeLayer(imageOverlay.current);
+    if (imageOverlayRef.current) {
+      mapInstance.current.removeLayer(imageOverlayRef.current);
     }
 
     const img = new Image();
@@ -50,12 +50,11 @@ export default function ImageMap({ maxZoom = 3, image = null }) {
   };
 
   useEffect(() => {
-    // Initialize the leaflet map
-    mapInstance.current = L.map(mapRef.current, {
+    mapInstance.current = new Map(mapRef.current, {
       minZoom: -5, // Allow zooming out further to see the whole image
       maxZoom: maxZoom || 3,
       zoom: 0,
-      crs: L.CRS.Simple,
+      crs: CRS.Simple,
     });
 
     // If we have an image initially
