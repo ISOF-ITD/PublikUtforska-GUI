@@ -42,4 +42,5 @@ www/sitemap*.xml
 
 # www
 www
+www-*
 www_*
