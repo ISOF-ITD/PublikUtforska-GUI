@@ -4,8 +4,11 @@ import { faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
 import { useLocation } from 'react-router-dom';
 import IntroOverlay from './views/IntroOverlay';
 import { l } from '../lang/Lang';
+import config from '../config';
 
 export default function Header() {
+  if (!config.activateIntroOverlay) return null;
+
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
   const location = useLocation(); // Använd useLocation för att få tillgång till current route
   const initialLoad = useRef(true); // En ref som håller koll på om appen precis laddats

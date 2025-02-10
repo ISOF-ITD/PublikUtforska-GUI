@@ -87,6 +87,9 @@ export default {
   // aktivera transkriptionsfunktioner
   activateTranscription: true,
 
+  // activate intro overlay
+  activateIntroOverlay: false,
+
   hitsPerPage: 100,
 
   // för att begränsa bläddringen till 10 000 hits. detta pga begränsningar i Elasticsearch
