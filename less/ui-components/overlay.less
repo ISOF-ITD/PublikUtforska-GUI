@@ -1,222 +1,305 @@
 .overlay-container {
-	position: fixed;
+  position: fixed;
 
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 
-	background: rgba(78, 78, 78, 0.84);
+  background: rgba(78, 78, 78, 0.84);
 
-	overflow-y: auto;
+  overflow-y: auto;
 
-	z-index: 3000;
+  z-index: 3000;
 
-	// opacity: 0;
-	display: none;
+  // opacity: 0;
+  display: none;
 
-	pointer-events: none;
+  pointer-events: none;
 
-	.transition(opacity 500ms ease-in-out);
+  .transition(opacity 500ms ease-in-out);
 
-	&.light-modal {
-		background: rgba(78, 78, 78, 0.2);
-	}
+  &.light-modal {
+    background: rgba(78, 78, 78, 0.2);
+  }
 
-	&.visible {
-		pointer-events: all;
+  &.visible {
+    pointer-events: all;
 
-		// opacity: 1;
-		display: block;
-	}
+    // opacity: 1;
+    display: block;
+  }
 
-	.message {
-		position: fixed;
+  .message {
+    position: fixed;
 
-		top: 50%;
-		left: 50%;
+    top: 50%;
+    left: 50%;
 
-		padding: 15px;
+    padding: 15px;
 
-		background-color: #E1F3BC;
+    background-color: #E1F3BC;
 
-		border: 1px solid #ccc;
-		border-radius: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 
-		color: #434C2F;
-		font-weight: bold;
-		font-size: 1.7rem;
+    color: #434C2F;
+    font-weight: bold;
+    font-size: 1.7rem;
 
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
 
-		.transform(translate(-50%, -50%));
-	}
+    .transform(translate(-50%, -50%));
+  }
 
-	.close-button {
-		position: fixed;
+  .close-button {
+    position: fixed;
 
-		top: 30px;
-		right: 50px;
+    top: 30px;
+    right: 50px;
 
-		@media (max-width: 750px) {
-			position: fixed;
+    @media (max-width: 750px) {
+      position: fixed;
 
-			top: 15px;
-			right: 15px;
+      top: 15px;
+      right: 15px;
 
-			width: 30px;
-			height: 30px;
+      width: 30px;
+      height: 30px;
 
-			background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.45);
 
-			border: 5px solid rgba(0, 0, 0, 0);
-			border-radius: 0;
-			box-sizing: border-box;
+      border: 5px solid rgba(0, 0, 0, 0);
+      border-radius: 0;
+      box-sizing: border-box;
 
-			.has-docked-control & {
-				bottom: 80px;
-			}
-		}
-	}
+      .has-docked-control & {
+        bottom: 80px;
+      }
+    }
+  }
 
-	.overlay-image {
-		position: absolute;
+  .overlay-image {
+    position: absolute;
 
-		left: 50%;
+    left: 50%;
 
-		max-width: 80%;
+    max-width: 80%;
 
-		margin: 20px 0;
+    margin: 20px 0;
 
-		border-radius: 3px;
-		box-shadow: 0 2px 6px #000;
+    border-radius: 3px;
+    box-shadow: 0 2px 6px #000;
 
-		.transform(translate(-50%));
+    .transform(translate(-50%));
 
-		@media (max-width: 750px) {
-			max-width: 100%;
+    @media (max-width: 750px) {
+      max-width: 100%;
 
-			margin: 0;
-		}
-	}
+      margin: 0;
+    }
+  }
 
-	.pdf-viewer {
-		position: absolute;
+  .pdf-viewer {
+    position: absolute;
 
-		top: 80px;
-		left: 20px;
-		right: 20px;
-		bottom: 20px;
-	}
+    top: 80px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+  }
 
-	.overlay-window {
-		position: absolute;
+  .overlay-window {
+    position: absolute;
 
-		left: 50%;
+    left: 50%;
 
-		width: 650px;
+    width: 650px;
 
-		margin: 20px 0;
-		padding: 40px;
+    margin: 20px 0;
+    padding: 40px;
 
-		background-color: #fff;
+    background-color: #fff;
 
-		box-shadow: 0 2px 6px rgba(0,0,0,.2);
-		border-radius: 3px;
-		box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+    border-radius: 3px;
+    box-sizing: border-box;
 
-		overflow: auto;
+    overflow: auto;
 
-		.transform(translate(-50%));
+    .transform(translate(-50%));
 
-		@media (max-width: 750px) {
-			width: 100%;
+    @media (max-width: 750px) {
+      width: 100%;
 
-			top: 0;
-			bottom: 0;
+      top: 0;
+      bottom: 0;
 
-			margin: 0;
-			padding: 20px;
-		}
+      margin: 0;
+      padding: 20px;
+    }
+
+    &.medium {
+      width: 800px;
+
+      @media (max-width: 800px) {
+        width: 100%;
+      }
+    }
+
+    &.large {
+      width: 95%;
+    }
+
+    .overlay-header {
+      margin: -40px -40px 40px;
+      padding: 30px 40px 30px;
+
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.2rem;
+
+      background-image: url('../../img/header-back.gif');
+      background-position: center;
+
+      @media (max-width: 750px) {
+        margin-top: -20px;
+      }
+    }
+
+    hr {
+      margin: 20px -40px;
+    }
+
+    .row {
+      margin-left: 0;
+    }
+
+    .close-button {
+      position: absolute;
+
+      top: 20px;
+      right: 20px;
+    }
+
+    h2,
+    h3 {
+      display: block;
+    }
+
+    >h3 {
+      margin-top: 0;
+    }
+
+    p+h2,
+    p+h3 {
+      margin-top: 25px;
+    }
+
+    .image-list {
+      .image-item {
+        max-width: 150px;
+
+        margin: 0 10px 10px 0;
+
+        border: 1px solid @color-gray-border;
+
+        cursor: pointer;
+      }
+    }
+  }
+
+  .intro {
+    width: 90%;
+    margin: 20px auto 20px auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 40px); // 100% av viewport höjd minus 40px
+    overflow: hidden; // Förhindrar att .intro blir scrollable
+    background-color: #fff;
+    max-width: 900px;
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+
+    .overlay-header {
+      display: flex; // Använder flexbox för layout
+      justify-content: space-between; // Separerar innehåll mellan vänster och höger
+      align-items: center; // Centrerar innehållet vertikalt
+      height: 20px;
+      // width: 100%;
+      padding: 15px 40px 15px;
+      color: #fff;
+      font-size: 1.2rem;
+      background-image: url('../../img/header-back.gif');
+      background-position: center;
+
+      .text,
+      .controls {
+        display: flex;
+        align-items: center;
+      }
+
+      .controls {
+        label {
+          color: #fff;
+          padding-top: 31px;
+          font-size: 1rem;
+          font-weight: normal;
+        }
+
+        .close-button {
+          margin-bottom: 0;
+          position: relative;
+          right: auto;
+          top: auto;
+        }
+
+        // För att lägga till mer specifik layout om det behövs
+        gap: 10px; // Ger lite utrymme mellan elementen i kontrollerna
+      }
+    }
+
+
+    .content {
+      flex-grow: 1; // Fyller resten av utrymmet i .intro
+      overflow: hidden; // Säkerställer att denna del inte är scrollable
+
+      .iframe-loading {
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        background-image: url('../../img/loader.gif');
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%; // Anpassar höjden till .content
+        overflow-y: scroll; // Endast vertikal scroll för iframe
+        border: none; // Tar bort ramen kring iframe
+      }
+    }
+    .control-link,
+    .intro-close-button {
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }
 
-		&.medium {
-			width: 800px;
-
-			@media (max-width: 800px) {
-				width: 100%;
-			}
-		}
-
-		&.large {
-			width: 95%;
-		}
-
-		.overlay-header {
-			margin: -40px -40px 40px;
-			padding: 30px 40px 30px;
-
-			color: #fff;
-			font-weight: bold;
-			font-size: 1.2rem;
-
-			background-image: url('../../img/header-back.gif');
-			background-position: center;
-
-			@media (max-width: 750px) {
-				margin-top: -20px;
-			}
-		}
-
-		hr {
-			margin: 20px -40px;
-		}
-
-		.row {
-			margin-left: 0;
-		}
-
-		.close-button {
-			position: absolute;
-
-			top: 20px;
-			right: 20px;
-		}
-
-		h2, h3 {
-			display: block;
-		}
-
-		>h3 {
-			margin-top: 0;
-		}
-
-		p + h2, p + h3 {
-			margin-top: 25px;
-		}
-
-		.image-list {
-			.image-item {
-				max-width: 150px;
-
-				margin: 0 10px 10px 0;
-
-				border: 1px solid @color-gray-border;
-
-				cursor: pointer;
-			}
-		}
-	}
 }
+
 .feedback-overlay-container {
-	z-index: 3100;
+  z-index: 3100;
 }
 
 .margin-bottom-zero {
-	margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .margin-bottom-minimal {
-	margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 /* 
@@ -271,7 +354,6 @@ Show instuction image with css hover over
   left: 2em;
   z-index: 4000;
 }
-
 
 /* 
 Show instuction "image" with css hover over
