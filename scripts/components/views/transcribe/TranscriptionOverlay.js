@@ -173,10 +173,15 @@ export default function TranscriptionOverlay(props) {
 			case 'emailInput':
 				setEmailInput(value);
 				break;
+			case 'titleInput':
+				setTitle(value);
+				break;
+
 			default:
 				break;
 		}
 	}, []);
+
 
 	const sendButtonClickHandler = useCallback(async () => {
 		// Must have at least two words
