@@ -2,6 +2,15 @@
 
 const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
+
+// Skapa mappen "www" om den inte redan finns
+const wwwPath = path.join(__dirname, 'www');
+if (!fs.existsSync(wwwPath)) {
+  fs.mkdirSync(wwwPath);
+  console.log('Created folder: www');
+}
+
 
 // Gemensamma API-parametrar som ett objekt
 const API_PARAMS = {
@@ -24,7 +33,7 @@ const queryString = createQueryString(API_PARAMS);
 // URLs
 const SOCKEN_URL = `https://garm.isof.se/folkeservice/api/es/socken/?${queryString}`;
 const RECORDS_URL = `https://garm.isof.se/folkeservice/api/es/documents/?${queryString}&size=10000&socken_id=`; // socken_id läggs till senare
-const SITEMAP_BASE_URL = 'https://sok.folke.isof.se/#/records/';
+const SITEMAP_BASE_URL = 'https://sok.folke.isof.se/records/';
 
 // Sitemap limits
 const MAX_URLS_PER_SITEMAP = 50000;
@@ -79,7 +88,7 @@ function formatEndTime(remainingSeconds) {
 
 // Funktion för att initiera sitemap index-fil
 function initSitemapIndex() {
-  const sitemapIndexPath = 'sitemap-index.xml';
+  const sitemapIndexPath = 'www/sitemap-index.xml';
   const sitemapIndexHeader = '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   fs.writeFileSync(sitemapIndexPath, sitemapIndexHeader);
   console.log(`Initialized sitemap index file: ${sitemapIndexPath}`);
@@ -87,7 +96,7 @@ function initSitemapIndex() {
 
 // Funktion för att uppdatera sitemap index-fil med ny sitemap-fil
 function updateSitemapIndex(sitemapFile) {
-  const sitemapIndexPath = 'sitemap-index.xml';
+  const sitemapIndexPath = 'www/sitemap-index.xml';
   const sitemapEntry = `  <sitemap>\n    <loc>https://sok.folke.isof.se/${sitemapFile}</loc>\n  </sitemap>\n`;
   fs.appendFileSync(sitemapIndexPath, sitemapEntry);
   console.log(`Updated sitemap index with: ${sitemapFile}`);
@@ -95,7 +104,7 @@ function updateSitemapIndex(sitemapFile) {
 
 // Funktion för att avsluta sitemap index-fil
 function closeSitemapIndex() {
-  const sitemapIndexPath = 'sitemap-index.xml';
+  const sitemapIndexPath = 'www/sitemap-index.xml';
   fs.appendFileSync(sitemapIndexPath, '</sitemapindex>');
   console.log(`Closed sitemap index file: ${sitemapIndexPath}`);
 }
@@ -106,7 +115,7 @@ async function createSitemaps() {
   let sitemapCount = 1;
   let currentUrlCount = 0;
   let currentFileSize = 0;
-  let currentSitemapPath = `sitemap${sitemapCount}.xml`;
+  let currentSitemapPath = `www/sitemap${sitemapCount}.xml`;
 
   // Spara starttiden för beräkning av tidsuppskattning
   const startTime = Date.now();
@@ -116,9 +125,10 @@ async function createSitemaps() {
 
   // Funktion för att skapa ny sitemap-fil
   const initNewSitemap = () => {
-    currentSitemapPath = `sitemap${sitemapCount}.xml`;
+    currentSitemapPath = `www/sitemap${sitemapCount}.xml`;
+    const currentSitemapPathWithoutWWW = `sitemap${sitemapCount}.xml`;
     fs.writeFileSync(currentSitemapPath, '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n');
-    updateSitemapIndex(currentSitemapPath); // Lägg till den nya sitemap-filen i index
+    updateSitemapIndex(currentSitemapPathWithoutWWW); // Uppdatera sitemap index-fil
     console.log(`Created new sitemap file: ${currentSitemapPath}`);
     currentUrlCount = 0;
     currentFileSize = Buffer.byteLength('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n', 'utf8');

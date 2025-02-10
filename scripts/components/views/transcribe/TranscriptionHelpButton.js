@@ -12,7 +12,7 @@ export default function TranscriptionHelpButton({ title = '', type }) {
   const helpButtonClick = () => {
     if (window.eventBus) {
       window.eventBus.dispatch('overlay.transcriptionhelp', {
-        url: `${config.siteUrl}#${pathname}`,
+        url: `${config.siteUrl}${pathname}`,
         title,
         type,
         appUrl: config.appUrl,

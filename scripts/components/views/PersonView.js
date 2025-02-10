@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 import { useEffect } from 'react';
-import { useLoaderData, useLocation } from 'react-router-dom';
+import { useLoaderData, useLocation, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ContributeInfoButton from './ContributeInfoButton';
 import SimpleMap from './SimpleMap';
@@ -79,7 +79,7 @@ export default function PersonView({ mode = 'material' }) {
               {
                 (
                   places?.length > 0
-                  && <a href={`#/places/${places[0].id}${nordic}`}>{personCounty}</a>
+                  && <Link to={`/places/${places[0].id}${nordic}`}>{personCounty}</Link>
                 ) || birthplace
               }
             </p>

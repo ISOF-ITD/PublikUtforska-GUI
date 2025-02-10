@@ -1,5 +1,4 @@
 # Logs
-logs
 *.log
 npm-debug.log*
 
@@ -37,3 +36,10 @@ jspm_packages
 .node_repl_history
 www/sitevision.html
 www/tiles
+
+# Output of npm create-sitemap
+www/sitemap*.xml
+
+# www
+www
+www-*

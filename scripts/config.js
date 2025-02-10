@@ -17,6 +17,24 @@ if (ENV !== 'prod') {
   console.log(`ENV=${ENV}`);
 }
 
+// Function to format date to 'YYYY-MM-DD'
+// (to fit in Matomo API calls)
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // månader är 0-indexerade
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Function to get the date range from today to three months ago
+const getLastThreeMonthsRange = () => {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 3);
+
+  return `${formatDate(startDate)},${formatDate(endDate)}`;
+};
+
 const apiUrlObject = {
   dev: 'https://garm.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
   // 'dev': 'http://localhost:5001/api/es/', //feel free to change according to your local environment
@@ -68,7 +86,7 @@ export default {
 
   // aktivera transkriptionsfunktioner
   activateTranscription: true,
-  
+
   hitsPerPage: 100,
 
   // för att begränsa bläddringen till 10 000 hits. detta pga begränsningar i Elasticsearch
@@ -227,14 +245,14 @@ export default {
     module: 'API',
     method: 'Actions.getSiteSearchKeywords',
     idSite: '17',
-    period: 'range',
-    date: '2022-01-01,today',
+    period: 'range', // Use a custom date range
+    date: getLastThreeMonthsRange(), // Dynamically calculated date range
     format: 'JSON',
     // filter_limit: "100", // default 100
   },
   // här går det att begränsa antalet sökförslag för varje typ av sökförslag
   // sätt till null för att inte begränsa
-  numberOfSearchSuggestions: 6,
+  numberOfSearchSuggestions: 8,
   numberOfPlaceSuggestions: null,
   numberOfPersonSuggestions: null,
   numberOfProvinceSuggestions: null,

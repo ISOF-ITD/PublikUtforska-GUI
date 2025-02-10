@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFolder, faFolderOpen, faFileLines, faVolumeHigh,
 } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ListPlayButton from './ListPlayButton';
 import TranscribeButton from './transcribe/TranscribeButton';
@@ -121,7 +121,7 @@ export default function RecordListItem({
           fetchRecordMediaCount(oneRecordPagesParams, setNumberOfSubrecordsMedia, setNumberOfTranscribedSubrecordsMedia);
           // fetchRecordMediaCount(transcribedOneRecordPagesParams, setNumberOfTranscribedSubrecordsMedia);
         }
-      } 
+      }
       if (Number.isInteger(numberofonerecord)) {
         // We use calculated values in Rest-API: numberofonerecord, numberoftranscribedonerecord
         setNumberOfSubrecords(numberofonerecord);
@@ -251,9 +251,9 @@ export default function RecordListItem({
               return (
                 <li key={`subitem${subItem._source.id}`}>
                   <small>
-                    <a
+                    <Link
                       style={{ fontWeight: published ? 'bold' : '' }}
-                      href={`#${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
+                      to={`${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
                         {
                           search: searchParams.search,
                           search_field: searchParams.search_field,
@@ -271,7 +271,7 @@ export default function RecordListItem({
                         __html: `: ${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)}${!published ? ' (ej avskriven)' : ''}`,
                       }}
                       />
-                    </a>
+                    </Link>
                   </small>
 
                 </li>
@@ -299,12 +299,12 @@ export default function RecordListItem({
     if (taxonomy.name) {
       if (visibleCategories) {
         if (visibleCategories.indexOf(taxonomy.type.toLowerCase()) > -1) {
-          // taxonomyElement = <a href={`#/places/category/${taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(taxonomy.name)}</a>;
+          // taxonomyElement = <a href={`/places/category/${taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(taxonomy.name)}</a>;
           // remove link to category
           taxonomyElement = l(taxonomy.name);
         }
       } else {
-        // taxonomyElement = <a href={`#/places/category/${taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(taxonomy.name)}</a>;
+        // taxonomyElement = <a href={`/places/category/${taxonomy.category.toLowerCase()}${routeParams ? routeParams.replace(/category\/[^/]+/g, '') : ''}`}>{l(taxonomy.name)}</a>;
         // remove link to category
         taxonomyElement = l(taxonomy.name);
       }
@@ -334,15 +334,15 @@ export default function RecordListItem({
           .map((collectorPersonItem) => {
             if (['c', 'collector', 'interviewer', 'recorder'].includes(collectorPersonItem.relation)) {
               const collectorParams = { ...searchParams, page: undefined };
-              const href = `#${mode === 'transcribe' ? '/transcribe' : ''
-                }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
-                  search: collectorParams.search,
-                  search_field: collectorParams.search_field,
-                })}`;
+              const href = `${mode === 'transcribe' ? '/transcribe' : ''
+              }/persons/${collectorPersonItem.id.toLowerCase()}${createSearchRoute({
+                search: collectorParams.search,
+                search_field: collectorParams.search_field,
+              })}`;
               return (
-                <a href={href} key={`record-list-item-${id}-${collectorPersonItem.id}`}>
+                <Link to={href}  key={`record-list-item-${id}-${collectorPersonItem.id}`}>
                   {l(collectorPersonItem.name)}
-                </a>
+                </Link>
               );
             }
             return null;
@@ -449,9 +449,9 @@ export default function RecordListItem({
   }
 
   // const record_href = `${config.embeddedApp ? (window.applicationSettings && window.applicationSettings.landingPage ? window.applicationSettings.landingPage : config.siteUrl) : ''
-  // 	 }#/records/${this.props.id
+  // 	 }/records/${this.props.id
   // 	 }${createSearchRoute(searchParams)}`;
-  const recordHref = `#${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}${createSearchRoute(
+  const recordHref = `${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}${createSearchRoute(
     useRouteParams
       ? createParamsFromSearchRoute(params['*'])
       : {
@@ -467,7 +467,7 @@ export default function RecordListItem({
         shouldRenderColumn('title', columns)
         && (
           <td className={smallTitle ? 'table-buttons' : 'text-larger'}>
-            <a className="item-title" target={config.embeddedApp ? '_parent' : '_self'} href={recordHref}>
+            <Link className="item-title" target={config.embeddedApp ? '_parent' : '_self'} to={recordHref}>
               {
                 config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined
                 && <ListPlayButton disablePlayback media={audioItem} recordId={recordId} recordTitle={title && title != '' ? title : l('(Utan titel)')} />
@@ -487,7 +487,7 @@ export default function RecordListItem({
               <span
                 dangerouslySetInnerHTML={{ __html: titleText && titleText !== '[]' ? titleText : '' }}
               />
-            </a>
+            </Link>
             {
               displayTextSummary
               && <div className="item-summary">{textSummary}</div>
@@ -549,26 +549,26 @@ export default function RecordListItem({
               && (
                 <div>
                   <div className="table-buttons-prefix">
-                  {places[0].specification ? places[0].specification + ' i ' : ''}
+                    {places[0].specification ? `${places[0].specification} i ` : ''}
                   </div>
-                <a
-                  target={config.embeddedApp ? '_parent' : '_self'}
-                  href={`#${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}${createSearchRoute(
+                  <Link
+                    target={config.embeddedApp ? '_parent' : '_self'}
+                    to={`${mode === 'transcribe' ? '/transcribe' : ''}/places/${places[0].id}${createSearchRoute(
+                      {
+                        category: searchParams.category,
+                        search: searchParams.search,
+                        search_field: searchParams.search_field,
+                      },
+                    )}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(`/places/${places[0].id}`);
+                    }}
+                  >
                     {
-                      category: searchParams.category,
-                      search: searchParams.search,
-                      search_field: searchParams.search_field,
-                    },
-                  )}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate(`/places/${places[0].id}`);
-                  }}
-                >
-                  {
                     getPlaceString(places)
                   }
-                </a>
+                  </Link>
                 </div>
               )
             }

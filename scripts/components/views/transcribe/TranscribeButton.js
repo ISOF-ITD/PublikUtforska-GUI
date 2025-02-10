@@ -39,7 +39,7 @@ export default function TranscribeButton({
         });
       } else if (transcriptionType === 'sida') {
         window.eventBus.dispatch('overlay.transcribePageByPage', {
-          url: `${config.siteUrl}#/records/${recordId}`,
+          url: `${config.siteUrl}/records/${recordId}`,
           id: recordId,
           archiveId,
           title,
@@ -50,7 +50,7 @@ export default function TranscribeButton({
         });
       } else {
         window.eventBus.dispatch('overlay.transcribe', {
-          url: `${config.siteUrl}#/records/${recordId}`,
+          url: `${config.siteUrl}/records/${recordId}`,
           id: recordId,
           archiveId,
           title,

@@ -226,7 +226,7 @@ export default function RecordList({
   // TODO: se över denna lista. blir aktuellt om man vill utöka filtreringsmöjligheter
   // OBS! lägg inte till `params`, då detta kommer att trigga en än ändring av getFetchParams
   // för ofta och därmed en omhämtning av data
-  }, [currentPage, params.sort, params.order, sort, order, filter, yearFilter, mode, fetchData]);
+  }, [currentPage, params.person_id, params.sort, params.order, sort, order, filter, yearFilter, mode, fetchData]);
 
   const loadMore = () => {
     setCurrentPage((prevPage) => prevPage + 1);

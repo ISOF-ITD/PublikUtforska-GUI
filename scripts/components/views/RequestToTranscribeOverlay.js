@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
 
-export default function ContributeinfoOverlay() {
+export default function RequestToTranscribeOverlay() {
+  const [emailValid, setEmailValid] = useState(true);
+
+  const validateEmail = (email) => {
+    // En enkel regex för att validera e-postadresser
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return email === '' || regex.test(email);
+  };
+
+  const handleEmailBlur = (event) => {
+    const isValid = validateEmail(event.target.value);
+    setEmailValid(isValid);
+  };
+
   const [state, setState] = useState({
     visible: false,
     messageInputValue: '',
@@ -19,23 +32,10 @@ export default function ContributeinfoOverlay() {
     id: '',
   });
 
-  const [emailValid, setEmailValid] = useState(true);
-
-  const validateEmail = (email) => {
-    // En enkel regex för att validera e-postadresser
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return email === '' || regex.test(email);
-  };
-
-  const handleEmailBlur = (event) => {
-    const isValid = validateEmail(event.target.value);
-    setEmailValid(isValid);
-  };
-
   const location = useLocation();
 
   useEffect(() => {
-    const contributeInfoListener = (event) => setState({
+    const RequestToTranscribeListener = (event) => setState({
       ...state,
       visible: true,
       type: event.target.type,
@@ -49,13 +49,13 @@ export default function ContributeinfoOverlay() {
     const hideOverlayListener = () => setState({ ...state, visible: false });
 
     if (window.eventBus) {
-      window.eventBus.addEventListener('overlay.contributeinfo', contributeInfoListener);
+      window.eventBus.addEventListener('overlay.requesttotranscribe', RequestToTranscribeListener);
       window.eventBus.addEventListener('overlay.hide', hideOverlayListener);
     }
 
     return () => {
       if (window.eventBus) {
-        window.eventBus.removeEventListener('overlay.contributeinfo', contributeInfoListener);
+        window.eventBus.removeEventListener('overlay.requesttotranscribe', RequestToTranscribeListener);
         window.eventBus.removeEventListener('overlay.hide', hideOverlayListener);
       }
     };
@@ -95,15 +95,19 @@ export default function ContributeinfoOverlay() {
   };
 
   const sendButtonClickHandler = () => {
+    // Send message only if email address is valid
+    if (!state.emailInputValue || !validateEmail(state.emailInputValue)) return;
+
     let subject = state.appUrl;
     if (subject.charAt(subject.length - 1) == '/') subject = subject.substr(0, subject.length - 1);
     const data = {
       from_email: state.emailInputValue,
       from_name: state.nameInputValue,
-      subject: `${subject.split(/[/]+/).pop()}: ContributeInfo`,
+      subject: `${subject.split(/[/]+/).pop()}: RequestToTranscribe`,
       recordid: state.id,
-      message: `${state.type}: ${state.title}\n${
-        location.pathname}\n\n`
+      message: `${(state.type) ? state.type: ''} ${(state.title) ? state.title : ''}\n${
+        location.pathname}\n\n${
+        state.url}\n\n`
                 + `Från: ${state.nameInputValue} (${state.emailInputValue})\n\n${
                   state.messageInputValue}`,
     };
@@ -138,7 +142,7 @@ export default function ContributeinfoOverlay() {
   if (state.messageSent === true && state.messageSentError === false) {
     overlayContent = (
       <div>
-        <p>{l('Tack för ditt bidrag. Meddelande skickat.')}</p>
+        <p>{l('Formulär inskickat.')}</p>
         <p>
           <br />
           <button
@@ -172,31 +176,34 @@ export default function ContributeinfoOverlay() {
     overlayContent = (
       <div>
         <p>
-          {config.siteOptions.contributeInfoText || 'Känner du till någon av personerna som nämns: en upptecknare, någon som intervjuats eller som nämns i en berättelse? Vid 1900-talets början var arkiven framför allt intresserade av berättelserna, inte berättarna. Därför vet vi idag ganska lite om människorna i arkiven. Kontakta oss gärna nedan om du har information om eller fotografier på någon av personerna som nämns på uppteckningen! Vill du vara med och bevara minnen och berättelser från vår tid till framtiden? På Institutets webbplats publiceras regelbundet frågelistor om olika ämnen. '}
-          <a href="https://www.isof.se/folkminnen/beratta-for-oss.html"><strong>{l('Läs mer.')}</strong></a>
-        </p>
-        <p>
-          Du är nu på sidan '
-          <Link to={location.pathname}>{location.pathname}</Link>
-          ' men kan också använda formuläret för mer generella förslag och synpunkter.
+          Önskar du transkribera materialet på sidan '
+          <strong>{state.id}</strong>
+          '?
+          <br />
+          Skicka då in detta formulär. Isof behandlar inkomna förfrågningar i mån av tid.
           <br />
           <br />
+          Tack för visat intresse!
         </p>
         <hr />
         <label htmlFor="contribute_name">Ditt namn:</label>
         <input id="contribute_name" autoComplete="name" className="u-full-width" type="text" value={state.nameInputValue} onChange={nameInputChangeHandler} />
-        <label htmlFor="contribute_email">Din e-post adress:</label>
+        <label htmlFor="contribute_email">Din e-post adress*:</label>
         <input 
           id="contribute_email" 
           autoComplete="email" 
           className={`u-full-width ${emailValid ? '' : 'invalid'}`} 
           type="email" 
+          required 
           value={state.emailInputValue} 
           onBlur={handleEmailBlur}
-          onChange={emailInputChangeHandler} 
+          onChange={emailInputChangeHandler}
         />
         <label htmlFor="contribute_message">Meddelande:</label>
-        <textarea lang="sv" spellCheck="false" id="contribute_message" className="u-full-width" value={state.messageInputValue} onChange={messageInputChangeHandler} />
+        <textarea lang="sv" spellCheck="false" id="contribute_message" className="u-full-width" required value={state.messageInputValue} onChange={messageInputChangeHandler} />
+        <p>
+        * Obligatoriskt fält
+        </p>
         <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
       </div>
     );
@@ -206,7 +213,7 @@ export default function ContributeinfoOverlay() {
     <div className={`overlay-container feedback-overlay-container${state.visible ? ' visible' : ''}`}>
       <div className="overlay-window">
         <div className="overlay-header">
-          {l('Vet du mer?')}
+          {l('Vill du transkribera materialet?')}
           <button title="stäng" className="close-button white" onClick={closeButtonClickHandler} />
         </div>
         {overlayContent}

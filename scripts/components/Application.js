@@ -22,6 +22,7 @@ import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPage
 import HelpTextOverlay from './views/HelpTextOverlay';
 import GlobalAudioPlayer from './views/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
+import RequestToTranscribeOverlay from './views/RequestToTranscribeOverlay';
 
 import MapWrapper from './MapWrapper';
 import Header from './Header';
@@ -49,6 +50,15 @@ export default function Application({
   const [transcriptionPageByPageEvent, setTranscriptionPageByPageEvent] = useState(null);
 
   const params = useParams();
+
+  // fallback for old hash routes
+  useEffect(() => {
+    const { hash } = location;
+    if (hash.match(/^#\/?/)) {
+      const target = hash.replace(/^#\/?/, '');
+      navigate(target);
+    }
+  }, []);
 
   const {
     addToNavigationHistory,
@@ -164,6 +174,7 @@ export default function Application({
         <FeedbackOverlay />
         <ContributeInfoOverlay />
         <TranscriptionOverlay />
+        <RequestToTranscribeOverlay />
         {
           transcriptionPageByPageOverlayVisible
           && (

@@ -6,7 +6,7 @@ import { l } from '../../lang/Lang';
 
 // Main CSS: /ui-components/feedback-buttons.less";
 
-export default function ContributeInfoButton({
+export default function RequestToTranscribeButton({
   title = '',
   type,
   country = undefined,
@@ -16,29 +16,29 @@ export default function ContributeInfoButton({
 
   const contributeinfoButtonClick = () => {
     if (window.eventBus) {
-      window.eventBus.dispatch('overlay.contributeinfo', {
-        url: `${config.siteUrl}${pathname}`,
+      window.eventBus.dispatch('overlay.requesttotranscribe', {
+        url: `${config.siteUrl}#${pathname}`,
         title,
         type,
         country,
         appUrl: config.appUrl,
-        id,
+        id: id,
       });
     }
   };
 
   return (
     <button
-      className="feedback-button contributeinfo-button"
+      className="button button-primary"
       onClick={contributeinfoButtonClick}
       type="button"
     >
-      {l('Vet du mer?')}
+      {l('Vill du transkribera materialet?')}
     </button>
   );
 }
 
-ContributeInfoButton.propTypes = {
+RequestToTranscribeButton.propTypes = {
   title: PropTypes.string,
   type: PropTypes.string.isRequired,
   country: PropTypes.string,
