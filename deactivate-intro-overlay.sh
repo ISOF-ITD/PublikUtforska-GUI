@@ -1,1 +1,1 @@
-find www -name '*.js' | xargs grep -l 'activateTranscription:!0,' | xargs sed -i.bak s/activateTranscription:!0,/activateTranscription:0,/g
+find www -name '*.js' | xargs grep -l 'activateTranscription:!0,' | xargs sed -i.bak s/activateTranscription:!0,/activateTranscription:!1,/g
