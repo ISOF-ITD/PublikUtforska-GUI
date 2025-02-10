@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import config from '../../config';
