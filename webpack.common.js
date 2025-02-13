@@ -21,6 +21,11 @@ module.exports = {
         test: /\.html$/i,
         loader: 'html-loader',
       },
+      
+      {
+        test: /tw\.css$/i,
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
+      },
       {
         test: /\.m?js$/,
         exclude: /node_modules/,
