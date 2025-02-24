@@ -102,31 +102,39 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
         }
         {media.map((mediaItem, index) => (
-          <div className="row record-text-and-image" key={mediaItem.source || index}>
-            <div className="eight columns">
-              { mediaItem.text ? (
-                <p
-                  className="display-line-breaks"
-                  dangerouslySetInnerHTML={{
-                    __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text,
-                  }}
-                />
-              ) : (
-                <TranscribeButton
-                  className="button button-primary"
-                  label={l('Skriv av')}
-                  title={title}
-                  recordId={recordId}
-                  archiveId={archive.archive_id}
-                  places={places}
-                  images={media}
-                  transcriptionType={transcriptiontype}
-                  random={false}
-                />
-              )}
+          // Only show if type is 'image'
+          mediaItem.type === 'image' && (
+            <div
+              className="row record-text-and-image"
+              key={mediaItem.source || index}
+            >
+              <div className="eight columns">
+                {mediaItem.text ? (
+                  <p
+                    className="display-line-breaks"
+                    dangerouslySetInnerHTML={{
+                      __html: (highlight && highlightedMediaTexts[`${index}`])
+                        || mediaItem.text,
+                    }}
+                  />
+                ) : (
+                  // if JPEG image exists but no text, show TranscribeButton
+                  <TranscribeButton
+                    className="button button-primary"
+                    label={l('Skriv av')}
+                    title={title}
+                    recordId={recordId}
+                    archiveId={archive.archive_id}
+                    places={places}
+                    images={media}
+                    transcriptionType={transcriptiontype}
+                    random={false}
+                  />
+                )}
+              </div>
+              {renderMedia(mediaItem, index)}
             </div>
-            {renderMedia(mediaItem, index)}
-          </div>
+          )
         ))}
       </main>
     );
