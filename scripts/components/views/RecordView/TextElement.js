@@ -147,7 +147,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const sourceText = highlight && highlightedText ? highlightedText : text;
 
   // Split the text by '/' and remove leading newlines from each part
-  const textParts = sourceText.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, ''));
+  const textParts = sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, ''));
 
   return (
     <main>
@@ -161,7 +161,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
             <p
               className="display-line-breaks"
               dangerouslySetInnerHTML={{
-                __html: textParts[index] || '&nbsp;',
+                __html: textParts? textParts[index] : '&nbsp;'
               }}
             />
           </div>
