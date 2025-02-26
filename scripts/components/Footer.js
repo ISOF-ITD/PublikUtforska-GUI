@@ -8,7 +8,8 @@ export default function Footer() {
       <div className="logo">
 
         <div id="portal" className="isof-app-footer">
-          <a
+          {/* Om Folke behövs inte längre, eftersom vi har kontext-fönstret nu */}
+          {/* <a
             href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke"
             target="_blank"
             className="normal"
@@ -18,7 +19,7 @@ export default function Footer() {
             Om Folke
             &nbsp;
             <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
-          </a>
+          </a> */}
           <a href="https://www.isof.se/">
             {/* Institutet för språk och folkminnen */}
             <img
