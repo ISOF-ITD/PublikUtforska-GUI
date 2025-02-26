@@ -71,16 +71,15 @@ function IntroOverlay({ show = false, onClose }) {
       <div className="intro">
         <div className="overlay-header">
           <span
-            className="text"
-            style={{ cursor: 'pointer' }}
-            onClick={handleIntroductionClick}
-            role="button"
-            tabIndex="0"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') handleIntroductionClick();
+            style={{
+              // no text wrapping, use ellipsis if text is too long
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              marginRight: '15px',
             }}
           >
-            {/* Meny */}
+            Folke sök - Institutet för språk och folkminnen
           </span>
           <div className="controls">
             <span
