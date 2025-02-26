@@ -78,8 +78,9 @@ function IntroOverlay({ show = false, onClose }) {
               whiteSpace: 'nowrap',
               marginRight: '15px',
             }}
+            title={config.siteTitle}
           >
-            Folke sök - Institutet för språk och folkminnen
+            {config.siteTitle}
           </span>
           <div className="controls">
             <span
