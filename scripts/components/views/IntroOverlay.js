@@ -70,7 +70,7 @@ function IntroOverlay({ show = false, onClose }) {
     <div className={overlayClass}>
       <div className="intro">
         <div className="overlay-header">
-          <span
+          {/* <span
             style={{
               // no text wrapping, use ellipsis if text is too long
               overflow: 'hidden',
@@ -81,7 +81,7 @@ function IntroOverlay({ show = false, onClose }) {
             title={config.siteTitle}
           >
             {config.siteTitle}
-          </span>
+          </span> */}
           <div className="controls">
             <span
               onClick={handleClose}
