@@ -13,15 +13,12 @@ export default function Header() {
   const location = useLocation(); // Använd useLocation för att få tillgång till current route
   const initialLoad = useRef(true); // En ref som håller koll på om appen precis laddats
 
-
   // Kontrollera om användaren är på root-routen och uppdatera state.
   useEffect(() => {
     const isRoot = location.pathname === '/';
     const noHash = !location.hash || location.hash === '#/';
-    console.log(location);
 
     if (initialLoad.current && isRoot && noHash) {
-      console.log("setting showIntroOverlay to true");
       setShowIntroOverlay(true);
     }
     initialLoad.current = false;
