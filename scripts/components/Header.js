@@ -21,6 +21,7 @@ export default function Header() {
     console.log(location);
 
     if (initialLoad.current && isRoot && noHash) {
+      console.log("setting showIntroOverlay to true");
       setShowIntroOverlay(true);
     }
     initialLoad.current = false;
