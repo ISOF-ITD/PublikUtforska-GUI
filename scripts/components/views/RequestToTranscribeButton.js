@@ -17,7 +17,7 @@ export default function RequestToTranscribeButton({
   const contributeinfoButtonClick = () => {
     if (window.eventBus) {
       window.eventBus.dispatch('overlay.requesttotranscribe', {
-        url: `${config.siteUrl}#${pathname}`,
+        url: `${config.siteUrl}${pathname}`,
         title,
         type,
         country,
