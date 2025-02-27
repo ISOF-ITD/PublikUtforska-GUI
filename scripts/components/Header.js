@@ -18,6 +18,7 @@ export default function Header() {
   useEffect(() => {
     const isRoot = location.pathname === '/';
     const noHash = !location.hash || location.hash === '#/';
+    console.log(location);
 
     if (initialLoad.current && isRoot && noHash) {
       setShowIntroOverlay(true);
