@@ -5,65 +5,71 @@ import config from '../../../config';
 import { getAudioTitle } from '../../../utils/helpers';
 import ListPlayButton from '../ListPlayButton';
 
-export default function AudioItems({ data }) {
+function AudioItems({ data }) {
   const {
     id,
     media,
-    title,
     contents,
-    archive: {
-      arhive_org: archiveOrg,
-      archive,
-    },
+    archive: { arhive_org: archiveOrg, archive },
     year,
     persons,
   } = data;
-  const audioDataItems = media.filter((dataItem) => dataItem.type === 'audio');
-  const audioItems = audioDataItems.map((mediaItem) => (
-    <tr key={mediaItem.source}>
-      <td data-title="Lyssna:" width="50px">
-        <ListPlayButton
-          media={mediaItem}
-          recordId={id}
-          recordTitle={getAudioTitle(
-            mediaItem.title,
-            contents,
-            archiveOrg,
-            archive,
-            mediaItem.source,
-            year,
-            persons,
-          )}
-        />
-      </td>
-      <td>
-        {getAudioTitle(
-          mediaItem.title,
-          contents,
-          archiveOrg,
-          archive,
-          mediaItem.source,
-          year,
-          persons,
-        )}
-      </td>
-      <td>
-        <a href={config.audioUrl + mediaItem.source} download title="Ladda ner ljudfilen">
-          <FontAwesomeIcon icon={faDownload} />
-        </a>
-      </td>
-    </tr>
-  ));
+
+  // Filter out only audio items
+  const audioDataItems = media.filter((item) => item.type === 'audio');
+
+  // Create table rows for each audio item
+  const audioItems = audioDataItems.map((item) => {
+    const audioTitle = getAudioTitle(
+      item.title,
+      contents,
+      archiveOrg,
+      archive,
+      item.source,
+      year,
+      persons
+    );
+
+    return (
+      <tr
+        key={item.source}
+        // Use alternating row colors + a bottom border on each row
+        className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200"
+      >
+        <td className="py-2 px-4">
+          <span>
+          <ListPlayButton
+            media={item}
+            recordId={id}
+            recordTitle={audioTitle}
+          />
+          </span>
+        </td>
+        <td className="py-2 px-4">
+          {audioTitle}
+        </td>
+        <td className="py-2 px-4">
+          <a
+            href={`${config.audioUrl}${item.source}`}
+            download
+            title="Ladda ner ljudfilen"
+            className="text-isof hover:underline"
+          >
+            <FontAwesomeIcon icon={faDownload} />
+          </a>
+        </td>
+      </tr>
+    );
+  });
+
   return (
-    <div className="row">
-      <div className="twelve columns">
-        <div className="table-wrapper">
-          <table width="100%">
-            <tbody>
-              {audioItems}
-            </tbody>
-          </table>
-        </div>
+    <div className="container mx-auto px-4 border-none">
+      <div className="overflow-x-auto mb-10 rounded">
+        <table className="w-full table-auto border-collapse text-sm">
+          <tbody>
+            {audioItems}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -76,9 +82,9 @@ AudioItems.propTypes = {
       PropTypes.shape({
         type: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
-      }),
+        title: PropTypes.string,
+      })
     ).isRequired,
-    title: PropTypes.string,
     contents: PropTypes.string,
     archive: PropTypes.shape({
       arhive_org: PropTypes.string,
@@ -88,3 +94,5 @@ AudioItems.propTypes = {
     persons: PropTypes.arrayOf(PropTypes.object),
   }).isRequired,
 };
+
+export default AudioItems;
