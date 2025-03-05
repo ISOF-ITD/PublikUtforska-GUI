@@ -50,6 +50,23 @@ function AudioItems({ data }) {
     // Fallback to an empty array so that .map won’t break if undefined/null
     const descriptions = item.description || [];
 
+    // Helper function to convert "MM:SS" to total seconds
+    function parseTimeString(timeString = '00:00') {
+      const [mm, ss] = timeString.split(':').map(Number);
+      // If the string was invalid for some reason, mm or ss could be NaN
+      // so fall back to zero.
+      const minutes = !isNaN(mm) ? mm : 0;
+      const seconds = !isNaN(ss) ? ss : 0;
+
+      return minutes * 60 + seconds;
+    }
+
+    // Sort the descriptions array based on the start time
+    const sortedDescriptions = [...descriptions].sort(
+      (a, b) => parseTimeString(a.start) - parseTimeString(b.start)
+    );
+
+
     return (
       <React.Fragment key={item.source}>
         <tr className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200">
@@ -88,60 +105,89 @@ function AudioItems({ data }) {
         {/* Conditionally render a sub-row for content descriptions */}
         {openItems[item.source] && (
           <tr>
-            <td colSpan={3} className="py-2 px-4 bg-gray-100 w-full">
+            <td colSpan={3} className="py-2 px-4 bg-gray-100">
               {descriptions.length > 0 ? (
-                <div className="space-y-2">
-                  {descriptions.map((desc, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-row items-center gap-2 border-b border-gray-300 pb-2 w-full justify-between"
-                    >
-                      <div className="flex lg:gap-4 gap-2 items-center">
-                        <ListPlayButton
-                          media={item}
-                          recordId={id}
-                          recordTitle={audioTitle}
-                        // e.g. startTime={desc.start}
-                        />
-                        <span className="font-mono">{desc.start}</span>
-                        <span>{desc.text}</span>
-                      </div>
-                      {desc.terms && desc.terms.map((termObj, index) => (
-                        <span key={index}>
-                          {termObj.term} — {termObj.termid}
-                        </span>
-                      ))}
-                      <a
-                        type="button"
-                        className="text-isof hover:text-darker-isof hover:cursor-pointer flex gap-1 items-center"
-                        onClick={() => {
-                          // TODO: handle "Ändra" logic here
-                        }}
+                <table className="w-full table-auto border-collapse text-sm mb-2">
+                  <thead>
+                    <tr className="border-b border-gray-300">
+                      <th className="py-2 px-4">Spela</th>
+                      <th className="py-2 px-4">Starttid</th>
+                      <th className="py-2 px-4">Beskrivning</th>
+                      <th className="py-2 px-4">Termer</th>
+                      <th className="py-2 px-4 text-right">Åtgärder</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedDescriptions.map((desc, index) => (
+                      <tr
+                        key={index}
+                        className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200"
                       >
-                        <FontAwesomeIcon icon={faPenToSquare} />
-                        <span className="underline">Ändra</span>
-                      </a>
-                    </div>
-                  ))}
-                </div>
+                        {/* Play Button */}
+                        <td className="py-2 px-4">
+                          <ListPlayButton
+                            media={item}
+                            recordId={id}
+                            recordTitle={audioTitle}
+                          // e.g. startTime={desc.start}
+                          />
+                        </td>
+
+                        {/* Start time (or timestamp) */}
+                        <td className="py-2 px-4 font-mono">{desc.start}</td>
+
+                        {/* Description text */}
+                        <td className="py-2 px-4">{desc.text}</td>
+
+                        {/* Terms */}
+                        <td className="py-2 px-4">
+                          {desc.terms?.map((termObj, termIndex) => (
+                            <div key={termIndex}>
+                              {termObj.term} — {termObj.termid}
+                            </div>
+                          ))}
+                        </td>
+
+                        {/* Actions (e.g., "Ändra") */}
+                        <td className="py-2 px-4 text-right">
+                          <a
+                            type="button"
+                            className="text-isof hover:text-darker-isof hover:cursor-pointer flex gap-1 items-center justify-end"
+                            onClick={() => {
+                              // TODO: handle "Ändra" logic
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faPenToSquare} />
+                            <span className="underline">Ändra</span>
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               ) : (
                 <p className="italic py-4">
                   Inga innehållsbeskrivningar att visa.
                 </p>
               )}
-              <a
-                type="button"
-                className="block w-full flex gap-2 justify-center items-center rounded hover:cursor-pointer p-2 my-2 bg-isof hover:bg-darker-isof text-white text-center"
-                onClick={() => {
-                  // TODO: handle "Lägg till innehåll" logic
-                }}
-              >
-                <FontAwesomeIcon icon={faCirclePlus} />
-                <span>Lägg till innehåll</span>
-              </a>
+
+              {/* Button to add new content descriptions */}
+              <div className="flex justify-center">
+                <a
+                  type="button"
+                  className="flex gap-2 justify-center items-center rounded hover:cursor-pointer px-4 py-2 bg-isof hover:bg-darker-isof text-white"
+                  onClick={() => {
+                    // TODO: handle "Lägg till innehåll" logic
+                  }}
+                >
+                  <FontAwesomeIcon icon={faCirclePlus} />
+                  <span>Lägg till innehåll</span>
+                </a>
+              </div>
             </td>
           </tr>
         )}
+
       </React.Fragment>
     );
   });
