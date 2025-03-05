@@ -17,18 +17,24 @@ export function AudioProvider({ children }) {
 
   const playAudio = ({ record, audio, time = 0 }) => {
     const audioSrc = config.audioUrl + audio.source;
-    audioRef.current.src = audioSrc;
+    audioRef.current.src = audioSrc; 
     audioRef.current.label = record.title;
     setPlayerLabelText(record.title);
+  
+    // Load the audio and jump to the requested start time
     audioRef.current.load();
     audioRef.current.currentTime = time;
     setCurrentTime(time);
     setPlaying(true);
     setVisible(true);
-    setCurrentAudio({ record, audio });
+    
+    // Include the 'time' value in currentAudio so we know which offset we’re playing
+    setCurrentAudio({ record, audio, time });
+  
     audioRef.current.play();
     window.eventBus.dispatch('audio.playervisible');
   };
+  
 
   const togglePlay = () => {
     if (playing) {

@@ -52,14 +52,15 @@ function AudioItems({ data }) {
 
     // Helper function to convert "MM:SS" to total seconds
     function parseTimeString(timeString = '00:00') {
-      const [mm, ss] = timeString.split(':').map(Number);
-      // If the string was invalid for some reason, mm or ss could be NaN
-      // so fall back to zero.
-      const minutes = !isNaN(mm) ? mm : 0;
-      const seconds = !isNaN(ss) ? ss : 0;
-
-      return minutes * 60 + seconds;
+      // "mm:ss" -> total seconds
+      const parts = timeString.split(':').map(Number).reverse();
+      let seconds = 0;
+      if (parts[0]) seconds += parts[0];         // ss
+      if (parts[1]) seconds += parts[1] * 60;    // mm
+      if (parts[2]) seconds += parts[2] * 3600;  // hh
+      return seconds;
     }
+    
 
     // Sort the descriptions array based on the start time
     const sortedDescriptions = [...descriptions].sort(
@@ -124,12 +125,12 @@ function AudioItems({ data }) {
                         className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200"
                       >
                         {/* Play Button */}
-                        <td className="py-2 px-4">
+                        <td>
                           <ListPlayButton
                             media={item}
                             recordId={id}
                             recordTitle={audioTitle}
-                          // e.g. startTime={desc.start}
+                            startTime={parseTimeString(desc.start)}
                           />
                         </td>
 
@@ -193,7 +194,7 @@ function AudioItems({ data }) {
   });
 
   return (
-    <div className="container mx-auto px-4 border-none">
+    <div className="container mx-auto border-none">
       <div className="overflow-x-auto mb-4 rounded">
         <table className="w-full table-auto border-collapse text-sm">
           <tbody>{audioItems}</tbody>
