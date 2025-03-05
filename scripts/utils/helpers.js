@@ -249,7 +249,7 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
                   // Clean filename accordning to pattern in content field:
                   let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '')
                   cleanFilename = cleanFilename.replace(' D ', '').replace('D ', '').replace(' ', '');
-                  // Remove underscore if underscore before numbers: https://sok.folke-test.isof.se/#/records/gr01471:a_33465
+                  // Remove underscore if underscore before numbers: https://sok.folke-test.isof.se/records/gr01471:a_33465
                   cleanFilename = removeUnderscoresBeforeFirstNumber(cleanFilename);
                   // Remove trailing filename after underscore
                   cleanFilename = cleanFilename.split('_')[0];

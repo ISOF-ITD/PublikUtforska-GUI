@@ -88,7 +88,7 @@ export default {
   activateTranscription: true,
 
   // activate intro overlay
-  activateIntroOverlay: false,
+  activateIntroOverlay: true,
 
   hitsPerPage: 100,
 
