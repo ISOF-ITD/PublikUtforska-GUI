@@ -60,7 +60,7 @@ function AudioItems({ data }) {
       if (parts[2]) seconds += parts[2] * 3600;  // hh
       return seconds;
     }
-    
+
 
     // Sort the descriptions array based on the start time
     const sortedDescriptions = [...descriptions].sort(
@@ -103,13 +103,20 @@ function AudioItems({ data }) {
           </td>
         </tr>
 
-        {/* Conditionally render a sub-row for content descriptions */}
         {openItems[item.source] && (
           <tr>
-            <td colSpan={3} className="py-2 px-4 bg-gray-100">
+            <td colSpan={3} className="py-2 px-4 bg-gray-50 border-l-4 border-isof">
               {descriptions.length > 0 ? (
-                <table className="w-full table-auto border-collapse text-sm mb-2">
+                <table className="w-full table-auto border-collapse text-xs mb-2">
                   <thead>
+                    <tr>
+                      <th
+                        colSpan="5"
+                        className="text-left bg-gray-200 py-2 px-4 font-semibold"
+                      >
+                        Innehållsbeskrivningar
+                      </th>
+                    </tr>
                     <tr className="border-b border-gray-300">
                       <th className="py-2 px-4">Spela</th>
                       <th className="py-2 px-4">Starttid</th>
@@ -122,10 +129,10 @@ function AudioItems({ data }) {
                     {sortedDescriptions.map((desc, index) => (
                       <tr
                         key={index}
-                        className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200"
+                        className="odd:bg-white even:bg-gray-100 border-b last:border-b-0 border-gray-200"
                       >
                         {/* Play Button */}
-                        <td>
+                        <td className="py-2 px-4">
                           <ListPlayButton
                             media={item}
                             recordId={id}
@@ -134,7 +141,7 @@ function AudioItems({ data }) {
                           />
                         </td>
 
-                        {/* Start time (or timestamp) */}
+                        {/* Start time */}
                         <td className="py-2 px-4 font-mono">{desc.start}</td>
 
                         {/* Description text */}
@@ -149,7 +156,7 @@ function AudioItems({ data }) {
                           ))}
                         </td>
 
-                        {/* Actions (e.g., "Ändra") */}
+                        {/* Actions */}
                         <td className="py-2 px-4 text-right">
                           <a
                             type="button"
@@ -167,13 +174,11 @@ function AudioItems({ data }) {
                   </tbody>
                 </table>
               ) : (
-                <p className="italic py-4">
-                  Inga innehållsbeskrivningar att visa.
-                </p>
+                <p className="italic py-4 px-2">Inga innehållsbeskrivningar att visa.</p>
               )}
 
               {/* Button to add new content descriptions */}
-              <div className="flex justify-center">
+              <div className="flex justify-center mt-2">
                 <a
                   type="button"
                   className="flex gap-2 justify-center items-center rounded hover:cursor-pointer px-4 py-2 bg-isof hover:bg-darker-isof text-white"
@@ -188,6 +193,7 @@ function AudioItems({ data }) {
             </td>
           </tr>
         )}
+
 
       </React.Fragment>
     );
