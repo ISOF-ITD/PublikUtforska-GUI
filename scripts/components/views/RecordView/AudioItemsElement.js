@@ -78,6 +78,7 @@ function AudioItems({ data }) {
           <td className="py-2 px-4 flex gap-2 items-center">
             <a
               className="text-isof hover:text-darker-isof flex hover:cursor-pointer px-2 py-2"
+              aria-expanded={openItems[item.source] ? "true" : "false"}
               onClick={() => handleToggle(item.source)}
             >
               {openItems[item.source] ? (
@@ -96,8 +97,9 @@ function AudioItems({ data }) {
               href={`${config.audioUrl}${item.source}`}
               download
               title="Ladda ner ljudfilen"
-              className="text-isof hover:text-darker-isof"
+              className="text-isof hover:text-darker-isof no-underline"
             >
+              <span className="px-1 underline underline-offset-2">Ladda ner</span>{' '}
               <FontAwesomeIcon icon={faDownload} />
             </a>
           </td>
@@ -118,11 +120,10 @@ function AudioItems({ data }) {
                       </th>
                     </tr>
                     <tr className="border-b border-gray-300">
-                      <th className="py-2 px-4">Spela</th>
                       <th className="py-2 px-4">Starttid</th>
                       <th className="py-2 px-4">Beskrivning</th>
                       <th className="py-2 px-4">Termer</th>
-                      <th className="py-2 px-4 text-right">Åtgärder</th>
+                      <th className="py-2 px-4 text-right"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -131,27 +132,28 @@ function AudioItems({ data }) {
                         key={index}
                         className="odd:bg-white even:bg-gray-100 border-b last:border-b-0 border-gray-200"
                       >
-                        {/* Play Button */}
                         <td className="py-2 px-4">
-                          <ListPlayButton
-                            media={item}
-                            recordId={id}
-                            recordTitle={audioTitle}
-                            startTime={parseTimeString(desc.start)}
-                          />
+                          {/* Play button + start time */}
+                          <div className="flex items-center">
+                            <ListPlayButton
+                              media={item}
+                              recordId={id}
+                              recordTitle={audioTitle}
+                              startTime={parseTimeString(desc.start)}
+                              isSubList // prop to indicate sublist
+                            />
+                            <span className="ml-2 font-mono">{desc.start}</span>
+                          </div>
                         </td>
-
-                        {/* Start time */}
-                        <td className="py-2 px-4 font-mono">{desc.start}</td>
 
                         {/* Description text */}
                         <td className="py-2 px-4">{desc.text}</td>
 
                         {/* Terms */}
-                        <td className="py-2 px-4">
+                        <td className="py-2 px-4 flex gap-2">
                           {desc.terms?.map((termObj, termIndex) => (
-                            <div key={termIndex}>
-                              {termObj.term} — {termObj.termid}
+                            <div className="bg-isof text-white rounded-xl px-2 py-1" key={termIndex}>
+                              #{termObj.termid} {termObj.term}
                             </div>
                           ))}
                         </td>
@@ -178,7 +180,7 @@ function AudioItems({ data }) {
               )}
 
               {/* Button to add new content descriptions */}
-              <div className="flex justify-center mt-2">
+              <div className="flex justify-center my-4">
                 <a
                   type="button"
                   className="flex gap-2 justify-center items-center rounded hover:cursor-pointer px-4 py-2 bg-isof hover:bg-darker-isof text-white"
