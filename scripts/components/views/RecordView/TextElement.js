@@ -79,6 +79,8 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
     </div>
   );
 
+  // RETURN null if
+  // Also for: mediaItem.type === 'audio'?
   if (recordtype === 'accession_row' || (transcriptionstatus !== 'published' && transcriptiontype !== 'sida')) {
     return null;
   }
@@ -95,6 +97,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
 
       return acc;
     }, {}), [innerHits]);
+    // RETURN if transcriptiontype = 'sida'
     return (
       <main>
         {
@@ -149,6 +152,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   // Split the text by '/' and remove leading newlines from each part
   const textParts = sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, ''));
 
+  // RETURN if transcriptiontype !== 'sida'
   return (
     <main>
       {
@@ -156,18 +160,19 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
         && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
       }
       {media.map((mediaItem, index) => (
+        mediaItem.type === 'image' && (
         <div className="row record-text-and-image" key={mediaItem.source || index}>
           <div className="eight columns">
             <p
               className="display-line-breaks"
               dangerouslySetInnerHTML={{
-                __html: textParts? textParts[index] : '&nbsp;'
+                __html: textParts ? textParts[index] : '&nbsp;'
               }}
             />
           </div>
           {renderMedia(mediaItem)}
         </div>
-      ))}
+        )))}
       {transcribedby && (
         <p className="text-small">
           <strong>{`${l('Transkriberad av')}: `}</strong>
