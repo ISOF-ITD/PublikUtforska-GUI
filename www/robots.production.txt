@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sok.folke.isof.se/sitemap-index.xml
