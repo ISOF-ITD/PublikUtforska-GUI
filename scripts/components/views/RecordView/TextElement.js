@@ -54,6 +54,8 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
     </div>
   );
 
+  // RETURN null if
+  // Also for: mediaItem.type === 'audio'?
   if (recordtype === 'accession_row' || (transcriptionstatus !== 'published' && transcriptiontype !== 'sida')) {
     return null;
   }
@@ -70,6 +72,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
 
       return acc;
     }, {}), [innerHits]);
+    // RETURN if transcriptiontype = 'sida'
     return (
       <main>
         {
@@ -77,31 +80,39 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
         }
         {media.map((mediaItem, index) => (
-          <div className="row record-text-and-image" key={mediaItem.source || index}>
-            <div className="eight columns">
-              { mediaItem.text ? (
-                <p
-                  className="display-line-breaks"
-                  dangerouslySetInnerHTML={{
-                    __html: (highlight && highlightedMediaTexts[`${index}`]) || mediaItem.text,
-                  }}
-                />
-              ) : (
-                <TranscribeButton
-                  className="button button-primary"
-                  label={l('Skriv av')}
-                  title={title}
-                  recordId={recordId}
-                  archiveId={archive.archive_id}
-                  places={places}
-                  images={media}
-                  transcriptionType={transcriptiontype}
-                  random={false}
-                />
-              )}
+          // Only show if type is 'image'
+          mediaItem.type === 'image' && (
+            <div
+              className="row record-text-and-image"
+              key={mediaItem.source || index}
+            >
+              <div className="eight columns">
+                {mediaItem.text ? (
+                  <p
+                    className="display-line-breaks"
+                    dangerouslySetInnerHTML={{
+                      __html: (highlight && highlightedMediaTexts[`${index}`])
+                        || mediaItem.text,
+                    }}
+                  />
+                ) : (
+                  // if JPEG image exists but no text, show TranscribeButton
+                  <TranscribeButton
+                    className="button button-primary"
+                    label={l('Skriv av')}
+                    title={title}
+                    recordId={recordId}
+                    archiveId={archive.archive_id}
+                    places={places}
+                    images={media}
+                    transcriptionType={transcriptiontype}
+                    random={false}
+                  />
+                )}
+              </div>
+              {renderMedia(mediaItem, index)}
             </div>
-            {renderMedia(mediaItem, index)}
-          </div>
+          )
         ))}
       </main>
     );
@@ -114,8 +125,9 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const sourceText = highlight && highlightedText ? highlightedText : text;
 
   // Split the text by '/' and remove leading newlines from each part
-  const textParts = sourceText.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, ''));
+  const textParts = sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, ''));
 
+  // RETURN if transcriptiontype !== 'sida'
   return (
     <main>
       {
@@ -123,18 +135,19 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
         && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
       }
       {media.map((mediaItem, index) => (
+        mediaItem.type === 'image' && (
         <div className="row record-text-and-image" key={mediaItem.source || index}>
           <div className="eight columns">
             <p
               className="display-line-breaks"
               dangerouslySetInnerHTML={{
-                __html: textParts[index] || '&nbsp;',
+                __html: textParts ? textParts[index] : '&nbsp;'
               }}
             />
           </div>
           {renderMedia(mediaItem, index)}
         </div>
-      ))}
+        )))}
       {transcribedby && (
         <p className="text-small">
           <strong>{`${l('Transkriberad av')}: `}</strong>

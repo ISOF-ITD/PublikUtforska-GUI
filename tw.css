@@ -1,0 +1,6 @@
+/* @tailwind base;
+Removed tailwind base since it was breaking the LESS styles 
+Could be a good idea to do some refactoring aligning with base styles in the future
+*/
+@tailwind components;
+@tailwind utilities;

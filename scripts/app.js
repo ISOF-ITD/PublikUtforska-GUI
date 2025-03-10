@@ -6,6 +6,7 @@ import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './components/views/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
+import "../tw.css";
 
 import {
   getMapFetchLocation,

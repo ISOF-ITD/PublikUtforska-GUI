@@ -13,14 +13,16 @@ export default function Header() {
   const location = useLocation(); // Använd useLocation för att få tillgång till current route
   const initialLoad = useRef(true); // En ref som håller koll på om appen precis laddats
 
-
   // Kontrollera om användaren är på root-routen och uppdatera state.
   useEffect(() => {
-    if (initialLoad.current && location.pathname === '/') {
+    const isRoot = location.pathname === '/';
+    const noHash = !location.hash || location.hash === '#/';
+
+    if (initialLoad.current && isRoot && noHash) {
       setShowIntroOverlay(true);
     }
-    initialLoad.current = false; // Efter första laddningen sätter vi den till false
-  }, [location]); // Uppdatera när location förändras
+    initialLoad.current = false;
+  }, [location]);
 
   // Handle showing the overlay
   const handleShowIntro = () => {
