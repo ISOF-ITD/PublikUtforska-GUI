@@ -322,6 +322,8 @@ export default function SearchBox({
   const filteredSearchSuggestions = () => {
     const seen = new Set();
     return searchSuggestions
+      // remove keywords that contain "start"
+      .filter((k) => !k.label.match(/^start/))
       // remove keywords that don't contain the search input value
       .filter((k) => k.label.toLowerCase().includes(search?.toLowerCase() || ''))
       // remove keywords that start with a string followed by a colon, e.g. "place:"

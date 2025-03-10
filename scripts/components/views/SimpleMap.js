@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useRef } from 'react';
-import L from 'leaflet';
+import { useEffect, useRef } from 'react';
+import { marker as LeafletMarker } from 'leaflet';
 import 'leaflet.markercluster';
 import MapBase from './MapBase';
 import mapHelper from '../../utils/mapHelper';
@@ -23,6 +23,7 @@ function SimpleMap({ marker, markers, animate }) {
   const addMarker = (markerData, allowMultiple = false) => {
     if (!allowMultiple) removeMarkers();
 
+    // Hanterar olika möjliga platsformat i markerData
     const location = markerData.lat && markerData.lng
       ? [Number(markerData.lat), Number(markerData.lng)]
       : markerData.location?.lat && markerData.location?.lon
@@ -30,26 +31,26 @@ function SimpleMap({ marker, markers, animate }) {
         : null;
 
     if (mapView.current && location) {
-      const marker = L.marker(location, {
+      const newMarker = LeafletMarker(location, {
         title: markerData.label || markerData.name || null,
         icon: mapHelper.markerIcon,
       });
 
       if (allowMultiple) {
-        markersRef.current.push(marker);
+        markersRef.current.push(newMarker);
       } else {
-        markersRef.current = [marker];
+        markersRef.current = [newMarker];
       }
 
-      mapView.current.map.addLayer(marker);
+      mapView.current.map.addLayer(newMarker);
       mapView.current.map.panTo(location, { animate });
     }
   };
 
   // Funktion för att lägga till flera markeringar
-  const addMarkers = (markers) => {
+  const addMarkers = (markersList) => {
     removeMarkers();
-    markers.forEach((marker) => addMarker(marker, true));
+    markersList.forEach((m) => addMarker(m, true));
   };
 
   // Effekt som körs när markeringar ändras

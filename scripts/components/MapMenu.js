@@ -163,6 +163,7 @@ export default function MapMenu({
       </div>
     </div>
   );
+
 }
 
 MapMenu.propTypes = {

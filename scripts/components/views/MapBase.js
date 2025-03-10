@@ -1,17 +1,13 @@
 import { Component, createRef } from 'react';
-import L from 'leaflet';
+import {
+  map, latLngBounds, control, CRS,
+} from 'leaflet';
 import 'leaflet.markercluster';
 import 'leaflet.locatecontrol';
 import '../../lib/leaflet.active-layers';
-import * as d3 from 'd3';
+import { select } from 'd3-selection'; // Endast d3.select istället för hela d3
 
 import mapHelper from '../../utils/mapHelper';
-
-// Main CSS: ui-components/map.less
-//           ui-components/map-ui.less
-
-// Leaflet CSS: leaflet.less
-//              MarkerCluster.Default.less
 
 export default class MapBase extends Component {
   constructor(props) {
@@ -19,8 +15,6 @@ export default class MapBase extends Component {
     this.mapView = createRef();
 
     this.nordicLegendsUpdateHandler = this.nordicLegendsUpdateHandler.bind(this);
-
-    this.state = {};
   }
 
   componentWillUnmount() {
@@ -45,15 +39,13 @@ export default class MapBase extends Component {
 
     // Add first overlay layer if param hidden false to map
     if (overlayLayers) {
-      if (!layers[Object.keys(overlayLayers)[0]]) {
-        const visibleOverlayLayer = overlayLayers[Object.keys(overlayLayers)[0]];
-        if (visibleOverlayLayer.wmsParams.hidden == false) {
-          visibleLayers.push(visibleOverlayLayer);
-        }
+      const firstOverlayLayer = overlayLayers[Object.keys(overlayLayers)[0]];
+      if (firstOverlayLayer?.wmsParams?.hidden === false) {
+        visibleLayers.push(firstOverlayLayer);
       }
     }
 
-    const SWEDEN = L.latLngBounds(
+    const SWEDEN = latLngBounds(
       [55.34267812700013, 11.108164910000113],
       [69.03635569300009, 24.163413534000114],
     );
@@ -77,47 +69,36 @@ export default class MapBase extends Component {
 
     // this.map.options.crs = L.CRS.EPSG3857;
 
-    if (!this.props.disableSwedenMap) {
-      if (Object.keys(layers)[0].indexOf('(SWEREF99)') > -1) {
-        mapOptions.crs = mapHelper.getSweref99crs();
-        mapOptions.zoom = 1;
-        mapOptions.minZoom = 1;
-      }
+    if (!this.props.disableSwedenMap && Object.keys(layers)[0].includes('(SWEREF99)')) {
+      mapOptions.crs = mapHelper.getSweref99crs();
+      mapOptions.zoom = 1;
+      mapOptions.minZoom = 1;
     }
     // when initializing the map, set zoom and center, so that the bounds of the constant SWEDEN are visible. use fitTobounds or similar
     // use an offset of 360px to the left, so that the bounds are not hidden by the sidebar
-    this.map = L.map(this.mapView.current, mapOptions).fitBounds(SWEDEN, {
+    this.map = map(this.mapView.current, mapOptions).fitBounds(SWEDEN, {
       // if in desktop mode, use a padding of 400px to the left, so that the bounds are not hidden by the sidebar,
       // but when in mobile mode, use a top padding of 60px, so that the bounds are not hidden by the top bar
       paddingTopLeft: window.innerWidth >= 550 ? [400, 0] : [0, 100],
     });
 
-    L.control.zoom({
+    control.zoom({
       position: this.props.zoomControlPosition || 'topright',
     }).addTo(this.map);
 
     // Dölja locateControl knappen (som visar var användaren är på kartan)
     if (!this.props.disableLocateControl) {
-      L.control.locate({
+      control.locate({
         showPopup: false,
         icon: 'map-location-icon',
         position: this.props.zoomControlPosition || 'topright',
-        locateOptions: {
-          maxZoom: 9,
-        },
-        markerStyle: {
-          weight: 2,
-          fillColor: '#ffffff',
-          fillOpacity: 1,
-        },
-        circleStyle: {
-          weight: 1,
-          color: '#a6192e',
-        },
+        locateOptions: { maxZoom: 9 },
+        markerStyle: { weight: 2, fillColor: '#ffffff', fillOpacity: 1 },
+        circleStyle: { weight: 1, color: '#a6192e' },
       }).addTo(this.map);
     }
 
-    this.layersControl = L.control.activeLayers(layers, overlayLayers, {
+    this.layersControl = control.activeLayers(layers, overlayLayers, {
       position: this.props.layersControlPosition || 'topright',
     }).addTo(this.map);
 
@@ -125,15 +106,15 @@ export default class MapBase extends Component {
     //  -not opened on mouse over (only on click)
     //  -not closed on mouse out
     // - not visible on mount
-    d3.select('.leaflet-control-layers-toggle').style('display', 'block').style('opacity', 1);
-    d3.select('.leaflet-control-layers-list').style('display', 'none');
-    d3.select('.leaflet-control-layers-toggle').on('click', () => {
-      d3.select('.leaflet-control-layers-list').style('display', 'block');
-      d3.select('.leaflet-control-layers-toggle').style('display', 'none');
+    select('.leaflet-control-layers-toggle').style('display', 'block').style('opacity', 1);
+    select('.leaflet-control-layers-list').style('display', 'none');
+    select('.leaflet-control-layers-toggle').on('click', () => {
+      select('.leaflet-control-layers-list').style('display', 'block');
+      select('.leaflet-control-layers-toggle').style('display', 'none');
     });
-    d3.select('.leaflet-control-layers-list').on('mouseleave', () => {
-      d3.select('.leaflet-control-layers-list').style('display', 'none');
-      d3.select('.leaflet-control-layers-toggle').style('display', 'block');
+    select('.leaflet-control-layers-list').on('mouseleave', () => {
+      select('.leaflet-control-layers-list').style('display', 'none');
+      select('.leaflet-control-layers-toggle').style('display', 'block');
     });
 
     this.map.on('baselayerchange', this.mapBaseLayerChangeHandler.bind(this));
@@ -154,33 +135,27 @@ export default class MapBase extends Component {
 
   mapBaseLayerChangeHandler(event) {
     // Change to Spatial reference system to SWEREF99 if SWEREF99
-    if (event.name.indexOf('(SWEREF99)') > -1 && this.map.options.crs.code != 'EPSG:3006') {
-      var mapCenter = this.map.getCenter();
-      var mapZoom = this.map.getZoom();
+    if (event.name.includes('(SWEREF99)') && this.map.options.crs.code !== 'EPSG:3006') {
+      const mapCenter = this.map.getCenter();
+      const mapZoom = this.map.getZoom();
 
       this.map.options.crs = mapHelper.getSweref99crs();
-
       this.map.options.minZoom = 1;
       this.map.options.maxZoom = 13;
 
-      this.map.setView(mapCenter, mapZoom - 4, {
-        animate: false,
-      });
+      this.map.setView(mapCenter, mapZoom - 4, { animate: false });
     }
 
     // Change Spatial reference system to EPSG3857 if not SWEREF99
-    if (event.name.indexOf('(SWEREF99)') == -1 && this.map.options.crs.code == 'EPSG:3006') {
-      var mapCenter = this.map.getCenter();
-      var mapZoom = this.map.getZoom();
+    if (!event.name.includes('(SWEREF99)') && this.map.options.crs.code === 'EPSG:3006') {
+      const mapCenter = this.map.getCenter();
+      const mapZoom = this.map.getZoom();
 
-      this.map.options.crs = L.CRS.EPSG3857;
-
+      this.map.options.crs = CRS.EPSG3857;
       this.map.options.minZoom = 4;
       this.map.options.maxZoom = 16;
 
-      this.map.setView(mapCenter, mapZoom + 4, {
-        animate: false,
-      });
+      this.map.setView(mapCenter, mapZoom + 4, { animate: false });
     }
 
     if (this.props.onBaseLayerChange) {
@@ -202,7 +177,11 @@ export default class MapBase extends Component {
 
   render() {
     return (
-      <div className={this.props.className || 'map-container small'} ref={this.mapView} style={this.props.mapHeight ? { height: (this.props.mapHeight.indexOf('px') == -1 ? `${this.props.mapHeight}px` : this.props.mapHeight) } : null} />
+      <div
+        className={this.props.className || 'map-container small'}
+        ref={this.mapView}
+        style={this.props.mapHeight ? { height: this.props.mapHeight.includes('px') ? this.props.mapHeight : `${this.props.mapHeight}px` } : null}
+      />
     );
   }
 }

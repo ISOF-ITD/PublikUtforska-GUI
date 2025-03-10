@@ -40,7 +40,7 @@ export default function Uppteckningsblankett({
 
       <div className="mark-above-img">
         <label htmlFor="transcription_title" className="u-full-width margin-bottom-zero">Titel:</label>
-        <input id="transcription_title" name="title" className="u-full-width margin-bottom-minimal" type="text" value={title} onChange={inputChangeHandler} />
+        <input id="transcription_title" name="titleInput" className="u-full-width margin-bottom-minimal" type="text" value={title} onChange={inputChangeHandler} />
       </div>
 
       <div className="mark-above-img">

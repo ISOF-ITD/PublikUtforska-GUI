@@ -5,15 +5,15 @@ import { l } from '../../../lang/Lang';
 
 // Definiera konstanter för strängar
 const STRINGS = {
-  underTranscription: 'Den här uppteckningen håller på att transkriberas av annan användare.',
-  underReview: 'Den här uppteckningen är avskriven och granskas.',
-  notTranscribed: 'Den här uppteckningen är inte avskriven.',
+  // underTranscription: 'Den här uppteckningen håller på att transkriberas av annan användare.',
+  // underReview: 'Den här uppteckningen är avskriven och granskas.',
+  // notTranscribed: 'Den här uppteckningen är inte avskriven.',
   // invitation: 'Vill du vara med och tillgängliggöra samlingarna för fler? Vill du kunna skriva av denna berättelse!',
   invitation: '',
-  transcribe: 'Skriv av',
-  perPage: 'sida för sida',
-  of: 'av',
-  pagesTranscribed: 'sidor avskrivna',
+  // transcribe: 'Skriv av',
+  // perPage: 'sida för sida',
+  // of: 'av',
+  // pagesTranscribed: 'sidor avskrivna',
 };
 
 export default function RequestToTranscribePrompt({ data }) {
@@ -21,6 +21,7 @@ export default function RequestToTranscribePrompt({ data }) {
     numberofonerecord,
     transcriptiontype = null,
     transcriptionstatus,
+    taxonomy,
     media = [],
     title,
     id,
@@ -28,8 +29,11 @@ export default function RequestToTranscribePrompt({ data }) {
   } = data;
 
   // Returnera tidigt om recordtype inte är 'one_accession_row'
-  // Alltså: Visa bara knapp om recordtype === 'one_accesion_row' OCH den inte har några onerecords
-  if (!(recordtype === 'one_accession_row' && transcriptionstatus === 'accession' && numberofonerecord === 0)) {
+  // Alltså: Visa bara knapp om 
+  //    recordtype === 'one_accesion_row' 
+  //    OCH den inte har några onerecords
+  //    OCH den inte har innehåll (form i Accessionsregistret) Inspelning
+  if (!(recordtype === 'one_accession_row' && transcriptionstatus === 'accession' && numberofonerecord === 0 && !taxonomy.some(item => item.name === "Inspelning"))) {
     return null;
   }
 
@@ -91,6 +95,13 @@ RequestToTranscribePrompt.propTypes = {
     numberofonerecord: PropTypes.number,
     transcriptiontype: PropTypes.string,
     transcriptionstatus: PropTypes.string.isRequired,
+    taxonomy: PropTypes.arrayOf(
+      PropTypes.shape({
+        category: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        type: PropTypes.string.isRequired,
+      }),
+    ).isRequired,
     media: PropTypes.arrayOf(
       PropTypes.shape({
         transcriptionstatus: PropTypes.string.isRequired,

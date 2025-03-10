@@ -9,7 +9,9 @@ module.exports = {
     // add a rev-hash to the filename to avoid caching issues
     filename: 'bndl.[contenthash].js',
     chunkFilename: 'chnk.[contenthash].js',
-    path: path.resolve(__dirname, 'www'),
+    // output to the "www-deploy"-folder, the old "www"-folder
+    // is replaced by the deploy script
+    path: path.resolve(__dirname, 'www-deploy'),
     clean: true,
     publicPath: '/',
   },
@@ -18,6 +20,11 @@ module.exports = {
       {
         test: /\.html$/i,
         loader: 'html-loader',
+      },
+      
+      {
+        test: /tw\.css$/i,
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.m?js$/,
@@ -69,10 +76,9 @@ module.exports = {
       patterns: [
         { from: 'varning.template*', to: '' }, // Copy varning.template-html-files to www-folder
         { from: 'googlef01bc830ea17f73e.html', to: '' }, // Copy google site verification to www-folder
-        { from: 'robots.txt', to: '' }, // Copy robots.txt
-        { from: 'robots.production.txt', to: '' }, // Copy robots.txt
-        { from: 'robots.test.txt', to: '' }, // Copy robots.txt
-        { from: 'sitemap*.xml', to: '' }, // Copy all individual sitemaps (sitemap_0.txt, sitemap_1.txt, etc.)
+        { from: 'img/og-screenshot.png', to: 'img' }, // Copy og-screenshot.png to www/img-folder
+        // Not needed because sitemaps are generated on server
+        // { from: 'sitemap*.xml', to: '' }, // Copy all individual sitemaps (sitemap_0.txt, sitemap_1.txt, etc.)
       ],
     }),
   ],

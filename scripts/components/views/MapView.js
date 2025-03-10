@@ -1,6 +1,8 @@
 /* eslint-disable react/require-default-props */
 import { useRef, useEffect, useState } from 'react';
-import L from 'leaflet';
+import {
+  marker, circleMarker, DivIcon, Point, markerClusterGroup,
+} from 'leaflet';
 import 'leaflet.markercluster';
 import '../../lib/leaflet-heat';
 import PropTypes from 'prop-types';
@@ -8,7 +10,6 @@ import iconMarkers from '../../../img/icon-markers.png';
 import iconCircles from '../../../img/icon-circles.png';
 
 import MapBase from './MapBase';
-
 import mapHelper from '../../utils/mapHelper';
 
 export default function MapView({
@@ -49,17 +50,17 @@ export default function MapView({
       const markers = [];
 
       mapData?.data?.forEach((obj) => {
-        const marker = L.marker([obj.location[0], obj.location[1]], {
+        const newMarker = marker([obj.location[0], obj.location[1]], {
           title: obj.name,
           icon: obj.has_metadata
             ? (highlightedMarkerIcon || mapHelper.markerIconHighlighted)
             : (defaultMarkerIcon || mapHelper.markerIcon),
         });
-        marker.on('click', () => onMarkerClick(obj.id));
-        markers.push(marker);
+        newMarker.on('click', () => onMarkerClick(obj.id));
+        markers.push(newMarker);
       });
 
-      const clusterGroup = L.markerClusterGroup({
+      const clusterGroup = markerClusterGroup({
         showCoverageOnHover: false,
         maxClusterRadius: 45,
         iconCreateFunction(cluster) {
@@ -72,15 +73,15 @@ export default function MapView({
           } else {
             c += 'large';
           }
-          return new L.DivIcon({
+          return new DivIcon({
             html: `<div><span><b>${childCount}</b></span></div>`,
             className: `marker-cluster${c}`,
-            iconSize: new L.Point(28, 28),
+            iconSize: new Point(28, 28),
           });
         },
       });
 
-      clusterGroup.addLayers(markers.filter((marker) => marker.getLatLng().lat !== 0));
+      clusterGroup.addLayers(markers.filter((m) => m.getLatLng().lat !== 0));
 
       if (clusterGroup.getLayers().length > 0) {
         map.addLayer(clusterGroup);
@@ -91,10 +92,9 @@ export default function MapView({
       const circleGroup = L.layerGroup();
 
       mapData?.data?.forEach((obj) => {
-        // Kontrollera om `obj.count` är ett nummer, annars sätt ett standardvärde.
-        const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count) ? obj.doc_count : 1;// Sätter standard till 1 om count inte finns.
+        const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count) ? obj.doc_count : 1; // Sätter standard till 1 om count inte finns.
 
-        const circle = L.circleMarker([obj.location[0], obj.location[1]], {
+        const circle = circleMarker([obj.location[0], obj.location[1]], {
           color: '#01666e',
           fillColor: 'black',
           fillOpacity: 0.1,
@@ -106,6 +106,7 @@ export default function MapView({
           permanent: false, // Tooltip visas när man hovrar
           direction: 'top', // Visar tooltip ovanför cirkeln
         });
+
         circle.on('click', () => onMarkerClick(obj.id));
         circleGroup.addLayer(circle);
       });

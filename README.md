@@ -24,53 +24,42 @@ get code style warnings and errors while you type. You can run "Fix all auto-fix
 npm run start
 ```
 
-or in PowerShell:
-
-```PowerShell
-npm run start
-```
-
-## Bundle code for deployment with webpack, commit and push (make sure you know what you are doing)
-
-Enter the correct path to the ES-API in config.js (frigg-test or frigg). Otherwise it must be done on the server afterwards. Then run:
+## Analyze bundle sizes
 
 ```bash
-npm run build && git add www && git commit -m 'fresh compile' && git push origin master
+npm run analyze-bundle
 ```
 
-or in PowerShell:
+## Deploy code on server
 
-```PowerShell
-npm run build; git add www; git commit -m 'fresh compile'; git push origin master
-```
-
-Deploy code on server:
-
-frigg-test:
+Run on server:
 
 ```bash
-cd /var/www/react/PublikUtforska-GUI/ && ./gitupdate.sh
-```
-
-frigg:
-
-```bash
-cd /var/www/react/PublikUtforska-GUI/www && ./svn_www_update.sh
+cd /var/www/react/PublikUtforska-GUI/
+# We have not integrated gitupdate.sh in deploy.sh yet
+# to be able to deploy an older version.
+./gitupdate.sh
+./deploy.sh
 ```
 
 ## Create or update sitemap
 
+Run on server:
+
 ```bash
-node ./create-sitemap.js
+npm run create-sitemap
+```
+## Automated Sitemap Updates via Cron on garm
+
+A cron job on the production server garm runs the sitemap generation script every Monday at 04:00 AM:
+
+```bash	
+cd /var/www/react/PublikUtforska-GUI/ && npm run create-sitemap > /var/www/react/PublikUtforska-GUI/logs/sitemap.log 2> /var/www/react/PublikUtforska-GUI/logs/sitemap-error.log
 ```
 
-or in PowerShell:
+This command changes to the project directory, runs the create-sitemap script, and logs output and errors separately.
 
-```PowerShell
-node .\create-sitemap.js
-```
-
-To deploy the new sitemap to the server, see "Bundle code for deployment".
+You can check the logs in the `logs` directory of the project. You can change the cron job by running `crontab -e` and editing the cron jobs.
 
 ## Import new data
 
@@ -88,6 +77,43 @@ To add a custom warning message to the application, follow these steps:
    
 2. **Display the warning message**:
    - If the `varning.html` file exists, the warning message will be automatically rendered.
+
+## Managing Robots.txt with Apache Proxy
+
+To manage different `robots.txt` files for different environments (test or production), an Apache proxy configuration is used. This setup ensures that search engines do not index the test environment while allowing proper indexing of the production environment, following the rules specified in `/robots/robots.production.txt`.
+
+### Apache Configuration
+
+#### Test Environment (garm-test)
+
+In the test environment, the proxy is configured to serve robots.test.txt:
+
+```apache
+Alias /robots.txt /var/www/react/PublikUtforska-GUI/robots/robots.test.txt
+
+<Directory "/var/www/react/PublikUtforska-GUI/config">
+    Require all granted
+</Directory>
+```
+
+#### Production Environment (garm)
+
+In the production environment, the proxy serves `robots.production.txt`:
+
+```apache
+Alias /robots.txt /var/www/react/PublikUtforska-GUI/robots/robots.production.txt
+
+<Directory "/var/www/react/PublikUtforska-GUI/config">
+    Require all granted
+</Directory>
+```
+
+This configuration ensures that the appropriate robots.txt file is used depending on the environment.
+
+### Updating robots.txt
+
+If modifications to `robots.txt` are required, update the corresponding file in the `/robots/` directory and verify that the proxy correctly points to the intended version. 
+
 
 
 ## css 

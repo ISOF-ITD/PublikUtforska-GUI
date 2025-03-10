@@ -36,7 +36,7 @@ const getLastThreeMonthsRange = () => {
 };
 
 const apiUrlObject = {
-  dev: 'https://garm-test.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
+  dev: 'https://garm.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
   // 'dev': 'http://localhost:5001/api/es/', //feel free to change according to your local environment
   test: 'https://garm-test.isof.se/folkeservice/api/es/',
   prod: 'https://garm.isof.se/folkeservice/api/es/',
@@ -74,11 +74,21 @@ const matomoApiUrlObject = {
   prod: 'https://djangoproxy.isof.se/matomo_api/',
 };
 
+const folkeKontextApiUrlObject = {
+  // dev: 'http://localhost:8000/folke_kontext_api/',
+  dev: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
+  test: 'https://djangoproxy-test.isof.se/folke_kontext_api/',
+  prod: 'https://djangoproxy.isof.se/folke_kontext_api/',
+};
+
 export default {
   siteTitle: 'Folke sök - Institutet för språk och folkminnen',
 
   // aktivera transkriptionsfunktioner
   activateTranscription: true,
+
+  // activate intro overlay
+  activateIntroOverlay: true,
 
   hitsPerPage: 100,
 
@@ -232,6 +242,7 @@ export default {
 
   // Url till Matomo API
   matomoApiUrl: matomoApiUrlObject[ENV],
+  folkeKontextApiUrl: folkeKontextApiUrlObject[ENV],
   // link to matomo api docs: https://developer.matomo.org/api-reference/reporting-api
   searchSuggestionsParams: {
     module: 'API',
@@ -248,4 +259,8 @@ export default {
   numberOfPlaceSuggestions: null,
   numberOfPersonSuggestions: null,
   numberOfProvinceSuggestions: null,
+
+  // för intro-overlayen
+  kontextBasePath: 'https://www.isof.se/folke/',
+  kontextStartPage: 'start',
 };
