@@ -93,7 +93,7 @@ function IntroOverlay({ show = false, onClose }) {
               }}
             >
               {/* Stäng */}
-              {'Gå vidare till kartan >>>'}
+              {'Gå vidare till kartan >'}
             </span>
           </div>
         </div>
