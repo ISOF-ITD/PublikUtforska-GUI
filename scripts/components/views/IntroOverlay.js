@@ -92,7 +92,8 @@ function IntroOverlay({ show = false, onClose }) {
                 if (e.key === 'Enter' || e.key === ' ') handleClose();
               }}
             >
-              Stäng
+              {/* Stäng */}
+              {'Gå vidare till kartan >>>'}
             </span>
           </div>
         </div>
