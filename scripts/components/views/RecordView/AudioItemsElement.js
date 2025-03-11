@@ -13,6 +13,7 @@ import {
 import config from '../../../config';
 import { getAudioTitle } from '../../../utils/helpers';
 import ListPlayButton from '../ListPlayButton';
+import { TermList, TermNode } from './TermList';
 
 // Helper to convert "MM:SS" to seconds
 function parseTimeString(timeString = '00:00') {
@@ -105,19 +106,25 @@ function AudioItems({ data }) {
     }));
   };
 
-  // Add or remove tag from selectedTags
-  const handleToggleTag = (source, tag) => {
+  // Add or remove term
+  const handleToggleTerm = (source, termObj) => {
     setFormData((prevData) => {
       const currentTags = prevData[source].selectedTags || [];
-      const alreadySelected = currentTags.includes(tag);
+      // Check if that termid is already selected
+      const index = currentTags.findIndex((t) => t.termid === termObj.termid);
+
       let newTags;
-      if (alreadySelected) {
-        // remove
-        newTags = currentTags.filter((t) => t !== tag);
+      if (index > -1) {
+        // Remove it
+        newTags = [
+          ...currentTags.slice(0, index),
+          ...currentTags.slice(index + 1),
+        ];
       } else {
-        // add
-        newTags = [...currentTags, tag];
+        // Add it
+        newTags = [...currentTags, termObj];
       }
+
       return {
         ...prevData,
         [source]: {
@@ -127,6 +134,7 @@ function AudioItems({ data }) {
       };
     });
   };
+
 
   // Add typed tag manually (user typed their own)
   const handleAddTypedTag = (source) => {
@@ -148,6 +156,24 @@ function AudioItems({ data }) {
       };
     });
   };
+
+  function flattenTermList(termNodes) {
+    const result = [];
+
+    function traverse(node) {
+      // Add this node
+      result.push({ termid: node.termid, term: node.term });
+      // Recurse on children
+      if (Array.isArray(node.children)) {
+        node.children.forEach((child) => traverse(child));
+      }
+    }
+
+    termNodes.forEach((rootNode) => traverse(rootNode));
+    return result;
+  }
+
+  const allTerms = flattenTermList(TermList);
 
   // Save the new content
   const handleSave = (source) => {
@@ -413,57 +439,81 @@ function AudioItems({ data }) {
                     />
                   </div>
 
-                  {/* 4. tags (checkbox list + typed input) */}
+                  {/* 4. tags (hierarchical term selection) */}
                   <div className="mb-4">
                     <label className="block font-semibold mb-1">Termer</label>
                     <p className="text-xs text-gray-500">
-                      Bocka i en eller flera av nedanstående termer eller skriv en egen.
+                      Öppna och bocka i en eller flera termer i hierarkin.
                     </p>
-                    {/* typed input for new tag */}
-                    <div className="flex items-center gap-2 mb-2 mt-1">
+                    {/* Example of typed input for brand new custom tags: */}
+                    <div className="flex items-center gap-2 mb-2 mt-4">
                       <input
                         type="text"
                         className="border p-1"
-                        placeholder="Skriv en ny tagg..."
+                        placeholder="Börja skriva"
                         value={formData[item.source]?.typedTag || ''}
                         onChange={(e) =>
                           handleChangeField(item.source, 'typedTag', e.target.value)
                         }
                       />
-                      <a
+                      <button
                         type="button"
                         className="bg-gray-300 px-2 py-1 rounded text-sm"
                         onClick={() => handleAddTypedTag(item.source)}
                       >
                         Lägg till
-                      </a>
+                      </button>
+                      {/*
+  We filter the full list of terms by whatever the user typed. If typed string is empty or very short, you can skip showing anything or show everything, etc.
+*/}
+                      {formData[item.source]?.typedTag?.length > 0 && (
+                        <div className="border bg-white mt-1">
+                          {allTerms
+                            .filter((t) =>
+                              t.term.toLowerCase().includes(
+                                formData[item.source].typedTag.toLowerCase()
+                              )
+                            )
+                            .slice(0, 15) // limit to first 15 results so it doesn't get huge
+                            .map((match) => (
+                              <div
+                                key={match.termid}
+                                className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
+                                onClick={() => {
+                                  // The user selected a match => toggle it, then clear typedTag
+                                  handleToggleTerm(item.source, match);
+                                  handleChangeField(item.source, 'typedTag', '');
+                                }}
+                              >
+                                {match.termid} - {match.term}
+                              </div>
+                            ))}
+                        </div>
+                      )}
+
                     </div>
-                    <div className="flex flex-wrap gap-4 mb-2">
-                      {availableTags.map((tag) => (
-                        <label key={tag} className="flex items-center gap-1">
-                          <input
-                            type="checkbox"
-                            checked={
-                              formData[item.source]?.selectedTags?.includes(tag) || false
-                            }
-                            onChange={() => handleToggleTag(item.source, tag)}
-                          />
-                          <span>{tag}</span>
-                        </label>
+                    <div className="border p-2 mt-2">
+                      {TermList.map((rootNode) => (
+                        <TermNode
+                          key={rootNode.termid}
+                          node={rootNode}
+                          selectedTags={formData[item.source]?.selectedTags}
+                          onToggle={handleToggleTerm}
+                          source={item.source}
+                        />
                       ))}
                     </div>
 
-                    {/* Display chosen tags with remove-button */}
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(formData[item.source]?.selectedTags || []).map((tag) => (
+                      {(formData[item.source]?.selectedTags || []).map((tagObj) => (
                         <span
-                          key={tag}
+                          key={tagObj.termid}
                           className="flex items-center gap-1 bg-isof text-white px-2 py-1 rounded"
                         >
-                          {tag}
+                          {tagObj.term}
                           <a
                             type="button"
-                            onClick={() => handleToggleTag(item.source, tag)}
+                            onClick={() => handleToggleTerm(item.source, tagObj)}
                             className="text-white"
                           >
                             <FontAwesomeIcon icon={faTimes} />
@@ -472,6 +522,7 @@ function AudioItems({ data }) {
                       ))}
                     </div>
                   </div>
+
 
                   {/* 5. Save and Cancel buttons */}
                   <div className="flex items-center justify-end gap-4">
