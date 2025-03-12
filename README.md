@@ -54,7 +54,8 @@ npm run create-sitemap
 A cron job on the production server garm runs the sitemap generation script every Monday at 04:00 AM:
 
 ```bash	
-cd /var/www/react/PublikUtforska-GUI/ && npm run create-sitemap > /var/www/react/PublikUtforska-GUI/logs/sitemap.log 2> /var/www/react/PublikUtforska-GUI/logs/sitemap-error.log
+cd /var/www/react/PublikUtforska-GUI/ && npm run create-sitemap | awk '{print strftime("[%Y-%m-%d %H:%M:%S]"), $0}' >> /var/www/react/PublikUtforska-GUI/logs/sitemap.log 2>> >(awk '{print strftime("[%Y-%m-%d %H:%M:%S]"), $0}' >> /var/www/react/PublikUtforska-GUI/logs/sitemap-error.log)
+
 ```
 
 This command changes to the project directory, runs the create-sitemap script, and logs output and errors separately.

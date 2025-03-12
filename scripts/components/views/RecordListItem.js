@@ -466,7 +466,7 @@ export default function RecordListItem({
       {
         shouldRenderColumn('title', columns)
         && (
-          <td className={smallTitle ? 'table-buttons' : 'text-larger'}>
+          <td className={`py-2 ${smallTitle ? 'table-buttons' : 'text-larger'}`}>
             <Link className="item-title" target={config.embeddedApp ? '_parent' : '_self'} to={recordHref}>
               {
                 config.siteOptions.recordList && config.siteOptions.recordList.displayPlayButton && audioItem != undefined
@@ -543,7 +543,7 @@ export default function RecordListItem({
       {
         shouldRenderColumn('place', columns)
         && (
-          <td className="table-buttons" data-title={`${l('Ort')}:`}>
+          <td className="table-buttons py-2" data-title={`${l('Ort')}:`}>
             {
               places && places.length > 0
               && (
@@ -578,7 +578,7 @@ export default function RecordListItem({
       {
         shouldRenderColumn('collector', columns) && (!config.siteOptions.recordList || config.siteOptions.recordList.visibleCollecorPersons === true)
         && (
-          <td className="table-buttons" data-title={`${l('Insamlare')}:`}>
+          <td className="table-buttons py-2" data-title={`${l('Insamlare')}:`}>
             {
               collectorPersonElement
             }
@@ -588,7 +588,7 @@ export default function RecordListItem({
       {
         shouldRenderColumn('year', columns)
         && (
-          <td className="table-buttons" data-title={`${l('År')}:`}>
+          <td className="table-buttons py-2" data-title={`${l('År')}:`}>
             <span className="year">{year ? year.split('-')[0] : ''}</span>
           </td>
         )
@@ -611,7 +611,7 @@ export default function RecordListItem({
 
         columns && columns.indexOf('transcribedby') > -1
         && (
-          <td data-title={`${l('Transkriberad av')}:`}>
+          <td className="py-2" data-title={`${l('Transkriberad av')}:`}>
             {transcribedByElement}
           </td>
         )
