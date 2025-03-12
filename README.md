@@ -165,6 +165,16 @@ messageSent: false,
 setState((prevState) => ({ ...prevState, visible: false }));
 ```
 
+## Global state and State handling
+
+* Routing
+* React.createContext
+    Global?
+    for states/data from REST-calls according to route?
+* eventBus
+    loadedmetadata, timeupdate are internal events in audio used
+    Many internal events
+
 ## Routing
 
 ### Use cases
