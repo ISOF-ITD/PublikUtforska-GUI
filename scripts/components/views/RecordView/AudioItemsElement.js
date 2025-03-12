@@ -18,52 +18,57 @@ export default function AudioItems({ data }) {
     year,
     persons,
   } = data;
-  const audioDataItems = media.filter((dataItem) => dataItem.type === 'audio');
-  const audioItems = audioDataItems.map((mediaItem) => (
-    <tr key={mediaItem.source}>
-      <td data-title="Lyssna:" width="50px">
-        <ListPlayButton
-          media={mediaItem}
-          recordId={id}
-          recordTitle={getAudioTitle(
-            mediaItem.title,
-            contents,
-            archiveOrg,
-            archive,
-            mediaItem.source,
-            year,
-            persons,
-          )}
-        />
-      </td>
-      <td>
-        {getAudioTitle(
-          mediaItem.title,
-          contents,
-          archiveOrg,
-          archive,
-          mediaItem.source,
-          year,
-          persons,
-        )}
-      </td>
-      <td>
-        <a href={config.audioUrl + mediaItem.source} download title="Ladda ner ljudfilen">
-          <FontAwesomeIcon icon={faDownload} />
-        </a>
-      </td>
-    </tr>
-  ));
+
+  // Filter only the audio items
+  const audioDataItems = media.filter((item) => item.type === 'audio');
+
+  // Map over audio items and build table rows
+  const audioItems = audioDataItems.map((mediaItem) => {
+    const recordTitle = getAudioTitle(
+      mediaItem.title,
+      contents,
+      archiveOrg,
+      archive,
+      mediaItem.source,
+      year,
+      persons,
+    );
+
+    return (
+      <tr
+        key={mediaItem.source}
+        className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200"
+      >
+        <td className="py-2 px-4 w-[50px]" data-title="Lyssna:">
+          <ListPlayButton
+            media={mediaItem}
+            recordId={id}
+            recordTitle={recordTitle}
+          />
+        </td>
+        <td className="py-2 px-4">
+          {recordTitle}
+        </td>
+        <td className="py-2 px-4">
+          <a
+            href={`${config.audioUrl}${mediaItem.source}`}
+            download
+            title="Ladda ner ljudfilen"
+            className="text-isof hover:text-darker-isof"
+          >
+            <FontAwesomeIcon icon={faDownload} />
+          </a>
+        </td>
+      </tr>
+    );
+  });
+
   return (
-    <div className="row">
-      <div className="twelve columns">
-        <div className="table-wrapper">
-          <table width="100%">
-            <tbody>
-              {audioItems}
-            </tbody>
-          </table>
-        </div>
+    <div className="mx-auto border-none">
+      <div className="overflow-x-auto mb-4 rounded">
+        <table className="w-full table-auto border-collapse lg:text-base text-sm">
+          <tbody>{audioItems}</tbody>
+        </table>
       </div>
     </div>
   );
