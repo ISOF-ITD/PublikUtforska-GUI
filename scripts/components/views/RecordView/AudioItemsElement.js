@@ -14,6 +14,7 @@ import config from "../../../config";
 import { getAudioTitle } from "../../../utils/helpers";
 import ListPlayButton from "../ListPlayButton";
 import { TermList, TermNode } from "./TermList";
+import ConfirmationModal from "../../ConfirmationModal";
 
 // Helper to convert "MM:SS" to seconds
 function parseTimeString(timeString = "00:00") {
@@ -41,6 +42,29 @@ function AudioItems({ data }) {
   const [showAddForm, setShowAddForm] = useState({});
   // Track form data for each source
   const [formData, setFormData] = useState({});
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [sourceToClose, setSourceToClose] = useState(null);
+
+  const handleToggleAddFormWithConfirmation = (source) => {
+    if (hasUnsavedChanges && showAddForm[source]) {
+      setSourceToClose(source);
+      setShowConfirmationModal(true);
+    } else {
+      handleToggleAddForm(source);
+    }
+  };
+
+  const handleConfirmClose = () => {
+    handleToggleAddForm(sourceToClose);
+    setHasUnsavedChanges(false); // Reset unsaved changes
+    setShowConfirmationModal(false);
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmationModal(false);
+  };
 
   const [showTermNode, setShowTermNode] = useState({});
 
@@ -115,6 +139,7 @@ function AudioItems({ data }) {
         [field]: value,
       },
     }));
+    setHasUnsavedChanges(true); // Set unsaved changes to true
   };
 
   // Add or remove term
@@ -362,7 +387,9 @@ function AudioItems({ data }) {
                       ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
                       : "bg-isof hover:bg-darker-isof text-white"
                   }`}
-                  onClick={() => handleToggleAddForm(item.source)}
+                  onClick={() =>
+                    handleToggleAddFormWithConfirmation(item.source)
+                  }
                 >
                   {showAddForm[item.source] ? (
                     <>
@@ -634,14 +661,20 @@ function AudioItems({ data }) {
   });
 
   return (
-    <div className="mx-auto border-none">
-      <div className="overflow-x-auto mb-4 rounded">
-        <table className="w-full table-auto border-collapse lg:text-sm text-xs">
-          <tbody>{audioItems}</tbody>
-        </table>
-      </div>
+  <div className="mx-auto border-none">
+    <div className="overflow-x-auto mb-4 rounded">
+      <table className="w-full table-auto border-collapse lg:text-sm text-xs">
+        <tbody>{audioItems}</tbody>
+      </table>
     </div>
-  );
+    <ConfirmationModal
+      isOpen={showConfirmationModal}
+      onConfirm={handleConfirmClose}
+      onCancel={handleCancelClose}
+      message="Du har osparade ändringar. Vill du stänga formuläret ändå?"
+    />
+  </div>
+);
 }
 
 AudioItems.propTypes = {
