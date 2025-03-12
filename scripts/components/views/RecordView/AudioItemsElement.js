@@ -42,6 +42,15 @@ function AudioItems({ data }) {
   // Track form data for each source
   const [formData, setFormData] = useState({});
 
+  const [showTermNode, setShowTermNode] = useState({});
+
+  const handleToggleTermNode = (source) => {
+    setShowTermNode((prevState) => ({
+      ...prevState,
+      [source]: !prevState[source],
+    }));
+  };
+
   // Load saved name and email from local storage
   const [savedUserInfo, setSavedUserInfo] = useState(() => {
     const savedInfo = localStorage.getItem("userInfo");
@@ -258,7 +267,7 @@ function AudioItems({ data }) {
               href={`${config.audioUrl}${item.source}`}
               download
               title="Ladda ner ljudfilen"
-              className="text-isof hover:text-darker-isof no-underline cursor-pointer"
+              className="text-isof hover:text-darker-isof no-underline hover:cursor-pointer"
             >
               <span className="px-1 underline underline-offset-2">
                 Ladda ner
@@ -348,10 +357,11 @@ function AudioItems({ data }) {
               <div className="flex justify-center my-4">
                 <a
                   type="button"
-                  className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${showAddForm[item.source]
+                  className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
+                    showAddForm[item.source]
                       ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
                       : "bg-isof hover:bg-darker-isof text-white"
-                    }`}
+                  }`}
                   onClick={() => handleToggleAddForm(item.source)}
                 >
                   {showAddForm[item.source] ? (
@@ -445,12 +455,13 @@ function AudioItems({ data }) {
                     </p>
                     <input
                       type="text"
-                      className={`border p-2 w-32 mt-1 ${!/^\d{2}:\d{2}$/.test(
-                        formData[item.source]?.start || ""
-                      ) && formData[item.source]?.start
+                      className={`border p-2 w-32 mt-1 ${
+                        !/^\d{2}:\d{2}$/.test(
+                          formData[item.source]?.start || ""
+                        ) && formData[item.source]?.start
                           ? "border-red-500"
                           : ""
-                        }`}
+                      }`}
                       placeholder="00:00"
                       value={formData[item.source]?.start || ""}
                       onChange={(e) =>
@@ -468,7 +479,7 @@ function AudioItems({ data }) {
                   </div>
 
                   {/* 3. verbose description */}
-                  <div className="mb-4">
+                  <div className="">
                     <label className="block font-semibold mb-1">
                       Beskrivning / Annotation
                     </label>
@@ -489,16 +500,19 @@ function AudioItems({ data }) {
 
                   {/* 4. tags (hierarchical term selection) */}
                   <div className="mb-4">
-                    <label className="block font-semibold">Termer</label>
+                    <label className="block font-semibold">
+                      Termer/Ämnesord
+                    </label>
                     <span className="text-xs text-gray-500 my-1">
-                      Ange ett nytt ämnesord eller markera en eller flera från listan.
+                      Ange ett ämnesord eller markera ett eller flera från
+                      listan.
                     </span>
                     {/* Typed input */}
                     <div className="relative">
                       <input
                         type="text"
                         className="border p-1 w-full"
-                        placeholder="Skriv 'Musik' eller 'Historia'"
+                        placeholder="Skriv t.ex. 'Musik' eller 'Mat'"
                         value={formData[item.source]?.typedTag || ""}
                         onChange={(e) =>
                           handleChangeField(
@@ -530,7 +544,7 @@ function AudioItems({ data }) {
                             .map((match) => (
                               <div
                                 key={match.termid}
-                                className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
+                                className="px-2 py-1 hover:bg-gray-100 hover:cursor-pointer"
                                 onClick={() => {
                                   handleToggleTerm(item.source, match);
                                   handleChangeField(
@@ -546,18 +560,31 @@ function AudioItems({ data }) {
                         </div>
                       )}
                     </div>
-                    <div className="border p-2 mt-2">
-                      {TermList.map((rootNode) => (
-                        <TermNode
-                          key={rootNode.termid}
-                          node={rootNode}
-                          selectedTags={formData[item.source]?.selectedTags}
-                          onToggle={handleToggleTerm}
-                          source={item.source}
-                        />
-                      ))}
-                    </div>
-
+                    <button
+                      type="button"
+                      className="mt-4 text-sm text-white focus:text-white hover:text-white bg-isof hover:bg-darker-isof"
+                      onClick={() => handleToggleTermNode(item.source)}
+                    >
+                      {showTermNode[item.source]
+                        ? "Dölj termlista ▲"
+                        : "Visa termlista ▼"}
+                    </button>
+                    {showTermNode[item.source] && (
+                      <div className="border p-2">
+                        {TermList.map((rootNode) => (
+                          <TermNode
+                            key={rootNode.termid}
+                            node={rootNode}
+                            selectedTags={formData[item.source]?.selectedTags}
+                            onToggle={handleToggleTerm}
+                            source={item.source}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {formData[item.source]?.selectedTags.length > 0 && (
+                      <span className="block">Valda ämnesord:</span>
+                    )}
                     <div className="flex flex-wrap gap-2 mt-2">
                       {(formData[item.source]?.selectedTags || []).map(
                         (tagObj) => (
@@ -567,7 +594,7 @@ function AudioItems({ data }) {
                           >
                             {tagObj.term}
                             <span
-                              className="cursor-pointer"
+                              className="hover:cursor-pointer"
                               onClick={() =>
                                 handleToggleTerm(item.source, tagObj)
                               }
@@ -584,14 +611,14 @@ function AudioItems({ data }) {
                   <div className="flex items-center justify-end gap-4">
                     <a
                       type="button"
-                      className="underline text-gray-600 hover:text-gray-900"
+                      className="underline text-gray-600 hover:text-gray-900 hover:cursor-pointer"
                       onClick={() => handleToggleAddForm(item.source)}
                     >
                       Avbryt
                     </a>
                     <a
                       type="button"
-                      className="px-4 py-2 bg-isof hover:bg-darker-isof text-white rounded"
+                      className="px-4 py-2 bg-isof hover:bg-darker-isof text-white rounded hover:cursor-pointer"
                       onClick={() => handleSave(item.source)}
                     >
                       Spara

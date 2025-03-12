@@ -14,14 +14,14 @@ export function TermNode({ node, selectedTags, onToggle, source }) {
 
   return (
     <div className="text-sm">
-      <div className="flex items-center py-2">
+      <div className="flex items-center py-0.5">
         {/* Toggle button if children exist */}
         {hasChildren && (
           <a
             type="button"
             onClick={() => setExpanded(!expanded)}
             aria-label="Toggle expand/collapse"
-            className="focus:outline-none text-gray-500 hover:text-gray-700 mb-2 mr-1 transition-transform duration-200 transform"
+            className="border border-gray-500 text-gray-500 hover:text-gray-700 mb-2 mr-1 p-2 transition-transform duration-200 transform hover:cursor-pointer"
             style={{ transform: expanded ? "rotate(0deg)" : "rotate(-90deg)" }}
           >
             <FontAwesomeIcon icon={faCaretDown} />
@@ -30,7 +30,7 @@ export function TermNode({ node, selectedTags, onToggle, source }) {
 
         {/* Label + checkbox */}
         <label
-          className={`cursor-pointer flex items-center gap-2 px-2 rounded-lg transition-all duration-200 
+          className={`cursor-pointer flex items-center gap-1 px-2 rounded-lg transition-all duration-200 
             ${isSelected ? "bg-isof text-white" : "hover:bg-gray-100"}`}
         >
           <input
