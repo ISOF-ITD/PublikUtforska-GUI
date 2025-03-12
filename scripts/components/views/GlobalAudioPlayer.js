@@ -77,6 +77,8 @@ export default function GlobalAudioPlayer() {
       setCurrentTime(audio.currentTime * 1000);
     };
 
+    // loadedmetadata, timeupdate are internal events in audio used by maybe noUISlider
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/loadeddata_event
     audio.addEventListener('loadedmetadata', setAudioData);
     audio.addEventListener('timeupdate', setAudioTime);
 
