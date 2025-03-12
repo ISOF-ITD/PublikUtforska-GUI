@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faDownload,
   faCaretDown,
@@ -9,18 +9,18 @@ import {
   faCirclePlus,
   faTimes,
   faCheck,
-} from '@fortawesome/free-solid-svg-icons';
-import config from '../../../config';
-import { getAudioTitle } from '../../../utils/helpers';
-import ListPlayButton from '../ListPlayButton';
-import { TermList, TermNode } from './TermList';
+} from "@fortawesome/free-solid-svg-icons";
+import config from "../../../config";
+import { getAudioTitle } from "../../../utils/helpers";
+import ListPlayButton from "../ListPlayButton";
+import { TermList, TermNode } from "./TermList";
 
 // Helper to convert "MM:SS" to seconds
-function parseTimeString(timeString = '00:00') {
-  const parts = timeString.split(':').map(Number).reverse();
+function parseTimeString(timeString = "00:00") {
+  const parts = timeString.split(":").map(Number).reverse();
   let seconds = 0;
-  if (parts[0]) seconds += parts[0];       // seconds
-  if (parts[1]) seconds += parts[1] * 60;  // minutes
+  if (parts[0]) seconds += parts[0]; // seconds
+  if (parts[1]) seconds += parts[1] * 60; // minutes
   if (parts[2]) seconds += parts[2] * 3600; // hours
   return seconds;
 }
@@ -44,13 +44,15 @@ function AudioItems({ data }) {
 
   // Load saved name and email from local storage
   const [savedUserInfo, setSavedUserInfo] = useState(() => {
-    const savedInfo = localStorage.getItem('userInfo');
-    return savedInfo ? JSON.parse(savedInfo) : { name: '', email: '' };
+    const savedInfo = localStorage.getItem("userInfo");
+    return savedInfo
+      ? JSON.parse(savedInfo)
+      : { name: "", email: "", rememberMe: false };
   });
 
   // Save name and email to local storage
   const saveUserInfo = () => {
-    localStorage.setItem('userInfo', JSON.stringify(savedUserInfo));
+    localStorage.setItem("userInfo", JSON.stringify(savedUserInfo));
   };
 
   // Handle changes to the saved name and email fields
@@ -62,7 +64,7 @@ function AudioItems({ data }) {
   };
 
   // A predefined list of tags
-  const availableTags = ['Musik', 'Intervju', 'Historia', 'Plats', 'Tradition'];
+  const availableTags = ["Musik", "Intervju", "Historia", "Plats", "Tradition"];
 
   // Toggle sub-list of descriptions for a single audio file
   const handleToggle = (source) => {
@@ -83,12 +85,12 @@ function AudioItems({ data }) {
       setFormData((prevState) => ({
         ...prevState,
         [source]: {
-          // prefill with name/email from savedUserInfo:
           name: savedUserInfo.name,
           email: savedUserInfo.email,
-          start: '', // "MM:SS"
-          descriptionText: '',
-          typedTag: '',
+          rememberMe: savedUserInfo.rememberMe,
+          start: "",
+          descriptionText: "",
+          typedTag: "",
           selectedTags: [],
         },
       }));
@@ -135,7 +137,6 @@ function AudioItems({ data }) {
     });
   };
 
-
   // Add typed tag manually (user typed their own)
   const handleAddTypedTag = (source) => {
     const typedTag = formData[source]?.typedTag?.trim();
@@ -151,7 +152,7 @@ function AudioItems({ data }) {
         [source]: {
           ...prevData[source],
           selectedTags: [...currentTags, typedTag],
-          typedTag: '', // reset typed tag
+          typedTag: "", // reset typed tag
         },
       };
     });
@@ -179,22 +180,31 @@ function AudioItems({ data }) {
   const handleSave = (source) => {
     const form = formData[source];
 
-    // If "remember me" is checked, store the user info
+    // If "remember me" is checked, store name + email + checkbox in localStorage
     if (form.rememberMe) {
-      const newUserInfo = { name: form.name, email: form.email };
+      const newUserInfo = {
+        name: form.name,
+        email: form.email,
+        rememberMe: form.rememberMe,
+      };
       setSavedUserInfo(newUserInfo);
-      localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+      localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
+    } else {
+      // If user unchecks, you can remove from localStorage or keep the last saved info—
+      // depends on how you want it to behave. For example:
+      localStorage.removeItem("userInfo");
+      setSavedUserInfo({ name: "", email: "", rememberMe: false });
     }
 
     // Post
-    console.log('Saving new content for:', source, form);
+    console.log("Saving new content for:", source, form);
 
     // then hide the form
     setShowAddForm((prev) => ({ ...prev, [source]: false }));
   };
 
   // Filter only audio items
-  const audioDataItems = media.filter((item) => item.type === 'audio');
+  const audioDataItems = media.filter((item) => item.type === "audio");
 
   // Prepare table rows
   const audioItems = audioDataItems.map((item) => {
@@ -216,28 +226,30 @@ function AudioItems({ data }) {
     return (
       <React.Fragment key={item.source}>
         {/* Main row for the audio item */}
-        <tr
-          className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200"
-        >
+        <tr className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200">
           <td className="py-2 px-4">
-            <ListPlayButton media={item} recordId={id} recordTitle={audioTitle} />
+            <ListPlayButton
+              media={item}
+              recordId={id}
+              recordTitle={audioTitle}
+            />
           </td>
           <td className="py-2 px-4">{audioTitle}</td>
           <td className="py-2 px-4 flex gap-2 items-center">
             <a
-              className="text-isof hover:text-darker-isof flex hover:cursor-pointer px-2 py-2"
-              aria-expanded={openItems[item.source] ? 'true' : 'false'}
+              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+              aria-expanded={openItems[item.source] ? "true" : "false"}
               aria-controls={`descriptions-${item.source}`}
               onClick={() => handleToggle(item.source)}
             >
               {openItems[item.source] ? (
                 <span className="whitespace-nowrap">
-                  <span className="px-1">Stäng</span>{' '}
+                  <span className="px-1">Stäng</span>{" "}
                   <FontAwesomeIcon icon={faCaretUp} />
                 </span>
               ) : (
                 <span className="whitespace-nowrap">
-                  <span className="px-1">Visa Innehåll</span>{' '}
+                  <span className="px-1">Visa Innehåll</span>{" "}
                   <FontAwesomeIcon icon={faCaretDown} />
                 </span>
               )}
@@ -246,9 +258,11 @@ function AudioItems({ data }) {
               href={`${config.audioUrl}${item.source}`}
               download
               title="Ladda ner ljudfilen"
-              className="text-isof hover:text-darker-isof no-underline"
+              className="text-isof hover:text-darker-isof no-underline cursor-pointer"
             >
-              <span className="px-1 underline underline-offset-2">Ladda ner</span>{' '}
+              <span className="px-1 underline underline-offset-2">
+                Ladda ner
+              </span>{" "}
               <FontAwesomeIcon icon={faDownload} />
             </a>
           </td>
@@ -334,15 +348,17 @@ function AudioItems({ data }) {
               <div className="flex justify-center my-4">
                 <a
                   type="button"
-                  className={`flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${showAddForm[item.source]
-                    ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                    : 'bg-isof hover:bg-darker-isof text-white'
+                  className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${showAddForm[item.source]
+                      ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      : "bg-isof hover:bg-darker-isof text-white"
                     }`}
                   onClick={() => handleToggleAddForm(item.source)}
                 >
                   {showAddForm[item.source] ? (
                     <>
-                      <span className="flex-grow text-left">Lägg till ny beskrivning</span>
+                      <span className="flex-grow text-left">
+                        Lägg till ny beskrivning
+                      </span>
                       <FontAwesomeIcon icon={faTimes} />
                     </>
                   ) : (
@@ -366,10 +382,15 @@ function AudioItems({ data }) {
                       <div className="flex gap-2">
                         <input
                           type="text"
+                          placeholder="Ange ditt namn"
                           className="border p-2 w-full"
-                          value={formData[item.source]?.name || ''}
+                          value={formData[item.source]?.name || ""}
                           onChange={(e) =>
-                            handleChangeField(item.source, 'name', e.target.value)
+                            handleChangeField(
+                              item.source,
+                              "name",
+                              e.target.value
+                            )
                           }
                         />
                       </div>
@@ -382,26 +403,35 @@ function AudioItems({ data }) {
                         <input
                           type="email"
                           className="border p-2 w-full"
-                          value={formData[item.source]?.email || ''}
+                          placeholder="Ange din e-post"
+                          value={formData[item.source]?.email || ""}
                           onChange={(e) =>
-                            handleChangeField(item.source, 'email', e.target.value)
+                            handleChangeField(
+                              item.source,
+                              "email",
+                              e.target.value
+                            )
                           }
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* 1b. The "Remember me" / "Spara mina uppgifter" checkbox */}
+                  {/* 1b. The "Remember me" checkbox */}
                   <div className="mb-4">
                     <label className="inline-flex items-center gap-2">
                       <input
                         type="checkbox"
                         checked={formData[item.source]?.rememberMe || false}
                         onChange={(e) =>
-                          handleChangeField(item.source, 'rememberMe', e.target.checked)
+                          handleChangeField(
+                            item.source,
+                            "rememberMe",
+                            e.target.checked
+                          )
                         }
                       />
-                      <span>Spara mina uppgifter</span>
+                      <span>Kom ihåg mig</span>
                     </label>
                   </div>
 
@@ -415,13 +445,26 @@ function AudioItems({ data }) {
                     </p>
                     <input
                       type="text"
-                      className="border p-2 w-32 mt-1"
+                      className={`border p-2 w-32 mt-1 ${!/^\d{2}:\d{2}$/.test(
+                        formData[item.source]?.start || ""
+                      ) && formData[item.source]?.start
+                          ? "border-red-500"
+                          : ""
+                        }`}
                       placeholder="00:00"
-                      value={formData[item.source]?.start || ''}
+                      value={formData[item.source]?.start || ""}
                       onChange={(e) =>
-                        handleChangeField(item.source, 'start', e.target.value)
+                        handleChangeField(item.source, "start", e.target.value)
                       }
                     />
+                    {!/^\d{2}:\d{2}$/.test(
+                      formData[item.source]?.start || ""
+                    ) &&
+                      formData[item.source]?.start && (
+                        <p className="text-xs text-red-500 mt-1">
+                          Ogiltigt format. Ange MM:SS.
+                        </p>
+                      )}
                   </div>
 
                   {/* 3. verbose description */}
@@ -432,65 +475,76 @@ function AudioItems({ data }) {
                     <textarea
                       className="border p-2 w-full"
                       rows="4"
-                      value={formData[item.source]?.descriptionText || ''}
+                      placeholder="Beskriv gärna kortfattat vad som sägs i ljudintervallet."
+                      value={formData[item.source]?.descriptionText || ""}
                       onChange={(e) =>
-                        handleChangeField(item.source, 'descriptionText', e.target.value)
+                        handleChangeField(
+                          item.source,
+                          "descriptionText",
+                          e.target.value
+                        )
                       }
                     />
                   </div>
 
                   {/* 4. tags (hierarchical term selection) */}
                   <div className="mb-4">
-                    <label className="block font-semibold mb-1">Termer</label>
-                    <p className="text-xs text-gray-500">
-                      Öppna och bocka i en eller flera termer i hierarkin.
-                    </p>
-                    {/* Example of typed input for brand new custom tags: */}
-                    <div className="flex items-center gap-2 mb-2 mt-4">
+                    <label className="block font-semibold">Termer</label>
+                    <span className="text-xs text-gray-500 my-1">
+                      Ange ett nytt ämnesord eller markera en eller flera från listan.
+                    </span>
+                    {/* Typed input */}
+                    <div className="relative">
                       <input
                         type="text"
-                        className="border p-1"
-                        placeholder="Börja skriva"
-                        value={formData[item.source]?.typedTag || ''}
+                        className="border p-1 w-full"
+                        placeholder="Skriv 'Musik' eller 'Historia'"
+                        value={formData[item.source]?.typedTag || ""}
                         onChange={(e) =>
-                          handleChangeField(item.source, 'typedTag', e.target.value)
+                          handleChangeField(
+                            item.source,
+                            "typedTag",
+                            e.target.value
+                          )
                         }
+                        onKeyDown={(e) => {
+                          if (
+                            e.key === "Enter" &&
+                            formData[item.source]?.typedTag?.trim()
+                          ) {
+                            handleAddTypedTag(item.source);
+                          }
+                        }}
                       />
-                      <button
-                        type="button"
-                        className="bg-gray-300 px-2 py-1 rounded text-sm"
-                        onClick={() => handleAddTypedTag(item.source)}
-                      >
-                        Lägg till
-                      </button>
-                      {/*
-  We filter the full list of terms by whatever the user typed. If typed string is empty or very short, you can skip showing anything or show everything, etc.
-*/}
                       {formData[item.source]?.typedTag?.length > 0 && (
-                        <div className="border bg-white mt-1">
+                        <div className="absolute z-10 bg-white border border-gray-300 mt-1 w-full max-h-48 overflow-y-auto">
                           {allTerms
                             .filter((t) =>
-                              t.term.toLowerCase().includes(
-                                formData[item.source].typedTag.toLowerCase()
-                              )
+                              t.term
+                                .toLowerCase()
+                                .includes(
+                                  formData[item.source].typedTag.toLowerCase()
+                                )
                             )
-                            .slice(0, 15) // limit to first 15 results so it doesn't get huge
+                            .slice(0, 15) // Limit to first 15 results
                             .map((match) => (
                               <div
                                 key={match.termid}
                                 className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => {
-                                  // The user selected a match => toggle it, then clear typedTag
                                   handleToggleTerm(item.source, match);
-                                  handleChangeField(item.source, 'typedTag', '');
+                                  handleChangeField(
+                                    item.source,
+                                    "typedTag",
+                                    ""
+                                  );
                                 }}
                               >
-                                {match.termid} - {match.term}
+                                {match.term}
                               </div>
                             ))}
                         </div>
                       )}
-
                     </div>
                     <div className="border p-2 mt-2">
                       {TermList.map((rootNode) => (
@@ -505,24 +559,26 @@ function AudioItems({ data }) {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(formData[item.source]?.selectedTags || []).map((tagObj) => (
-                        <span
-                          key={tagObj.termid}
-                          className="flex items-center gap-1 bg-isof text-white px-2 py-1 rounded"
-                        >
-                          {tagObj.term}
-                          <a
-                            type="button"
-                            onClick={() => handleToggleTerm(item.source, tagObj)}
-                            className="text-white"
+                      {(formData[item.source]?.selectedTags || []).map(
+                        (tagObj) => (
+                          <span
+                            key={tagObj.termid}
+                            className="flex items-center gap-1 bg-isof text-white px-2 py-1 rounded"
                           >
-                            <FontAwesomeIcon icon={faTimes} />
-                          </a>
-                        </span>
-                      ))}
+                            {tagObj.term}
+                            <span
+                              className="cursor-pointer"
+                              onClick={() =>
+                                handleToggleTerm(item.source, tagObj)
+                              }
+                            >
+                              ×
+                            </span>
+                          </span>
+                        )
+                      )}
                     </div>
                   </div>
-
 
                   {/* 5. Save and Cancel buttons */}
                   <div className="flex items-center justify-end gap-4">
@@ -544,7 +600,6 @@ function AudioItems({ data }) {
                 </div>
               )}
             </td>
-
           </tr>
         )}
       </React.Fragment>
