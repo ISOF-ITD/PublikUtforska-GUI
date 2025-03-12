@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 2 MB
 
 export default function PdfViewer({ url = null, height = '500' }) {
   const [pdfUrl, setPdfUrl] = useState(null);
