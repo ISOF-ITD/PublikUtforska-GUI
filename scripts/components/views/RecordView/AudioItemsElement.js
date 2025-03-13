@@ -171,26 +171,35 @@ function AudioItems({ data }) {
     });
   };
 
-  // Add typed tag manually (user typed their own)
-  const handleAddTypedTag = (source) => {
-    const typedTag = formData[source]?.typedTag?.trim();
-    if (!typedTag) return;
-    setFormData((prevData) => {
-      const currentTags = prevData[source].selectedTags || [];
-      // ensure no duplicates
-      if (currentTags.includes(typedTag)) {
-        return prevData; // do nothing if it already exists
-      }
-      return {
-        ...prevData,
-        [source]: {
-          ...prevData[source],
-          selectedTags: [...currentTags, typedTag],
-          typedTag: "", // reset typed tag
-        },
-      };
-    });
+// Add typed tag manually (user typed)
+function handleAddTypedTag(source) {
+  const typedTag = formData[source]?.typedTag?.trim();
+  if (!typedTag) return;
+
+  // Build a minimal term object:
+  const newTagObj = {
+    term: typedTag,
+    termid: "user:" + typedTag
   };
+
+  setFormData((prevData) => {
+    const currentTags = prevData[source].selectedTags || [];
+    const duplicate = currentTags.some(
+      (t) => t.term.toLowerCase() === typedTag.toLowerCase()
+    );
+    if (duplicate) return prevData;
+
+    return {
+      ...prevData,
+      [source]: {
+        ...prevData[source],
+        selectedTags: [...currentTags, newTagObj],
+        typedTag: "",
+      },
+    };
+  });
+}
+
 
   function flattenTermList(termNodes) {
     const result = [];
@@ -211,31 +220,60 @@ function AudioItems({ data }) {
   const allTerms = flattenTermList(TermList);
 
   // Save the new content
-  const handleSave = (source) => {
-    const form = formData[source];
+  const handleSave = async (source) => {
+  const form = formData[source];
 
-    // If "remember me" is checked, store name + email + checkbox in localStorage
-    if (form.rememberMe) {
-      const newUserInfo = {
-        name: form.name,
-        email: form.email,
-        rememberMe: form.rememberMe,
-      };
-      setSavedUserInfo(newUserInfo);
-      localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
-    } else {
-      // If user unchecks, you can remove from localStorage or keep the last saved info—
-      // depends on how you want it to behave. For example:
-      localStorage.removeItem("userInfo");
-      setSavedUserInfo({ name: "", email: "", rememberMe: false });
-    }
+  // If "remember me" is checked, store name + email + checkbox in localStorage
+  if (form.rememberMe) {
+    const newUserInfo = {
+      name: form.name,
+      email: form.email,
+      rememberMe: form.rememberMe,
+    };
+    setSavedUserInfo(newUserInfo);
+    localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
+  } else {
+    localStorage.removeItem("userInfo");
+    setSavedUserInfo({ name: "", email: "", rememberMe: false });
+  }
 
-    // Post
-    console.log("Saving new content for:", source, form);
-
-    // then hide the form
-    setShowAddForm((prev) => ({ ...prev, [source]: false }));
+  // Build the payload based on your API’s POST request structure
+  const payload = {
+    recordid: data.id,                 // or whichever field holds the record’s ID
+    file: source,                      // `item.source` from your media object
+    transcribesession: new Date()      // or new Date().toISOString(), depending on your back-end
+      .toISOString()
+      .replace("T", " ")
+      .split(".")[0],                 // e.g. "2025-02-28 16:21:33"
+    from_email: form.email || "",
+    from_name: form.name || "",
+    start: form.start,                // "MM:SS" – your backend seems to accept string format
+    change_to: form.descriptionText,  // the text describing the audio segment
+    terms: form.selectedTags || [],   // array of { term, termid }
   };
+
+  try {
+    const response = await fetch(`${config.restApiUrl}describe/change/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`POST failed with status ${response.status}`);
+    }
+    const result = await response.json();
+    console.log("Success:", result);
+  } catch (error) {
+    console.error("Error submitting description:", error);
+  }
+
+  // hide the form & reset unsaved changes
+  setShowAddForm((prev) => ({ ...prev, [source]: false }));
+  setHasUnsavedChanges(false);
+};
 
   // Filter only audio items
   const audioDataItems = media.filter((item) => item.type === "audio");
@@ -482,6 +520,7 @@ function AudioItems({ data }) {
                     </p>
                     <input
                       type="text"
+                      required
                       className={`border p-2 w-32 mt-1 ${
                         !/^\d{2}:\d{2}$/.test(
                           formData[item.source]?.start || ""
@@ -510,10 +549,14 @@ function AudioItems({ data }) {
                     <label className="block font-semibold mb-1">
                       Beskrivning / Annotation
                     </label>
+                    <span className="text-xs text-gray-500 pb-2">
+                      Beskriv kortfattat vad som sägs i ljudintervallet. 
+                      Har du fler detaljer eller ytterligare insikter, dela gärna med dig av dem!
+                    </span>
                     <textarea
                       className="border p-2 w-full"
                       rows="4"
-                      placeholder="Beskriv gärna kortfattat vad som sägs i ljudintervallet."
+                      placeholder=""
                       value={formData[item.source]?.descriptionText || ""}
                       onChange={(e) =>
                         handleChangeField(
