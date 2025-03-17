@@ -59,6 +59,10 @@ export default function TranscriptionPrompt({ data }) {
   }, [media, transcriptiontype, transcriptionstatus]);
 
   // Hantera olika renderingsfall
+  if (transcriptiontype === 'audio') {
+    // 'Audio' ska aldrig transkriberas som text, inget visas;
+    return;
+  }
   if (transcriptionstatus === 'undertranscription') {
     return <p>{l(STRINGS.underTranscription)}</p>;
   } if (isUnderReview) {
