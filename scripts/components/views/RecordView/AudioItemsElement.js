@@ -46,6 +46,7 @@ function AudioItems({ data }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [sourceToClose, setSourceToClose] = useState(null);
+  const [transcribeSession, setTranscribeSession] = useState(null);
 
   const handleToggleAddFormWithConfirmation = (source) => {
     if (hasUnsavedChanges && showAddForm[source]) {
@@ -60,6 +61,7 @@ function AudioItems({ data }) {
     handleToggleAddForm(sourceToClose);
     setHasUnsavedChanges(false); // Reset unsaved changes
     setShowConfirmationModal(false);
+    cancelTranscribe();
   };
 
   const handleCancelClose = () => {
@@ -109,6 +111,9 @@ function AudioItems({ data }) {
 
   // Toggle "add content" form
   const handleToggleAddForm = (source) => {
+    if (!transcribeSession) {
+      startTranscribe()
+    };
     setShowAddForm((prevState) => ({
       ...prevState,
       [source]: !prevState[source],
@@ -171,35 +176,34 @@ function AudioItems({ data }) {
     });
   };
 
-// Add typed tag manually (user typed)
-function handleAddTypedTag(source) {
-  const typedTag = formData[source]?.typedTag?.trim();
-  if (!typedTag) return;
+  // Add typed tag manually (user typed)
+  function handleAddTypedTag(source) {
+    const typedTag = formData[source]?.typedTag?.trim();
+    if (!typedTag) return;
 
-  // Build a minimal term object:
-  const newTagObj = {
-    term: typedTag,
-    termid: "user:" + typedTag
-  };
-
-  setFormData((prevData) => {
-    const currentTags = prevData[source].selectedTags || [];
-    const duplicate = currentTags.some(
-      (t) => t.term.toLowerCase() === typedTag.toLowerCase()
-    );
-    if (duplicate) return prevData;
-
-    return {
-      ...prevData,
-      [source]: {
-        ...prevData[source],
-        selectedTags: [...currentTags, newTagObj],
-        typedTag: "",
-      },
+    // Build a minimal term object:
+    const newTagObj = {
+      term: typedTag,
+      termid: "user:" + typedTag,
     };
-  });
-}
 
+    setFormData((prevData) => {
+      const currentTags = prevData[source].selectedTags || [];
+      const duplicate = currentTags.some(
+        (t) => t.term.toLowerCase() === typedTag.toLowerCase()
+      );
+      if (duplicate) return prevData;
+
+      return {
+        ...prevData,
+        [source]: {
+          ...prevData[source],
+          selectedTags: [...currentTags, newTagObj],
+          typedTag: "",
+        },
+      };
+    });
+  }
 
   function flattenTermList(termNodes) {
     const result = [];
@@ -219,61 +223,110 @@ function handleAddTypedTag(source) {
 
   const allTerms = flattenTermList(TermList);
 
+  const startTranscribe = async () => {
+    const payload = {
+      recordid: data.id,
+    };
+
+    try {
+      const response = await fetch(`${config.restApiUrl}describe/start/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`POST failed with status ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("Success:", result);
+      setTranscribeSession(result.data.transcribesession);
+    } catch (error) {
+      console.error("Error creating a transcription sessiond:", error);
+    }
+  }
+
+  const cancelTranscribe = async () => {
+    const payload = {
+      recordid: data.id,
+      transcribesession: transcribeSession
+    };
+
+    try {
+      const response = await fetch(`${config.restApiUrl}transcribecancel/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`POST failed with status ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("Success:", result);
+      setTranscribeSession(null);
+    } catch (error) {
+      console.error("Error cancelling a transcription session:", error);
+    }
+  }
+
   // Save the new content
   const handleSave = async (source) => {
-  const form = formData[source];
+    const form = formData[source];
 
-  // If "remember me" is checked, store name + email + checkbox in localStorage
-  if (form.rememberMe) {
-    const newUserInfo = {
-      name: form.name,
-      email: form.email,
-      rememberMe: form.rememberMe,
-    };
-    setSavedUserInfo(newUserInfo);
-    localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
-  } else {
-    localStorage.removeItem("userInfo");
-    setSavedUserInfo({ name: "", email: "", rememberMe: false });
-  }
-
-  // Build the payload based on your API’s POST request structure
-  const payload = {
-    recordid: data.id,                 // or whichever field holds the record’s ID
-    file: source,                      // `item.source` from your media object
-    transcribesession: new Date()      // or new Date().toISOString(), depending on your back-end
-      .toISOString()
-      .replace("T", " ")
-      .split(".")[0],                 // e.g. "2025-02-28 16:21:33"
-    from_email: form.email || "",
-    from_name: form.name || "",
-    start: form.start,                // "MM:SS" – your backend seems to accept string format
-    change_to: form.descriptionText,  // the text describing the audio segment
-    terms: form.selectedTags || [],   // array of { term, termid }
-  };
-
-  try {
-    const response = await fetch(`${config.restApiUrl}describe/change/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`POST failed with status ${response.status}`);
+    // If "remember me" is checked, store name + email + checkbox in localStorage
+    if (form.rememberMe) {
+      const newUserInfo = {
+        name: form.name,
+        email: form.email,
+        rememberMe: form.rememberMe,
+      };
+      setSavedUserInfo(newUserInfo);
+      localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
+    } else {
+      localStorage.removeItem("userInfo");
+      setSavedUserInfo({ name: "", email: "", rememberMe: false });
     }
-    const result = await response.json();
-    console.log("Success:", result);
-  } catch (error) {
-    console.error("Error submitting description:", error);
-  }
 
-  // hide the form & reset unsaved changes
-  setShowAddForm((prev) => ({ ...prev, [source]: false }));
-  setHasUnsavedChanges(false);
-};
+    // Build the payload based on your API’s POST request structure
+    const payload = {
+      recordid: data.id, // or whichever field holds the record’s ID
+      file: source, // `item.source` from your media object
+      transcribesession: transcribeSession, // e.g. "2025-02-28 16:21:33"
+      from_email: form.email || "",
+      from_name: form.name || "",
+      start: form.start, // "MM:SS" – your backend seems to accept string format
+      change_to: form.descriptionText, // the text describing the audio segment
+      terms: form.selectedTags || [], // array of { term, termid }
+    };
+
+    try {
+      const response = await fetch(`${config.restApiUrl}describe/change/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`POST failed with status ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("Success:", result);
+    } catch (error) {
+      console.error("Error submitting description:", error);
+    }
+
+    // hide the form & reset unsaved changes
+    setShowAddForm((prev) => ({ ...prev, [source]: false }));
+    setHasUnsavedChanges(false);
+    cancelTranscribe();
+  };
 
   // Filter only audio items
   const audioDataItems = media.filter((item) => item.type === "audio");
@@ -388,7 +441,7 @@ function handleAddTypedTag(source) {
                         <td className="py-2 px-4 flex gap-2 flex-wrap">
                           {desc.terms?.map((termObj) => (
                             <div key={termObj?.termid}>
-                              <span className="bg-isof text-white rounded-xl px-2 py-1">
+                              <span className="bg-isof text-white rounded-xl px-2 py-1 whitespace-nowrap">
                                 #{termObj.term}
                               </span>
                             </div>
@@ -550,8 +603,9 @@ function handleAddTypedTag(source) {
                       Beskrivning / Annotation
                     </label>
                     <span className="text-xs text-gray-500 pb-2">
-                      Beskriv kortfattat vad som sägs i ljudintervallet. 
-                      Har du fler detaljer eller ytterligare insikter, dela gärna med dig av dem!
+                      Beskriv kortfattat vad som sägs i ljudintervallet. Har du
+                      fler detaljer eller ytterligare insikter, dela gärna med
+                      dig av dem!
                     </span>
                     <textarea
                       className="border p-2 w-full"
@@ -704,20 +758,20 @@ function handleAddTypedTag(source) {
   });
 
   return (
-  <div className="mx-auto border-none">
-    <div className="overflow-x-auto mb-4 rounded">
-      <table className="w-full table-auto border-collapse lg:text-sm text-xs">
-        <tbody>{audioItems}</tbody>
-      </table>
+    <div className="mx-auto border-none">
+      <div className="overflow-x-auto mb-4 rounded">
+        <table className="w-full table-auto border-collapse lg:text-sm text-xs">
+          <tbody>{audioItems}</tbody>
+        </table>
+      </div>
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onConfirm={handleConfirmClose}
+        onCancel={handleCancelClose}
+        message="Du har osparade ändringar. Vill du stänga formuläret ändå?"
+      />
     </div>
-    <ConfirmationModal
-      isOpen={showConfirmationModal}
-      onConfirm={handleConfirmClose}
-      onCancel={handleCancelClose}
-      message="Du har osparade ändringar. Vill du stänga formuläret ändå?"
-    />
-  </div>
-);
+  );
 }
 
 AudioItems.propTypes = {
