@@ -9,6 +9,7 @@ import {
   faCirclePlus,
   faTimes,
   faCheck,
+  faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import config from "../../../config";
 import { getAudioTitle } from "../../../utils/helpers";
@@ -34,7 +35,14 @@ function AudioItems({ data }) {
     archive: { arhive_org: archiveOrg, archive },
     year,
     persons,
+    // ADD: we check transcriptionstatus from props:
+    transcriptionstatus,
   } = data;
+
+  // If the server says “undertranscription”, that means
+  // some user (maybe a different one) already has a session lock.
+  // We'll hide the "Lägg till ny beskrivning" button in that case.
+  const serverHasOngoingSession = transcriptionstatus === "undertranscription";
 
   // Track which items are "open"
   const [openItems, setOpenItems] = useState({});
@@ -46,10 +54,47 @@ function AudioItems({ data }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [sourceToClose, setSourceToClose] = useState(null);
+
+  // NOTE: This local session is for when **this** user starts transcribing.
+  // If the server is already locked, we should not even let the user start
+  // (and not show the button).
   const [transcribeSession, setTranscribeSession] = useState(null);
 
+  const [showTermNode, setShowTermNode] = useState({});
+
+  const [savedUserInfo, setSavedUserInfo] = useState(() => {
+    const savedInfo = localStorage.getItem("userInfo");
+    return savedInfo
+      ? JSON.parse(savedInfo)
+      : { name: "", email: "", rememberMe: false };
+  });
+
+  // Used to save name/email
+  const saveUserInfo = () => {
+    localStorage.setItem("userInfo", JSON.stringify(savedUserInfo));
+  };
+
+  // Handle user info changes
+  const handleUserInfoChange = (field, value) => {
+    setSavedUserInfo((prevInfo) => ({
+      ...prevInfo,
+      [field]: value,
+    }));
+  };
+
+  // Predefined list of tags
+  const availableTags = ["Musik", "Intervju", "Historia", "Plats", "Tradition"];
+
+  // A copy of formData to see if changes have happened
+  const [initialFormData, setInitialFormData] = useState({});
+  const hasFormChanged = (source) => {
+    const current = formData[source];
+    const initial = initialFormData[source];
+    return JSON.stringify(current) !== JSON.stringify(initial);
+  };
+
   const handleToggleAddFormWithConfirmation = (source) => {
-    if (hasUnsavedChanges && showAddForm[source]) {
+    if (hasFormChanged(source)) {
       setSourceToClose(source);
       setShowConfirmationModal(true);
     } else {
@@ -68,8 +113,6 @@ function AudioItems({ data }) {
     setShowConfirmationModal(false);
   };
 
-  const [showTermNode, setShowTermNode] = useState({});
-
   const handleToggleTermNode = (source) => {
     setShowTermNode((prevState) => ({
       ...prevState,
@@ -77,31 +120,7 @@ function AudioItems({ data }) {
     }));
   };
 
-  // Load saved name and email from local storage
-  const [savedUserInfo, setSavedUserInfo] = useState(() => {
-    const savedInfo = localStorage.getItem("userInfo");
-    return savedInfo
-      ? JSON.parse(savedInfo)
-      : { name: "", email: "", rememberMe: false };
-  });
-
-  // Save name and email to local storage
-  const saveUserInfo = () => {
-    localStorage.setItem("userInfo", JSON.stringify(savedUserInfo));
-  };
-
-  // Handle changes to the saved name and email fields
-  const handleUserInfoChange = (field, value) => {
-    setSavedUserInfo((prevInfo) => ({
-      ...prevInfo,
-      [field]: value,
-    }));
-  };
-
-  // A predefined list of tags
-  const availableTags = ["Musik", "Intervju", "Historia", "Plats", "Tradition"];
-
-  // Toggle sub-list of descriptions for a single audio file
+  // Toggle sub-list
   const handleToggle = (source) => {
     setOpenItems((prevState) => ({
       ...prevState,
@@ -111,31 +130,33 @@ function AudioItems({ data }) {
 
   // Toggle "add content" form
   const handleToggleAddForm = (source) => {
-    if (!transcribeSession) {
-      startTranscribe()
-    };
-    setShowAddForm((prevState) => ({
-      ...prevState,
-      [source]: !prevState[source],
-    }));
-    // If toggling "on," initialize blank form data
-    if (!showAddForm[source]) {
-      setFormData((prevState) => ({
-        ...prevState,
-        [source]: {
-          name: savedUserInfo.name,
-          email: savedUserInfo.email,
-          rememberMe: savedUserInfo.rememberMe,
-          start: "",
-          descriptionText: "",
-          typedTag: "",
-          selectedTags: [],
-        },
-      }));
+    if (showAddForm[source]) {
+      // Close form and cancel session
+      setShowAddForm((prevState) => ({ ...prevState, [source]: false }));
+      cancelTranscribe();
+    } else {
+      // Attempt to start a transcribe session
+      // (But only if no session is currently locked by someone else.)
+      if (!serverHasOngoingSession && !transcribeSession) {
+        startTranscribe();
+      }
+      // Initialize form data
+      const defaultData = {
+        name: savedUserInfo.name,
+        email: savedUserInfo.email,
+        rememberMe: savedUserInfo.rememberMe,
+        start: "",
+        descriptionText: "",
+        typedTag: "",
+        selectedTags: [],
+      };
+      setInitialFormData((prev) => ({ ...prev, [source]: defaultData }));
+      setShowAddForm((prevState) => ({ ...prevState, [source]: true }));
+      setFormData((prevData) => ({ ...prevData, [source]: defaultData }));
     }
   };
 
-  // Handle changes to the add-content form fields
+  // Form field changes
   const handleChangeField = (source, field, value) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -144,28 +165,23 @@ function AudioItems({ data }) {
         [field]: value,
       },
     }));
-    setHasUnsavedChanges(true); // Set unsaved changes to true
+    setHasUnsavedChanges(true); // Set unsaved changes
   };
 
-  // Add or remove term
+  // Tag toggling
   const handleToggleTerm = (source, termObj) => {
     setFormData((prevData) => {
       const currentTags = prevData[source].selectedTags || [];
-      // Check if that termid is already selected
       const index = currentTags.findIndex((t) => t.termid === termObj.termid);
-
       let newTags;
       if (index > -1) {
-        // Remove it
         newTags = [
           ...currentTags.slice(0, index),
           ...currentTags.slice(index + 1),
         ];
       } else {
-        // Add it
         newTags = [...currentTags, termObj];
       }
-
       return {
         ...prevData,
         [source]: {
@@ -176,24 +192,36 @@ function AudioItems({ data }) {
     });
   };
 
-  // Add typed tag manually (user typed)
+  function handleAddTag(source, termObj) {
+    setFormData((prevData) => {
+      const currentTags = prevData[source].selectedTags || [];
+      const duplicate = currentTags.some(
+        (t) => t.term.toLowerCase() === termObj.term.toLowerCase()
+      );
+      if (duplicate) return prevData; // do nothing
+      return {
+        ...prevData,
+        [source]: {
+          ...prevData[source],
+          selectedTags: [...currentTags, termObj],
+        },
+      };
+    });
+  }
+
   function handleAddTypedTag(source) {
     const typedTag = formData[source]?.typedTag?.trim();
     if (!typedTag) return;
-
-    // Build a minimal term object:
     const newTagObj = {
       term: typedTag,
       termid: "user:" + typedTag,
     };
-
     setFormData((prevData) => {
       const currentTags = prevData[source].selectedTags || [];
       const duplicate = currentTags.some(
         (t) => t.term.toLowerCase() === typedTag.toLowerCase()
       );
       if (duplicate) return prevData;
-
       return {
         ...prevData,
         [source]: {
@@ -207,27 +235,21 @@ function AudioItems({ data }) {
 
   function flattenTermList(termNodes) {
     const result = [];
-
     function traverse(node) {
-      // Add this node
       result.push({ termid: node.termid, term: node.term });
-      // Recurse on children
       if (Array.isArray(node.children)) {
         node.children.forEach((child) => traverse(child));
       }
     }
-
     termNodes.forEach((rootNode) => traverse(rootNode));
     return result;
   }
-
   const allTerms = flattenTermList(TermList);
 
   const startTranscribe = async () => {
     const payload = {
       recordid: data.id,
     };
-
     try {
       const response = await fetch(`${config.restApiUrl}describe/start/`, {
         method: "POST",
@@ -242,16 +264,19 @@ function AudioItems({ data }) {
       }
       const result = await response.json();
       console.log("Success:", result);
+
+      // We set the local state to the session returned by server
       setTranscribeSession(result.data.transcribesession);
     } catch (error) {
-      console.error("Error creating a transcription sessiond:", error);
+      console.error("Error creating a transcription session:", error);
     }
-  }
+  };
 
   const cancelTranscribe = async () => {
+    if (!transcribeSession) return; // Only cancel if we have one
     const payload = {
       recordid: data.id,
-      transcribesession: transcribeSession
+      transcribesession: transcribeSession,
     };
 
     try {
@@ -272,13 +297,11 @@ function AudioItems({ data }) {
     } catch (error) {
       console.error("Error cancelling a transcription session:", error);
     }
-  }
+  };
 
-  // Save the new content
   const handleSave = async (source) => {
     const form = formData[source];
-
-    // If "remember me" is checked, store name + email + checkbox in localStorage
+    // If "remember me" is checked, store name + email + checkbox
     if (form.rememberMe) {
       const newUserInfo = {
         name: form.name,
@@ -292,16 +315,15 @@ function AudioItems({ data }) {
       setSavedUserInfo({ name: "", email: "", rememberMe: false });
     }
 
-    // Build the payload based on your API’s POST request structure
     const payload = {
-      recordid: data.id, // or whichever field holds the record’s ID
-      file: source, // `item.source` from your media object
-      transcribesession: transcribeSession, // e.g. "2025-02-28 16:21:33"
+      recordid: data.id,
+      file: source,
+      transcribesession: transcribeSession,
       from_email: form.email || "",
       from_name: form.name || "",
-      start: form.start, // "MM:SS" – your backend seems to accept string format
-      change_to: form.descriptionText, // the text describing the audio segment
-      terms: form.selectedTags || [], // array of { term, termid }
+      start: form.start,
+      change_to: form.descriptionText,
+      terms: form.selectedTags || [],
     };
 
     try {
@@ -322,7 +344,7 @@ function AudioItems({ data }) {
       console.error("Error submitting description:", error);
     }
 
-    // hide the form & reset unsaved changes
+    // Hide the form & reset unsaved changes
     setShowAddForm((prev) => ({ ...prev, [source]: false }));
     setHasUnsavedChanges(false);
     cancelTranscribe();
@@ -393,7 +415,7 @@ function AudioItems({ data }) {
           </td>
         </tr>
 
-        {/* If open, show descriptions + "add content" button */}
+        {/* If open, show descriptions + add-content button */}
         {openItems[item.source] && (
           <tr
             id={`descriptions-${item.source}`}
@@ -469,39 +491,51 @@ function AudioItems({ data }) {
                 </p>
               )}
 
-              {/* Button to toggle add-form */}
-              <div className="flex justify-center my-4">
-                <a
-                  type="button"
-                  className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
-                    showAddForm[item.source]
-                      ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                      : "bg-isof hover:bg-darker-isof text-white"
-                  }`}
-                  onClick={() =>
-                    handleToggleAddFormWithConfirmation(item.source)
-                  }
-                >
-                  {showAddForm[item.source] ? (
-                    <>
-                      <span className="flex-grow text-left">
-                        Lägg till ny beskrivning
-                      </span>
-                      <FontAwesomeIcon icon={faTimes} />
-                    </>
-                  ) : (
-                    <>
-                      <FontAwesomeIcon icon={faCirclePlus} />
-                      <span>Lägg till ny beskrivning</span>
-                    </>
-                  )}
-                </a>
-              </div>
+              {/* If the server or the local state says there's a session, show info. Otherwise show the button. */}
+              {serverHasOngoingSession || transcribeSession ? (
+                <div className="flex justify-center my-4">
+                  <div className="px-4 py-2 bg-gray-200 text-gray-700 rounded flex items-center">
+                    <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+                    <span>
+                      Någon annan håller på att lägga till en beskrivning.
+                      Försök igen senare.
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-center my-4">
+                  <a
+                    type="button"
+                    className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
+                      showAddForm[item.source]
+                        ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                        : "bg-isof hover:bg-darker-isof text-white"
+                    }`}
+                    onClick={() =>
+                      handleToggleAddFormWithConfirmation(item.source)
+                    }
+                  >
+                    {showAddForm[item.source] ? (
+                      <>
+                        <span className="flex-grow text-left">
+                          Lägg till ny beskrivning
+                        </span>
+                        <FontAwesomeIcon icon={faTimes} />
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faCirclePlus} />
+                        <span>Lägg till ny beskrivning</span>
+                      </>
+                    )}
+                  </a>
+                </div>
+              )}
 
               {/* The form for adding new content */}
               {showAddForm[item.source] && (
                 <div className="border border-gray-300 p-4 my-4 bg-white text-sm relative">
-                  {/* 1. name + email + checkbox */}
+                  {/* 1. name + email */}
                   <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block font-semibold mb-1">
@@ -545,7 +579,7 @@ function AudioItems({ data }) {
                     </div>
                   </div>
 
-                  {/* 1b. The "Remember me" checkbox */}
+                  {/* 1b. "Remember me" checkbox */}
                   <div className="mb-4">
                     <label className="inline-flex items-center gap-2">
                       <input
@@ -598,7 +632,7 @@ function AudioItems({ data }) {
                   </div>
 
                   {/* 3. verbose description */}
-                  <div className="">
+                  <div>
                     <label className="block font-semibold mb-1">
                       Beskrivning / Annotation
                     </label>
@@ -610,7 +644,6 @@ function AudioItems({ data }) {
                     <textarea
                       className="border p-2 w-full"
                       rows="4"
-                      placeholder=""
                       value={formData[item.source]?.descriptionText || ""}
                       onChange={(e) =>
                         handleChangeField(
@@ -622,7 +655,7 @@ function AudioItems({ data }) {
                     />
                   </div>
 
-                  {/* 4. tags (hierarchical term selection) */}
+                  {/* 4. tags */}
                   <div className="mb-4">
                     <label className="block font-semibold">
                       Termer/Ämnesord
@@ -664,13 +697,13 @@ function AudioItems({ data }) {
                                   formData[item.source].typedTag.toLowerCase()
                                 )
                             )
-                            .slice(0, 15) // Limit to first 15 results
+                            .slice(0, 15)
                             .map((match) => (
                               <div
                                 key={match.termid}
                                 className="px-2 py-1 hover:bg-gray-100 hover:cursor-pointer"
                                 onClick={() => {
-                                  handleToggleTerm(item.source, match);
+                                  handleAddTag(item.source, match);
                                   handleChangeField(
                                     item.source,
                                     "typedTag",
@@ -731,7 +764,7 @@ function AudioItems({ data }) {
                     </div>
                   </div>
 
-                  {/* 5. Save and Cancel buttons */}
+                  {/* 5. Save / Cancel */}
                   <div className="flex items-center justify-end gap-4">
                     <a
                       type="button"
@@ -742,8 +775,14 @@ function AudioItems({ data }) {
                     </a>
                     <a
                       type="button"
-                      className="px-4 py-2 bg-isof hover:bg-darker-isof text-white rounded hover:cursor-pointer"
-                      onClick={() => handleSave(item.source)}
+                      className={`px-4 py-2 rounded text-white ${
+                        transcribeSession
+                          ? "bg-isof hover:bg-darker-isof hover:cursor-pointer"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }`}
+                      onClick={() =>
+                        transcribeSession && handleSave(item.source)
+                      }
                     >
                       Spara
                     </a>
@@ -803,6 +842,8 @@ AudioItems.propTypes = {
     }),
     year: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     persons: PropTypes.arrayOf(PropTypes.object),
+    // ADD the propType for transcriptionstatus if you haven’t already:
+    transcriptionstatus: PropTypes.string,
   }).isRequired,
 };
 
