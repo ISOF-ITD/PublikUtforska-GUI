@@ -44,6 +44,20 @@ function AudioItems({ data }) {
   // We'll hide the "Lägg till ny beskrivning" button in that case.
   const serverHasOngoingSession = transcriptionstatus === "undertranscription";
 
+  // NOTE: This local session is for when **this** user starts transcribing.
+  // If the server is already locked, we should not even let the user start
+  // (and not show the button).
+  const [transcribeSession, setTranscribeSession] = useState(null);
+
+  // local override for lock status
+  const [localLockOverride, setLocalLockOverride] = useState(false);
+
+  // Compute locked flag:
+  const isLocked =
+    !transcribeSession &&
+    !localLockOverride &&
+    transcriptionstatus === "undertranscription";
+
   // Track which items are "open"
   const [openItems, setOpenItems] = useState({});
   // Track whether the "add content" form is shown for a given source
@@ -54,11 +68,6 @@ function AudioItems({ data }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [sourceToClose, setSourceToClose] = useState(null);
-
-  // NOTE: This local session is for when **this** user starts transcribing.
-  // If the server is already locked, we should not even let the user start
-  // (and not show the button).
-  const [transcribeSession, setTranscribeSession] = useState(null);
 
   const [showTermNode, setShowTermNode] = useState({});
 
@@ -107,6 +116,7 @@ function AudioItems({ data }) {
     setHasUnsavedChanges(false); // Reset unsaved changes
     setShowConfirmationModal(false);
     cancelTranscribe();
+    setLocalLockOverride(true);
   };
 
   const handleCancelClose = () => {
@@ -134,13 +144,15 @@ function AudioItems({ data }) {
       // Close form and cancel session
       setShowAddForm((prevState) => ({ ...prevState, [source]: false }));
       cancelTranscribe();
+      // set override so warning will be hidden after canceling
+      setLocalLockOverride(true);
     } else {
-      // Attempt to start a transcribe session
-      // (But only if no session is currently locked by someone else.)
-      if (!serverHasOngoingSession && !transcribeSession) {
+      // Clear override when user is attempting to open form
+      setLocalLockOverride(false);
+      // Only start transcribing if not locked by someone else
+      if (!isLocked && !transcribeSession) {
         startTranscribe();
       }
-      // Initialize form data
       const defaultData = {
         name: savedUserInfo.name,
         email: savedUserInfo.email,
@@ -348,6 +360,7 @@ function AudioItems({ data }) {
     setShowAddForm((prev) => ({ ...prev, [source]: false }));
     setHasUnsavedChanges(false);
     cancelTranscribe();
+    setLocalLockOverride(true);
   };
 
   // Filter only audio items
@@ -492,7 +505,8 @@ function AudioItems({ data }) {
               )}
 
               {/* If the server or the local state says there's a session, show info. Otherwise show the button. */}
-              {serverHasOngoingSession || transcribeSession ? (
+              {serverHasOngoingSession && !transcribeSession ? (
+                /* Show the gray warning “Någon annan håller på ...” */
                 <div className="flex justify-center my-4">
                   <div className="px-4 py-2 bg-gray-200 text-gray-700 rounded flex items-center">
                     <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
@@ -503,6 +517,7 @@ function AudioItems({ data }) {
                   </div>
                 </div>
               ) : (
+                /* Otherwise show the “Lägg till ny beskrivning” button */
                 <div className="flex justify-center my-4">
                   <a
                     type="button"
