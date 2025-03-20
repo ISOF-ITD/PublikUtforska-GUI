@@ -245,6 +245,9 @@ function AudioItems({ data }) {
     });
   }
 
+  const sortedTermList = [...TermList].sort((a, b) => a.termid.localeCompare(b.termid));
+
+
   function flattenTermList(termNodes) {
     const result = [];
     function traverse(node) {
@@ -256,7 +259,7 @@ function AudioItems({ data }) {
     termNodes.forEach((rootNode) => traverse(rootNode));
     return result;
   }
-  const allTerms = flattenTermList(TermList);
+  const allTerms = flattenTermList(sortedTermList);
 
   const startTranscribe = async () => {
     const payload = {
@@ -758,7 +761,7 @@ function AudioItems({ data }) {
                     </button>
                     {showTermNode[item.source] && (
                       <div className="border p-2">
-                        {TermList.map((rootNode) => (
+                        {sortedTermList.map((rootNode) => (
                           <TermNode
                             key={rootNode.termid}
                             node={rootNode}
