@@ -17,6 +17,7 @@ import ListPlayButton from "../ListPlayButton";
 import { TermList, TermNode } from "./TermList";
 import ConfirmationModal from "../../ConfirmationModal";
 import StartTimeInput from "./StartTimeInput";
+import StartTimeInputWithPlayer from "./StartTimeInput";
 
 // Helper to convert "MM:SS" to seconds
 function parseTimeString(timeString = "00:00") {
@@ -372,32 +373,21 @@ function AudioItems({ data }) {
       }
       const result = await response.json();
       console.log("Success:", result);
+
+      // Update initialFormData to match formData after successful submission
+      setInitialFormData((prev) => ({
+        ...prev,
+        [source]: formData[source],
+      }));
+
+      // Hide the form & reset unsaved changes
+      setShowAddForm((prev) => ({ ...prev, [source]: false }));
+      setHasUnsavedChanges(false);
+      cancelTranscribe();
+      setLocalLockOverride(true);
     } catch (error) {
       console.error("Error submitting description:", error);
     }
-
-    // Hide the form & reset unsaved changes
-    setShowAddForm((prev) => ({ ...prev, [source]: false }));
-    setHasUnsavedChanges(false);
-    cancelTranscribe();
-    setLocalLockOverride(true);
-  };
-
-  const StartTimeInputWithPlayer = ({ value, onChange, currentTime }) => {
-    const handleInsertCurrentTime = () => {
-      const minutes = Math.floor(currentTime / 60);
-      const seconds = Math.floor(currentTime % 60);
-      const formattedTime = `${String(minutes).padStart(2, "0")}:${String(
-        seconds
-      ).padStart(2, "0")}`;
-      onChange(formattedTime);
-    };
-
-    return (
-      <div className="flex items-center gap-2">
-        <StartTimeInput value={value} onChange={onChange} />
-      </div>
-    );
   };
 
   // Filter only audio items
