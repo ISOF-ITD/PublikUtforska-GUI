@@ -16,6 +16,7 @@ import { getAudioTitle } from "../../../utils/helpers";
 import ListPlayButton from "../ListPlayButton";
 import { TermList, TermNode } from "./TermList";
 import ConfirmationModal from "../../ConfirmationModal";
+import StartTimeInput from "./StartTimeInput";
 
 // Helper to convert "MM:SS" to seconds
 function parseTimeString(timeString = "00:00") {
@@ -245,8 +246,9 @@ function AudioItems({ data }) {
     });
   }
 
-  const sortedTermList = [...TermList].sort((a, b) => a.termid.localeCompare(b.termid));
-
+  const sortedTermList = [...TermList].sort((a, b) =>
+    a.termid.localeCompare(b.termid)
+  );
 
   function flattenTermList(termNodes) {
     const result = [];
@@ -379,6 +381,23 @@ function AudioItems({ data }) {
     setHasUnsavedChanges(false);
     cancelTranscribe();
     setLocalLockOverride(true);
+  };
+
+  const StartTimeInputWithPlayer = ({ value, onChange, currentTime }) => {
+    const handleInsertCurrentTime = () => {
+      const minutes = Math.floor(currentTime / 60);
+      const seconds = Math.floor(currentTime % 60);
+      const formattedTime = `${String(minutes).padStart(2, "0")}:${String(
+        seconds
+      ).padStart(2, "0")}`;
+      onChange(formattedTime);
+    };
+
+    return (
+      <div className="flex items-center gap-2">
+        <StartTimeInput value={value} onChange={onChange} />
+      </div>
+    );
   };
 
   // Filter only audio items
@@ -638,30 +657,12 @@ function AudioItems({ data }) {
                     <p className="text-xs text-gray-500 ">
                       Ange minuter och sekunder, t.ex. 01:23
                     </p>
-                    <input
-                      type="text"
-                      required
-                      className={`border p-2 w-32 mt-1 ${
-                        !/^\d{2}:\d{2}$/.test(
-                          formData[item.source]?.start || ""
-                        ) && formData[item.source]?.start
-                          ? "border-red-500"
-                          : ""
-                      }`}
-                      placeholder="00:00"
+                    <StartTimeInputWithPlayer
                       value={formData[item.source]?.start || ""}
-                      onChange={(e) =>
-                        handleChangeField(item.source, "start", e.target.value)
+                      onChange={(value) =>
+                        handleChangeField(item.source, "start", value)
                       }
                     />
-                    {!/^\d{2}:\d{2}$/.test(
-                      formData[item.source]?.start || ""
-                    ) &&
-                      formData[item.source]?.start && (
-                        <p className="text-xs text-red-500 mt-1">
-                          Ogiltigt format. Ange MM:SS.
-                        </p>
-                      )}
                   </div>
 
                   {/* 3. verbose description */}
