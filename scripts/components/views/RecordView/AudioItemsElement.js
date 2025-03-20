@@ -291,13 +291,15 @@ function AudioItems({ data }) {
       transcribesession: transcribeSession,
     };
 
+    // Instead of sending JSON with "Content-Type: application/json",
+    // do what the server expects (FormData with 'json' field)
+    const formData = new FormData();
+    formData.append("json", JSON.stringify(payload));
+
     try {
       const response = await fetch(`${config.restApiUrl}transcribecancel/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -310,6 +312,19 @@ function AudioItems({ data }) {
       console.error("Error cancelling a transcription session:", error);
     }
   };
+
+  // Cancel transcribe if user is closing or reloading the browser tab or navigating away.
+  useEffect(() => {
+    function handleBeforeUnload(event) {
+      cancelTranscribe();
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   const handleSave = async (source) => {
     const form = formData[source];
