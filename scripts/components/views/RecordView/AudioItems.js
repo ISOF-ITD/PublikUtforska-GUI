@@ -7,7 +7,7 @@ import { TermList } from "./TermList";
 import ListPlayButton from "../ListPlayButton";
 import StartTimeInputWithPlayer from "./StartTimeInput";
 import AudioItemRow from "./AudioItemRow";
-import "./AddDescriptionForm";
+import "./DescriptionForm";
 
 function AudioItems({ data }) {
   const {
@@ -55,7 +55,6 @@ function AudioItems({ data }) {
   // We store the initial form data so we can detect unsaved changes
   const [initialFormData, setInitialFormData] = useState({});
 
-  // isLocked means someone else is transcribing OR we haven't started yet
   const isLocked =
     !transcribeSession &&
     !localLockOverride &&
@@ -142,7 +141,6 @@ function AudioItems({ data }) {
   const handleToggleAddForm = (source) => {
     const currentlyVisible = showAddForm[source];
     if (currentlyVisible) {
-      // close it, cancel session
       setShowAddForm((prev) => ({ ...prev, [source]: false }));
       cancelTranscribe();
       setLocalLockOverride(true);
@@ -180,51 +178,53 @@ function AudioItems({ data }) {
     setSourceToClose(null);
   };
 
-  // The actual "save" of a new description
-  const handleSave = async (source) => {
-    const form = formData[source];
-    // handle the "remember me" logic
-    if (form.rememberMe) {
-      const newUserInfo = {
-        name: form.name,
-        email: form.email,
-        rememberMe: true,
-      };
+  const handleSave = async (payload) => {
+    const { source, name, email, rememberMe, start, text, terms } = payload;
+
+    // 1. "Remember Me" logic is unchanged:
+    if (rememberMe) {
+      const newUserInfo = { name, email, rememberMe: true };
       setSavedUserInfo(newUserInfo);
       localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
     } else {
       localStorage.removeItem("userInfo");
       setSavedUserInfo({ name: "", email: "", rememberMe: false });
     }
-    const payload = {
+
+    // 2. Construct the body for POST
+    const finalPayload = {
       recordid: data.id,
       file: source,
       transcribesession: transcribeSession,
-      from_email: form.email || "",
-      from_name: form.name || "",
-      start: form.start,
-      change_to: form.descriptionText,
-      terms: form.selectedTags || [],
+      from_email: email || "",
+      from_name: name || "",
+      start: start || "",
+      change_to: text || "",
+      terms: terms || [],
     };
+
     try {
       const response = await fetch(`${config.restApiUrl}describe/change/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finalPayload),
       });
+
       if (!response.ok) {
         throw new Error(`POST failed with status ${response.status}`);
       }
       await response.json();
-      // if success, we can update initial data & close form
+
+      // 3. If success, update local UI state:
+
       setInitialFormData((prev) => ({
         ...prev,
         [source]: formData[source],
       }));
       setHasUnsavedChanges(false);
       setShowAddForm((prev) => ({ ...prev, [source]: false }));
+
+      // Cancel transcription session if needed
       cancelTranscribe();
       setLocalLockOverride(true);
     } catch (error) {
@@ -263,8 +263,9 @@ function AudioItems({ data }) {
                   isLocked={isLocked}
                   hasSession={!!transcribeSession}
                   serverHasOngoingSession={serverHasOngoingSession}
+                  startTranscribe={startTranscribe}
+                  cancelTranscribe={cancelTranscribe}
                   config={config}
-                  // pass down form-related props
                   formData={formData}
                   setFormData={setFormData}
                   handleSave={handleSave}

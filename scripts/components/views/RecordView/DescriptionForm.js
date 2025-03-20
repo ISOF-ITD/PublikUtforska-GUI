@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TermList, TermNode } from "./TermList";
 import StartTimeInputWithPlayer from "./StartTimeInput";
 
+/**
+ * A small helper to flatten the tree of terms into a single list
+ * so we can do easy "search by typedTag".
+ */
 function flattenTermList(termNodes) {
   const result = [];
   function traverse(node) {
@@ -13,25 +17,62 @@ function flattenTermList(termNodes) {
   termNodes.forEach((rootNode) => traverse(rootNode));
   return result;
 }
-
 const allTerms = flattenTermList(TermList).sort((a, b) =>
   a.termid.localeCompare(b.termid)
 );
 
-function AddDescriptionForm({
+/**
+ * This form handles both "Add new" AND "Edit existing" modes.
+ * If `editingDesc` is passed, it populates the form with that data
+ * and calls `onSave` with a parameter that includes the existing desc ID.
+ */
+function DescriptionForm({
   source,
+  // If this is an existing description to edit:
+  editingDesc, // (or null/undefined if "add new" mode)
+  // Parent's data for new descriptions:
   formData,
   setFormData,
+  // Lock & session props:
   isLocked,
   hasSession,
-  handleSave,
+  // Parent callback that does the final POST or PUT:
+  onSave,
   onCancel,
+  // For tracking unsaved changes:
   hasUnsavedChanges,
   setHasUnsavedChanges,
 }) {
+  // We'll track whether the user wants to see the big tree of terms:
   const [showTermNode, setShowTermNode] = useState(false);
+
+  useEffect(() => {
+    if (editingDesc) {
+      const prefill = {
+        name: formData[source]?.name || "",
+        email: formData[source]?.email || "",
+        rememberMe: formData[source]?.rememberMe || false,
+        start: editingDesc.start || "",
+        descriptionText: editingDesc.text || "",
+        typedTag: "",
+        selectedTags: editingDesc.terms || [],
+      };
+
+      setFormData((prev) => ({
+        ...prev,
+        [source]: prefill,
+      }));
+    } else {
+      // Otherwise, if there's no editingDesc, we assume "add new" mode.
+      // If you want to "reset" the fields, do it here.
+      // But often you already did that in the parent when user clicked “Add new”.
+    }
+  }, [editingDesc]);
+
+  // The parent’s code gave us a `formData[source]` object:
   const dataForSource = formData[source] || {};
 
+  // Helper to modify fields in formData[source]
   function handleChangeField(field, value) {
     setFormData((prev) => ({
       ...prev,
@@ -43,29 +84,33 @@ function AddDescriptionForm({
     setHasUnsavedChanges(true);
   }
 
-  function handleToggleTerm(source, termObj) {
-    setFormData((prevData) => {
-      const currentTags = prevData[source]?.selectedTags || [];
+  // Toggling existing terms
+  function handleToggleTerm(termObj) {
+    setFormData((prev) => {
+      const currentTags = prev[source].selectedTags || [];
       const index = currentTags.findIndex((t) => t.termid === termObj.termid);
       let newTags;
       if (index > -1) {
+        // remove
         newTags = [
           ...currentTags.slice(0, index),
           ...currentTags.slice(index + 1),
         ];
       } else {
+        // add
         newTags = [...currentTags, termObj];
       }
       return {
-        ...prevData,
+        ...prev,
         [source]: {
-          ...prevData[source],
+          ...prev[source],
           selectedTags: newTags,
         },
       };
     });
   }
 
+  // Adding a brand-new typed term
   function handleAddTypedTag() {
     const typedTag = dataForSource.typedTag?.trim();
     if (!typedTag) return;
@@ -89,6 +134,12 @@ function AddDescriptionForm({
 
   return (
     <div className="border border-gray-300 p-4 my-4 bg-white text-sm relative">
+      {editingDesc && (
+        <span className="mb-2 font-semibold text-isof">
+          Redigera beskrivning
+        </span>
+      )}
+
       {/* 1. Name + email */}
       <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -116,6 +167,7 @@ function AddDescriptionForm({
           />
         </div>
       </div>
+
       {/* remember me */}
       <div className="mb-4">
         <label className="inline-flex items-center gap-2">
@@ -127,6 +179,7 @@ function AddDescriptionForm({
           <span>Kom ihåg mig</span>
         </label>
       </div>
+
       {/* 2. Start time */}
       <div className="mb-4">
         <label className="block font-semibold mb-1">Starttid (MM:SS)</label>
@@ -138,6 +191,7 @@ function AddDescriptionForm({
           onChange={(val) => handleChangeField("start", val)}
         />
       </div>
+
       {/* 3. Description text */}
       <div>
         <label className="block font-semibold mb-1">
@@ -154,6 +208,7 @@ function AddDescriptionForm({
           onChange={(e) => handleChangeField("descriptionText", e.target.value)}
         />
       </div>
+
       {/* 4. Terms */}
       <div className="mb-4">
         <label className="block font-semibold">Termer / Ämnesord</label>
@@ -188,21 +243,16 @@ function AddDescriptionForm({
                     key={match.termid}
                     className="px-2 py-1 hover:bg-gray-100 hover:cursor-pointer"
                     onClick={() => {
-                      // Add the tag
-                      setFormData((prevData) => {
-                        const currentTags = prevData[source].selectedTags || [];
-                        const duplicate = currentTags.some(
-                          (tt) => tt.termid === match.termid
-                        );
-                        if (duplicate) return prevData;
-                        return {
-                          ...prevData,
-                          [source]: {
-                            ...prevData[source],
-                            selectedTags: [...currentTags, match],
-                            typedTag: "",
-                          },
-                        };
+                      if (!hasSession) return;
+                      onSave({
+                        source,
+                        descid: dataForSource.descid || null, // if editing
+                        name: dataForSource.name,
+                        email: dataForSource.email,
+                        rememberMe: dataForSource.rememberMe,
+                        start: dataForSource.start,
+                        text: dataForSource.descriptionText,
+                        terms: dataForSource.selectedTags,
                       });
                     }}
                   >
@@ -227,7 +277,7 @@ function AddDescriptionForm({
                 key={rootNode.termid}
                 node={rootNode}
                 selectedTags={dataForSource.selectedTags}
-                onToggle={handleToggleTerm}
+                onToggle={handleToggleTerm} // Ensure this is correctly passed
                 source={source}
               />
             ))}
@@ -247,7 +297,7 @@ function AddDescriptionForm({
               {tagObj.termid} {tagObj.term}
               <span
                 className="hover:cursor-pointer"
-                onClick={() => handleToggleTerm(source, tagObj)}
+                onClick={() => handleToggleTerm(tagObj)}
               >
                 ×
               </span>
@@ -255,6 +305,7 @@ function AddDescriptionForm({
           ))}
         </div>
       </div>
+
       {/* 5. Save / Cancel */}
       <div className="flex items-center justify-end gap-4">
         <a
@@ -271,13 +322,24 @@ function AddDescriptionForm({
               ? "bg-isof hover:bg-darker-isof hover:cursor-pointer"
               : "bg-gray-400 cursor-not-allowed"
           }`}
-          onClick={() => hasSession && handleSave(source)}
+          onClick={() =>
+            hasSession &&
+            onSave({
+              source,
+              start: dataForSource.start,
+              text: dataForSource.descriptionText,
+              terms: dataForSource.selectedTags || [],
+              email: dataForSource.email || "",
+              name: dataForSource.name || "",
+              rememberMe: dataForSource.rememberMe || false,
+            })
+          }
         >
-          Spara
+          {editingDesc ? "Spara ändringar" : "Spara"}
         </a>
       </div>
     </div>
   );
 }
 
-export default AddDescriptionForm;
+export default DescriptionForm;

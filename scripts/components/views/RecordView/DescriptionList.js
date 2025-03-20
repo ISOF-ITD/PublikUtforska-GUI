@@ -1,7 +1,9 @@
 import React from "react";
 import ListPlayButton from "../ListPlayButton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 
-function DescriptionList({ item, recordId, audioTitle }) {
+function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
   function parseTimeString(timeString = "00:00") {
     const parts = timeString.split(":").map(Number).reverse();
     let seconds = 0;
@@ -10,7 +12,6 @@ function DescriptionList({ item, recordId, audioTitle }) {
     if (parts[2]) seconds += parts[2] * 3600; // hours
     return seconds;
   }
-
   const descriptions = item.description || [];
   const sortedDescriptions = [...descriptions].sort(
     (a, b) => parseTimeString(a.start) - parseTimeString(b.start)
@@ -69,7 +70,15 @@ function DescriptionList({ item, recordId, audioTitle }) {
               ))}
             </td>
             <td className="py-2 px-4 text-right">
-              {/* You can implement an "edit" button here if needed */}
+              {/** Add the "Edit" button */}
+              <a
+                type="button"
+                className="text-isof hover:text-darker-isof hover:cursor-pointer flex gap-1 items-center justify-end"
+                onClick={() => onEditDesc(desc)}
+              >
+                <FontAwesomeIcon icon={faPenToSquare} />
+                <span className="underline">Ändra</span>
+              </a>
             </td>
           </tr>
         ))}

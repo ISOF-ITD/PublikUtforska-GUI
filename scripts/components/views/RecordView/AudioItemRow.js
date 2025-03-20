@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,12 +6,13 @@ import {
   faCaretDown,
   faCaretUp,
   faInfoCircle,
-  faCirclePlus,
   faTimes,
+  faCirclePlus,
 } from "@fortawesome/free-solid-svg-icons";
 import ListPlayButton from "../ListPlayButton";
 import DescriptionList from "./DescriptionList";
-import AddDescriptionForm from "./AddDescriptionForm";
+import DescriptionForm from "./DescriptionForm";
+import config from "../../../config";
 
 function AudioItemRow({
   item,
@@ -24,19 +25,65 @@ function AudioItemRow({
   isLocked,
   hasSession,
   serverHasOngoingSession,
-  config,
+
+  // NEW: we receive these from AudioItems so we can lock/unlock:
+  startTranscribe,
+  cancelTranscribe,
+
   formData,
   setFormData,
   handleSave,
   hasUnsavedChanges,
   setHasUnsavedChanges,
 }) {
+  // If user is editing an existing description:
+  const [editDesc, setEditDesc] = useState(null);
+
+  /**
+   * Called when user clicks “Ändra” on an existing description.
+   */
+  function onEditDesc(desc) {
+    // If not locked, and no current session, start one:
+    if (!isLocked && !hasSession) {
+      startTranscribe();
+    }
+    setEditDesc(desc);
+  }
+
+  /**
+   * Called when user finishes (Spara) or cancels the edit form.
+   * We'll call parent's handleSave to do the POST, then also cancel the session
+   * so that others can edit.
+   */
+  async function onSaveDescription(payload) {
+    try {
+      await handleSave(payload);
+    } finally {
+      // Clear local “edit” state and cancel session:
+      setEditDesc(null);
+      cancelTranscribe();
+    }
+  }
+
+  /**
+   * If the user clicks “Avbryt” while editing,
+   * we close the form and cancel the transcribe session.
+   */
+  function onCancelEdit() {
+    setEditDesc(null);
+    cancelTranscribe();
+  }
+
   return (
     <>
       {/* Main row for the audio item */}
       <tr className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200">
         <td className="py-2 px-4">
-          <ListPlayButton media={item} recordId={recordId} recordTitle={audioTitle} />
+          <ListPlayButton
+            media={item}
+            recordId={recordId}
+            recordTitle={audioTitle}
+          />
         </td>
         <td className="py-2 px-4">{audioTitle}</td>
         <td className="py-2 px-4 flex gap-2 items-center">
@@ -72,63 +119,97 @@ function AudioItemRow({
 
       {/* If open, show descriptions + add-content button */}
       {openItems[item.source] && (
-        <tr id={`descriptions-${item.source}`} aria-hidden={!openItems[item.source]}>
+        <tr
+          id={`descriptions-${item.source}`}
+          aria-hidden={!openItems[item.source]}
+        >
           <td colSpan={3} className="py-4 px-4 border-isof">
-            {/* The existing descriptions table */}
-            <DescriptionList item={item} recordId={recordId} audioTitle={audioTitle} />
+            {/* List existing descriptions. Pass a callback to start editing */}
+            <DescriptionList
+              item={item}
+              recordId={recordId}
+              audioTitle={audioTitle}
+              onEditDesc={onEditDesc} // <-- our callback
+            />
 
-            {/* If the server or local says there's a session in use, show the warning, otherwise show button */}
-            {serverHasOngoingSession && !hasSession ? (
-              <div className="flex justify-center my-4">
-                <div className="px-4 py-2 bg-gray-200 text-gray-700 rounded flex items-center">
-                  <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
-                  <span>
-                    Någon annan håller på att lägga till en beskrivning.
-                    Försök igen senare.
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex justify-center my-4">
-                <a
-                  type="button"
-                  className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
-                    showAddForm[item.source]
-                      ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                      : "bg-isof hover:bg-darker-isof text-white"
-                  }`}
-                  onClick={() => onToggleAddForm(item.source)}
-                >
-                  {showAddForm[item.source] ? (
-                    <>
-                      <span className="flex-grow text-left">
-                        Lägg till ny beskrivning
-                      </span>
-                      <FontAwesomeIcon icon={faTimes} />
-                    </>
-                  ) : (
-                    <>
-                    <FontAwesomeIcon icon={faCirclePlus} />
-                      <span>Lägg till ny beskrivning</span>
-                    </>
-                  )}
-                </a>
-              </div>
-            )}
-
-            {/* The form for adding new content */}
-            {showAddForm[item.source] && (
-              <AddDescriptionForm
+            {/* If we are editing something, show that form. Otherwise show the "Add new" button + form */}
+            {editDesc ? (
+              // --------------- EDIT FORM ---------------
+              <DescriptionForm
                 source={item.source}
+                editingDesc={editDesc}
                 formData={formData}
                 setFormData={setFormData}
                 isLocked={isLocked}
                 hasSession={hasSession}
-                handleSave={handleSave}
-                onCancel={() => onToggleAddForm(item.source)}
+                onSave={onSaveDescription}
+                onCancel={onCancelEdit}
                 hasUnsavedChanges={hasUnsavedChanges}
                 setHasUnsavedChanges={setHasUnsavedChanges}
               />
+            ) : (
+              // --------------- "Add new" button + form ---------------
+              <>
+                {serverHasOngoingSession && !hasSession ? (
+                  <div className="flex justify-center my-4">
+                    <div className="px-4 py-2 bg-gray-200 text-gray-700 rounded flex items-center">
+                      <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+                      <span>
+                        Någon annan håller på att lägga till en beskrivning.
+                        Försök igen senare.
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-center my-4">
+                    <a
+                      type="button"
+                      className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
+                        showAddForm[item.source]
+                          ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                          : "bg-isof hover:bg-darker-isof text-white"
+                      }`}
+                      onClick={() => onToggleAddForm(item.source)}
+                    >
+                      {showAddForm[item.source] ? (
+                        <>
+                          <span className="flex-grow text-left">
+                            Lägg till ny beskrivning
+                          </span>
+                          <FontAwesomeIcon icon={faTimes} />
+                        </>
+                      ) : (
+                        <>
+                          <FontAwesomeIcon icon={faCirclePlus} />
+                          <span>Lägg till ny beskrivning</span>
+                        </>
+                      )}
+                    </a>
+                  </div>
+                )}
+
+                {showAddForm[item.source] && (
+                  <DescriptionForm
+                    source={item.source}
+                    editingDesc={null}
+                    formData={formData}
+                    setFormData={setFormData}
+                    isLocked={isLocked}
+                    hasSession={hasSession}
+                    onSave={async (payload) => {
+                      await handleSave(payload);
+                      // same logic: if we close the "add new" form, cancel session
+                      cancelTranscribe();
+                    }}
+                    onCancel={() => {
+                      onToggleAddForm(item.source);
+                      cancelTranscribe();
+                    }}
+                    hasUnsavedChanges={hasUnsavedChanges}
+                    setHasUnsavedChanges={setHasUnsavedChanges}
+                  />
+                )}
+              </>
             )}
           </td>
         </tr>
@@ -140,7 +221,8 @@ function AudioItemRow({
 AudioItemRow.propTypes = {
   item: PropTypes.object.isRequired,
   audioTitle: PropTypes.string.isRequired,
-  recordId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  recordId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   openItems: PropTypes.object.isRequired,
   onToggle: PropTypes.func.isRequired,
   showAddForm: PropTypes.object.isRequired,
