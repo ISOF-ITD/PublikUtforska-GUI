@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
-import AudioItemsElement from './AudioItemsElement';
+import AudioItems from './AudioItems';
 import CommentsElement from './CommentsElement';
 import ContentsElement from './ContentsElement';
 import Disclaimer from '../Disclaimer';
@@ -95,7 +95,7 @@ function RecordView({ mode = 'material' }) {
                   />
                   <ContentsElement data={data} />
                   <HeadwordsElement data={data} />
-                  <AudioItemsElement data={data} />
+                  <AudioItems data={data} />
                   <PdfElement data={data} />
                   <TextElement
                     data={data}

@@ -9,8 +9,9 @@ export function TermNode({ node, selectedTags, onToggle, source }) {
   const hasChildren = node.children && node.children.length > 0;
 
   const handleCheckboxChange = () => {
-    onToggle(source, { term: node.term, termid: node.termid });
-  };
+  onToggle(source, { term: node.term, termid: node.termid });
+};
+
 
   return (
     <div className="text-sm">
