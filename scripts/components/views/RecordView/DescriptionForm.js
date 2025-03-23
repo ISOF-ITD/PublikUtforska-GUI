@@ -277,6 +277,20 @@ function DescriptionForm({
         </div>
 
         {/* 1. Name + email */}
+        <div className="mt-2">
+          <details className="text-sm text-gray-600">
+            <summary className="hover:cursor-pointer list-none">
+              <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+              Varför frågar vi efter namn/e-post?
+            </summary>
+            <p className="pt-4 pl-6">
+              Vi samlar endast in denna information för att kunna skapa
+              statistik och topplistor över bidragsgivare. Ditt namn kan visas
+              publikt om du hamnar bland toppbidragsgivarna. Din e-post används
+              endast om vi behöver kontakta dig angående ditt bidrag.
+            </p>
+          </details>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
             <label className="block font-semibold mb-1">
@@ -305,7 +319,7 @@ function DescriptionForm({
         </div>
 
         {/* remember me */}
-        <div className="mb-4">
+        <div className="my-4">
           <label className="inline-flex items-center gap-2">
             <input
               type="checkbox"
@@ -318,7 +332,7 @@ function DescriptionForm({
           </label>
         </div>
       </div>
-
+      
 
       {/* 5. Save / Cancel */}
       <div className="flex items-center justify-end gap-4">
