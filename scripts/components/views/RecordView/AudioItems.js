@@ -3,9 +3,6 @@ import PropTypes from "prop-types";
 import config from "../../../config";
 import { getAudioTitle } from "../../../utils/helpers";
 import ConfirmationModal from "../../ConfirmationModal";
-import { TermList } from "./TermList";
-import ListPlayButton from "../ListPlayButton";
-import StartTimeInputWithPlayer from "./StartTimeInput";
 import AudioItemRow from "./AudioItemRow";
 import "./DescriptionForm";
 
@@ -89,6 +86,7 @@ function AudioItems({ data }) {
         throw new Error(`POST failed with status ${response.status}`);
       }
       const result = await response.json();
+     
       setTranscribeSession(result.data.transcribesession);
     } catch (error) {
       console.error("Error creating a transcription session:", error);
@@ -126,10 +124,18 @@ function AudioItems({ data }) {
 
   // The "Add new description" toggler
   const handleToggleAddFormWithConfirmation = (source) => {
-    // If we have unsaved changes, we need to confirm
-    const formChanged =
-      JSON.stringify(formData[source]) !==
-      JSON.stringify(initialFormData[source]);
+    const currentFormData = formData[source] || {};
+    const currentInitialData = initialFormData[source] || {};
+
+    const formChanged = Object.keys(currentFormData).some((key) => {
+      if (key === "name" || key === "email" || key === "rememberMe")
+        return false;
+      return (
+        JSON.stringify(currentFormData[key]) !==
+        JSON.stringify(currentInitialData[key])
+      );
+    });
+
     if (formChanged) {
       setSourceToClose(source);
       setShowConfirmationModal(true);
@@ -140,7 +146,14 @@ function AudioItems({ data }) {
 
   const handleToggleAddForm = (source) => {
     const currentlyVisible = showAddForm[source];
+
     if (currentlyVisible) {
+      // Reset form data when closing
+      setFormData((prev) => {
+        const newData = { ...prev };
+        delete newData[source];
+        return newData;
+      });
       setShowAddForm((prev) => ({ ...prev, [source]: false }));
       cancelTranscribe();
       setLocalLockOverride(true);
@@ -167,6 +180,12 @@ function AudioItems({ data }) {
   };
 
   const handleConfirmClose = () => {
+    // Reset form data to initial state
+    setFormData((prev) => {
+      const newData = { ...prev };
+      delete newData[sourceToClose];
+      return newData;
+    });
     handleToggleAddForm(sourceToClose);
     setShowConfirmationModal(false);
     setSourceToClose(null);
@@ -216,7 +235,6 @@ function AudioItems({ data }) {
       await response.json();
 
       // 3. If success, update local UI state:
-
       setInitialFormData((prev) => ({
         ...prev,
         [source]: formData[source],
@@ -234,6 +252,13 @@ function AudioItems({ data }) {
 
   // We'll only show items that are audio type
   const audioDataItems = media.filter((item) => item.type === "audio");
+
+  // Auto-Expand First Item
+  useEffect(() => {
+    if (audioDataItems.length === 1) {
+      setOpenItems({ [audioDataItems[0].source]: true });
+    }
+  }, [audioDataItems]);
 
   return (
     <div className="mx-auto border-none">
@@ -268,6 +293,7 @@ function AudioItems({ data }) {
                   config={config}
                   formData={formData}
                   setFormData={setFormData}
+                  setInitialFormData={setInitialFormData}
                   handleSave={handleSave}
                   hasUnsavedChanges={hasUnsavedChanges}
                   setHasUnsavedChanges={setHasUnsavedChanges}

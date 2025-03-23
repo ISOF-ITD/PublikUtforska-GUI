@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { TermList, TermNode } from "./TermList";
 import StartTimeInputWithPlayer from "./StartTimeInput";
+import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from "prop-types";
 
 /**
  * A small helper to flatten the tree of terms into a single list
@@ -33,6 +36,7 @@ function DescriptionForm({
   // Parent's data for new descriptions:
   formData,
   setFormData,
+  setInitialFormData,
   // Lock & session props:
   isLocked,
   hasSession,
@@ -46,6 +50,7 @@ function DescriptionForm({
   // We'll track whether the user wants to see the big tree of terms:
   const [showTermNode, setShowTermNode] = useState(false);
 
+  // In DescriptionForm.js - Update useEffect
   useEffect(() => {
     if (editingDesc) {
       const prefill = {
@@ -58,16 +63,17 @@ function DescriptionForm({
         selectedTags: editingDesc.terms || [],
       };
 
+      // Update both form data and initial form data
       setFormData((prev) => ({
         ...prev,
         [source]: prefill,
       }));
-    } else {
-      // Otherwise, if there's no editingDesc, we assume "add new" mode.
-      // If you want to "reset" the fields, do it here.
-      // But often you already did that in the parent when user clicked “Add new”.
+      setInitialFormData((prev) => ({
+        ...prev,
+        [source]: prefill,
+      }));
     }
-  }, [editingDesc]);
+  }, [editingDesc, source, setFormData, setInitialFormData]);
 
   // The parent’s code gave us a `formData[source]` object:
   const dataForSource = formData[source] || {};
@@ -133,88 +139,65 @@ function DescriptionForm({
   }
 
   return (
-    <div className="border border-gray-300 p-4 my-4 bg-white text-sm relative">
-      {editingDesc && (
-        <span className="mb-2 font-semibold text-isof">
-          Redigera beskrivning
-        </span>
-      )}
-
-      {/* 1. Name + email */}
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block font-semibold mb-1">
-            Ditt namn (ej obligatoriskt)
-          </label>
-          <input
-            type="text"
-            placeholder="Ange ditt namn"
-            className="border p-2 w-full"
-            value={dataForSource.name || ""}
-            onChange={(e) => handleChangeField("name", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">
-            Din e-post (ej obligatoriskt)
-          </label>
-          <input
-            type="email"
-            placeholder="Ange din e-post"
-            className="border p-2 w-full"
-            value={dataForSource.email || ""}
-            onChange={(e) => handleChangeField("email", e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* remember me */}
+    <div className="border border-gray-300 p-4 mb-4 bg-white text-sm relative">
+      <p className="text-lg font-semibold pb-4 text-isof">
+        Din kunskap kan hjälpa andra -{" "}
+        {editingDesc ? "Redigera beskrivning" : "Lägg till en beskrivning"}
+      </p>
+      {/* Start time */}
       <div className="mb-4">
-        <label className="inline-flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={dataForSource.rememberMe || false}
-            onChange={(e) => handleChangeField("rememberMe", e.target.checked)}
+        <label className="block font-semibold mb-1">Starttid (MM:SS) *</label>
+        <div className="mb-2 text-sm bg-isof bg-opacity-10 p-2 rounded flex items-start">
+          <FontAwesomeIcon
+            icon={faInfoCircle}
+            className="mr-2 my-1 text-isof"
           />
-          <span>Kom ihåg mig</span>
-        </label>
-      </div>
-
-      {/* 2. Start time */}
-      <div className="mb-4">
-        <label className="block font-semibold mb-1">Starttid (MM:SS)</label>
-        <p className="text-xs text-gray-500">
-          Ange minuter och sekunder, t.ex. 01:23
-        </p>
+          Steg 1 av 3. Ange den tidpunkt när innehållet börjar. Du kan använda
+          ljudspelaren för att hitta exakt tid eller skriva in den manuellt.
+        </div>
         <StartTimeInputWithPlayer
+          autoFocus={!editingDesc}
           value={dataForSource.start || ""}
           onChange={(val) => handleChangeField("start", val)}
+          required
         />
       </div>
 
-      {/* 3. Description text */}
+      {/* Description text */}
       <div>
-        <label className="block font-semibold mb-1">
-          Beskrivning / Annotation
-        </label>
-        <span className="text-xs text-gray-500 pb-2">
-          Beskriv kortfattat vad som sägs i ljudintervallet. Har du fler
-          detaljer eller ytterligare insikter, dela gärna med dig av dem!
-        </span>
+        <label className="block font-semibold mb-1">Beskrivning *</label>
+        <span className="text-xs text-gray-500 pb-2"></span>
+        <div className="mb-2 text-sm bg-isof bg-opacity-10 p-2 rounded flex">
+          <FontAwesomeIcon
+            icon={faInfoCircle}
+            className="mr-2 my-1 text-isof"
+          />
+          Steg 2 av 3. Beskriv kortfattat vad som sägs i ljudintervallet. Har du
+          fler detaljer eller ytterligare insikter, dela gärna med dig av dem!
+        </div>
         <textarea
-          className="border p-2 w-full"
+          className="border p-2 w-full !mb-2"
           rows="4"
           value={dataForSource.descriptionText || ""}
           onChange={(e) => handleChangeField("descriptionText", e.target.value)}
+          required
         />
+        <div className="text-right text-xs text-gray-500">
+          {dataForSource.descriptionText?.length || 0}/500 tecken
+        </div>
       </div>
 
       {/* 4. Terms */}
       <div className="mb-4">
-        <label className="block font-semibold">Termer / Ämnesord</label>
-        <span className="text-xs text-gray-500 my-1">
-          Ange ett ämnesord eller markera ett eller flera från listan.
-        </span>
+        <label className="block font-semibold">Ämnesord *</label>
+        <div className="mb-2 text-sm bg-isof bg-opacity-10 p-2 rounded flex">
+          <FontAwesomeIcon
+            icon={faInfoCircle}
+            className="mr-2 text-isof my-1"
+          />
+          Steg 3 av 3. Välj eller skriv minst ett ord som bäst beskriver
+          innehållet. Du kan välja flera ord.
+        </div>
         <div className="relative">
           <input
             type="text"
@@ -243,17 +226,8 @@ function DescriptionForm({
                     key={match.termid}
                     className="px-2 py-1 hover:bg-gray-100 hover:cursor-pointer"
                     onClick={() => {
-                      if (!hasSession) return;
-                      onSave({
-                        source,
-                        descid: dataForSource.descid || null, // if editing
-                        name: dataForSource.name,
-                        email: dataForSource.email,
-                        rememberMe: dataForSource.rememberMe,
-                        start: dataForSource.start,
-                        text: dataForSource.descriptionText,
-                        terms: dataForSource.selectedTags,
-                      });
+                      handleToggleTerm(match);
+                      handleChangeField("typedTag", "");
                     }}
                   >
                     {match.term}
@@ -277,7 +251,7 @@ function DescriptionForm({
                 key={rootNode.termid}
                 node={rootNode}
                 selectedTags={dataForSource.selectedTags}
-                onToggle={handleToggleTerm} // Ensure this is correctly passed
+                onToggle={handleToggleTerm}
                 source={source}
               />
             ))}
@@ -290,13 +264,10 @@ function DescriptionForm({
         )}
         <div className="flex flex-wrap gap-2 mt-2">
           {(dataForSource.selectedTags || []).map((tagObj) => (
-            <span
-              key={tagObj.termid}
-              className="flex items-center gap-1 bg-isof text-white px-2 py-1 rounded"
-            >
-              {tagObj.termid} {tagObj.term}
+            <span className="flex items-center gap-1 bg-isof text-white px-2 py-1 rounded">
+              {tagObj.term}
               <span
-                className="hover:cursor-pointer"
+                className="hover:cursor-pointer ml-1"
                 onClick={() => handleToggleTerm(tagObj)}
               >
                 ×
@@ -304,7 +275,50 @@ function DescriptionForm({
             </span>
           ))}
         </div>
+
+        {/* 1. Name + email */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block font-semibold mb-1">
+              Ditt namn (ej obligatoriskt)
+            </label>
+            <input
+              type="text"
+              placeholder="Ange ditt namn"
+              className="border p-2 w-full"
+              value={dataForSource.name || ""}
+              onChange={(e) => handleChangeField("name", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block font-semibold mb-1">
+              Din e-post (ej obligatoriskt)
+            </label>
+            <input
+              type="email"
+              placeholder="Ange din e-post"
+              className="border p-2 w-full"
+              value={dataForSource.email || ""}
+              onChange={(e) => handleChangeField("email", e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* remember me */}
+        <div className="mb-4">
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={dataForSource.rememberMe || false}
+              onChange={(e) =>
+                handleChangeField("rememberMe", e.target.checked)
+              }
+            />
+            <span>Kom ihåg mig</span>
+          </label>
+        </div>
       </div>
+
 
       {/* 5. Save / Cancel */}
       <div className="flex items-center justify-end gap-4">
@@ -318,22 +332,26 @@ function DescriptionForm({
         <a
           type="button"
           className={`px-4 py-2 rounded text-white ${
-            hasSession
+            hasSession &&
+            dataForSource.start?.trim() &&
+            dataForSource.descriptionText?.trim() &&
+            dataForSource.selectedTags?.length
               ? "bg-isof hover:bg-darker-isof hover:cursor-pointer"
               : "bg-gray-400 cursor-not-allowed"
           }`}
-          onClick={() =>
-            hasSession &&
-            onSave({
-              source,
-              start: dataForSource.start,
-              text: dataForSource.descriptionText,
-              terms: dataForSource.selectedTags || [],
-              email: dataForSource.email || "",
-              name: dataForSource.name || "",
-              rememberMe: dataForSource.rememberMe || false,
-            })
-          }
+          onClick={() => {
+            if (hasSession) {
+              onSave({
+                source,
+                start: dataForSource.start,
+                text: dataForSource.descriptionText,
+                terms: dataForSource.selectedTags || [],
+                email: dataForSource.email || "",
+                name: dataForSource.name || "",
+                rememberMe: dataForSource.rememberMe || false,
+              });
+            }
+          }}
         >
           {editingDesc ? "Spara ändringar" : "Spara"}
         </a>

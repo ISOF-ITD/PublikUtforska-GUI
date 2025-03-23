@@ -32,12 +32,15 @@ function AudioItemRow({
 
   formData,
   setFormData,
+  setInitialFormData,
   handleSave,
   hasUnsavedChanges,
   setHasUnsavedChanges,
 }) {
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
+
+  const descriptionsCount = item.description?.length || 0;
 
   /**
    * Called when user clicks “Ändra” on an existing description.
@@ -100,7 +103,11 @@ function AudioItemRow({
               </span>
             ) : (
               <span className="whitespace-nowrap">
-                <span className="px-1">Visa Innehåll</span>{" "}
+                <span className="px-1">
+                  {descriptionsCount > 0
+                    ? `Visa Innehåll (${descriptionsCount})`
+                    : "Lägg till beskrivning"}
+                </span>
                 <FontAwesomeIcon icon={faCaretDown} />
               </span>
             )}
@@ -140,6 +147,7 @@ function AudioItemRow({
                 editingDesc={editDesc}
                 formData={formData}
                 setFormData={setFormData}
+                setInitialFormData={setInitialFormData}
                 isLocked={isLocked}
                 hasSession={hasSession}
                 onSave={onSaveDescription}
@@ -181,7 +189,11 @@ function AudioItemRow({
                       ) : (
                         <>
                           <FontAwesomeIcon icon={faCirclePlus} />
-                          <span>Lägg till ny beskrivning</span>
+                          <span className="">
+                            {descriptionsCount > 0
+                              ? "Lägg till ny beskrivning"
+                              : "Bli först att lägga till en beskrivning"}
+                          </span>
                         </>
                       )}
                     </a>
@@ -194,11 +206,12 @@ function AudioItemRow({
                     editingDesc={null}
                     formData={formData}
                     setFormData={setFormData}
+                    setInitialFormData={setInitialFormData}
                     isLocked={isLocked}
                     hasSession={hasSession}
                     onSave={async (payload) => {
                       await handleSave(payload);
-                      // same logic: if we close the "add new" form, cancel session
+                      // if we close the "add new" form, cancel session
                       cancelTranscribe();
                     }}
                     onCancel={() => {

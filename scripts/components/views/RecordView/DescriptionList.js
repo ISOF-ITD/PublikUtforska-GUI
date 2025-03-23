@@ -1,5 +1,6 @@
 import React from "react";
 import ListPlayButton from "../ListPlayButton";
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 
@@ -19,7 +20,9 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
 
   if (!descriptions.length) {
     return (
-      <p className="italic py-4 px-2">Inga innehållsbeskrivningar att visa.</p>
+      <div className="text-gray-500 text-sm py-4">
+        Det finns inga beskrivningar ännu. Var den första att bidra!
+      </div>
     );
   }
 
