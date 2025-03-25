@@ -173,7 +173,7 @@ function DescriptionForm({
             className="mr-2 my-1 text-isof"
           />
           Steg 2 av 3. Beskriv kortfattat vad som sägs i ljudintervallet. Har du
-          fler detaljer eller ytterligare insikter, dela gärna med dig av dem!
+          fler detaljer eller ytterligare insikter, dela gärna med dig av dem.
         </div>
         <textarea
           className="border p-2 w-full !mb-2"
@@ -195,7 +195,7 @@ function DescriptionForm({
             icon={faInfoCircle}
             className="mr-2 text-isof my-1"
           />
-          Steg 3 av 3. Välj eller skriv minst ett ord som bäst beskriver
+          Steg 3 av 3. Välj eller skriv minst ett ämnesord som bäst beskriver
           innehållet. Du kan välja flera ord.
         </div>
         <div className="relative">
@@ -284,10 +284,12 @@ function DescriptionForm({
               Varför frågar vi efter namn/e-post?
             </summary>
             <p className="pt-4 pl-6">
-              Vi samlar endast in denna information för att kunna skapa
-              statistik och topplistor över bidragsgivare. Ditt namn kan visas
-              publikt om du hamnar bland toppbidragsgivarna. Din e-post används
-              endast om vi behöver kontakta dig angående ditt bidrag.
+              Vi samlar in den här informationen enbart för att skapa statistik
+              och listor över bidragsgivare. Ditt namn visas i
+              bidragsgivarelistan för den här uppteckningen, och kan även synas
+              på hemsidan om du hamnar bland toppbidragsgivarna. Din
+              e-postadress används endast om vi behöver kontakta dig angående
+              ditt bidrag.
             </p>
           </details>
         </div>
@@ -332,7 +334,6 @@ function DescriptionForm({
           </label>
         </div>
       </div>
-      
 
       {/* 5. Save / Cancel */}
       <div className="flex items-center justify-end gap-4">
