@@ -381,7 +381,7 @@ const FormActions = ({ isValid, isEditing, onCancel, onSave }) => (
   <div className="flex items-center justify-end gap-4 mt-4">
     <a
       type="button"
-      className="underline text-gray-600 hover:text-gray-900"
+      className="underline text-gray-600 hover:text-gray-900 hover:cursor-pointer"
       onClick={onCancel}
     >
       Avbryt
@@ -390,8 +390,8 @@ const FormActions = ({ isValid, isEditing, onCancel, onSave }) => (
       type="button"
       className={`px-4 py-2 rounded text-white ${
         isValid
-          ? "bg-isof hover:bg-darker-isof"
-          : "bg-gray-400 cursor-not-allowed"
+          ? "bg-isof hover:bg-darker-isof hover:cursor-pointer"
+          : "bg-gray-400 hover:cursor-not-allowed"
       }`}
       onClick={onSave}
       disabled={!isValid}
