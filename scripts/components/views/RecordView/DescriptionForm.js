@@ -132,6 +132,8 @@ function DescriptionForm({
         {editingDesc ? "Redigera beskrivning" : "Lägg till en beskrivning"}
       </p>
 
+      <ExplanationSection />
+
       <FormSection title="Starttid (MM:SS) *">
         <InfoMessage>
           Steg 1 av 3. Ange den tidpunkt då samtalsämnet börjar. Du kan använda
@@ -297,6 +299,25 @@ const SelectedTags = ({ tags, onRemove }) => (
     )}
   </>
 );
+
+const ExplanationSection = () => {
+  return (
+    <div className="mb-4">
+      <details className="text-sm text-gray-600">
+        <summary className="hover:cursor-pointer list-none flex items-center">
+          <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+          Varför samlar vi in innehållsbeskrivningar?
+        </summary>
+        <p className="pt-4 pl-6">
+          Vi behöver dina innehållsbeskrivningar för att andra ska kunna få en
+          snabb överblick av vad ljudklippet handlar om. Genom att dela med dig
+          av din kunskap kan du hjälpa forskare, släktforskare och andra
+          intresserade att snabbare hitta rätt information.
+        </p>
+      </details>
+    </div>
+  );
+};
 
 const UserInfoSection = ({ data, onChange }) => (
   <div className="mt-4">
