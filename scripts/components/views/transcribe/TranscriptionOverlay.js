@@ -315,7 +315,7 @@ export default function TranscriptionOverlay(props) {
 			if (event.target.random) {
 				// If random -> fetch a random document
 				fetch(
-					`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published`
+					`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`
 				)
 					.then((response) => response.json())
 					.then((json) => {
@@ -334,7 +334,19 @@ export default function TranscriptionOverlay(props) {
 						transcribeStart(randomDocument.id);
 					})
 					.catch((err) => {
-						console.error('Failed to fetch random document:', err);
+						// console.error('Failed to fetch random document:', err);
+						// visa overlay: "Det finns inga dokument kvar att transkribera"
+						setVisible(true);
+						setMessageSent(true);
+						setMessageOnFailure(
+							l('Det finns inga dokument kvar att transkribera.')
+						);
+						setUrl('');
+						setId(null);
+						setArchiveId(null);
+						setTitle('');
+						setImages([]);
+						setTranscriptionType('');
 					});
 			} else {
 				setVisible(true);
