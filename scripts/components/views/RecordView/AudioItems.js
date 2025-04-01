@@ -86,8 +86,9 @@ function AudioItems({ data }) {
         throw new Error(`POST failed with status ${response.status}`);
       }
       const result = await response.json();
-     
+
       setTranscribeSession(result.data.transcribesession);
+      return result.data.transcribesession;
     } catch (error) {
       console.error("Error creating a transcription session:", error);
     }
@@ -198,9 +199,21 @@ function AudioItems({ data }) {
   };
 
   const handleSave = async (payload) => {
-    const { source, name, email, rememberMe, start, text, terms } = payload;
+    const {
+      source,
+      name,
+      email,
+      rememberMe,
+      start,
+      text,
+      terms,
+      start_from,
+      start_to,
+      change_from,
+      change_to,
+    } = payload;
 
-    // 1. "Remember Me" logic is unchanged:
+    // 1. "Remember Me" logic:
     if (rememberMe) {
       const newUserInfo = { name, email, rememberMe: true };
       setSavedUserInfo(newUserInfo);
@@ -217,10 +230,22 @@ function AudioItems({ data }) {
       transcribesession: transcribeSession,
       from_email: email || "",
       from_name: name || "",
-      start: start || "",
-      change_to: text || "",
       terms: terms || [],
     };
+
+    if (start_from) {
+      // Include original and new data
+      finalPayload.start_from = start_from;
+      finalPayload.change_from = change_from;
+      finalPayload.change_to = change_to;
+      if (start_to && start_to !== start_from) {
+        finalPayload.start_to = start_to;
+      }
+    } else {
+      // New entry
+      finalPayload.start = start;
+      finalPayload.change_to = text;
+    }
 
     try {
       const response = await fetch(`${config.restApiUrl}describe/change/`, {
@@ -245,8 +270,45 @@ function AudioItems({ data }) {
       // Cancel transcription session if needed
       cancelTranscribe();
       setLocalLockOverride(true);
+      window.location.reload();
     } catch (error) {
       console.error("Error submitting description:", error);
+    }
+  };
+
+  const handleDelete = async (source, desc) => {
+    try {
+      let session = transcribeSession;
+      if (!session) {
+        session = await startTranscribe();
+        if (!session) {
+          throw new Error("Could not start a session for deletion.");
+        }
+      }
+
+      const payload = {
+        recordid: data.id,
+        file: source,
+        transcribesession: session,
+        start: desc.start,
+        from_email: savedUserInfo.email || "",
+        from_name: savedUserInfo.name || "",
+      };
+
+      const response = await fetch(`${config.restApiUrl}describe/delete/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Delete failed");
+      }
+
+      window.location.reload();
+    } catch (error) {
+      console.error("Delete error:", error);
     }
   };
 
@@ -297,6 +359,8 @@ function AudioItems({ data }) {
                   handleSave={handleSave}
                   hasUnsavedChanges={hasUnsavedChanges}
                   setHasUnsavedChanges={setHasUnsavedChanges}
+                  handleDelete={handleDelete}
+                  savedUserInfo={savedUserInfo}
                 />
               );
             })}

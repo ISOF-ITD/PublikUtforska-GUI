@@ -13,6 +13,7 @@ import ListPlayButton from "../ListPlayButton";
 import DescriptionList from "./DescriptionList";
 import DescriptionForm from "./DescriptionForm";
 import config from "../../../config";
+import ConfirmationModal from "../../ConfirmationModal";
 
 function AudioItemRow({
   item,
@@ -25,8 +26,9 @@ function AudioItemRow({
   isLocked,
   hasSession,
   serverHasOngoingSession,
+  handleDelete,
 
-  // NEW: we receive these from AudioItems so we can lock/unlock:
+  // we receive these from AudioItems so we can lock/unlock:
   startTranscribe,
   cancelTranscribe,
 
@@ -36,6 +38,7 @@ function AudioItemRow({
   handleSave,
   hasUnsavedChanges,
   setHasUnsavedChanges,
+  savedUserInfo,
 }) {
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
@@ -53,6 +56,9 @@ function AudioItemRow({
     setEditDesc(desc);
   }
 
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [descToDelete, setDescToDelete] = useState(null);
+
   /**
    * Called when user finishes (Spara) or cancels the edit form.
    * We'll call parent's handleSave to do the POST, then also cancel the session
@@ -60,9 +66,19 @@ function AudioItemRow({
    */
   async function onSaveDescription(payload) {
     try {
-      await handleSave(payload);
+      if (editDesc) {
+        const updatedPayload = {
+          ...payload,
+          start_from: editDesc.start,
+          start_to: payload.start,
+          change_from: editDesc.text,
+          change_to: payload.descriptionText,
+        };
+        await handleSave(updatedPayload);
+      } else {
+        await handleSave(payload);
+      }
     } finally {
-      // Clear local “edit” state and cancel session:
       setEditDesc(null);
       cancelTranscribe();
     }
@@ -136,7 +152,7 @@ function AudioItemRow({
               item={item}
               recordId={recordId}
               audioTitle={audioTitle}
-              onEditDesc={onEditDesc} // <-- our callback
+              onEditDesc={onEditDesc}
             />
 
             {/* If we are editing something, show that form. Otherwise show the "Add new" button + form */}
@@ -152,11 +168,15 @@ function AudioItemRow({
                 hasSession={hasSession}
                 onSave={onSaveDescription}
                 onCancel={onCancelEdit}
+                onDelete={() => {
+                  setDescToDelete(editDesc);
+                  setShowDeleteConfirmation(true);
+                }}
                 hasUnsavedChanges={hasUnsavedChanges}
                 setHasUnsavedChanges={setHasUnsavedChanges}
+                savedUserInfo={savedUserInfo}
               />
             ) : (
-              // --------------- "Add new" button + form ---------------
               <>
                 {serverHasOngoingSession && !hasSession ? (
                   <div className="flex justify-center my-4">
@@ -227,6 +247,21 @@ function AudioItemRow({
           </td>
         </tr>
       )}
+      {showDeleteConfirmation && (
+        <ConfirmationModal
+          isOpen={showDeleteConfirmation}
+          onConfirm={() => {
+            handleDelete(item.source, descToDelete);
+            setShowDeleteConfirmation(false);
+            setDescToDelete(null);
+          }}
+          onCancel={() => {
+            setShowDeleteConfirmation(false);
+            setDescToDelete(null);
+          }}
+          message="Är du säker på att du vill ta bort denna beskrivning?"
+        />
+      )}
     </>
   );
 }
@@ -249,6 +284,7 @@ AudioItemRow.propTypes = {
   handleSave: PropTypes.func.isRequired,
   hasUnsavedChanges: PropTypes.bool.isRequired,
   setHasUnsavedChanges: PropTypes.func.isRequired,
+  handleDelete: PropTypes.func.isRequired,
 };
 
 export default AudioItemRow;

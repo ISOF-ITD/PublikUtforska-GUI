@@ -73,7 +73,6 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
               ))}
             </td>
             <td className="py-2 px-4 text-right">
-              {/** Add the "Edit" button */}
               <a
                 type="button"
                 className="text-isof hover:text-darker-isof hover:cursor-pointer flex gap-1 items-center justify-end"

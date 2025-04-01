@@ -45,19 +45,22 @@ function DescriptionForm({
   hasSession,
   onSave,
   onCancel,
+  onDelete,
   hasUnsavedChanges,
   setHasUnsavedChanges,
+  savedUserInfo,
 }) {
   const [showTermNode, setShowTermNode] = useState(false);
   const dataForSource = formData[source] || {};
+  const [error, setError] = useState(null);
 
   // Initialize form data for edit mode
   useEffect(() => {
     if (editingDesc) {
       const prefill = {
-        name: editingDesc.name || "",
-        email: editingDesc.email || "",
-        rememberMe: editingDesc.rememberMe || false,
+        name: savedUserInfo.name,
+        email: savedUserInfo.email,
+        rememberMe: savedUserInfo.rememberMe || false,
         start: editingDesc.start || "",
         descriptionText: editingDesc.text || "",
         typedTag: "",
@@ -189,6 +192,7 @@ function DescriptionForm({
             rememberMe: dataForSource.rememberMe || false,
           })
         }
+        onDelete={onDelete}
       />
     </div>
   );
@@ -377,8 +381,17 @@ const UserInfoSection = ({ data, onChange }) => (
   </div>
 );
 
-const FormActions = ({ isValid, isEditing, onCancel, onSave }) => (
+const FormActions = ({ isValid, isEditing, onCancel, onSave, onDelete }) => (
   <div className="flex items-center justify-end gap-4 mt-4">
+    {isEditing && (
+      <a
+        type="button"
+        className="text-red-600 hover:text-red-800 underline  hover:cursor-pointer"
+        onClick={onDelete}
+      >
+        Ta bort
+      </a>
+    )}
     <a
       type="button"
       className="underline text-gray-600 hover:text-gray-900 hover:cursor-pointer"
@@ -413,6 +426,8 @@ DescriptionForm.propTypes = {
   onCancel: PropTypes.func.isRequired,
   hasUnsavedChanges: PropTypes.bool,
   setHasUnsavedChanges: PropTypes.func,
+  onDelete: PropTypes.func,
+  savedUserInfo: PropTypes.object,
 };
 
 export default DescriptionForm;
