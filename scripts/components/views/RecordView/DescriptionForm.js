@@ -63,14 +63,20 @@ function DescriptionForm({
         rememberMe: savedUserInfo.rememberMe || false,
         start: editingDesc.start || "",
         descriptionText: editingDesc.text || "",
-        typedTag: "",
         selectedTags: editingDesc.terms || [],
       };
 
-      setFormData((prev) => ({ ...prev, [source]: prefill }));
+      setFormData((prev) => ({
+        ...prev,
+        [source]: {
+          ...prefill,
+          typedTag: prev[source]?.typedTag ?? "",
+        },
+      }));
+
       setInitialFormData((prev) => ({ ...prev, [source]: prefill }));
     }
-  }, [editingDesc, source, setFormData, setInitialFormData]);
+  }, [editingDesc, source, setFormData, setInitialFormData, savedUserInfo]);
 
   // Memoized field handler
   const handleChangeField = useCallback(

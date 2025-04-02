@@ -72,7 +72,8 @@ function AudioItemRow({
           start_from: editDesc.start,
           start_to: payload.start,
           change_from: editDesc.text,
-          change_to: payload.descriptionText,
+          change_to: payload.text,
+          terms: payload.terms,
         };
         await handleSave(updatedPayload);
       } else {

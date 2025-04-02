@@ -276,7 +276,10 @@ function AudioItems({ data }) {
         throw new Error(`POST failed with status ${response.status}`);
       await response.json();
 
-      // Fetch updated data instead of reloading
+      // 1.Cancel transcription session
+      await cancelTranscribe();
+
+      // 2. Fetch updated data instead of reloading
       await fetchUpdatedData();
 
       // 3. If success, update local UI state:
@@ -287,8 +290,7 @@ function AudioItems({ data }) {
       setHasUnsavedChanges(false);
       setShowAddForm((prev) => ({ ...prev, [source]: false }));
 
-      // Cancel transcription session if needed
-      cancelTranscribe();
+      
       setLocalLockOverride(true);
     } catch (error) {
       console.error("Error submitting description:", error);
@@ -326,6 +328,7 @@ function AudioItems({ data }) {
       }
 
       // Fetch updated data instead of reloading
+      await cancelTranscribe();
       await fetchUpdatedData();
     } catch (error) {
       console.error("Delete error:", error);
