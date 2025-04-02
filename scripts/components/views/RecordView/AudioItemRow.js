@@ -254,6 +254,15 @@ function AudioItemRow({
             handleDelete(item.source, descToDelete);
             setShowDeleteConfirmation(false);
             setDescToDelete(null);
+            // Close the edit form so it unmounts
+            setEditDesc(null);
+            // Optionally scroll back up to the list
+            const listElement = document.getElementById(
+              `descriptions-${item.source}`
+            );
+            if (listElement) {
+              listElement.scrollIntoView({ behavior: "smooth" });
+            }
           }}
           onCancel={() => {
             setShowDeleteConfirmation(false);
