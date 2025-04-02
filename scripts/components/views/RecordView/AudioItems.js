@@ -152,6 +152,15 @@ function AudioItems({ data }) {
     setOpenItems((prev) => ({ ...prev, [source]: !prev[source] }));
   };
 
+  // Whenever AudioItems unmounts, if there's an active session, cancel it.
+  useEffect(() => {
+  return () => {
+    if (transcribeSession) {
+      cancelTranscribe();
+    }
+  };
+}, [transcribeSession, cancelTranscribe]);
+
   // The "Add new description" toggler with concurrency check
   const handleToggleAddFormWithConcurrency = async (source) => {
     // 1. If user is already editing something else, confirm discard
