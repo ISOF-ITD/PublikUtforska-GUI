@@ -64,17 +64,6 @@ function AudioItems({ data }) {
     !localLockOverride &&
     transcriptionstatus === "undertranscription";
 
-  // Handle page unload => cancel transcription
-  useEffect(() => {
-    function handleBeforeUnload() {
-      cancelTranscribe();
-    }
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [transcribeSession]);
-
   // ---- MAIN ACTIONS ----
 
   const fetchUpdatedData = async () => {
@@ -114,28 +103,47 @@ function AudioItems({ data }) {
 
   const cancelTranscribe = async () => {
     if (!transcribeSession) return;
-    const payload = {
-      recordid: data.id,
-      transcribesession: transcribeSession,
-    };
-
-    const fd = new FormData();
-    fd.append("json", JSON.stringify(payload));
-
     try {
+      const payload = {
+        recordid: data.id,
+        transcribesession: transcribeSession,
+      };
+      const fd = new FormData();
+      fd.append("json", JSON.stringify(payload));
+
       const response = await fetch(`${config.restApiUrl}transcribecancel/`, {
         method: "POST",
         body: fd,
       });
+
       if (!response.ok) {
         throw new Error(`POST failed with status ${response.status}`);
       }
+
       await response.json();
       setTranscribeSession(null);
+      setLocalLockOverride(true);
     } catch (error) {
       console.error("Error cancelling a transcription session:", error);
     }
   };
+
+  // Handle page unload => cancel transcription
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (transcribeSession) {
+        // This triggers the default browser "are you sure?" alert
+        e.preventDefault();
+        e.returnValue = "";
+        cancelTranscribe(); // Might be blocked by the browser, but we do our best
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [transcribeSession, cancelTranscribe]);
 
   const handleToggle = (source) => {
     setOpenItems((prev) => ({ ...prev, [source]: !prev[source] }));
@@ -290,7 +298,6 @@ function AudioItems({ data }) {
       setHasUnsavedChanges(false);
       setShowAddForm((prev) => ({ ...prev, [source]: false }));
 
-      
       setLocalLockOverride(true);
     } catch (error) {
       console.error("Error submitting description:", error);
