@@ -1,6 +1,15 @@
 import React from "react";
+import PropTypes from "prop-types";
 
-const ConfirmationModal = ({ isOpen, onConfirm, onCancel, message }) => {
+const ConfirmationModal = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+  message,
+  confirmLabel = "Ja, stäng utan att spara", // Default label
+  cancelLabel = "Avbryt", // Default label
+  variant = "default", // 'default' or 'delete'
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -10,15 +19,19 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, message }) => {
         <div className="flex justify-end gap-4 mt-4">
           <button
             onClick={onCancel}
-            className=" bg-gray-300 hover:bg-gray-400 rounded"
+            className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
           >
-            Avbryt
+            {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className="bg-isof hover:bg-darkerisof text-white rounded"
+            className={`px-4 py-2 text-white rounded ${
+              variant === "delete"
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-isof hover:bg-darker-isof"
+            }`}
           >
-            Ja, stäng utan att spara
+            {confirmLabel}
           </button>
         </div>
       </div>
@@ -27,3 +40,13 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, message }) => {
 };
 
 export default ConfirmationModal;
+
+ConfirmationModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  message: PropTypes.string.isRequired,
+  confirmLabel: PropTypes.string,
+  cancelLabel: PropTypes.string,
+  variant: PropTypes.oneOf(["default", "delete"]),
+};

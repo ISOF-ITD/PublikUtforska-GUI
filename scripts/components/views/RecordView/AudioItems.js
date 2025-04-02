@@ -7,6 +7,14 @@ import AudioItemRow from "./AudioItemRow";
 import "./DescriptionForm";
 
 function AudioItems({ data }) {
+  // Initialize localData state with the prop data
+  const [localData, setLocalData] = useState(data);
+
+  // Update localData when the prop data changes
+  useEffect(() => {
+    setLocalData(data);
+  }, [data]);
+
   const {
     id,
     media,
@@ -14,9 +22,8 @@ function AudioItems({ data }) {
     archive: { arhive_org: archiveOrg, archive },
     year,
     persons,
-    // The server’s transcription status
     transcriptionstatus,
-  } = data;
+  } = localData;
 
   // If the server says “undertranscription”, that means someone else has locked it
   const serverHasOngoingSession = transcriptionstatus === "undertranscription";
@@ -69,6 +76,17 @@ function AudioItems({ data }) {
   }, [transcribeSession]);
 
   // ---- MAIN ACTIONS ----
+
+  const fetchUpdatedData = async () => {
+    try {
+      const response = await fetch(`${config.restApiUrl}records/${id}`);
+      if (!response.ok) throw new Error("Failed to fetch updated data");
+      const updatedData = await response.json();
+      setLocalData(updatedData);
+    } catch (error) {
+      console.error("Error fetching updated data:", error);
+    }
+  };
 
   const startTranscribe = async () => {
     const payload = {
@@ -254,10 +272,12 @@ function AudioItems({ data }) {
         body: JSON.stringify(finalPayload),
       });
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`POST failed with status ${response.status}`);
-      }
       await response.json();
+
+      // Fetch updated data instead of reloading
+      await fetchUpdatedData();
 
       // 3. If success, update local UI state:
       setInitialFormData((prev) => ({
@@ -270,7 +290,6 @@ function AudioItems({ data }) {
       // Cancel transcription session if needed
       cancelTranscribe();
       setLocalLockOverride(true);
-      window.location.reload();
     } catch (error) {
       console.error("Error submitting description:", error);
     }
@@ -306,7 +325,8 @@ function AudioItems({ data }) {
         throw new Error(errorData.error || "Delete failed");
       }
 
-      window.location.reload();
+      // Fetch updated data instead of reloading
+      await fetchUpdatedData();
     } catch (error) {
       console.error("Delete error:", error);
     }
@@ -372,6 +392,8 @@ function AudioItems({ data }) {
         onConfirm={handleConfirmClose}
         onCancel={handleCancelClose}
         message="Du har osparade ändringar. Vill du stänga formuläret ändå?"
+        confirmLabel="Ja, stäng utan att spara"
+        variant="default"
       />
     </div>
   );

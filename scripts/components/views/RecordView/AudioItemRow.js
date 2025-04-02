@@ -260,6 +260,9 @@ function AudioItemRow({
             setDescToDelete(null);
           }}
           message="Är du säker på att du vill ta bort denna beskrivning?"
+          confirmLabel="Ta bort"
+          cancelLabel="Avbryt"
+          variant="delete"
         />
       )}
     </>
