@@ -54,9 +54,22 @@ function DescriptionForm({
   const dataForSource = formData[source] || {};
   const [error, setError] = useState(null);
 
-  // Initialize form data for edit mode
+  // Only set the form data once when `editingDesc` first appears or changes.
   useEffect(() => {
-    if (editingDesc) {
+    if (!editingDesc) return;
+
+    setFormData((prev) => {
+      // If we already have the same start/text in state, do nothing.
+      // That means the user might have added terms, typed something, etc.
+      const alreadyMatches =
+        prev[source]?.start === editingDesc.start &&
+        prev[source]?.descriptionText === editingDesc.text;
+
+      if (alreadyMatches) {
+        return prev; // Don’t overwrite user’s ongoing edits
+      }
+
+      // Otherwise, fill the form with the existing description + user info
       const prefill = {
         name: savedUserInfo.name,
         email: savedUserInfo.email,
@@ -64,18 +77,25 @@ function DescriptionForm({
         start: editingDesc.start || "",
         descriptionText: editingDesc.text || "",
         selectedTags: editingDesc.terms || [],
+        typedTag: prev[source]?.typedTag ?? "",
       };
 
-      setFormData((prev) => ({
-        ...prev,
-        [source]: {
-          ...prefill,
-          typedTag: prev[source]?.typedTag ?? "",
-        },
-      }));
+      return { ...prev, [source]: prefill };
+    });
 
-      setInitialFormData((prev) => ({ ...prev, [source]: prefill }));
-    }
+    // Also reset the initial form data for change detection
+    setInitialFormData((prev) => ({
+      ...prev,
+      [source]: {
+        name: savedUserInfo.name,
+        email: savedUserInfo.email,
+        rememberMe: savedUserInfo.rememberMe || false,
+        start: editingDesc.start || "",
+        descriptionText: editingDesc.text || "",
+        selectedTags: editingDesc.terms || [],
+        typedTag: "",
+      },
+    }));
   }, [editingDesc, source, setFormData, setInitialFormData, savedUserInfo]);
 
   // Memoized field handler
@@ -288,7 +308,7 @@ const TermSuggestions = ({ typedTag, onSelect, onChange }) => {
           className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
           onClick={() => {
             onSelect(match);
-            onChange("typedTag", ""); // Now uses the passed prop
+            onChange("typedTag", "");
           }}
         >
           {match.term}
