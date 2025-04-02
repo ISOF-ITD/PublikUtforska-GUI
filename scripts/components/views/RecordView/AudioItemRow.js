@@ -39,6 +39,7 @@ function AudioItemRow({
   hasUnsavedChanges,
   setHasUnsavedChanges,
   savedUserInfo,
+  canContribute,
 }) {
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
@@ -107,7 +108,7 @@ function AudioItemRow({
         </td>
         <td className="py-2 px-4">{audioTitle}</td>
         <td className="py-2 px-4 flex gap-2 items-center">
-          <a
+          { canContribute && (<a
             className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
             aria-expanded={openItems[item.source] ? "true" : "false"}
             aria-controls={`descriptions-${item.source}`}
@@ -128,7 +129,7 @@ function AudioItemRow({
                 <FontAwesomeIcon icon={faCaretDown} />
               </span>
             )}
-          </a>
+          </a>)}
           <a
             href={`${config.audioUrl}${item.source}`}
             download

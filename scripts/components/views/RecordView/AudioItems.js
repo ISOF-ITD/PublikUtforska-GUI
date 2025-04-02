@@ -67,6 +67,8 @@ function AudioItems({ data }) {
     !localLockOverride &&
     transcriptionstatus === "undertranscription";
 
+  const canContribute = (data.recordtype === "one_record") && (data.transcriptionstatus === "readytotranscribe" || "undertranscription") && (data.transcriptiontype === "audio");
+
   // ---- MAIN ACTIONS ----
 
   const fetchUpdatedData = async () => {
@@ -428,6 +430,7 @@ function AudioItems({ data }) {
                   setHasUnsavedChanges={setHasUnsavedChanges}
                   handleDelete={handleDelete}
                   savedUserInfo={savedUserInfo}
+                  canContribute={canContribute}
                 />
               );
             })}
