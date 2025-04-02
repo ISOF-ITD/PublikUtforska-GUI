@@ -415,7 +415,7 @@ const FormActions = ({ isValid, isEditing, onCancel, onSave, onDelete }) => (
         className="text-red-600 hover:text-red-800 underline  hover:cursor-pointer"
         onClick={onDelete}
       >
-        Ta bort
+        Ta bort beskrivning
       </a>
     )}
     <a

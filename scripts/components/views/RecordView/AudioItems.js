@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import config from "../../../config";
 import { getAudioTitle } from "../../../utils/helpers";
@@ -45,7 +45,7 @@ function AudioItems({ data }) {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [sourceToClose, setSourceToClose] = useState(null);
 
-  // We track which forms are visible for a given source
+  // We track which “Add new description” forms are visible for a given source
   const [showAddForm, setShowAddForm] = useState({});
 
   // Keep track of the user’s name/email in localStorage
@@ -58,6 +58,9 @@ function AudioItems({ data }) {
 
   // We store the initial form data so we can detect unsaved changes
   const [initialFormData, setInitialFormData] = useState({});
+
+  // Track which source is currently being edited (either adding or editing existing)
+  const [editingSource, setEditingSource] = useState(null);
 
   const isLocked =
     !transcribeSession &&
@@ -101,7 +104,7 @@ function AudioItems({ data }) {
     }
   };
 
-  const cancelTranscribe = async () => {
+  const cancelTranscribe = useCallback(async () => {
     if (!transcribeSession) return;
     try {
       const payload = {
@@ -126,7 +129,7 @@ function AudioItems({ data }) {
     } catch (error) {
       console.error("Error cancelling a transcription session:", error);
     }
-  };
+  }, [transcribeSession, data.id]);
 
   // Handle page unload => cancel transcription
   useEffect(() => {
@@ -149,7 +152,28 @@ function AudioItems({ data }) {
     setOpenItems((prev) => ({ ...prev, [source]: !prev[source] }));
   };
 
-  // The "Add new description" toggler
+  // The "Add new description" toggler with concurrency check
+  const handleToggleAddFormWithConcurrency = async (source) => {
+    // 1. If user is already editing something else, confirm discard
+    if (editingSource && editingSource !== source) {
+      const discard = window.confirm(
+        "Du redigerar redan ett annat ljudklipp. Vill du överge dina ändringar och fortsätta?"
+      );
+      if (!discard) {
+        return; // do nothing
+      }
+      // Discard old session
+      await cancelTranscribe();
+      setShowAddForm({}); // Close all add-forms
+      setHasUnsavedChanges(false);
+      setEditingSource(null);
+    }
+
+    // 2. Then proceed with your normal toggle logic
+    handleToggleAddFormWithConfirmation(source);
+  };
+
+  // The existing toggler that checks unsaved changes
   const handleToggleAddFormWithConfirmation = (source) => {
     const currentFormData = formData[source] || {};
     const currentInitialData = initialFormData[source] || {};
@@ -171,7 +195,7 @@ function AudioItems({ data }) {
     }
   };
 
-  const handleToggleAddForm = (source) => {
+  const handleToggleAddForm = async (source) => {
     const currentlyVisible = showAddForm[source];
 
     if (currentlyVisible) {
@@ -182,14 +206,15 @@ function AudioItems({ data }) {
         return newData;
       });
       setShowAddForm((prev) => ({ ...prev, [source]: false }));
-      cancelTranscribe();
+      await cancelTranscribe();
+      setEditingSource(null); // not editing anything anymore
       setLocalLockOverride(true);
       setHasUnsavedChanges(false);
     } else {
-      // open it
+      // Open it
       setLocalLockOverride(false);
       if (!isLocked && !transcribeSession) {
-        startTranscribe();
+        await startTranscribe();
       }
       const defaultData = {
         name: savedUserInfo.name,
@@ -203,6 +228,7 @@ function AudioItems({ data }) {
       setInitialFormData((prev) => ({ ...prev, [source]: defaultData }));
       setFormData((prev) => ({ ...prev, [source]: defaultData }));
       setShowAddForm((prev) => ({ ...prev, [source]: true }));
+      setEditingSource(source);
     }
   };
 
@@ -260,7 +286,7 @@ function AudioItems({ data }) {
     };
 
     if (start_from) {
-      // Include original and new data
+      // Editing existing entry
       finalPayload.start_from = start_from;
       finalPayload.change_from = change_from;
       finalPayload.change_to = change_to;
@@ -284,20 +310,19 @@ function AudioItems({ data }) {
         throw new Error(`POST failed with status ${response.status}`);
       await response.json();
 
-      // 1.Cancel transcription session
+      // 1. Cancel transcription session
       await cancelTranscribe();
-
       // 2. Fetch updated data instead of reloading
       await fetchUpdatedData();
 
-      // 3. If success, update local UI state:
+      // 3. If success, update local UI state
       setInitialFormData((prev) => ({
         ...prev,
         [source]: formData[source],
       }));
       setHasUnsavedChanges(false);
       setShowAddForm((prev) => ({ ...prev, [source]: false }));
-
+      setEditingSource(null);
       setLocalLockOverride(true);
     } catch (error) {
       console.error("Error submitting description:", error);
@@ -337,6 +362,9 @@ function AudioItems({ data }) {
       // Fetch updated data instead of reloading
       await cancelTranscribe();
       await fetchUpdatedData();
+
+      // In case the user was editing something from this source, reset
+      setEditingSource(null);
     } catch (error) {
       console.error("Delete error:", error);
     }
@@ -376,7 +404,7 @@ function AudioItems({ data }) {
                   openItems={openItems}
                   onToggle={handleToggle}
                   showAddForm={showAddForm}
-                  onToggleAddForm={handleToggleAddFormWithConfirmation}
+                  onToggleAddForm={handleToggleAddFormWithConcurrency}
                   isLocked={isLocked}
                   hasSession={!!transcribeSession}
                   serverHasOngoingSession={serverHasOngoingSession}
