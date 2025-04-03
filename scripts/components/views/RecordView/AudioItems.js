@@ -386,7 +386,7 @@ function AudioItems({ data }) {
 
   // Auto-Expand First Item
   useEffect(() => {
-    if (audioDataItems.length === 1) {
+    if (audioDataItems.length === 1 && canContribute) {
       setOpenItems({ [audioDataItems[0].source]: true });
     }
   }, [audioDataItems]);
