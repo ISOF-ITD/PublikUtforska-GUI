@@ -384,13 +384,6 @@ function AudioItems({ data }) {
   // We'll only show items that are audio type
   const audioDataItems = media.filter((item) => item.type === "audio");
 
-  // Auto-Expand First Item
-  useEffect(() => {
-    if (audioDataItems.length === 1 && canContribute) {
-      setOpenItems({ [audioDataItems[0].source]: true });
-    }
-  }, [audioDataItems]);
-
   return (
     <div className="mx-auto border-none">
       <div className="overflow-x-auto mb-4 rounded">
