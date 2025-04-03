@@ -107,7 +107,7 @@ function AudioItemRow({
           />
         </td>
         <td className="py-2 px-4">{audioTitle}</td>
-        <td className="py-2 px-4 flex gap-2 items-center">
+        <td className="py-2 px-4 flex gap-2 items-center w-full">
           { canContribute && (<a
             className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
             aria-expanded={openItems[item.source] ? "true" : "false"}
