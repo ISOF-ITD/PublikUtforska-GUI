@@ -348,14 +348,19 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
                 birthYear = ` född ${persons[i].birthyear}`;
               }
               personbasedTitle = personbasedTitle + name + birthYear;
+              if (i < persons.length - 1) {
+                personbasedTitle = personbasedTitle + ', ';
+              }
             }
           }
         }
         if (personbasedTitle) {
           if (personbasedTitle.length > 0) {
+            let yearString = '';
             if (year) {
-              personbasedTitle = `${personbasedTitle} intervju ${year.substring(0, 4)}`;
+              yearString = year.substring(0, 4);
             }
+            personbasedTitle = `${personbasedTitle} intervju ${yearString}`;
           }
           if (personbasedTitle.length > 0) {
             return personbasedTitle;
