@@ -8,7 +8,6 @@ import {
 import PropTypes from 'prop-types';
 import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
 import AudioItems from './AudioItems';
-import CommentsElement from './CommentsElement';
 import ContentsElement from './ContentsElement';
 import Disclaimer from '../Disclaimer';
 import HeadwordsElement from './HeadwordsElement';
@@ -102,7 +101,6 @@ function RecordView({ mode = 'material' }) {
                     highlightData={highlightData}
                     mediaImageClickHandler={mediaImageClickHandler}
                   />
-                  <CommentsElement data={data} />
                   <div className="row">
                     <div className="eight columns">
                       <ReferenceLinks data={data} />

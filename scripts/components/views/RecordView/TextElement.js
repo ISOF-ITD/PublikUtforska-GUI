@@ -5,6 +5,7 @@ import config from '../../../config';
 import HighlightSwitcher from './HighlightSwitcher';
 import { l } from '../../../lang/Lang';
 import TranscribeButton from '../transcribe/TranscribeButton';
+import ContributorInfo from './ContributorInfo';
 
 function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const {
@@ -174,12 +175,11 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
         </div>
         )))}
       {transcribedby && (
-        <p className="text-small">
-          <strong>{`${l('Transkriberad av')}: `}</strong>
-          <span>
-            {transcribedby}
-          </span>
-        </p>
+        <ContributorInfo
+        transcribedby={transcribedby}
+        comment={data.comment}
+        transcriptiondate={data.transcriptiondate}
+      />
       )}
     </main>
   );
