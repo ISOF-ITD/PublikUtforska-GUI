@@ -174,13 +174,11 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           {renderMedia(mediaItem)}
         </div>
         )))}
-      {transcribedby && (
         <ContributorInfo
         transcribedby={transcribedby}
         comment={data.comment}
         transcriptiondate={data.transcriptiondate}
       />
-      )}
     </main>
   );
 }
