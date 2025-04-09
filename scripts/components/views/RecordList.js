@@ -188,7 +188,7 @@ export default function RecordList({
     has_metadata: params.has_metadata || undefined,
     has_media: params.has_media || undefined,
     has_transcribed_records: params.has_transcribed_records || undefined,
-    has_untranscribed_records: params.has_untranscribed_records || undefined,
+    has_untranscribed_or_uncontributed_records: params.has_untranscribed_or_uncontributed_records || undefined,
     recordtype:
       params.recordtype
       || (mode === 'transcribe' ? 'one_accession_row' : filter || null),

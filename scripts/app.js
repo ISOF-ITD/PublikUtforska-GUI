@@ -143,7 +143,7 @@ function createTranscribeRoute() {
       const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
         recordtype: 'one_accession_row',
-        has_untranscribed_records: true,
+        has_untranscribed_or_uncontributed_records: true,
       };
       return defer({
         results: fetchMapAndCountRecords(queryParams),
