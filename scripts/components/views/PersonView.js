@@ -150,7 +150,7 @@ export default function PersonView({ mode = 'material' }) {
             disableAutoFetch
             params={{
               person_id: id,
-              has_untranscribed_or_uncontributed_records: mode === 'transcribe' ? 'true' : null,
+              has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
               transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
             }}
             mode={mode}
