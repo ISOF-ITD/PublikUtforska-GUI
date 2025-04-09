@@ -4,10 +4,13 @@ import archiveLogoIsof from '../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../img/archive-logo-ikos.png';
 
 export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
-  let text = `${page}`;
-  if (totalPages > 1) {
-    const toPage = parseInt(page, 10) + (totalPages - 1);
-    text += `-${toPage}`;
+  let text = ``;
+  if (page) {
+    text = `${page}`;
+    if (totalPages > 1) {
+      const toPage = parseInt(page, 10) + (totalPages - 1);
+      text += `-${toPage}`;
+    }
   }
   return text;
 }

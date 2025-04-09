@@ -411,7 +411,7 @@ export default function RecordList({
                         onClick={() => handleSort('transcriptionstatus')}
                       >
                         {sort === 'transcriptionstatus' && (order === 'asc' ? '▼' : '▲')}
-                        {l('Avskriven')}
+                        {l('Klara')}
                       </button>
                     </th>
                 )}

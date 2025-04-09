@@ -226,7 +226,7 @@ export default function RecordListItem({
             <a onClick={toggleSubrecords}>
               <FontAwesomeIcon icon={faFolderOpen} />
               {' '}
-              Uppteckningar i den här accessionen (
+              {transcriptiontype === 'audio' ? 'Inspelningar' : 'Uppteckningar'} i den här accessionen (
               {numberOfSubrecords}
               ):
             </a>
@@ -236,8 +236,8 @@ export default function RecordListItem({
           <small>
             <a onClick={toggleSubrecords}>
               <FontAwesomeIcon icon={faFolder} />
-              {' '}
-              Visa uppteckningar (
+              {' '} Visa {' '}
+              {transcriptiontype === 'audio' ? 'Inspelningar' : 'Uppteckningar'} (
               {numberOfSubrecords}
               )
             </a>
@@ -248,34 +248,34 @@ export default function RecordListItem({
           <ul>
             {subrecords.sort((a, b) => ((parseInt(a._source.archive.page, 10) > parseInt(b._source.archive.page, 10)) ? 1 : -1)).map((subItem, index) => {
               const published = subItem._source.transcriptionstatus === 'published';
-              return (
+                return (
                 <li key={`subitem${subItem._source.id}`}>
                   <small>
-                    <Link
-                      style={{ fontWeight: published ? 'bold' : '' }}
-                      to={`${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
-                        {
-                          search: searchParams.search,
-                          search_field: searchParams.search_field,
-                        },
-                      )}`}
-                    >
-                      Sida
-                      {' '}
-                      {pageFromTo(subItem)}
-                      {/* {published && `: ${subItem._source.title}`} */}
-                      {/* if published, show the title, if not published,
-                    but title exists, show title but add "ej transkriberad"
-                    in brackets after the title */}
-                      <span dangerouslySetInnerHTML={{
-                        __html: `: ${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)}${!published ? ' (ej avskriven)' : ''}`,
-                      }}
-                      />
-                    </Link>
+                  <Link
+                  style={{ fontWeight: published ? 'bold' : '' }}
+                  to={`${mode === 'transcribe' ? '/transcribe' : ''}/records/${subItem._source.id}${createSearchRoute(
+                  {
+                    search: searchParams.search,
+                    search_field: searchParams.search_field,
+                  },
+                  )}`}
+                  >
+                  {transcriptiontype !== 'audio' && (
+                  <>
+                    Sida
+                    {' '}
+                    {pageFromTo(subItem)}
+                    {': '}
+                  </>
+                  )}
+                  <span dangerouslySetInnerHTML={{
+                  __html: `${getTitle(subItem._source.title, subItem._source.contents, subItem._source.archive)}${!published ? (subItem._source.transcriptiontype === 'audio' ? ' (kan bidra)' : ' (ej avskriven)') : ''}`,
+                  }}
+                  />
+                  </Link>
                   </small>
-
                 </li>
-              );
+                );
             })}
           </ul>
         )
