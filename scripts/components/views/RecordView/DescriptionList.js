@@ -3,6 +3,7 @@ import ListPlayButton from "../ListPlayButton";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import InstructionBox from "./InstructionBox";
 
 function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
   function parseTimeString(timeString = "00:00") {
@@ -25,15 +26,19 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
 
   if (!descriptions.length) {
     return (
-      <div className="text-gray-600 text-sm p-6 bg-gray-50 rounded-lg text-center">
-        <p>Det finns inga beskrivningar ännu.</p>
-        <p>Var den första att bidra!</p>
+      <div className="text-gray-600 text-sm p-6 bg-gray-50 rounded-lg">
+        <InstructionBox />
+        <p className="text-center mt-4">
+        Det finns inga beskrivningar ännu. <br/>
+        Var den första att bidra!
+        </p>
       </div>
     );
   }
 
   return (
     <div className="overflow-x-auto">
+      <InstructionBox />
       <table className="w-full table-auto border-collapse text-xs mb-2">
         <thead>
           <tr>
