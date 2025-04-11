@@ -369,11 +369,11 @@ export default function RecordList({
           <table width="100%" className="table-responsive">
             <thead>
               <tr>
-                {shouldRenderColumn('title') && <th scope="col">{l('Titel')}</th>}
+                {shouldRenderColumn('title') && <th scope="col" className="text-left">{l('Titel')}</th>}
                 {shouldRenderColumn('archive_id')
                   && (!siteOptions.recordList
                     || siteOptions.recordList.hideAccessionpage !== true) && (
-                    <th scope="col">
+                    <th scope="col" className="text-left">
                       <button
                         type="button"
                         className="sort"
@@ -385,12 +385,12 @@ export default function RecordList({
                       </button>
                     </th>
                 )}
-                {shouldRenderColumn('place') && <th scope="col">{l('Ort')}</th>}
+                {shouldRenderColumn('place') && <th scope="col" className="text-left">{l('Ort')}</th>}
                 {shouldRenderColumn('collector')
                   && (!siteOptions.recordList
-                    || siteOptions.recordList.visibleCollecorPersons !== false) && <th scope="col">{l('Insamlare')}</th>}
+                    || siteOptions.recordList.visibleCollecorPersons !== false) && <th scope="col" className="text-left">{l('Insamlare')}</th>}
                 {shouldRenderColumn('year') && (
-                  <th scope="col">
+                  <th scope="col" className="text-left">
                     <button type="button" className="sort" onClick={() => handleSort('year')}>
                       {sort === 'year' && (order === 'asc' ? '▼' : '▲')}
                       {l('År')}
@@ -399,12 +399,12 @@ export default function RecordList({
                 )}
                 {shouldRenderColumn('material_type')
                   && (!siteOptions.recordList || siteOptions.recordList.hideMaterialType !== true) && (
-                    <th scope="col">{l('Materialtyp')}</th>
+                    <th scope="col" className="text-left">{l('Materialtyp')}</th>
                 )}
                 {shouldRenderColumn('transcriptionstatus')
                   && (!siteOptions.recordList
                     || siteOptions.recordList.hideTranscriptionStatus !== true) && (
-                    <th scope="col">
+                    <th scope="col" className="text-left">
                       <button
                         type="button"
                         className="sort"
@@ -416,7 +416,7 @@ export default function RecordList({
                     </th>
                 )}
                 {columns && columns.includes('transcribedby') && (
-                  <th scope="col">{l('Transkriberad av')}</th>
+                  <th scope="col" className="text-left">{l('Transkriberad av')}</th>
                 )}
               </tr>
             </thead>
