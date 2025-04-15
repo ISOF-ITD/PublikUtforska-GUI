@@ -165,7 +165,10 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
           setMessageSent(false);
           // setTranscribesession(transcribesession);
         } else {
-          setMessageSent(false);
+          // Om ingen transkriberingssession avsluta transkriberingen
+          // Byt ut alert mot standardmeddelande i Folke
+          alert(json.message || 'Ett fel inträffade.');
+          handleHideOverlay();
         }
       })
       .catch((error) => {
