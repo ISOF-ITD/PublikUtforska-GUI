@@ -28,15 +28,62 @@ export default function TranscribeButton({
   onClick,
   label,
   helptext = null,
+  transcribeCancel = false,
 }) {
   // This function handles button clicks. If a custom onClick handler is provided, it uses that;
   // otherwise, it defaults to dispatching an 'overlay.transcribe' event.
   const transcribeButtonClick = () => {
+    if (transcribeCancel) {
+      // den funktionen ska då köras
+      transcribeCancel();
+      // return;
+    }
     if (window.eventBus) {
       if (random) {
-        window.eventBus.dispatch('overlay.transcribe', {
-          random: true,
-        });
+        // 1.Hämta dokument innan overlayen tas fram
+        fetch(
+          // `${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`,
+          `${config.apiUrl}document/ifgh04468_203642_7`,
+        )
+          .then((response) => response.json())
+          .then((json) => {
+            // const randomDocument = json.hits.hits[0]._source;
+            const randomDocument = json._source;
+            if (randomDocument?.transcriptiontype === 'sida') {
+              window.eventBus.dispatch('overlay.transcribePageByPage', {
+                url: `${config.siteUrl}/records/${randomDocument.id}`,
+                id: randomDocument.id,
+                archiveId: randomDocument.archive.archive_id,
+                title: randomDocument.title,
+                type: randomDocument.type,
+                images: randomDocument.media,
+                transcriptionType: randomDocument.transcriptiontype,
+                placeString: getPlaceString(randomDocument.places),
+                random: true,
+              });
+            } else {
+              window.eventBus.dispatch('overlay.transcribe', {
+                url: `${config.siteUrl}/records/${randomDocument.id}`,
+                id: randomDocument.id,
+                archiveId: randomDocument.archive.archive_id,
+                title: randomDocument.title,
+                type: randomDocument.type,
+                images: randomDocument.media,
+                transcriptionType: randomDocument.transcriptiontype,
+                placeString: getPlaceString(randomDocument.places),
+                random: true,
+              });
+            }
+          })
+          .catch((error) => {
+            console.error('Error fetching random document:', error);
+          });
+
+        // 2.Kolla transcriptionType
+        // 3.Utifrån transcriptionType, hämta rätt overlay
+        // window.eventBus.dispatch('overlay.transcribe', {
+        //   random: true,
+        // });
       } else if (transcriptionType === 'sida') {
         window.eventBus.dispatch('overlay.transcribePageByPage', {
           url: `${config.siteUrl}/records/${recordId}`,
