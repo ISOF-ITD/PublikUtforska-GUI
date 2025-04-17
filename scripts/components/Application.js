@@ -36,18 +36,13 @@ export default function Application({
   mode = 'material',
 }) {
   const navigate = useNavigate();
-  const location = useLocation(); // Added useLocation
+  const location = useLocation();
   const { results, audioResults, pictureResults } = useLoaderData();
   const [mapData, setMapData] = useState(null);
-  const [recordsData, setRecordsData] = useState({ data: [], metadata: { } });
-  const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: { } });
-  const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: { } });
+  const [recordsData, setRecordsData] = useState({ data: [], metadata: {} });
+  const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: {} });
+  const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: {} });
   const [loading, setLoading] = useState(true);
-  const [
-    transcriptionPageByPageOverlayVisible,
-    setTranscriptionPageByPageOverlayVisible,
-  ] = useState(false);
-  const [transcriptionPageByPageEvent, setTranscriptionPageByPageEvent] = useState(null);
 
   const params = useParams();
 
@@ -93,19 +88,7 @@ export default function Application({
     });
   }, [pictureResults]);
 
-  const handleShowOverlay = (event) => {
-    setTranscriptionPageByPageOverlayVisible(true);
-    setTranscriptionPageByPageEvent(event);
-  };
-
-  const handleHideOverlay = () => {
-    setTranscriptionPageByPageOverlayVisible(false);
-  };
-
   useEffect(() => {
-    window.eventBus.addEventListener('overlay.transcribePageByPage', handleShowOverlay);
-    window.eventBus.addEventListener('overlay.hide', handleHideOverlay);
-
     // Listen for events when the audio player becomes visible
     window.eventBus.addEventListener('audio.playervisible', () => {
       // When GlobalAudioPlayer is visible, add class to document.body to make space for the audio player in the UI
@@ -132,13 +115,10 @@ export default function Application({
     return () => {
       window.eventBus.removeEventListener('audio.playervisible');
       window.eventBus.removeEventListener('audio.playerhidden');
-
-      window.eventBus.removeEventListener('overlay.transcribePageByPage', handleShowOverlay);
-      window.eventBus.removeEventListener('overlay.hide', handleHideOverlay);
     };
   }, [location.pathname, location.search, results]);
 
-  // Separate useEffect to handle location changes, tracking for "back"-button in RoutePopupWindow
+  // track route history for back‑button in RoutePopupWindow
   useEffect(() => {
     addToNavigationHistory(`${location.pathname}${location.search}`);
   }, [location]);
@@ -175,14 +155,7 @@ export default function Application({
         <ContributeInfoOverlay />
         <TranscriptionOverlay />
         <RequestToTranscribeOverlay />
-        {
-          transcriptionPageByPageOverlayVisible
-          && (
-            <TranscriptionPageByPageOverlay
-              event={transcriptionPageByPageEvent}
-            />
-          )
-        }
+        <TranscriptionPageByPageOverlay />
         <TranscriptionHelpOverlay />
         <HelpTextOverlay />
         <Footer />

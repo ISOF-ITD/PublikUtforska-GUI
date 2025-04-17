@@ -42,13 +42,13 @@ export default function TranscribeButton({
       if (random) {
         // 1.Hämta dokument innan overlayen tas fram
         fetch(
-          // `${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`,
-          `${config.apiUrl}document/ifgh04468_203642_7`,
+          `${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`,
+          // `${config.apiUrl}document/ifgh04468_203642_7`,
         )
           .then((response) => response.json())
           .then((json) => {
-            // const randomDocument = json.hits.hits[0]._source;
-            const randomDocument = json._source;
+            const randomDocument = json.hits.hits[0]._source;
+            // const randomDocument = json._source;ifgh04468_203642_7
             if (randomDocument?.transcriptiontype === 'sida') {
               window.eventBus.dispatch('overlay.transcribePageByPage', {
                 url: `${config.siteUrl}/records/${randomDocument.id}`,
