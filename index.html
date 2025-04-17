@@ -182,6 +182,20 @@
       // start hidden; show only when an error occurs
       monitor.style.display = 'none';
       document.body.appendChild(monitor);
+      const closeButton = document.createElement('button');
+      closeButton.textContent = '×';
+      closeButton.style.position = 'absolute';
+      closeButton.style.top = '4px';
+      closeButton.style.right = '8px';
+      closeButton.style.background = 'transparent';
+      closeButton.style.border = 'none';
+      closeButton.style.fontSize = '16px';
+      closeButton.style.cursor = 'pointer';
+      closeButton.style.color = '#721c24';
+      closeButton.addEventListener('click', function() {
+        monitor.style.display = 'none';
+      });
+      monitor.appendChild(closeButton);
       const header = document.createElement('div');
       header.textContent = 'Error:';
       header.style.fontWeight = 'bold';
