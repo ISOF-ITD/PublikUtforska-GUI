@@ -9,11 +9,11 @@ import {
   faTimes,
   faCirclePlus,
 } from "@fortawesome/free-solid-svg-icons";
-import ListPlayButton from "../ListPlayButton";
+import ListPlayButton from "./ListPlayButton";
 import DescriptionList from "./DescriptionList";
 import DescriptionForm from "./DescriptionForm";
-import config from "../../../config";
-import ConfirmationModal from "../../ConfirmationModal";
+import config from "../../config";
+import ConfirmationModal from "./ConfirmationModal";
 
 function AudioItemRow({
   item,

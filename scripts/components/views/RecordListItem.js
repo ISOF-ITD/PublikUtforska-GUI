@@ -6,7 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import ListPlayButton from './ListPlayButton';
+import ListPlayButton from '../../features/AudioDescription/ListPlayButton';
 import TranscribeButton from './transcribe/TranscribeButton';
 import HighlightedText from '../HighlightedText';
 

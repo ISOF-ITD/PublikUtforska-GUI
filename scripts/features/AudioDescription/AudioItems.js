@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
-import config from "../../../config";
-import { getAudioTitle } from "../../../utils/helpers";
-import ConfirmationModal from "../../ConfirmationModal";
+import ConfirmationModal from "./ConfirmationModal";
 import AudioItemRow from "./AudioItemRow";
 import "./DescriptionForm";
+import config from "../../config";
+import { getAudioTitle } from "../../utils/helpers";
 
 function AudioItems({ data }) {
   // Initialize localData state with the prop data

@@ -1,9 +1,9 @@
 import React from "react";
-import ListPlayButton from "../ListPlayButton";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import InstructionBox from "./InstructionBox";
+import ListPlayButton from "./ListPlayButton";
 
 function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
   function parseTimeString(timeString = "00:00") {
