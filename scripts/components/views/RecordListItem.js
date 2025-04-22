@@ -163,8 +163,8 @@ export default function RecordListItem({
 
   /* ---------- render‑helpers ---------- */
 
-  const badgeClasses =
-    "inline-block bg-white border border-gray-100 rounded px-2 py-0.5 text-sm mr-2 mb-2 whitespace-nowrap";
+  const badgeClasses = "inline-block bg-white shadow-sm border border-gray-200 rounded px-2 py-0.5 text-sm mr-2 mb-2";
+  const pillClasses  = "inline-block bg-white shadow-sm border border-gray-200 rounded px-1.5 py-0.5 text-sm mr-1 mb-1";
 
   const renderFieldArchiveId = () => {
     const base = (
@@ -182,8 +182,11 @@ export default function RecordListItem({
     // one_accession_row
     if (recordtype === "one_accession_row") {
       return (
-        <td data-title={`${l("Arkivnummer")}:`} className="table-buttons py-2">
-          {base}
+        <td
+          data-title={`${l("Arkivnummer")}:`}
+          className="py-2 whitespace-nowrap"
+        >
+          <span className={`${pillClasses}`}>{base}</span>
         </td>
       );
     }
@@ -191,14 +194,17 @@ export default function RecordListItem({
     // one_record
     if (recordtype === "one_record") {
       return (
-        <td data-title={`${l("Arkivnummer")}:`} className="table-buttons py-2">
+        <td
+          data-title={`${l("Arkivnummer")}:`}
+          className="py-2 whitespace-nowrap"
+        >
           <a
             data-archiveidrow={archive.archive_id_row}
             data-search={searchParams.search ?? ""}
             data-recordtype={searchParams.recordtype}
             onClick={archiveIdClick}
             title={`Gå till accessionen ${archive.archive_id_row}`}
-            className="cursor-pointer"
+            className={`${pillClasses} text-isof underline hover:bg-gray-100 cursor-pointer`}
           >
             {base}
           </a>
@@ -208,7 +214,7 @@ export default function RecordListItem({
 
     // default
     return (
-      <td data-title={`${l("Arkivnummer")}:`} className="table-buttons py-2">
+      <td data-title={`${l("Arkivnummer")}:`} className="py-2">
         <a
           data-archiveid={archive.archive_id}
           data-recordtype={
@@ -222,9 +228,9 @@ export default function RecordListItem({
               ? "uppteckningarna"
               : "accessionerna"
           }`}
-          className="cursor-pointer"
+          className={`${pillClasses} underline text-isof hover:bg-gray-100 cursor-pointer`}
         >
-          {base}
+          <span className={`${pillClasses}`}>{base}</span>
         </a>
       </td>
     );
@@ -277,7 +283,7 @@ export default function RecordListItem({
             search_field: searchParams.search_field,
           })}`}
           key={`${id}-${p.id}`}
-          className="text-isof hover:underline"
+          className={`${pillClasses} text-isof hover:underline`}
         >
           {l(p.name)}
         </Link>
@@ -305,9 +311,7 @@ export default function RecordListItem({
   // record‑level
   if (transcriptionstatus && transcriptionstatus !== "accession") {
     transcriptionStatusElement = (
-      <span
-        className={`transcriptionstatus ${transcriptionstatus} ${badgeClasses}`}
-      >
+      <span className={`${transcriptionstatus} ${pillClasses}`}>
         {transcriptionStatuses[transcriptionstatus]}
       </span>
     );
@@ -325,7 +329,7 @@ export default function RecordListItem({
       const percent = Math.round((donePages / totalPages) * 100);
       transcriptionStatusElement = (
         <div className="mr-2 space-y-1">
-          <span className="text-xs">{`${donePages} av ${totalPages} ${
+          <span className="text-sm">{`${donePages} av ${totalPages} ${
             transcriptiontype === "sida" ? "sidor" : ""
           }`}</span>
           <div
@@ -333,7 +337,7 @@ export default function RecordListItem({
             title={`${percent}%`}
           >
             <span
-              className="block h-full bg-isof"
+              className="block h-full bg-isof rounded"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -367,16 +371,12 @@ export default function RecordListItem({
 
   return (
     <tr
-      className={`${
+      className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-50 ${
         displayTextSummary ? "bg-gray-100" : ""
-      } border-b border-gray-200 last:border-0`}
+      }`}
     >
       {shouldRenderColumn("title", columns) && (
-        <td
-          className={`${
-            smallTitle ? "table-buttons" : "text-base"
-          } py-2 space-y-1`}
-        >
+        <td className={`${smallTitle ? "" : "text-base"} py-2 space-y-1`}>
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
@@ -404,14 +404,14 @@ export default function RecordListItem({
             {media?.some((m) => m.source?.toLowerCase().includes(".jpg")) && (
               <FontAwesomeIcon
                 icon={faFileLines}
-                className="mr-1 text-gray-500"
+                className="mr-1 text-isof"
                 title="Uppteckning"
               />
             )}
             {media?.some((m) => m.source?.toLowerCase().includes(".mp3")) && (
               <FontAwesomeIcon
                 icon={faVolumeHigh}
-                className="mr-1 text-gray-500"
+                className="mr-1 text-isof"
                 title="Inspelning"
               />
             )}
@@ -450,16 +450,17 @@ export default function RecordListItem({
               <small>
                 <a
                   onClick={toggleSubrecords}
-                  className="text-isof hover:underline cursor-pointer"
+                  className="text-isof underline cursor-pointer !ml-1"
                 >
                   <FontAwesomeIcon
                     icon={visibleSubrecords ? faFolderOpen : faFolder}
                   />
-                  {visibleSubrecords ? " " : " Visa "}
+                  {!visibleSubrecords && " Visa "}
                   {transcriptiontype === "audio"
-                    ? "Inspelningar i den här accessionen"
-                    : "Uppteckningar i den här accessionen"}{" "}
-                  ({numberOfSubrecords}){visibleSubrecords && ":"}
+                    ? "Inspelningar"
+                    : "Uppteckningar"}
+                  {visibleSubrecords && " i den här accessionen"}(
+                  {numberOfSubrecords}){visibleSubrecords && ":"}
                 </a>
               </small>
 
@@ -546,9 +547,9 @@ export default function RecordListItem({
         renderFieldArchiveId()}
 
       {shouldRenderColumn("place", columns) && (
-        <td data-title={`${l("Ort")}:`} className="table-buttons py-2">
+        <td data-title={`${l("Ort")}:`} className="py-2">
           {places?.length > 0 && (
-            <div>
+            <div className={`${pillClasses} `}>
               {places[0].specification && (
                 <span className="mr-1">{places[0].specification} i</span>
               )}
@@ -575,14 +576,16 @@ export default function RecordListItem({
 
       {shouldRenderColumn("collector", columns) &&
         config.siteOptions.recordList?.visibleCollecorPersons && (
-          <td data-title={`${l("Insamlare")}:`} className="table-buttons py-2">
+          <td data-title={`${l("Insamlare")}:`} className="py-2">
             {collectorPersonElement}
           </td>
         )}
 
       {shouldRenderColumn("year", columns) && (
-        <td data-title={`${l("År")}:`} className="table-buttons py-2">
-          <span className="year">{year?.split("-")[0]}</span>
+        <td data-title={`${l("År")}:`} className="py-2">
+          {year && (
+            <span className={`${pillClasses}`}>{year.split("-")[0]}</span>
+          )}
         </td>
       )}
 
@@ -594,7 +597,7 @@ export default function RecordListItem({
         )}
 
       {shouldRenderColumn("transcription_status", columns) && (
-        <td data-title={`${l("Avskriven")}:`} className="table-buttons py-2">
+        <td data-title={`${l("Avskriven")}:`} className="py-2">
           {transcriptionStatusElement}
         </td>
       )}
@@ -602,7 +605,7 @@ export default function RecordListItem({
       {columns?.includes("transcribedby") && (
         <td data-title={`${l("Transkriberad av")}:`} className="py-2">
           {transcribedby && (
-            <span className="transcribed-by text-xs">{transcribedby}</span>
+            <span className="transcribed-by text-sm">{transcribedby}</span>
           )}
         </td>
       )}

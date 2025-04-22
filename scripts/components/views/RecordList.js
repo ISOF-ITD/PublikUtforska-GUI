@@ -27,7 +27,7 @@ function Pagination({ currentPage, total, onStep, maxPage }) {
   if (total <= 2) return null;
 
   return (
-    <div className="list-pagination my-4 flex items-center gap-4 text-sm">
+    <div className="my-4 flex items-center gap-4 text-sm">
       <p>
         <strong>
           {`${l("Visar")} ${from}-${to} ${l(total ? "av" : "")} ${total || ""}`}
@@ -38,7 +38,7 @@ function Pagination({ currentPage, total, onStep, maxPage }) {
         <>
           <button
             disabled={currentPage === 1}
-            className="button prev-button disabled:opacity-40"
+            className="px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40 text-center"
             onClick={() => onStep(-1)}
             type="button"
           >
@@ -46,7 +46,7 @@ function Pagination({ currentPage, total, onStep, maxPage }) {
           </button>
           <button
             disabled={currentPage >= maxPage}
-            className="button next-button disabled:opacity-40"
+            className="px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40"
             onClick={() => onStep(1)}
             type="button"
           >
@@ -329,9 +329,9 @@ export default function RecordList({
       {/* List wrapper */}
       {!fetchingPage && (
         <div
-          className={`${tableClass} table-wrapper records-list list-container ${
-            records.length === 0 ? "min-h-[200px]" : ""
-          }`}
+          className={`${tableClass} mb-10 md:mb-2 rounded ${
+            fetchingPage ? "relative" : ""
+          } ${records.length === 0 ? "min-h-[200px]" : ""}`}
         >
           {!disableListPagination && (
             <Pagination
@@ -342,9 +342,9 @@ export default function RecordList({
             />
           )}
 
-          <table className="table-responsive w-full text-sm border-separate">
-            <thead>
-              <tr className="hidden md:table-row">
+          <table className="w-full text-sm border-collapse md:table-fixed">
+            <thead className="sr-only md:not-sr-only !py-4">
+              <tr className="block md:table-row border-b border-gray-300 last:border-0">
                 {shouldRenderColumn("title") && (
                   <th className="text-left w-1/2">{l("Titel")}</th>
                 )}
@@ -352,8 +352,8 @@ export default function RecordList({
                 {shouldRenderColumn("archive_id") &&
                   !siteOptions.recordList?.hideAccessionpage && (
                     <th className="text-left">
-                      <button
-                        className="sort text-isof"
+                      <a
+                        className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter whitespace-nowrap"
                         onClick={() =>
                           handleSort("archive.archive_id_row.keyword")
                         }
@@ -362,7 +362,7 @@ export default function RecordList({
                           (order === "asc" ? "▼" : "▲")}{" "}
                         {l("Arkivnummer")}
                         {params.recordtype === "one_record" && ":Sida"}
-                      </button>
+                      </a>
                     </th>
                   )}
 
@@ -377,13 +377,13 @@ export default function RecordList({
 
                 {shouldRenderColumn("year") && (
                   <th className="text-left">
-                    <button
-                      className="sort text-isof"
+                    <a
+                      className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
                       onClick={() => handleSort("year")}
                     >
                       {sort === "year" && (order === "asc" ? "▼" : "▲")}{" "}
                       {l("År")}
-                    </button>
+                    </a>
                   </th>
                 )}
 
@@ -395,14 +395,14 @@ export default function RecordList({
                 {shouldRenderColumn("transcriptionstatus") &&
                   !siteOptions.recordList?.hideTranscriptionStatus && (
                     <th className="text-left">
-                      <button
-                        className="sort text-isof"
+                      <a
+                        className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
                         onClick={() => handleSort("transcriptionstatus")}
                       >
                         {sort === "transcriptionstatus" &&
                           (order === "asc" ? "▼" : "▲")}{" "}
                         {l("Klara")}
-                      </button>
+                      </a>
                     </th>
                   )}
 
@@ -412,7 +412,7 @@ export default function RecordList({
               </tr>
             </thead>
 
-            <tbody>{items}</tbody>
+            <tbody className="[&>tr]:block md:[&>tr]:table-row">{items}</tbody>
           </table>
 
           {!disableListPagination && (
@@ -427,7 +427,7 @@ export default function RecordList({
       )}
 
       {fetchingPage && (
-        <p className="page-info text-center">
+        <p className="text-center">
           <strong>{l("Söker...")}</strong>
         </p>
       )}
