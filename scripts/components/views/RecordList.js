@@ -1,16 +1,14 @@
 /* eslint-disable react/require-default-props */
-import {
-  useState, useEffect, useMemo, useCallback,
-} from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import { l } from '../../lang/Lang';
-import RecordsCollection from '../collections/RecordsCollection';
-import RecordListItem from './RecordListItem';
-import Timeline from './Timeline';
-import { createSearchRoute } from '../../utils/routeHelper';
-import Filter from './Filter';
-import config from '../../config';
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import PropTypes from "prop-types";
+import { l } from "../../lang/Lang";
+import RecordsCollection from "../collections/RecordsCollection";
+import RecordListItem from "./RecordListItem";
+import Timeline from "./Timeline";
+import { createSearchRoute } from "../../utils/routeHelper";
+import Filter from "./Filter";
+import config from "../../config";
 
 const {
   filterParameterName,
@@ -20,49 +18,53 @@ const {
   siteOptions,
 } = config;
 
-function Pagination({
-  currentPage, total, onStep, maxPage,
-}) {
+/* ---------------- Pagination ---------------- */
+
+function Pagination({ currentPage, total, onStep, maxPage }) {
   const from = (currentPage - 1) * hitsPerPage + 1;
-  const to = currentPage * hitsPerPage > total ? total : currentPage * hitsPerPage;
+  const to = Math.min(currentPage * hitsPerPage, total);
+
+  if (total <= 2) return null;
 
   return (
-    (total > 2) && (
-      <div className="list-pagination">
-        <p className="page-info">
-          <strong>
-            {`${l('Visar')} ${from}-${to} ${l(total ? 'av' : '')}${l('')} ${total || ''}`}
-          </strong>
-        </p>
-        <br />
-        {total > hitsPerPage && (
-          <>
-            <button
-              disabled={currentPage === 1}
-              className="button prev-button"
-              onClick={() => onStep(-1)}
-              type="button"
-            >
-              {l('Föregående')}
-            </button>
-            <span> </span>
-            <button
-              disabled={currentPage >= maxPage}
-              className="button next-button"
-              onClick={() => onStep(1)}
-              type="button"
-            >
-              {l('Nästa')}
-            </button>
-          </>
-        )}
-        {total >= maxTotal && currentPage >= maxPage && (
-          <span className="limit-message">
-            {l(`Du har nått det maximala antalet sidor (${maxTotal.toLocaleString('sv-SE')} poster).`)}
-          </span>
-        )}
-      </div>
-    )
+    <div className="list-pagination my-4 flex items-center gap-4 text-sm">
+      <p>
+        <strong>
+          {`${l("Visar")} ${from}-${to} ${l(total ? "av" : "")} ${total || ""}`}
+        </strong>
+      </p>
+
+      {total > hitsPerPage && (
+        <>
+          <button
+            disabled={currentPage === 1}
+            className="button prev-button disabled:opacity-40"
+            onClick={() => onStep(-1)}
+            type="button"
+          >
+            {l("Föregående")}
+          </button>
+          <button
+            disabled={currentPage >= maxPage}
+            className="button next-button disabled:opacity-40"
+            onClick={() => onStep(1)}
+            type="button"
+          >
+            {l("Nästa")}
+          </button>
+        </>
+      )}
+
+      {total >= maxTotal && currentPage >= maxPage && (
+        <span className="text-red-600">
+          {l(
+            `Du har nått det maximala antalet sidor (${maxTotal.toLocaleString(
+              "sv-SE"
+            )} poster).`
+          )}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -73,6 +75,8 @@ Pagination.propTypes = {
   maxPage: PropTypes.number.isRequired,
 };
 
+/* ---------------- RecordList ---------------- */
+
 export default function RecordList({
   columns = null,
   disableListPagination = false,
@@ -81,11 +85,10 @@ export default function RecordList({
   hasTimeline = false,
   highlightRecordsWithMetadataField = null,
   interval = null,
-  openSwitcherHelptext = () => { },
-  // sizeMore = null,
-  tableClass = null,
+  openSwitcherHelptext = () => {},
+  tableClass = "",
   params = {},
-  mode = 'material',
+  mode = "material",
   containerRef = null,
   useRouteParams = false,
   smallTitle = false,
@@ -93,122 +96,109 @@ export default function RecordList({
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Separera tillståndet med flera useState-hooks
+  /* ---------- state ---------- */
   const [records, setRecords] = useState([]);
   const [fetchingPage, setFetchingPage] = useState(false);
   const [currentPage, setCurrentPage] = useState(params.page || 1);
   const [yearFilter, setYearFilter] = useState(null);
-  const [sort, setSort] = useState('archive.archive_id_row.keyword');
-  const [order, setOrder] = useState('asc');
+  const [sort, setSort] = useState("archive.archive_id_row.keyword");
+  const [order, setOrder] = useState("asc");
   const [loadedMore, setLoadedMore] = useState(false);
   const [total, setTotal] = useState(0);
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState("");
 
-  /*
-  Genera unique id: Varför använda `useMemo`?
-  Om du använder useMemo genereras det unika ID
-  bara en gång när komponenten först laddas, vilket är exakt vad
-  du vill ha för att säkerställa att varje instans har ett stabilt
-  och unikt prefix under hela sin livstid.
-  Om du inte använder en hook:
-  Om du istället använder denna direkt i komponentkroppen utan en hook:
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-  Så kommer uniqueId att genereras varje gång komponenten renderas, vilket kan orsaka
-  att nycklarna ändras varje gång och leda till problem med omrendering.
-  */
-  const uniqueId = useMemo(() => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, []);
+  const uniqueId = useMemo(
+    () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+    []
+  );
 
-  // Anpassa maxPage så att det alltid är baserat på det minsta värdet mellan maxTotal och total
   const maxPage = Math.ceil(Math.min(maxTotal, total) / hitsPerPage);
 
-  const handleFilterChange = (event) => {
-    const { value } = event.target;
-    setFilter(value);
-    setCurrentPage(1);
-  };
+  /* ---------- URL‑param “showlist” ---------- */
 
-  // Hantera URL-parametrar för att visa listan
   useEffect(() => {
-    // Get the URL search parameters (non-hash parameters)
-    const searchParams = new URLSearchParams(window.location.search);
-
-    // Get the hash parameters (after #)
-    const { hash } = window.location;
-    const hashParams = hash.includes('?') ? new URLSearchParams(hash.split('?')[1]) : new URLSearchParams();
-
-    // Combine both sets of parameters
-    const urlParams = new Map([...searchParams.entries(), ...hashParams.entries()]);
-
-    if (urlParams.has('showlist') && window.eventBus) {
-      window.eventBus.dispatch('routePopup.show');
+    const hashParams = new URLSearchParams(location.hash.split("?")[1] || "");
+    if (hashParams.has("showlist") && window.eventBus) {
+      window.eventBus.dispatch("routePopup.show");
     }
   }, [location]);
 
-  const collections = useMemo(() => new RecordsCollection((json) => {
-    // const totalPrefixValue = json.metadata.total.relation !== 'eq' ? 'mer än ' : '';
+  /* ---------- data collection ---------- */
 
-    setRecords(json.data);
-    setTotal(json.metadata.total.value);
-    setFetchingPage(false);
-    // setTotalPrefix(totalPrefixValue);
+  const collections = useMemo(
+    () =>
+      new RecordsCollection((json) => {
+        setRecords(json.data);
+        setTotal(json.metadata.total.value);
+        setFetchingPage(false);
 
-    if (window.eventBus) {
-      window.eventBus.dispatch('recordList.totalRecords', json.metadata.total.value, json.metadata.total.value);
-      window.eventBus.dispatch('recordList.fetchingPage', false);
-    }
-  }), []);
+        window.eventBus?.dispatch(
+          "recordList.totalRecords",
+          json.metadata.total.value
+        );
+        window.eventBus?.dispatch("recordList.fetchingPage", false);
+      }),
+    []
+  );
 
-  const fetchData = useCallback((fetchParams) => {
-    setFetchingPage(true);
-    collections.fetch(fetchParams);
-  }, [collections]);
+  const fetchData = useCallback(
+    (fetchParams) => {
+      setFetchingPage(true);
+      collections.fetch(fetchParams);
+    },
+    [collections]
+  );
 
-  // Funktion för att generera fetchParams
-  const getFetchParams = useCallback(() => ({
-    from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),
-    size: params.size || hitsPerPage,
-    search: params.search ? encodeURIComponent(params.search) : undefined,
-    search_field: params.search_field || undefined,
-    type: params.type,
-    category: params.category
-      ? `${params.category}${params.subcategory ? `,${params.subcategory}` : ''}`
-      : undefined,
-    collection_years: yearFilter?.join(',') || undefined,
-    gender: params.gender
-      ? params.person_relation
-        ? `${params.person_relation}:${params.gender}`
-        : params.gender
-      : undefined,
-    birth_years: params.birth_years
-      ? params.person_relation
-        ? `${params.person_relation}:${params.gender ? `${params.gender}:` : ''}${params.birth_years}`
-        : params.birth_years
-      : undefined,
-    record_ids: params.record_ids || undefined,
-    has_metadata: params.has_metadata || undefined,
-    has_media: params.has_media || undefined,
-    has_transcribed_records: params.has_transcribed_records || undefined,
-    has_untranscribed_records: params.has_untranscribed_records || undefined,
-    recordtype:
-      params.recordtype
-      || (mode === 'transcribe' ? 'one_accession_row' : filter || null),
-    person_id: params.person_id || undefined,
-    socken_id: params.place_id || undefined,
-    transcriptionstatus: params.transcriptionstatus || undefined,
-    sort: params.sort || sort || undefined,
-    order: params.order || order || undefined,
-    // Lägg till applikationsdefinierade filterparametrar
-    ...(filterParameterName && filterParameterValues && 'filter' in params
-      ? {
-        [filterParameterName]: params.filter === 'true' || params.filter === true
-          ? filterParameterValues[1]
-          : filterParameterValues[0],
-      }
-      : {}),
-  }), [
+  const getFetchParams = useCallback(() => {
+    /* build params */
+    return {
+      from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),
+      size: params.size || hitsPerPage,
+      search: params.search ? encodeURIComponent(params.search) : undefined,
+      search_field: params.search_field || undefined,
+      type: params.type,
+      category: params.category
+        ? `${params.category}${
+            params.subcategory ? `,${params.subcategory}` : ""
+          }`
+        : undefined,
+      collection_years: yearFilter?.join(",") || undefined,
+      gender: params.gender
+        ? params.person_relation
+          ? `${params.person_relation}:${params.gender}`
+          : params.gender
+        : undefined,
+      birth_years: params.birth_years
+        ? params.person_relation
+          ? `${params.person_relation}:${
+              params.gender ? `${params.gender}:` : ""
+            }${params.birth_years}`
+          : params.birth_years
+        : undefined,
+      record_ids: params.record_ids || undefined,
+      has_metadata: params.has_metadata || undefined,
+      has_media: params.has_media || undefined,
+      has_transcribed_records: params.has_transcribed_records || undefined,
+      has_untranscribed_records: params.has_untranscribed_records || undefined,
+      recordtype:
+        params.recordtype ||
+        (mode === "transcribe" ? "one_accession_row" : filter || null),
+      person_id: params.person_id || undefined,
+      socken_id: params.place_id || undefined,
+      transcriptionstatus: params.transcriptionstatus || undefined,
+      sort: params.sort || sort || undefined,
+      order: params.order || order || undefined,
+      ...(filterParameterName && filterParameterValues && "filter" in params
+        ? {
+            [filterParameterName]:
+              params.filter === "true" || params.filter === true
+                ? filterParameterValues[1]
+                : filterParameterValues[0],
+          }
+        : {}),
+    };
+  }, [
     currentPage,
-    hitsPerPage,
-    maxTotal,
     params,
     yearFilter,
     mode,
@@ -219,49 +209,49 @@ export default function RecordList({
     filterParameterValues,
   ]);
 
-  // Hämta data vid initial render och när relevanta beroenden ändras
   useEffect(() => {
-    const fetchParams = getFetchParams();
-    fetchData(fetchParams);
-  // TODO: se över denna lista. blir aktuellt om man vill utöka filtreringsmöjligheter
-  // OBS! lägg inte till `params`, då detta kommer att trigga en än ändring av getFetchParams
-  // för ofta och därmed en omhämtning av data
-  }, [currentPage, params.person_id, params.sort, params.order, sort, order, filter, yearFilter, mode, fetchData]);
+    fetchData(getFetchParams());
+  }, [
+    currentPage,
+    params.person_id,
+    params.sort,
+    params.order,
+    sort,
+    order,
+    filter,
+    yearFilter,
+    mode,
+    getFetchParams,
+    fetchData,
+  ]);
+
+  /* ---------- ui handlers ---------- */
 
   const loadMore = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
+    setCurrentPage((p) => p + 1);
     setLoadedMore(true);
   };
 
-  // Hantera interval för datahämtning
   useEffect(() => {
-    if (interval) {
-      const intervalId = setInterval(() => {
-        if (loadedMore) {
-          loadMore();
-        } else {
-          const fetchParams = getFetchParams();
-          fetchData(fetchParams);
-        }
-      }, interval);
-
-      return () => clearInterval(intervalId);
-    }
-    return undefined;
+    if (!interval) return;
+    const id = setInterval(() => {
+      if (loadedMore) {
+        loadMore();
+      } else {
+        fetchData(getFetchParams());
+      }
+    }, interval);
+    return () => clearInterval(id);
   }, [interval, loadedMore, getFetchParams, fetchData]);
+
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+    setCurrentPage(1);
+  };
 
   const handleStepPage = (step) => {
     if (disableRouterPagination) {
-      setCurrentPage((prev) => {
-        const nextPage = prev + step;
-        if (nextPage > maxPage) {
-          return maxPage;
-        }
-        if (nextPage < 1) {
-          return 1;
-        }
-        return nextPage;
-      });
+      setCurrentPage((prev) => Math.min(Math.max(prev + step, 1), maxPage));
     } else {
       const newPage = currentPage + step;
       if (newPage <= maxPage && newPage >= 1) {
@@ -271,56 +261,29 @@ export default function RecordList({
     }
   };
 
-  const handleSort = (sortField) => {
-    const newOrder = sort === sortField && order === 'asc' ? 'desc' : 'asc';
-    setSort(sortField);
+  const handleSort = (field) => {
+    const newOrder = sort === field && order === "asc" ? "desc" : "asc";
+    setSort(field);
     setOrder(newOrder);
     setCurrentPage(1);
   };
 
-  const handleYearFilter = (firstYear, lastYear) => {
-    setYearFilter([firstYear, lastYear]);
-  };
-
-  const resetYearFilter = () => {
-    setYearFilter(null);
-  };
+  const handleYearFilter = (f, l) => setYearFilter([f, l]);
+  const resetYearFilter = () => setYearFilter(null);
 
   const archiveIdClick = (e) => {
     const { archiveidrow, recordtype, search } = e.target.dataset;
     if (archiveidrow) {
-      const newParams = { search, recordtype };
-      navigate(`/records/${archiveidrow}${createSearchRoute(newParams)}`);
+      navigate(
+        `/records/${archiveidrow}${createSearchRoute({ search, recordtype })}`
+      );
     }
   };
 
-  const renderListPagination = () => (
-    !disableListPagination && (
-      <Pagination
-        currentPage={currentPage}
-        total={total}
-        onStep={handleStepPage}
-        maxPage={maxPage}
-      />
-    )
-  );
+  const shouldRenderColumn = (name) =>
+    columns ? columns.includes(name) : true;
 
-  // const renderMoreButton = () => (
-  //   sizeMore && records.length < sizeMore && (
-  //     <div>
-  //       <button className="button" onClick={loadMore} type="button">
-  //         {l('Visa fler')}
-  //       </button>
-  //     </div>
-  //   )
-  // );
-
-  const shouldRenderColumn = (columnName) => {
-    if (columns) {
-      return columns.includes(columnName);
-    }
-    return true;
-  };
+  /* ---------- rows ---------- */
 
   const items = records.map((item) => (
     <RecordListItem
@@ -339,6 +302,8 @@ export default function RecordList({
     />
   ));
 
+  /* ---------- render ---------- */
+
   return (
     <>
       {hasFilter && (
@@ -349,6 +314,7 @@ export default function RecordList({
           openHelp={openSwitcherHelptext}
         />
       )}
+
       {hasTimeline && (
         <Timeline
           containerRef={containerRef}
@@ -359,78 +325,116 @@ export default function RecordList({
           resetOnYearFilter={resetYearFilter}
         />
       )}
+
+      {/* List wrapper */}
       {!fetchingPage && (
         <div
-          className={`${tableClass || ''} table-wrapper records-list list-container${records.length === 0 ? ' loading' : fetchingPage ? ' loading-page' : ''
+          className={`${tableClass} table-wrapper records-list list-container ${
+            records.length === 0 ? "min-h-[200px]" : ""
           }`}
         >
-          {!disableListPagination && renderListPagination()}
+          {!disableListPagination && (
+            <Pagination
+              currentPage={currentPage}
+              total={total}
+              onStep={handleStepPage}
+              maxPage={maxPage}
+            />
+          )}
 
-          <table width="100%" className="table-responsive">
+          <table className="table-responsive w-full text-sm border-separate">
             <thead>
-              <tr>
-                {shouldRenderColumn('title') && <th scope="col" className="text-left">{l('Titel')}</th>}
-                {shouldRenderColumn('archive_id')
-                  && (!siteOptions.recordList
-                    || siteOptions.recordList.hideAccessionpage !== true) && (
-                    <th scope="col" className="text-left">
+              <tr className="hidden md:table-row">
+                {shouldRenderColumn("title") && (
+                  <th className="text-left w-1/2">{l("Titel")}</th>
+                )}
+
+                {shouldRenderColumn("archive_id") &&
+                  !siteOptions.recordList?.hideAccessionpage && (
+                    <th className="text-left">
                       <button
-                        type="button"
-                        className="sort"
-                        onClick={() => handleSort('archive.archive_id_row.keyword')}
+                        className="sort text-isof"
+                        onClick={() =>
+                          handleSort("archive.archive_id_row.keyword")
+                        }
                       >
-                        {sort === 'archive.archive_id_row.keyword' && (order === 'asc' ? '▼' : '▲')}
-                        {l('Arkivnummer')}
-                        {params.recordtype === 'one_record' && ':Sida'}
+                        {sort === "archive.archive_id_row.keyword" &&
+                          (order === "asc" ? "▼" : "▲")}{" "}
+                        {l("Arkivnummer")}
+                        {params.recordtype === "one_record" && ":Sida"}
                       </button>
                     </th>
+                  )}
+
+                {shouldRenderColumn("place") && (
+                  <th className="text-left">{l("Ort")}</th>
                 )}
-                {shouldRenderColumn('place') && <th scope="col" className="text-left">{l('Ort')}</th>}
-                {shouldRenderColumn('collector')
-                  && (!siteOptions.recordList
-                    || siteOptions.recordList.visibleCollecorPersons !== false) && <th scope="col" className="text-left">{l('Insamlare')}</th>}
-                {shouldRenderColumn('year') && (
-                  <th scope="col" className="text-left">
-                    <button type="button" className="sort" onClick={() => handleSort('year')}>
-                      {sort === 'year' && (order === 'asc' ? '▼' : '▲')}
-                      {l('År')}
+
+                {shouldRenderColumn("collector") &&
+                  siteOptions.recordList?.visibleCollecorPersons !== false && (
+                    <th className="text-left">{l("Insamlare")}</th>
+                  )}
+
+                {shouldRenderColumn("year") && (
+                  <th className="text-left">
+                    <button
+                      className="sort text-isof"
+                      onClick={() => handleSort("year")}
+                    >
+                      {sort === "year" && (order === "asc" ? "▼" : "▲")}{" "}
+                      {l("År")}
                     </button>
                   </th>
                 )}
-                {shouldRenderColumn('material_type')
-                  && (!siteOptions.recordList || siteOptions.recordList.hideMaterialType !== true) && (
-                    <th scope="col" className="text-left">{l('Materialtyp')}</th>
-                )}
-                {shouldRenderColumn('transcriptionstatus')
-                  && (!siteOptions.recordList
-                    || siteOptions.recordList.hideTranscriptionStatus !== true) && (
-                    <th scope="col" className="text-left">
+
+                {shouldRenderColumn("material_type") &&
+                  !siteOptions.recordList?.hideMaterialType && (
+                    <th className="text-left">{l("Materialtyp")}</th>
+                  )}
+
+                {shouldRenderColumn("transcriptionstatus") &&
+                  !siteOptions.recordList?.hideTranscriptionStatus && (
+                    <th className="text-left">
                       <button
-                        type="button"
-                        className="sort"
-                        onClick={() => handleSort('transcriptionstatus')}
+                        className="sort text-isof"
+                        onClick={() => handleSort("transcriptionstatus")}
                       >
-                        {sort === 'transcriptionstatus' && (order === 'asc' ? '▼' : '▲')}
-                        {l('Klara')}
+                        {sort === "transcriptionstatus" &&
+                          (order === "asc" ? "▼" : "▲")}{" "}
+                        {l("Klara")}
                       </button>
                     </th>
-                )}
-                {columns && columns.includes('transcribedby') && (
-                  <th scope="col" className="text-left">{l('Transkriberad av')}</th>
+                  )}
+
+                {columns?.includes("transcribedby") && (
+                  <th className="text-left">{l("Transkriberad av")}</th>
                 )}
               </tr>
             </thead>
+
             <tbody>{items}</tbody>
           </table>
 
-          {!disableListPagination && renderListPagination()}
-          {/* {renderMoreButton()} */}
+          {!disableListPagination && (
+            <Pagination
+              currentPage={currentPage}
+              total={total}
+              onStep={handleStepPage}
+              maxPage={maxPage}
+            />
+          )}
         </div>
       )}
-      {fetchingPage && <p className="page-info"><strong>Söker...</strong></p>}
+
+      {fetchingPage && (
+        <p className="page-info text-center">
+          <strong>{l("Söker...")}</strong>
+        </p>
+      )}
+
       {!fetchingPage && records.length === 0 && (
-        <div className="table-wrapper list-container">
-          <h3>{l('Inga sökträffar.')}</h3>
+        <div className="table-wrapper list-container text-center py-10">
+          <h3>{l("Inga sökträffar.")}</h3>
         </div>
       )}
     </>
@@ -446,7 +450,6 @@ RecordList.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   interval: PropTypes.number,
   openSwitcherHelptext: PropTypes.func,
-  // sizeMore: PropTypes.number,
   tableClass: PropTypes.string,
   params: PropTypes.objectOf(PropTypes.any),
   mode: PropTypes.string,
