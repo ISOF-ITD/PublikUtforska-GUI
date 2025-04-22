@@ -163,12 +163,11 @@ export default function RecordListItem({
 
   /* ---------- render‑helpers ---------- */
 
-  const badgeClasses = "inline-block bg-white shadow-sm border border-gray-200 rounded px-2 py-0.5 text-sm mr-2 mb-2";
-  const pillClasses  = "inline-block bg-white shadow-sm border border-gray-200 rounded px-1.5 py-0.5 text-sm mr-1 mb-1";
-
+  const pillClasses  = "inline-flex flex-wrap max-w-full !bg-white shadow !border !border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs";
+  
   const renderFieldArchiveId = () => {
     const base = (
-      <span className="whitespace-nowrap">
+      <span className="py-2 whitespace-nowrap md:whitespace-normal">
         {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
         {archive.page &&
           `:${
@@ -184,7 +183,7 @@ export default function RecordListItem({
       return (
         <td
           data-title={`${l("Arkivnummer")}:`}
-          className="py-2 whitespace-nowrap"
+          className="py-2 whitespace-nowrap md:whitespace-normal"
         >
           <span className={`${pillClasses}`}>{base}</span>
         </td>
@@ -196,7 +195,7 @@ export default function RecordListItem({
       return (
         <td
           data-title={`${l("Arkivnummer")}:`}
-          className="py-2 whitespace-nowrap"
+          className="py-2 whitespace-nowrap md:whitespace-normal"
         >
           <a
             data-archiveidrow={archive.archive_id_row}

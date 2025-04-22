@@ -9,6 +9,7 @@ import Timeline from "./Timeline";
 import { createSearchRoute } from "../../utils/routeHelper";
 import Filter from "./Filter";
 import config from "../../config";
+import { RecordCardItem } from "./RecordCardItem";
 
 const {
   filterParameterName,
@@ -27,7 +28,11 @@ function Pagination({ currentPage, total, onStep, maxPage }) {
   if (total <= 2) return null;
 
   return (
-    <div className="my-4 flex items-center gap-4 text-sm">
+    <nav
+      className="my-4 flex items-center gap-4 text-sm"
+      role="navigation"
+      aria-label="paginering"
+    >
       <p>
         <strong>
           {`${l("Visar")} ${from}-${to} ${l(total ? "av" : "")} ${total || ""}`}
@@ -64,7 +69,7 @@ function Pagination({ currentPage, total, onStep, maxPage }) {
           )}
         </span>
       )}
-    </div>
+    </nav>
   );
 }
 
@@ -342,78 +347,117 @@ export default function RecordList({
             />
           )}
 
-          <table className="w-full text-sm border-collapse md:table-fixed">
-            <thead className="sr-only md:not-sr-only !py-4">
-              <tr className="block md:table-row border-b border-gray-300 last:border-0">
-                {shouldRenderColumn("title") && (
-                  <th className="text-left w-1/2">{l("Titel")}</th>
-                )}
+          <div className="md:hidden space-y-4">
+            {records.map((rec) => (
+              <RecordCardItem
+                key={rec._source.id}
+                item={rec}
+                searchParams={params}
+                mode={mode}
+              />
+            ))}
+          </div>
 
-                {shouldRenderColumn("archive_id") &&
-                  !siteOptions.recordList?.hideAccessionpage && (
-                    <th className="text-left">
-                      <a
-                        className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter whitespace-nowrap"
-                        onClick={() =>
-                          handleSort("archive.archive_id_row.keyword")
-                        }
-                      >
-                        {sort === "archive.archive_id_row.keyword" &&
-                          (order === "asc" ? "▼" : "▲")}{" "}
-                        {l("Arkivnummer")}
-                        {params.recordtype === "one_record" && ":Sida"}
-                      </a>
+          <div className="hidden md:block">
+            <table
+              className="mobile-table w-full text-sm border-collapse"
+              role="table"
+            >
+              <thead className="hidden md:table-header-group">
+                <tr className="block md:table-row border-b border-gray-300 last:border-0">
+                  {shouldRenderColumn("title") && (
+                    <th className="text-left w-1/2">{l("Titel")}</th>
+                  )}
+
+                  {shouldRenderColumn("archive_id") &&
+                    !siteOptions.recordList?.hideAccessionpage && (
+                      <th scope="col" className="text-left">
+                        <a
+                          onClick={() =>
+                            handleSort("archive.archive_id_row.keyword")
+                          }
+                          className="flex items-center gap-1 text-sky-900 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-isof-lighter"
+                          aria-sort={
+                            sort === "archive.archive_id_row.keyword"
+                              ? order
+                              : "none"
+                          }
+                        >
+                          {l("Arkivnummer")}
+                          {sort === "archive.archive_id_row.keyword" &&
+                            (order === "asc" ? "▼" : "▲")}
+                        </a>
+                      </th>
+                    )}
+
+                  {shouldRenderColumn("place") && (
+                    <th className="text-left" scope="col">
+                      {l("Ort")}
                     </th>
                   )}
 
-                {shouldRenderColumn("place") && (
-                  <th className="text-left">{l("Ort")}</th>
-                )}
+                  {shouldRenderColumn("collector") &&
+                    siteOptions.recordList?.visibleCollecorPersons !==
+                      false && (
+                      <th className="text-left" scope="col">
+                        {l("Insamlare")}
+                      </th>
+                    )}
 
-                {shouldRenderColumn("collector") &&
-                  siteOptions.recordList?.visibleCollecorPersons !== false && (
-                    <th className="text-left">{l("Insamlare")}</th>
-                  )}
-
-                {shouldRenderColumn("year") && (
-                  <th className="text-left">
-                    <a
-                      className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
-                      onClick={() => handleSort("year")}
-                    >
-                      {sort === "year" && (order === "asc" ? "▼" : "▲")}{" "}
-                      {l("År")}
-                    </a>
-                  </th>
-                )}
-
-                {shouldRenderColumn("material_type") &&
-                  !siteOptions.recordList?.hideMaterialType && (
-                    <th className="text-left">{l("Materialtyp")}</th>
-                  )}
-
-                {shouldRenderColumn("transcriptionstatus") &&
-                  !siteOptions.recordList?.hideTranscriptionStatus && (
-                    <th className="text-left">
+                  {shouldRenderColumn("year") && (
+                    <th className="text-left" scope="col">
                       <a
                         className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
-                        onClick={() => handleSort("transcriptionstatus")}
+                        onClick={() => handleSort("year")}
                       >
-                        {sort === "transcriptionstatus" &&
-                          (order === "asc" ? "▼" : "▲")}{" "}
-                        {l("Klara")}
+                        {sort === "year" && (order === "asc" ? "▼" : "▲")}{" "}
+                        {l("År")}
                       </a>
                     </th>
                   )}
 
-                {columns?.includes("transcribedby") && (
-                  <th className="text-left">{l("Transkriberad av")}</th>
-                )}
-              </tr>
-            </thead>
+                  {shouldRenderColumn("material_type") &&
+                    !siteOptions.recordList?.hideMaterialType && (
+                      <th className="text-left" scope="col">
+                        {l("Materialtyp")}
+                      </th>
+                    )}
 
-            <tbody className="[&>tr]:block md:[&>tr]:table-row">{items}</tbody>
-          </table>
+                  {shouldRenderColumn("transcriptionstatus") &&
+                    !siteOptions.recordList?.hideTranscriptionStatus && (
+                      <th className="text-left" scope="col">
+                        <a
+                          className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
+                          onClick={() => handleSort("transcriptionstatus")}
+                        >
+                          {sort === "transcriptionstatus" &&
+                            (order === "asc" ? "▼" : "▲")}{" "}
+                          {l("Klara")}
+                        </a>
+                      </th>
+                    )}
+
+                  {columns?.includes("transcribedby") && (
+                    <th className="text-left" scope="col">
+                      {l("Transkriberad av")}
+                    </th>
+                  )}
+                </tr>
+              </thead>
+
+              <tbody className="[&>tr]:block md:[&>tr]:table-row [&>td]:flex [&>td]:justify-between [&>td]:gap-2">
+                <tr className="sr-only md:hidden">
+                  <th scope="col">{l("Titel")}</th>
+                  <th scope="col">{l("Arkivnummer")}</th>
+                  <th scope="col">{l("Ort")}</th>
+                  <th scope="col">{l("Insamlare")}</th>
+                  <th scope="col">{l("År")}</th>
+                  <th scope="col">{l("Klara")}</th>
+                </tr>
+                {items}
+              </tbody>
+            </table>
+          </div>
 
           {!disableListPagination && (
             <Pagination
