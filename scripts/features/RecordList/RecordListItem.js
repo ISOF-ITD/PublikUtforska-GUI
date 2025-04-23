@@ -10,8 +10,7 @@ import {
 import { useNavigate, useParams, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import ListPlayButton from "../../features/AudioDescription/ListPlayButton";
-import TranscribeButton from "./transcribe/TranscribeButton";
-import HighlightedText from "../HighlightedText";
+import HighlightedText from "./HighlightedText";
 
 import config from "../../config";
 import { l } from "../../lang/Lang";
@@ -28,9 +27,9 @@ import {
   fetchRecordMediaCount,
 } from "../../utils/helpers";
 
-import RecordsCollection from "../collections/RecordsCollection";
-
+import RecordsCollection from "../../components/collections/RecordsCollection";
 import PdfGif from "../../../img/pdf.gif";
+import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
 
 export default function RecordListItem({
   id,
@@ -163,8 +162,9 @@ export default function RecordListItem({
 
   /* ---------- render‑helpers ---------- */
 
-  const pillClasses  = "inline-flex flex-wrap max-w-full !bg-white shadow !border !border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs";
-  
+  const pillClasses =
+    "inline-flex flex-wrap max-w-full !bg-white shadow !border !border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs";
+
   const renderFieldArchiveId = () => {
     const base = (
       <span className="py-2 whitespace-nowrap md:whitespace-normal">
@@ -366,8 +366,6 @@ export default function RecordListItem({
         }
   )}`;
 
-  /* ---------- render ---------- */
-
   return (
     <tr
       className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-50 ${
@@ -431,7 +429,6 @@ export default function RecordListItem({
             <HighlightedText text={highlight.text[0]} className="block mt-2" />
           )}
 
-          {/* inner hits for type="sida" */}
           {innerHits?.media?.hits?.hits.map(
             (hit) =>
               hit.highlight["media.text"] && (
@@ -449,10 +446,11 @@ export default function RecordListItem({
               <small>
                 <a
                   onClick={toggleSubrecords}
-                  className="text-isof underline cursor-pointer !ml-1"
+                  className="text-isof hover:underline cursor-pointer"
                 >
                   <FontAwesomeIcon
                     icon={visibleSubrecords ? faFolderOpen : faFolder}
+                    className="mr-1"
                   />
                   {!visibleSubrecords && " Visa "}
                   {transcriptiontype === "audio"

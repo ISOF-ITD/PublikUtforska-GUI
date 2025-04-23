@@ -8,7 +8,7 @@ import FilterSwitch from './FilterSwitch';
 import StatisticsContainer from './StatisticsContainer';
 import Folkelogga from '../../img/folke-white.svg';
 import TranscribeButton from './views/transcribe/TranscribeButton';
-import RecordList from './views/RecordList';
+import RecordList from '../features/RecordList/RecordList';
 import { l } from '../lang/Lang';
 import config from '../config';
 

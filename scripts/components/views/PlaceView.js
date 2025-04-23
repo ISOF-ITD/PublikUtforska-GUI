@@ -6,12 +6,12 @@ import {
 
 import { Suspense, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import RecordList from './RecordList';
 import SimpleMap from './SimpleMap';
 
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 import config from '../../config';
 import { l } from '../../lang/Lang';
+import RecordList from '../../features/RecordList/RecordList';
 
 export default function PlaceView({ highlightRecordsWithMetadataField = null, mode = 'material' }) {
   const { results } = useLoaderData();
