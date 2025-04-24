@@ -13,7 +13,7 @@ import {
   faChevronRight,
   faMapMarkedAlt,
   faPencil,
-  faUser, // Make sure this is imported
+  faUser,
   faTag,
   faCheckCircle,
   faFileLines,
@@ -33,9 +33,9 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
       media,
       metadata,
       places,
-      persons, // Add this
+      persons,
       transcriptiontype,
-      transcriptionstatus, // Add this
+      transcriptionstatus,
       title,
       contents,
       year,
@@ -60,12 +60,11 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
     !!item.text &&
     item.text.length > 0;
 
-  // Add collector filtering
+  // Collector filtering
   const collectorPersons = persons?.filter((p) =>
     ["c", "collector", "interviewer", "recorder"].includes(p.relation)
   );
 
-  /* Add this status config - might already exist in your component */
   const statusConfig = {
     readytotranscribe: {
       text: l("Klar för avskrift"),
