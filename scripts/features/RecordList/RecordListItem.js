@@ -1,7 +1,11 @@
 /* eslint-disable react/require-default-props */
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolder, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFolder,
+  faFolderOpen,
+  faCommentDots,
+} from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
 
 import HighlightedText from "./HighlightedText";
@@ -95,6 +99,29 @@ export default function RecordListItem(props) {
     config.siteOptions.recordList?.displayPlayButton &&
     media.find((m) => m.type === "audio");
 
+  /* ---------- #beskrivningar for AUDIO ---------- */
+  /* ---------- helper to count beskrivningar ---------- */
+  const countDescriptionsInMedia = (mediaArr = []) =>
+    mediaArr.reduce(
+      (acc, m) =>
+        acc + (Array.isArray(m.description) ? m.description.length : 0),
+      0
+    );
+
+  const descriptionCountSelf = countDescriptionsInMedia(media);
+
+  // descriptions that live in every sub-record’s media (if we have them)
+  const descriptionCountSubrecords =
+    recordtype === "one_accession_row"
+      ? subrecords.reduce(
+          (acc, sr) => acc + countDescriptionsInMedia(sr._source.media),
+          0
+        )
+      : 0;
+
+  // grand total for the badge
+  const descriptionCount = descriptionCountSelf + descriptionCountSubrecords;
+
   /* ---------- hrefs ---------- */
   const recordHref = `${
     mode === "transcribe" ? "/transcribe" : ""
@@ -117,7 +144,7 @@ export default function RecordListItem(props) {
     >
       {/* ---------- title (mobile+desktop) ---------- */}
       {shouldRenderColumn("title", columns) && (
-        <td className={`${smallTitle ? "" : "text-base"} !pl-2 py-2 space-y-1`}>
+        <td className={`${smallTitle ? "" : "text-base"} !px-2 py-2 space-y-1`}>
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
@@ -210,7 +237,7 @@ export default function RecordListItem(props) {
                               })}`}
                               className={`${
                                 pub ? "font-bold" : ""
-                              } hover:underline`}
+                              } hover:underline text-isof`}
                             >
                               {transcriptiontype !== "audio" && (
                                 <>Sida {pageFromTo(s)}: </>
@@ -303,7 +330,9 @@ export default function RecordListItem(props) {
 
       {shouldRenderColumn("year", columns) && (
         <td data-title={`${l("År")}:`} className="py-2">
-          {year && <span className={`${pill} bg-white`}>{year.split("-")[0]}</span>}
+          {year && (
+            <span className={`${pill} bg-white`}>{year.split("-")[0]}</span>
+          )}
         </td>
       )}
 
@@ -319,8 +348,25 @@ export default function RecordListItem(props) {
           <TranscriptionStatus
             status={transcriptionstatus}
             type={recordtype === "one_accession_row" ? "accession" : "record"}
-            total={transcriptiontype === "sida" ? mediaCount : count}
-            done={transcriptiontype === "sida" ? mediaCountDone : countDone}
+            total={
+              transcriptiontype === "audio" || descriptionCount > 0
+                ? descriptionCount
+                : transcriptiontype === "sida"
+                ? mediaCount
+                : count
+            }
+            done={
+              transcriptiontype === "audio" || descriptionCount > 0
+                ? descriptionCount
+                : transcriptiontype === "sida"
+                ? mediaCountDone
+                : countDone
+            }
+            transcriptiontype={
+              transcriptiontype === "audio" || descriptionCount > 0
+                ? "audio"
+                : transcriptiontype
+            }
             pillClasses={pill}
           />
         </td>

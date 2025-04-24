@@ -1,5 +1,10 @@
+/* eslint-disable react/require-default-props */
 import PropTypes from "prop-types";
+import { l } from "../../lang/Lang";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 
+/*  Swedish labels for page-/text-based material */
 const labels = {
   readytotranscribe: "Nej",
   undertranscription: "Skrivs av",
@@ -12,12 +17,36 @@ const labels = {
 
 export default function TranscriptionStatus({
   status,
-  type /* "accession" | "record" */,
+  type,
   total,
   done,
   pillClasses,
+  transcriptiontype,
 }) {
-  /* record-level pill */
+  /* ─────────────────────────────────────────────────────────────
+     AUDIO: show a passive counter
+  ───────────────────────────────────────────────────────────── */
+  if (transcriptiontype === "audio") {
+    const count = done ?? 0;
+    const bg = count ? "bg-lighter-isof" : "bg-white";
+
+    return (
+      <span
+        className={`${bg} flex items-center gap-1 flex-nowrap ${pillClasses}`}
+        title={`${count} ${l("beskrivningar")}`}
+        aria-label={`${count} ${l("beskrivningar")}`}
+      >
+        <FontAwesomeIcon icon={faCommentDots} />
+        {count}
+        {/* visually-hidden word for screen readers only */}
+        <span className="sr-only"> {l("beskrivningar")}</span>
+      </span>
+    );
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     RECORD-LEVEL pill for handwritten/text pages 
+  ───────────────────────────────────────────────────────────── */
   if (status && status !== "accession") {
     return (
       <span
@@ -30,8 +59,10 @@ export default function TranscriptionStatus({
     );
   }
 
-  /* accession progress bar */
-  if (type === "accession" && total) {
+  /* ─────────────────────────────────────────────────────────────
+     ACCESSION progress bar for scanned pages 
+  ───────────────────────────────────────────────────────────── */
+  if (type === "accession" && total && transcriptiontype !== "audio") {
     const pct = Math.round((done / total) * 100);
     return (
       <div className="mr-2 space-y-1">
@@ -58,4 +89,5 @@ TranscriptionStatus.propTypes = {
   total: PropTypes.number,
   done: PropTypes.number,
   pillClasses: PropTypes.string.isRequired,
+  transcriptiontype: PropTypes.string,
 };

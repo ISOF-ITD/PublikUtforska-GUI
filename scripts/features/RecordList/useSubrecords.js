@@ -70,6 +70,16 @@ export default function useSubrecords({
     setLoaded(true);
   }, [loaded, id]);
 
+  useEffect(() => {
+    if (
+      recordtype === "one_accession_row" &&
+      transcriptiontype === "audio" &&
+      !loaded
+    ) {
+      loadList();
+    }
+  }, [recordtype, transcriptiontype, loaded, loadList]);
+
   const toggle = () => {
     setVisible((v) => !v);
     if (!loaded) loadList();
