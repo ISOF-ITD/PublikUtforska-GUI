@@ -1,39 +1,42 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFolder,
-  faFolderOpen,
-  faFileLines,
-  faVolumeHigh,
-} from "@fortawesome/free-solid-svg-icons";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { faFolder, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
-import ListPlayButton from "../../features/AudioDescription/ListPlayButton";
+
 import HighlightedText from "./HighlightedText";
+import MediaIcons from "./MediaIcons";
+import TranscriptionStatus from "./TranscriptionStatus";
+import AccessionIdCell from "./AccessionIdCell";
+import CollectorList from "./CollectorList";
+import ListPlayButton from "../../features/AudioDescription/ListPlayButton";
+import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
 
-import config from "../../config";
 import { l } from "../../lang/Lang";
-
+import config from "../../config";
 import {
   createSearchRoute,
   createParamsFromSearchRoute,
 } from "../../utils/routeHelper";
-import {
-  pageFromTo,
-  getTitle,
-  makeArchiveIdHumanReadable,
-  getPlaceString,
-  fetchRecordMediaCount,
-} from "../../utils/helpers";
+import { getTitle, getPlaceString, pageFromTo } from "../../utils/helpers";
 
-import RecordsCollection from "../../components/collections/RecordsCollection";
-import PdfGif from "../../../img/pdf.gif";
-import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import useSubrecords from "./useSubrecords";
 
-export default function RecordListItem({
-  id,
-  item: {
+export default function RecordListItem(props) {
+  const {
+    id,
+    item,
+    searchParams,
+    useRouteParams,
+    archiveIdClick,
+    columns,
+    shouldRenderColumn,
+    highlightRecordsWithMetadataField,
+    mode,
+    smallTitle,
+  } = props;
+
+  const {
     _source: {
       archive,
       contents,
@@ -51,309 +54,48 @@ export default function RecordListItem({
       transcriptionstatus,
       transcriptiontype,
       year,
-      numberofpages,
-      numberofonerecord,
-      numberoftranscribedonerecord,
-      numberoftranscribedpages,
     },
     highlight,
     inner_hits: innerHits,
-  },
-  searchParams,
-  useRouteParams = false,
-  archiveIdClick,
-  columns = null,
-  shouldRenderColumn,
-  highlightRecordsWithMetadataField = null,
-  mode = "material",
-  smallTitle = false,
-}) {
-  /* ---------- state & data loading ---------- */
-
-  const [subrecords, setSubrecords] = useState([]);
-  const [fetchedSubrecords, setFetchedSubrecords] = useState(false);
-  const [visibleSubrecords, setVisibleSubrecords] = useState(false);
-  const [numberOfSubrecords, setNumberOfSubrecords] = useState(0);
-  const [numberOfTranscribedSubrecords, setNumberOfTranscribedSubrecords] =
-    useState(0);
-  const [numberOfSubrecordsMedia, setNumberOfSubrecordsMedia] = useState(0);
-  const [
-    numberOfTranscribedSubrecordsMedia,
-    setNumberOfTranscribedSubrecordsMedia,
-  ] = useState(0);
+  } = item;
 
   const navigate = useNavigate();
   const params = useParams();
+  const pill =
+    "inline-flex flex-wrap max-w-full shadow border border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs";
 
-  const fetchRecordCount = async (functionScopeParams, setValue) => {
-    try {
-      const queryParams = { ...config.requiredParams, ...functionScopeParams };
-      const queryParamsString = Object.entries(queryParams)
-        .map(([key, value]) => `${key}=${value}`)
-        .join("&");
-      const response = await fetch(
-        `${config.apiUrl}count?${queryParamsString}`
-      );
-      if (response.ok) {
-        const json = await response.json();
-        setValue(json.data.value);
-      } else {
-        throw new Error("Fel vid hämtning av antal uppteckningar");
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    if (recordtype === "one_accession_row") {
-      const oneRecordParams = { search: id, recordtype: "one_record" };
-      const transcribedOneRecordParams = {
-        search: id,
-        recordtype: "one_record",
-        transcriptionstatus: "published,transcribed",
-      };
-      const oneRecordPagesParams = { search: id };
-      const transcribedOneRecordPagesParams = {
-        search: id,
-        transcriptionstatus: "published,transcribed",
-      };
-
-      if (transcriptiontype === "sida") {
-        if (Number.isInteger(numberofpages)) {
-          setNumberOfSubrecordsMedia(numberofpages);
-          setNumberOfTranscribedSubrecordsMedia(numberoftranscribedpages);
-        } else {
-          fetchRecordMediaCount(
-            oneRecordPagesParams,
-            setNumberOfSubrecordsMedia,
-            setNumberOfTranscribedSubrecordsMedia
-          );
-        }
-      }
-
-      if (Number.isInteger(numberofonerecord)) {
-        setNumberOfSubrecords(numberofonerecord);
-        setNumberOfTranscribedSubrecords(numberoftranscribedonerecord);
-      } else {
-        fetchRecordCount(oneRecordParams, setNumberOfSubrecords);
-        fetchRecordCount(
-          transcribedOneRecordParams,
-          setNumberOfTranscribedSubrecords
-        );
-      }
-    }
-  }, []);
-
-  const collections = new RecordsCollection((json) => {
-    setSubrecords(json.data);
+  /* ---------- sub-records hook ---------- */
+  const {
+    subrecords,
+    visible,
+    toggle,
+    count,
+    countDone,
+    mediaCount,
+    mediaCountDone,
+  } = useSubrecords({
+    recordtype,
+    id,
+    ...item._source,
   });
 
-  const fetchData = () => {
-    setFetchedSubrecords(true);
-    const fetchParams = { search: id, recordtype: "one_record" };
-    collections.fetch(fetchParams);
-  };
-
-  const toggleSubrecords = () => {
-    setVisibleSubrecords(!visibleSubrecords);
-    if (!fetchedSubrecords) fetchData();
-  };
-
-  /* ---------- render‑helpers ---------- */
-
-  const pillClasses =
-    "inline-flex flex-wrap max-w-full !bg-white shadow !border !border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs";
-
-  const renderFieldArchiveId = () => {
-    const base = (
-      <span className="py-2 whitespace-nowrap md:whitespace-normal">
-        {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
-        {archive.page &&
-          `:${
-            recordtype === "one_record"
-              ? pageFromTo({ _source: { archive } })
-              : archive.page
-          }`}
-      </span>
-    );
-
-    // one_accession_row
-    if (recordtype === "one_accession_row") {
-      return (
-        <td
-          data-title={`${l("Arkivnummer")}:`}
-          className="py-2 whitespace-nowrap md:whitespace-normal"
-        >
-          <span className={`${pillClasses}`}>{base}</span>
-        </td>
-      );
-    }
-
-    // one_record
-    if (recordtype === "one_record") {
-      return (
-        <td
-          data-title={`${l("Arkivnummer")}:`}
-          className="py-2 whitespace-nowrap md:whitespace-normal"
-        >
-          <a
-            data-archiveidrow={archive.archive_id_row}
-            data-search={searchParams.search ?? ""}
-            data-recordtype={searchParams.recordtype}
-            onClick={archiveIdClick}
-            title={`Gå till accessionen ${archive.archive_id_row}`}
-            className={`${pillClasses} text-isof underline hover:bg-gray-100 cursor-pointer`}
-          >
-            {base}
-          </a>
-        </td>
-      );
-    }
-
-    // default
-    return (
-      <td data-title={`${l("Arkivnummer")}:`} className="py-2">
-        <a
-          data-archiveid={archive.archive_id}
-          data-recordtype={
-            searchParams.recordtype === "one_accession_row"
-              ? "one_record"
-              : "one_accession_row"
-          }
-          onClick={archiveIdClick}
-          title={`Gå till ${
-            searchParams.recordtype === "one_accession_row"
-              ? "uppteckningarna"
-              : "accessionerna"
-          }`}
-          className={`${pillClasses} underline text-isof hover:bg-gray-100 cursor-pointer`}
-        >
-          <span className={`${pillClasses}`}>{base}</span>
-        </a>
-      </td>
-    );
-  };
-
-  const audioItem =
-    config.siteOptions.recordList?.displayPlayButton &&
-    media.find((m) => m.type === "audio");
-
-  /* ---------- highlighted summary ---------- */
-
+  /* ---------- flags ---------- */
   const displayTextSummary =
     highlightRecordsWithMetadataField &&
     metadata.some((m) => m.type === highlightRecordsWithMetadataField);
 
-  const textSummary =
+  const summary =
     displayTextSummary && text
       ? text.length > 300
         ? `${text.slice(0, 300)}…`
         : text
       : "";
 
-  /* ---------- taxonomy / collector ---------- */
+  const audioItem =
+    config.siteOptions.recordList?.displayPlayButton &&
+    media.find((m) => m.type === "audio");
 
-  let taxonomyElement = null;
-  if (taxonomy && config.siteOptions.recordList?.visibleCategories) {
-    const { visibleCategories } = config.siteOptions.recordList;
-    const list = Array.isArray(taxonomy) ? taxonomy : [taxonomy];
-    taxonomyElement = list
-      .filter((t) => visibleCategories.includes(t.type.toLowerCase()))
-      .map((t, i) => (
-        <span key={`${id}-cat-${i}`} className="category">
-          {l(t.name)}
-        </span>
-      ));
-  }
-
-  let collectorPersonElement = null;
-  if (persons && config?.siteOptions?.recordList?.visibleCollecorPersons) {
-    collectorPersonElement = persons
-      .filter((p) =>
-        ["c", "collector", "interviewer", "recorder"].includes(p.relation)
-      )
-      .map((p) => (
-        <Link
-          to={`${
-            mode === "transcribe" ? "/transcribe" : ""
-          }/persons/${p.id.toLowerCase()}${createSearchRoute({
-            search: searchParams.search,
-            search_field: searchParams.search_field,
-          })}`}
-          key={`${id}-${p.id}`}
-          className={`${pillClasses} text-isof hover:underline`}
-        >
-          {l(p.name)}
-        </Link>
-      ));
-  }
-
-  /* ---------- transcription status ---------- */
-
-  const transcriptionStatuses = {
-    untranscribed: "",
-    nottranscribable: "",
-    readytotranscribe: "Nej",
-    undertranscription: "Skrivs av",
-    transcribed: "Granskas",
-    reviewing: "Granskas",
-    needsimprovement: "Granskas",
-    approved: "Granskas",
-    published: "Avskriven",
-  };
-
-  let transcriptionStatusElement = (
-    <span className="transcriptionstatus empty" />
-  );
-
-  // record‑level
-  if (transcriptionstatus && transcriptionstatus !== "accession") {
-    transcriptionStatusElement = (
-      <span className={`${transcriptionstatus} ${pillClasses}`}>
-        {transcriptionStatuses[transcriptionstatus]}
-      </span>
-    );
-  }
-
-  // accession progress bars
-  if (transcriptionstatus === "accession") {
-    const progressData =
-      transcriptiontype === "sida"
-        ? [numberOfSubrecordsMedia, numberOfTranscribedSubrecordsMedia]
-        : [numberOfSubrecords, numberOfTranscribedSubrecords];
-
-    const [totalPages, donePages] = progressData;
-    if (totalPages) {
-      const percent = Math.round((donePages / totalPages) * 100);
-      transcriptionStatusElement = (
-        <div className="mr-2 space-y-1">
-          <span className="text-sm">{`${donePages} av ${totalPages} ${
-            transcriptiontype === "sida" ? "sidor" : ""
-          }`}</span>
-          <div
-            className="h-2 w-full max-w-[200px] border border-isof rounded"
-            title={`${percent}%`}
-          >
-            <span
-              className="block h-full bg-isof rounded"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-        </div>
-      );
-    }
-  }
-
-  /* ---------- title ---------- */
-
-  const titleText =
-    transcriptionstatus === "readytotranscribe"
-      ? title
-        ? getTitle(title, contents, archive)
-        : ""
-      : getTitle(title, contents, archive, highlight);
-
+  /* ---------- hrefs ---------- */
   const recordHref = `${
     mode === "transcribe" ? "/transcribe" : ""
   }/records/${id}${createSearchRoute(
@@ -366,12 +108,14 @@ export default function RecordListItem({
         }
   )}`;
 
+  /* ---------- render ---------- */
   return (
     <tr
       className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-50 ${
         displayTextSummary ? "bg-gray-100" : ""
       }`}
     >
+      {/* ---------- title (mobile+desktop) ---------- */}
       {shouldRenderColumn("title", columns) && (
         <td className={`${smallTitle ? "" : "text-base"} py-2 space-y-1`}>
           <Link
@@ -379,8 +123,7 @@ export default function RecordListItem({
             target={config.embeddedApp ? "_parent" : "_self"}
             className="item-title text-isof hover:underline"
           >
-            {/* media icons */}
-            {audioItem && config.siteOptions.recordList?.displayPlayButton && (
+            {audioItem && (
               <ListPlayButton
                 disablePlayback
                 media={audioItem}
@@ -388,127 +131,97 @@ export default function RecordListItem({
                 recordTitle={title || l("(Utan titel)")}
               />
             )}
-            {media?.some((m) => m.source?.toLowerCase().includes(".pdf")) && (
-              <sub>
-                <img
-                  src={PdfGif}
-                  alt="pdf"
-                  title="Accession"
-                  className="mr-1 inline"
-                />
-              </sub>
-            )}
-            {media?.some((m) => m.source?.toLowerCase().includes(".jpg")) && (
-              <FontAwesomeIcon
-                icon={faFileLines}
-                className="mr-1 text-isof"
-                title="Uppteckning"
-              />
-            )}
-            {media?.some((m) => m.source?.toLowerCase().includes(".mp3")) && (
-              <FontAwesomeIcon
-                icon={faVolumeHigh}
-                className="mr-1 text-isof"
-                title="Inspelning"
-              />
-            )}
+            <MediaIcons media={media} />
             <span
               dangerouslySetInnerHTML={{
-                __html: titleText && titleText !== "[]" ? titleText : "",
+                __html: getTitle(
+                  title,
+                  contents,
+                  archive,
+                  transcriptionstatus === "readytotranscribe"
+                    ? undefined
+                    : highlight
+                ),
               }}
             />
           </Link>
 
-          {displayTextSummary && (
+          {summary && (
             <div className="item-summary text-sm text-gray-600 mt-2">
-              {textSummary}
+              {summary}
             </div>
           )}
 
+          {/* ES highlighted hits */}
           {highlight?.text?.[0] && (
             <HighlightedText text={highlight.text[0]} className="block mt-2" />
           )}
-
           {innerHits?.media?.hits?.hits.map(
             (hit) =>
               hit.highlight["media.text"] && (
                 <HighlightedText
-                  key={`${hit.highlight["media.text"][0]}-${hit._id}`}
+                  key={`${hit._id}`}
                   text={hit.highlight["media.text"][0]}
                   className="block mt-2"
                 />
               )
           )}
 
-          {/* subrecords */}
-          {recordtype === "one_accession_row" && numberOfSubrecords !== 0 && (
+          {/* sub-records accordion */}
+          {recordtype === "one_accession_row" && count !== 0 && (
             <div className="subrecords mt-1">
               <small>
                 <a
-                  onClick={toggleSubrecords}
+                  onClick={toggle}
                   className="text-isof hover:underline cursor-pointer"
                 >
                   <FontAwesomeIcon
-                    icon={visibleSubrecords ? faFolderOpen : faFolder}
+                    icon={visible ? faFolderOpen : faFolder}
                     className="mr-1"
                   />
-                  {!visibleSubrecords && " Visa "}
+                  {!visible && " Visa "}
                   {transcriptiontype === "audio"
                     ? "Inspelningar"
                     : "Uppteckningar"}
-                  {visibleSubrecords && " i den här accessionen"}(
-                  {numberOfSubrecords}){visibleSubrecords && ":"}
+                  {visible && " i den här accessionen"} ({count})
+                  {visible && ":"}
                 </a>
               </small>
 
-              {visibleSubrecords && (
+              {visible && (
                 <ul className="ml-2 mt-1 list-disc text-sm">
                   {subrecords
-                    .sort((a, b) =>
-                      parseInt(a._source.archive.page, 10) >
-                      parseInt(b._source.archive.page, 10)
-                        ? 1
-                        : -1
+                    .sort(
+                      (a, b) =>
+                        parseInt(a._source.archive.page, 10) -
+                        parseInt(b._source.archive.page, 10)
                     )
-                    .map((subItem) => {
-                      const published =
-                        subItem._source.transcriptionstatus === "published";
+                    .map((s) => {
+                      const pub = s._source.transcriptionstatus === "published";
                       return (
-                        <li
-                          key={`subitem${subItem._source.id}`}
-                          className="mb-1"
-                        >
+                        <li key={s._source.id} className="mb-1">
                           <small>
                             <Link
-                              className={`${
-                                published ? "font-bold" : ""
-                              } hover:underline`}
                               to={`${
                                 mode === "transcribe" ? "/transcribe" : ""
-                              }/records/${
-                                subItem._source.id
-                              }${createSearchRoute({
+                              }/records/${s._source.id}${createSearchRoute({
                                 search: searchParams.search,
                                 search_field: searchParams.search_field,
                               })}`}
+                              className={`${
+                                pub ? "font-bold" : ""
+                              } hover:underline`}
                             >
                               {transcriptiontype !== "audio" && (
-                                <>Sida {pageFromTo(subItem)}: </>
+                                <>Sida {pageFromTo(s)}: </>
                               )}
                               <span
                                 dangerouslySetInnerHTML={{
                                   __html: `${getTitle(
-                                    subItem._source.title,
-                                    subItem._source.contents,
-                                    subItem._source.archive
-                                  )}${
-                                    !published
-                                      ? subItem._source.transcriptiontype ===
-                                        "audio"
-                                        ? " (kan bidra)"
-                                        : " (ej avskriven)"
-                                      : ""
-                                  }`,
+                                    s._source.title,
+                                    s._source.contents,
+                                    s._source.archive
+                                  )}${!pub ? " (ej avskriven)" : ""}`,
                                 }}
                               />
                             </Link>
@@ -521,7 +234,7 @@ export default function RecordListItem({
             </div>
           )}
 
-          {/* transcribe button */}
+          {/* immediate transcribe button */}
           {transcriptionstatus === "readytotranscribe" && media.length > 0 && (
             <TranscribeButton
               className="button button-primary mt-2"
@@ -532,21 +245,27 @@ export default function RecordListItem({
               places={places}
               images={media}
               transcriptionType={transcriptiontype}
-              random={false}
             />
           )}
         </td>
       )}
 
-      {/* ---- Other columns ---- */}
+      {/* ---------- other columns ---------- */}
       {shouldRenderColumn("archive_id", columns) &&
-        !config.siteOptions.recordList?.hideAccessionpage &&
-        renderFieldArchiveId()}
+        !config.siteOptions.recordList?.hideAccessionpage && (
+          <AccessionIdCell
+            archive={archive}
+            recordtype={recordtype}
+            pillClasses={pill}
+            searchParams={searchParams}
+            archiveIdClick={archiveIdClick}
+          />
+        )}
 
       {shouldRenderColumn("place", columns) && (
         <td data-title={`${l("Ort")}:`} className="py-2">
           {places?.length > 0 && (
-            <div className={`${pillClasses} `}>
+            <div className={pill}>
               {places[0].specification && (
                 <span className="mr-1">{places[0].specification} i</span>
               )}
@@ -571,18 +290,20 @@ export default function RecordListItem({
         </td>
       )}
 
-      {shouldRenderColumn("collector", columns) &&
-        config.siteOptions.recordList?.visibleCollecorPersons && (
-          <td data-title={`${l("Insamlare")}:`} className="py-2">
-            {collectorPersonElement}
-          </td>
-        )}
+      {shouldRenderColumn("collector", columns) && (
+        <td data-title={`${l("Insamlare")}:`} className="py-2">
+          <CollectorList
+            persons={persons}
+            mode={mode}
+            searchParams={searchParams}
+            pillClasses={pill}
+          />
+        </td>
+      )}
 
       {shouldRenderColumn("year", columns) && (
         <td data-title={`${l("År")}:`} className="py-2">
-          {year && (
-            <span className={`${pillClasses}`}>{year.split("-")[0]}</span>
-          )}
+          {year && <span className={pill}>{year.split("-")[0]}</span>}
         </td>
       )}
 
@@ -595,15 +316,19 @@ export default function RecordListItem({
 
       {shouldRenderColumn("transcription_status", columns) && (
         <td data-title={`${l("Avskriven")}:`} className="py-2">
-          {transcriptionStatusElement}
+          <TranscriptionStatus
+            status={transcriptionstatus}
+            type={recordtype === "one_accession_row" ? "accession" : "record"}
+            total={transcriptiontype === "sida" ? mediaCount : count}
+            done={transcriptiontype === "sida" ? mediaCountDone : countDone}
+            pillClasses={pill}
+          />
         </td>
       )}
 
       {columns?.includes("transcribedby") && (
         <td data-title={`${l("Transkriberad av")}:`} className="py-2">
-          {transcribedby && (
-            <span className="transcribed-by text-sm">{transcribedby}</span>
-          )}
+          {transcribedby && <span className="text-sm">{transcribedby}</span>}
         </td>
       )}
     </tr>
