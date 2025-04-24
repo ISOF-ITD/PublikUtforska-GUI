@@ -62,7 +62,7 @@ export default function RecordListItem(props) {
   const navigate = useNavigate();
   const params = useParams();
   const pill =
-    "inline-flex flex-wrap max-w-full shadow border border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs";
+    "inline-flex flex-wrap max-w-full shadow border border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs bg-white";
 
   /* ---------- sub-records hook ---------- */
   const {
@@ -111,13 +111,13 @@ export default function RecordListItem(props) {
   /* ---------- render ---------- */
   return (
     <tr
-      className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-50 ${
+      className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-100 ${
         displayTextSummary ? "bg-gray-100" : ""
       }`}
     >
       {/* ---------- title (mobile+desktop) ---------- */}
       {shouldRenderColumn("title", columns) && (
-        <td className={`${smallTitle ? "" : "text-base"} py-2 space-y-1`}>
+        <td className={`${smallTitle ? "" : "text-base"} !pl-2 py-2 space-y-1`}>
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
@@ -303,7 +303,7 @@ export default function RecordListItem(props) {
 
       {shouldRenderColumn("year", columns) && (
         <td data-title={`${l("År")}:`} className="py-2">
-          {year && <span className={pill}>{year.split("-")[0]}</span>}
+          {year && <span className={`${pill} bg-white`}>{year.split("-")[0]}</span>}
         </td>
       )}
 

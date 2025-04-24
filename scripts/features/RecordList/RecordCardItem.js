@@ -122,34 +122,38 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
       </header>
 
       {/* Metadata Grid */}
-      <div className="mt-3 flex flex-wrap gap-2 text-sm">
+      <div className="mt-3 flex flex-col gap-2 text-sm">
         <div className="flex items-center gap-1.5">
           <FontAwesomeIcon icon={faArchive} className="flex-shrink-0" />
-          <span className="font-medium text-isof">{archiveId}</span>
+          <span className="font-medium text-isof">
+            <b>Arkivnummer:</b> {archiveId}
+          </span>
           {archive.page && (
             <span className="text-gray-500">:{pageFromTo(item)}</span>
           )}
         </div>
 
         {placeString && (
-          <div className="flex items-center gap-1.5">
-            <FontAwesomeIcon icon={faMapMarkedAlt} className="flex-shrink-0" />
-            <span className="text-gray-700">{placeString}</span>
+          <div className="flex items-center">
+            <span className="text-gray-700">
+              <b>Ort:</b> {placeString}
+            </span>
           </div>
         )}
 
         {year && (
-          <div className="flex items-center gap-1.5">
-            <FontAwesomeIcon icon={faCalendar} className="flex-shrink-0" />
-            <span className="text-gray-700">{year.split("-")[0]}</span>
+          <div className="flex items-center">
+            <span className="text-gray-700">
+              <b>År:</b> {year.split("-")[0]}
+            </span>
           </div>
         )}
 
         {config?.siteOptions?.recordList?.visibleCollecorPersons &&
           collectorPersons?.length > 0 && (
-            <div className="flex items-center gap-1.5">
-              <FontAwesomeIcon icon={faUser} className="flex-shrink-0" />
-              <div className="flex flex-wrap gap-1">
+            <div className="flex items-center">
+              <div className="flex flex-wrap gap-1  items-center">
+              <b>Insamlare:</b>
                 {collectorPersons.map((p) => (
                   <Link
                     key={p.id}

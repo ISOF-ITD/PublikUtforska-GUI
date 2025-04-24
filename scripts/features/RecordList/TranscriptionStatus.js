@@ -37,7 +37,7 @@ export default function TranscriptionStatus({
       <div className="mr-2 space-y-1">
         <span className="text-sm">{`${done} av ${total}`}</span>
         <div
-          className="h-2 w-full max-w-[200px] border border-isof rounded"
+          className="h-2 w-full max-w-[200px] !border !border-isof rounded"
           title={`${pct}%`}
         >
           <span

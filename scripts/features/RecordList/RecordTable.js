@@ -67,15 +67,15 @@ export default function RecordTable({
               )}
 
             {shouldRenderColumn("place") && (
-              <th className="text-left">{l("Ort")}</th>
+              <th className="text-center">{l("Ort")}</th>
             )}
 
             {shouldRenderColumn("collector") &&
               config.siteOptions.recordList?.visibleCollecorPersons !==
-                false && <th className="text-left">{l("Insamlare")}</th>}
+                false && <th className="text-center">{l("Insamlare")}</th>}
 
             {shouldRenderColumn("year") && (
-              <th className="text-left">
+              <th className="text-center">
                 <a
                   className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
                   onClick={() => handleSort("year")}
@@ -92,7 +92,7 @@ export default function RecordTable({
 
             {shouldRenderColumn("transcriptionstatus") &&
               !config.siteOptions.recordList?.hideTranscriptionStatus && (
-                <th className="text-left">
+                <th className="text-center">
                   <a
                     className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
                     onClick={() => handleSort("transcriptionstatus")}

@@ -12,21 +12,21 @@ export default function MediaIcons({ media }) {
     <>
       {media.some((m) => m.source?.toLowerCase().endsWith(".pdf")) && (
         <sub>
-          <img src={PdfGif} alt="pdf" className="mr-1 inline" />
+          <img src={PdfGif} alt="pdf" className="mx-1 inline" />
         </sub>
       )}
       {media.some((m) => m.source?.toLowerCase().endsWith(".jpg")) && (
         <FontAwesomeIcon
           icon={faFileLines}
           title="Uppteckning"
-          className="mr-1 text-isof"
+          className="mx-1 text-isof"
         />
       )}
       {media.some((m) => m.source?.toLowerCase().endsWith(".mp3")) && (
         <FontAwesomeIcon
           icon={faVolumeHigh}
           title="Inspelning"
-          className="mr-1 text-isof"
+          className="mx-1 text-isof"
         />
       )}
     </>

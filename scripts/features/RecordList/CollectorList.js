@@ -27,7 +27,7 @@ export default function CollectorList({
         search: searchParams.search,
         search_field: searchParams.search_field,
       })}`}
-      className={`${pillClasses} text-isof hover:underline`}
+      className={`${pillClasses} bg-white text-isof hover:underline`}
     >
       {l(p.name)}
     </Link>

@@ -44,7 +44,7 @@ export default function AccessionIdCell({
           data-search={searchParams.search ?? ""}
           data-recordtype={searchParams.recordtype}
           onClick={archiveIdClick}
-          className={`${pillClasses} text-isof underline hover:bg-gray-100 cursor-pointer`}
+          className={`${pillClasses} bg-white text-isof underline hover:bg-gray-100 cursor-pointer`}
         >
           {base}
         </a>
@@ -62,7 +62,7 @@ export default function AccessionIdCell({
             : "one_accession_row"
         }
         onClick={archiveIdClick}
-        className={`${pillClasses} underline text-isof hover:bg-gray-100 cursor-pointer`}
+        className={`${pillClasses} underline text-isof bg-white hover:bg-gray-100 cursor-pointer`}
       >
         {base}
       </a>

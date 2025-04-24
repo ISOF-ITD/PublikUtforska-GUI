@@ -12,7 +12,7 @@ export default function Pagination({ currentPage, total, onStep, maxPage }) {
 
   return (
     <nav
-      className="my-4 flex items-center gap-4 text-sm"
+      className="my-4 flex flex-col items-start gap-4 text-sm"
       role="navigation"
       aria-label="paginering"
     >
@@ -23,25 +23,25 @@ export default function Pagination({ currentPage, total, onStep, maxPage }) {
       </p>
 
       {total > hitsPerPage && (
-        <>
+        <div className="flex gap-3">
           <button
             disabled={currentPage === 1}
-            className="px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40"
+            className="inline-flex items-center justify-center px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40"
             onClick={() => onStep(-1)}
             type="button"
           >
-            {l("Föregående")}
+            <span>{l("Föregående")}</span>
           </button>
 
           <button
             disabled={currentPage >= maxPage}
-            className="px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40"
+            className="inline-flex items-center justify-center px-3 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40"
             onClick={() => onStep(1)}
             type="button"
           >
-            {l("Nästa")}
+            <span>{l("Nästa")}</span>
           </button>
-        </>
+        </div>
       )}
 
       {total >= maxTotal && currentPage >= maxPage && (
