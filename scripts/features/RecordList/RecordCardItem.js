@@ -50,9 +50,10 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
   /* ───────────────── sub-records (needed for the counters) ─────────────── */
   const {
     count, // number of child records
-    countDone, // … that are already published
+    countDone,
+    subrecords,
     mediaCount, // number of page images (for scanned pages)
-    mediaCountDone, // … that are already published
+    mediaCountDone,
   } = useSubrecords({
     // network request ≈ table row
     recordtype,
@@ -81,10 +82,27 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
     ["c", "collector", "interviewer", "recorder"].includes(p.relation)
   );
 
-  const descriptionCount = media.reduce(
-    (acc, m) => acc + (Array.isArray(m.description) ? m.description.length : 0),
-    0
-  );
+  /* helper */
+  const countDescriptionsInMedia = (arr = []) =>
+    arr.reduce(
+      (acc, m) =>
+        acc + (Array.isArray(m.description) ? m.description.length : 0),
+      0
+    );
+
+  // descriptions that belong to the parent record itself
+  const descriptionCountSelf = countDescriptionsInMedia(media);
+
+  // …and those that live in every sub-record’s media (only for accessions)
+  const descriptionCountSubrecords =
+    recordtype === "one_accession_row"
+      ? subrecords.reduce(
+          (acc, sr) => acc + countDescriptionsInMedia(sr._source.media),
+          0
+        )
+      : 0;
+
+  const descriptionCount = descriptionCountSelf + descriptionCountSubrecords;
 
   const isAccession =
     recordtype === "one_accession_row" && transcriptiontype !== "audio";
