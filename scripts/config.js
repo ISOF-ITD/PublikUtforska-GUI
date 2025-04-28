@@ -210,8 +210,8 @@ export default {
   },
 
   // use this to filter the random transcriptions by category
-  specialEventTranscriptionCategory: '&category=pask2025',
-  specialEventTranscriptionCategoryLabel: 'Tema Påsk 2025',
+  // specialEventTranscriptionCategory: '&category=pask2025',
+  // specialEventTranscriptionCategoryLabel: 'Tema Påsk 2025',
 
   // Application specific filter parameter First value (0) is false
   // Probably not needed anymore
