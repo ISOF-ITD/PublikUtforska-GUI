@@ -25,8 +25,6 @@ import {
 import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
 import useSubrecords from "../hooks/useSubrecords";
 
-
-
 export default function RecordListItem(props) {
   const {
     id,
@@ -250,7 +248,13 @@ export default function RecordListItem(props) {
                                     s._source.title,
                                     s._source.contents,
                                     s._source.archive
-                                  )}${!pub ? " (ej avskriven)" : ""}`,
+                                  )}${
+                                    !pub
+                                      ? transcriptiontype === "audio"
+                                        ? " (kan bidra)"
+                                        : " (ej avskriven)"
+                                      : ""
+                                  }`,
                                 }}
                               />
                             </Link>
@@ -333,7 +337,9 @@ export default function RecordListItem(props) {
       {shouldRenderColumn("year", columns) && (
         <td data-title={`${l("År")}:`} className="py-2">
           {year && (
-            <span className={`${pillClasses} bg-white`}>{year.split("-")[0]}</span>
+            <span className={`${pillClasses} bg-white`}>
+              {year.split("-")[0]}
+            </span>
           )}
         </td>
       )}
