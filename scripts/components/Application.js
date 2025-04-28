@@ -12,7 +12,6 @@ import {
 import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
-import RecordListWrapper from './views/RecordListWrapper';
 import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
@@ -31,6 +30,7 @@ import Footer from './Footer';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import config from '../config';
+import RecordListWrapper from '../features/RecordList/RecordListWrapper';
 
 export default function Application({
   mode = 'material',

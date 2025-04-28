@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
-import RecordList from '../RecordList';
+import RecordList from '../../../features/RecordList/RecordList';
 import { l } from '../../../lang/Lang';
 
 export default function SubrecordsElement({ data, subrecordsCount, mode = 'material' }) {
