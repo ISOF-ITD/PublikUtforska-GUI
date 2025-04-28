@@ -2,6 +2,8 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+console.log(`🏗️  Bygger med PUBLIC_PATH=${process.env.PUBLIC_PATH || '/'} 🚀`);
+
 module.exports = {
   mode: 'development',
   entry: './scripts/app.js',

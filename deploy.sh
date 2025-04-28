@@ -1,12 +1,39 @@
 #!/bin/bash
 
-# Kör npm-skriptet för att bygga applikationen (bygger till www-deploy)
+# Standardvärde för PUBLIC_PATH
+PUBLIC_PATH=""
+
+# Kolla om en flagga --publicPath är angiven
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+    --publicPath)
+      PUBLIC_PATH="$2"
+      shift # hoppa över värdet
+      shift # hoppa över flaggan
+      ;;
+    *)
+      shift # ignorera okända flaggor
+      ;;
+  esac
+done
+
+# Installera beroenden
 npm install
-npm run build
+
+# Bygg applikationen med eller utan PUBLIC_PATH
+if [ -n "$PUBLIC_PATH" ]; then
+  echo "Bygger med PUBLIC_PATH=$PUBLIC_PATH..."
+  PUBLIC_PATH="$PUBLIC_PATH" npm run build
+else
+  echo "Bygger utan PUBLIC_PATH..."
+  npm run build
+fi
 
 # Kopiera sitemap*.xml-filerna från www till www-deploy
 echo "Försöker kopiera sitemap*.xml-filerna från www till www-deploy..."
-cp www/sitemap*.xml www-deploy/
+cp www/sitemap*.xml www-deploy/ 2>/dev/null
 
 # Skapa en backup av den nuvarande www-mappen med en tidsstämpel
 if [ -d "www" ]; then
