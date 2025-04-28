@@ -22,6 +22,7 @@ done
 # Lägg till en / på slutet om den saknas
 if [[ -n "$PUBLIC_PATH" && "${PUBLIC_PATH: -1}" != "/" ]]; then
   PUBLIC_PATH="${PUBLIC_PATH}/"
+fi
 
 # Installera beroenden
 npm install
