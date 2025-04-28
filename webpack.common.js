@@ -13,7 +13,9 @@ module.exports = {
     // is replaced by the deploy script
     path: path.resolve(__dirname, 'www-deploy'),
     clean: true,
-    publicPath: '/',
+    // sätt PUBLIC_PATH om du vill ha en annan path än "/", t.ex. "/demo/slump/www":
+    // PUBLIC_PATH="/demo/slump/www" npm run build
+    publicPath: process.env.PUBLIC_PATH || '/',
   },
   module: {
     rules: [
