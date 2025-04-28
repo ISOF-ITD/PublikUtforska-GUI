@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileLines, faVolumeHigh } from "@fortawesome/free-solid-svg-icons";
-import PdfGif from "../../../img/pdf.gif";
+import PdfGif from "../../../../img/pdf.gif";
 
 /**
  * Renders the small PDF / image / audio icons shown in the title row.

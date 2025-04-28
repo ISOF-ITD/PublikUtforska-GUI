@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import RecordsCollection from "../../components/collections/RecordsCollection";
-import config from "../../config";
+import RecordsCollection from "../../../components/collections/RecordsCollection";
+import config from "../../../config";
 
 const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
   config;

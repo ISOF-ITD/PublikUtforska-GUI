@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import config from "../../config";
-import { l } from "../../lang/Lang";
-import { createSearchRoute } from "../../utils/routeHelper";
+import config from "../../../config";
+import { l } from "../../../lang/Lang";
+import { createSearchRoute } from "../../../utils/routeHelper";
 
 export default function CollectorList({
   persons,

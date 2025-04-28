@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import RecordListItem from "./RecordListItem";
-import { l } from "../../lang/Lang";
-import config from "../../config";
+import { l } from "../../../lang/Lang";
+import config from "../../../config";
 
 export default function RecordTable({
   records,

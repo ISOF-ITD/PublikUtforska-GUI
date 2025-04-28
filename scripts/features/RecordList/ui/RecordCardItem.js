@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import { l } from "../../lang/Lang";
+import { l } from "../../../lang/Lang";
 import {
   getTitle,
   makeArchiveIdHumanReadable,
   getPlaceString,
   pageFromTo,
-} from "../../utils/helpers";
+} from "../../../utils/helpers";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArchive,
@@ -19,11 +19,11 @@ import {
   faFileLines,
   faVolumeHigh,
 } from "@fortawesome/free-solid-svg-icons";
-import PdfGif from "../../../img/pdf.gif";
-import config from "../../config";
-import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import PdfGif from "../../../../img/pdf.gif";
+import config from "../../../config";
+import TranscribeButton from "../../../components/views/transcribe/TranscribeButton";
 import TranscriptionStatus from "./TranscriptionStatus";
-import useSubrecords from "./useSubrecords";
+import useSubrecords from "../hooks/useSubrecords";
 
 const pill =
   "inline-flex items-center border rounded-full px-3 py-1 text-xs font-medium";

@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import config from "../../config";
-import { l } from "../../lang/Lang";
+import config from "../../../config";
+import { l } from "../../../lang/Lang";
 
 const { hitsPerPage, maxTotal } = config;
 

@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from "prop-types";
-import { l } from "../../lang/Lang";
+import { l } from "../../../lang/Lang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 

@@ -13,18 +13,19 @@ import MediaIcons from "./MediaIcons";
 import TranscriptionStatus from "./TranscriptionStatus";
 import AccessionIdCell from "./AccessionIdCell";
 import CollectorList from "./CollectorList";
-import ListPlayButton from "../../features/AudioDescription/ListPlayButton";
-import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
+import TranscribeButton from "../../../components/views/transcribe/TranscribeButton";
 
-import { l } from "../../lang/Lang";
-import config from "../../config";
+import { l } from "../../../lang/Lang";
+import config from "../../../config";
 import {
   createSearchRoute,
   createParamsFromSearchRoute,
-} from "../../utils/routeHelper";
-import { getTitle, getPlaceString, pageFromTo } from "../../utils/helpers";
+} from "../../../utils/routeHelper";
+import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
+import useSubrecords from "../hooks/useSubrecords";
 
-import useSubrecords from "./useSubrecords";
+
 
 export default function RecordListItem(props) {
   const {

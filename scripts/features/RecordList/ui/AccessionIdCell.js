@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import { l } from "../../lang/Lang";
-import { makeArchiveIdHumanReadable, pageFromTo } from "../../utils/helpers";
+import { l } from "../../../lang/Lang";
+import { makeArchiveIdHumanReadable, pageFromTo } from "../../../utils/helpers";
 
 export default function AccessionIdCell({
   archive,

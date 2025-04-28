@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileLines } from '@fortawesome/free-solid-svg-icons';
-import PdfGif from '../../../img/pdf.gif';
+import PdfGif from '../../../../img/pdf.gif';
 
 export default function Filter({
   uniqueId, filter, onChange, openHelp,

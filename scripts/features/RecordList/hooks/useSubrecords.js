@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useCallback } from "react";
-import RecordsCollection from "../../components/collections/RecordsCollection";
-import { fetchRecordMediaCount } from "../../utils/helpers";
-import config from "../../config";
+import RecordsCollection from "../../../components/collections/RecordsCollection";
+import { fetchRecordMediaCount } from "../../../utils/helpers";
+import config from "../../../config";
 
 /**
  * Loads sub-records + derived counters for a one_accession_row.

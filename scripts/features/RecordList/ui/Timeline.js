@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import config from '../../config';
+import config from '../../../config';
 
 // Import only the necessary parts from d3
 import { select, pointer } from 'd3-selection';
