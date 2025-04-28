@@ -28,7 +28,7 @@ export default function TranscriptionStatus({
   ───────────────────────────────────────────────────────────── */
   if (transcriptiontype === "audio") {
     const count = done ?? 0;
-    const bg = count ? "bg-lighter-isof" : "bg-white";
+    const bg = count ? "!bg-lighter-isof" : "bg-white";
 
     return (
       <span

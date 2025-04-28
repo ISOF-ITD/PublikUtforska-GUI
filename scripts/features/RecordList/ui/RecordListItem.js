@@ -66,7 +66,8 @@ export default function RecordListItem(props) {
 
   const navigate = useNavigate();
   const params = useParams();
-  const pill =
+  // Re-use same Tailwind classes in similar many elements
+  const pillClasses =
     "inline-flex flex-wrap max-w-full shadow border border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs bg-white";
 
   /* ---------- sub-records hook ---------- */
@@ -284,7 +285,7 @@ export default function RecordListItem(props) {
           <AccessionIdCell
             archive={archive}
             recordtype={recordtype}
-            pillClasses={pill}
+            pillClasses={pillClasses}
             searchParams={searchParams}
             archiveIdClick={archiveIdClick}
           />
@@ -293,7 +294,7 @@ export default function RecordListItem(props) {
       {shouldRenderColumn("place", columns) && (
         <td data-title={`${l("Ort")}:`} className="py-2">
           {places?.length > 0 && (
-            <div className={pill}>
+            <div className={pillClasses}>
               {places[0].specification && (
                 <span className="mr-1">{places[0].specification} i</span>
               )}
@@ -324,7 +325,7 @@ export default function RecordListItem(props) {
             persons={persons}
             mode={mode}
             searchParams={searchParams}
-            pillClasses={pill}
+            pillClasses={pillClasses}
           />
         </td>
       )}
@@ -332,7 +333,7 @@ export default function RecordListItem(props) {
       {shouldRenderColumn("year", columns) && (
         <td data-title={`${l("År")}:`} className="py-2">
           {year && (
-            <span className={`${pill} bg-white`}>{year.split("-")[0]}</span>
+            <span className={`${pillClasses} bg-white`}>{year.split("-")[0]}</span>
           )}
         </td>
       )}
@@ -368,7 +369,7 @@ export default function RecordListItem(props) {
                 ? "audio"
                 : transcriptiontype
             }
-            pillClasses={pill}
+            pillClasses={pillClasses}
           />
         </td>
       )}

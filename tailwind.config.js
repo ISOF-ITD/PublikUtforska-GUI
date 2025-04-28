@@ -10,7 +10,7 @@ module.exports = {
         /* Icke aktiv knapp: (om fungerar alternativt Text alternativfärg) */
         "lighter-isof": "#3FD695",
 
-        /* Profilfärg */
+        /* Profilfärg - exempel på en custom classnamn - text-isof, bg-isof */
         isof: "#005462",
 
         /* Aktiv knapp + knapp-hover-over */
