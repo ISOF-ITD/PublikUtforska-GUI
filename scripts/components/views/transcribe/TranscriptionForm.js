@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Uppteckningsblankett from './transcriptionForms/Uppteckningsblankett';
 import Fritext from './transcriptionForms/Fritext';
 import { l } from '../../../lang/Lang';

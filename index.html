@@ -164,7 +164,7 @@
             const { hostname } = window.location;
             const isDev = ['127.0.0.1', 'localhost', '0.0.0.0'].some((element) => hostname.includes(element));
             const isTest = ['-test.'].some((element) => hostname.includes(element));
-            if (!isDev && !isTest) return;
+            if (!isDev) return;
             const monitor = document.createElement('div');
             monitor.id = 'errorMonitor';
             monitor.style.position = 'fixed';
@@ -209,6 +209,7 @@
             list.style.listStyle = 'none';
             monitor.appendChild(list);
             function addError(msg) {
+                debugger;
                 // reveal on first error
                 if (monitor.style.display === 'none') monitor.style.display = 'block';
                 const li = document.createElement('li');
@@ -218,6 +219,7 @@
             }
             window.addEventListener('error', function (event) {
                 const m = event.message + ' at ' + event.filename + ':' + event.lineno + ':' + event.colno;
+                if (m.startsWith('Warning: ')) return;
                 addError(m);
             });
             window.addEventListener('unhandledrejection', function (event) {
@@ -230,6 +232,7 @@
                 origConsoleError.apply(console, args);
                 args.forEach(arg => {
                     const m = typeof arg === 'string' ? arg : (arg && arg.stack ? arg.stack : JSON.stringify(arg));
+                    if (m.startsWith('Warning: ')) return;
                     addError(m);
                 });
             };

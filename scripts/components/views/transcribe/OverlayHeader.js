@@ -12,7 +12,7 @@ import TranscribeButton from './TranscribeButton';
  */
 function OverlayHeader({ recordDetails, handleHideOverlay, transcribeCancel }) {
   return (
-    <div className="overlay-header">
+    <>
       Skriv av&nbsp;
       {recordDetails.title || 'uppteckning'}
       {recordDetails.archiveId && (
@@ -29,22 +29,8 @@ function OverlayHeader({ recordDetails, handleHideOverlay, transcribeCancel }) {
         <small>(sida för sida)</small>
       )}
 
-      {/* Stäng‑knapp */}
-      <button
-        type="button"
-        title="stäng"
-        className="close-button white"
-        onClick={handleHideOverlay}
-        aria-label="Stäng"
-      />
+      
 
-      <TranscribeButton
-        className="button button-primary next-random-record-button"
-        random
-        label="Skriv av annan slumpmässig uppteckning"
-        transcribeCancel={transcribeCancel}
-      />
-      {/* Ny slump‑knapp + vanliga kontaktknappar */}
       {!config.siteOptions.hideContactButton && (
         <>
           <FeedbackButton type="Uppteckning" title={recordDetails.title} />
@@ -52,7 +38,7 @@ function OverlayHeader({ recordDetails, handleHideOverlay, transcribeCancel }) {
           <TranscriptionHelpButton type="Uppteckning" title={recordDetails.title} />
         </>
       )}
-    </div>
+    </>
   );
 }
 

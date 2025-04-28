@@ -6,6 +6,7 @@ import ImageMap from '../ImageMap';
 import TranscriptionThumbnails from './TranscriptionThumbnails';
 import NavigationPanel from './NavigationPanel';
 import OverlayHeader from './OverlayHeader';
+import TranscribeButton from './TranscribeButton';
 
 /**
  * Sida‑för‑sida‑overlay som hanterar sin egen synlighet via eventBus
@@ -128,10 +129,28 @@ export default function TranscriptionPageByPageOverlay() {
         transcribesession: transcribesession || transcribesessionLocal,
       }));
       try {
-        await fetch(`${config.restApiUrl}transcribecancel/`, { method: 'POST', body: fd });
+        await fetch(`${config.restApiUrl}transcribecancel/`, {
+          method: 'POST',
+          body: fd,
+        });
       } catch (err) {
         console.error('transcribeCancel error:', err);
       }
+      // Reset everything
+      setVisible(false);
+      setRecordDetails(null);
+      setPages([]);
+      setCurrentPageIndex(0);
+      setTranscribesession(null);
+      setMessageSent(false);
+      setInformantNameInput('');
+      setInformantBirthDateInput('');
+      setInformantBirthPlaceInput('');
+      setInformantInformationInput('');
+      setTranscriptionText('');
+      setComment('');
+      setNameInput('');
+      setEmailInput('');
     }
   };
 
@@ -142,7 +161,8 @@ export default function TranscriptionPageByPageOverlay() {
     if (pages.some((p) => p.unsavedChanges)) {
       if (!window.confirm('Det finns osparade ändringar. Är du säker på att du vill stänga?')) return;
     }
-    window.eventBus.dispatch('overlay.hide');
+    // window.eventBus.dispatch('overlay.hide');
+    transcribeCancel();
   };
 
   const navigatePages = (index) => {
@@ -223,7 +243,9 @@ export default function TranscriptionPageByPageOverlay() {
         if (j.success === 'true') {
           setPages((prev) => {
             const next = [...prev];
-            next[currentPageIndex] = { ...next[currentPageIndex], isSent: true, unsavedChanges: false, transcriptionstatus: 'transcribed' };
+            next[currentPageIndex] = {
+              ...next[currentPageIndex], isSent: true, unsavedChanges: false, transcriptionstatus: 'transcribed',
+            };
             return next;
           });
           if (goToNext) goToNextTranscribePage();
@@ -291,16 +313,33 @@ export default function TranscriptionPageByPageOverlay() {
   if (!visible || !recordDetails) return null;
 
   return (
-    <div className='overlay-container visible transcription-page-by-page-overlay'>
-      <div className='overlay-window large'>
-        <OverlayHeader
-          recordDetails={recordDetails}
-          handleHideOverlay={handleHideOverlay}
-          transcribeCancel={transcribeCancel}
-        />
-
-        <div className='row'>
-          <div className='four columns'>
+    <div className="overlay-container visible transcription-page-by-page-overlay">
+      <div className="overlay-window large">
+        <div className="overlay-header">
+          <OverlayHeader
+            recordDetails={recordDetails}
+            handleHideOverlay={handleHideOverlay}
+            transcribeCancel={transcribeCancel}
+          />
+          {/* Stäng‑knapp */}
+          <button
+            type="button"
+            title="stäng"
+            className="close-button white"
+            onClick={handleHideOverlay}
+            aria-label="Stäng"
+          />
+          <div className="next-random-record-button-container">
+            <TranscribeButton
+              className="button button-primary next-random-record-button"
+              random
+              label="Skriv av annan slumpmässig uppteckning"
+              transcribeCancel={transcribeCancel}
+            />
+          </div>
+        </div>
+        <div className="row">
+          <div className="four columns">
             <TranscriptionForm
               recordDetails={recordDetails}
               currentPageIndex={currentPageIndex}
@@ -318,12 +357,12 @@ export default function TranscriptionPageByPageOverlay() {
             />
           </div>
 
-          <div className='eight columns'>
+          <div className="eight columns">
             {pages.length > 0 && (
               <ImageMap image={`${config.imageUrl}${pages[currentPageIndex].source}`} />
             )}
 
-            <div className='row'>
+            <div className="row">
               <NavigationPanel
                 currentPageIndex={currentPageIndex}
                 pages={pages}
@@ -338,11 +377,10 @@ export default function TranscriptionPageByPageOverlay() {
               pages={pages}
               navigatePages={navigatePages}
               currentPageIndex={currentPageIndex}
-              />
-            </div>
+            />
           </div>
         </div>
       </div>
-    );
-  }
-  
+    </div>
+  );
+}
