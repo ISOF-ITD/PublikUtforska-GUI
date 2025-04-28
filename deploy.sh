@@ -19,6 +19,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Lägg till en / på slutet om den saknas
+if [[ -n "$PUBLIC_PATH" && "${PUBLIC_PATH: -1}" != "/" ]]; then
+  PUBLIC_PATH="${PUBLIC_PATH}/"
+
 # Installera beroenden
 npm install
 
@@ -27,7 +31,7 @@ if [ -n "$PUBLIC_PATH" ]; then
   echo "Bygger med PUBLIC_PATH=$PUBLIC_PATH..."
   PUBLIC_PATH="$PUBLIC_PATH" npm run build
 else
-  echo "Bygger utan PUBLIC_PATH..."
+  echo "Bygger utan explicit PUBLIC_PATH."
   npm run build
 fi
 
