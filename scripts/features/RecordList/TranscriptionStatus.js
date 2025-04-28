@@ -68,11 +68,11 @@ export default function TranscriptionStatus({
       <div className="mr-2 space-y-1">
         <span className="text-sm">{`${done} av ${total}`}</span>
         <div
-          className="h-2 w-full max-w-[200px] !border !border-isof rounded"
+          className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-isof border-solid bg-white"
           title={`${pct}%`}
         >
           <span
-            className="block h-full bg-isof rounded"
+            className="absolute inset-0 h-full bg-isof rounded-l"
             style={{ width: `${pct}%` }}
           />
         </div>

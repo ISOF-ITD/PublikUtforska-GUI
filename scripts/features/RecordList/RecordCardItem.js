@@ -22,6 +22,8 @@ import {
 import PdfGif from "../../../img/pdf.gif";
 import config from "../../config";
 import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import TranscriptionStatus from "./TranscriptionStatus";
+import useSubrecords from "./useSubrecords";
 
 const pill =
   "inline-flex items-center border rounded-full px-3 py-1 text-xs font-medium";
@@ -37,12 +39,26 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
       transcriptiontype,
       transcriptionstatus,
       title,
+      recordtype,
       contents,
       year,
       id,
     },
     highlight,
   } = item;
+
+  /* ───────────────── sub-records (needed for the counters) ─────────────── */
+  const {
+    count, // number of child records
+    countDone, // … that are already published
+    mediaCount, // number of page images (for scanned pages)
+    mediaCountDone, // … that are already published
+  } = useSubrecords({
+    // network request ≈ table row
+    recordtype,
+    id,
+    ...item._source,
+  });
 
   /* helpers */
   const displayTitle = getTitle(title, contents, archive, highlight);
@@ -65,25 +81,27 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
     ["c", "collector", "interviewer", "recorder"].includes(p.relation)
   );
 
-  const statusConfig = {
-    readytotranscribe: {
-      text: l("Klar för avskrift"),
-      icon: faPencil,
-      class: "bg-orange-100 border-orange-200 text-orange-800",
-    },
-    transcribed: {
-      text: l("Avskriven"),
-      icon: faCheckCircle,
-      class: "bg-green-100 border-green-200 text-green-800",
-    },
-    default: {
-      text: transcriptionstatus,
-      icon: faTag,
-      class: "bg-gray-100 border-gray-200 text-gray-800",
-    },
-  };
+  const descriptionCount = media.reduce(
+    (acc, m) => acc + (Array.isArray(m.description) ? m.description.length : 0),
+    0
+  );
 
-  const status = statusConfig[transcriptionstatus] || statusConfig.default;
+  const isAccession =
+    recordtype === "one_accession_row" && transcriptiontype !== "audio";
+
+  const total =
+    transcriptiontype === "audio" || descriptionCount > 0
+      ? descriptionCount // audio ➜ # descriptions
+      : transcriptiontype === "sida"
+      ? mediaCount // scanned pages ➜ # page images
+      : count; // born-digital text ➜ # child records
+
+  const done =
+    transcriptiontype === "audio" || descriptionCount > 0
+      ? descriptionCount
+      : transcriptiontype === "sida"
+      ? mediaCountDone
+      : countDone;
 
   return (
     <article className="group relative rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md">
@@ -153,7 +171,7 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
           collectorPersons?.length > 0 && (
             <div className="flex items-center">
               <div className="flex flex-wrap gap-1  items-center">
-              <b>Insamlare:</b>
+                <b>Insamlare:</b>
                 {collectorPersons.map((p) => (
                   <Link
                     key={p.id}
@@ -168,6 +186,19 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
               </div>
             </div>
           )}
+
+        <TranscriptionStatus
+          status={transcriptionstatus}
+          type={recordtype === "one_accession_row" ? "accession" : "record"}
+          transcriptiontype={
+            transcriptiontype === "audio" || descriptionCount > 0
+              ? "audio"
+              : transcriptiontype
+          }
+          done={done}
+          total={total}
+          pillClasses={`${pill} ml-auto`}
+        />
       </div>
 
       {/* Summary Section */}
