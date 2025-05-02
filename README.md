@@ -1,5 +1,5 @@
 # Folke sök GUI (aka PublikUtforska-GUI)
-Public crowdsource map based interface
+Public crowdsource map-based interface
 
 [Accessibility](Accessibility.md)
 
@@ -115,18 +115,28 @@ This configuration ensures that the appropriate robots.txt file is used dependin
 
 If modifications to `robots.txt` are required, update the corresponding file in the `/robots/` directory and verify that the proxy correctly points to the intended version. 
 
+## Styling migration
 
+We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
 
-## css 
-Uses less. Every component states its main css in a comment 
-Example:
-// Main CSS: ui-components/audio-player.less
+* **New or rewritten components must use Tailwind** utility classes.  
+* Old `.less` files stay only until their component is migrated.  
+* Tailwind JIT is configured in `tailwind.config.js`; just run `npm run start` as usual.  
 
 ## Components
 Types:
 - scripts\components\collections
 - scripts\components\views
 - scripts\components\
+
+## Project structure update, WIP (2025‑05‑02)
+
+We have started migrating from a **layer‑based** tree (`components/`, `views/` …) to a **feature‑first** structure.  
+The first step was moving everything that belonged to the RecordList into its own folder: 
+- all files that implement one behaviour now live together, local hooks/UI/state stay near the feature
+See: 
+- Robin Wieruch, React Folder Structure in 5 Steps: https://www.robinwieruch.de/react-folder-structure/
+- Feature‑Sliced Design methodology: https://feature-sliced.github.io/documentation/
 
 ### Props
 
