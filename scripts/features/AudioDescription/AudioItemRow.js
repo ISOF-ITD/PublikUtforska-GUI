@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faDownload,
@@ -47,7 +48,7 @@ function AudioItemRow({
   const descriptionsCount = item.description?.length || 0;
 
   /**
-   * Called when user clicks “Ändra” on an existing description.
+   * Called when user clicks "Ändra" on an existing description.
    */
   function onEditDesc(desc) {
     // If not locked, and no current session, start one:
@@ -87,7 +88,7 @@ function AudioItemRow({
   }
 
   /**
-   * If the user clicks “Avbryt” while editing,
+   * If the user clicks "Avbryt" while editing,
    * we close the form and cancel the transcribe session.
    */
   function onCancelEdit() {
@@ -107,6 +108,16 @@ function AudioItemRow({
           />
         </td>
         <td className="py-2 px-4">{audioTitle}</td>
+        <td className="py-2 px-4">
+          {canContribute && (
+            <Link
+              to={`/records/${recordId}/audio/${encodeURIComponent(item.source)}/transcribe`}
+              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+            >
+              <span className="px-1 underline underline-offset-2">Skriv av</span>
+            </Link>
+          )}
+        </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
           { canContribute && (<a
             className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"

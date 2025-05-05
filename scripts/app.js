@@ -6,6 +6,8 @@ import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './components/views/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
+import TranscribePage from './features/AudioDescription/TranscribePage';
+import TranscriptionView from './features/AudioDescription/TranscriptionView';
 import "../tw.css";
 
 import {
@@ -92,6 +94,13 @@ function createPopupRoutes(prefix) {
           <RecordView mode={prefix.slice(0, -1) || 'material'} />
         </RoutePopupWindow>
       ),
+      children: [
+        {
+          path: 'audio/:source/transcribe',
+          element: <TranscribePage />,
+          loader: ({ params: { recordId } }) => defer({ results: fetchRecordAndCountSubrecords(recordId) }),
+        }
+      ],
     },
     {
       path: 'persons/:personId/*?',

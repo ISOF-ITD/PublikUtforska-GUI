@@ -3,7 +3,7 @@ import {
   Suspense, useEffect, // useState,
 } from 'react';
 import {
-  Await, useLoaderData, useLocation, // useNavigate, //useParams,
+  Await, useLoaderData, useLocation, Outlet, useMatches, // useNavigate, //useParams,
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
@@ -31,7 +31,11 @@ import AudioItems from '../../../features/AudioDescription/AudioItems';
 function RecordView({ mode = 'material' }) {
   const { results: resultsPromise } = useLoaderData();
   const location = useLocation();
+  const matches = useMatches();
   const routeParams = createSearchRoute(createParamsFromRecordRoute(location.pathname));
+
+  // Check if we're on the transcribe route
+  const isTranscribeRoute = matches.some(match => match.pathname.includes('/transcribe'));
 
   const mediaImageClickHandler = (mediaItem, mediaList, currentIndex) => {
     if (window.eventBus) {
@@ -85,37 +89,42 @@ function RecordView({ mode = 'material' }) {
                   location={location}
                 />
                 <div className="container-body">
-                  <Disclaimer />
-                  <TranscriptionPrompt data={data} />
-                  <RequestToTranscribePrompt data={data} />
-                  <RecordViewThumbnails
-                    data={data}
-                    mediaImageClickHandler={mediaImageClickHandler}
-                  />
-                  <ContentsElement data={data} />
-                  <HeadwordsElement data={data} />
-                  <AudioItems data={data} />
-                  <PdfElement data={data} />
-                  <TextElement
-                    data={data}
-                    highlightData={highlightData}
-                    mediaImageClickHandler={mediaImageClickHandler}
-                  />
-                  <div className="row">
-                    <div className="eight columns">
-                      <ReferenceLinks data={data} />
-                    </div>
-                    <div className="four columns">
-                      <License data={data} />
-                    </div>
-                  </div>
-                  <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
-                  <PersonItems data={data} routeParams={routeParams} />
-                  <PlaceItems data={data} routeParams={routeParams} />
-                  <hr />
-                  <SimilarRecords data={data} />
-                  <hr />
-                  <RecordViewFooter data={data} />
+                  <Outlet context={{ data }} />
+                  {!isTranscribeRoute && (
+                    <>
+                      <Disclaimer />
+                      <TranscriptionPrompt data={data} />
+                      <RequestToTranscribePrompt data={data} />
+                      <RecordViewThumbnails
+                        data={data}
+                        mediaImageClickHandler={mediaImageClickHandler}
+                      />
+                      <ContentsElement data={data} />
+                      <HeadwordsElement data={data} />
+                      <AudioItems data={data} />
+                      <PdfElement data={data} />
+                      <TextElement
+                        data={data}
+                        highlightData={highlightData}
+                        mediaImageClickHandler={mediaImageClickHandler}
+                      />
+                      <div className="row">
+                        <div className="eight columns">
+                          <ReferenceLinks data={data} />
+                        </div>
+                        <div className="four columns">
+                          <License data={data} />
+                        </div>
+                      </div>
+                      <SubrecordsElement data={data} subrecordsCount={subrecordsCount} mode={mode} />
+                      <PersonItems data={data} routeParams={routeParams} />
+                      <PlaceItems data={data} routeParams={routeParams} />
+                      <hr />
+                      <SimilarRecords data={data} />
+                      <hr />
+                      <RecordViewFooter data={data} />
+                    </>
+                  )}
 
                   {/* <MetadataItems data={data} /> */}
                 </div>
