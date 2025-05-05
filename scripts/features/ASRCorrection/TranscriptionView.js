@@ -25,7 +25,6 @@ import TranscriptionPrompt from '../../components/views/RecordView/Transcription
 import SimilarRecords from '../../components/views/RecordView/SimilarRecords';
 import { getTitleText } from '../../utils/helpers';
 import config from '../../config';
-import AudioItems from './AudioItems';
 import TranscribePage from './TranscribePage';
 
 function TranscriptionView({ mode = 'transcribe' }) {

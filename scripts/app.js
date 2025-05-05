@@ -6,8 +6,8 @@ import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './components/views/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
-import TranscribePage from './features/AudioDescription/TranscribePage';
-import TranscriptionView from './features/AudioDescription/TranscriptionView';
+import TranscribePage from './features/ASRCorrection/TranscribePage';
+import TranscriptionView from './features/ASRCorrection/TranscriptionView';
 import "../tw.css";
 
 import {
