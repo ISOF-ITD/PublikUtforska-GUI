@@ -108,16 +108,6 @@ function AudioItemRow({
           />
         </td>
         <td className="py-2 px-4">{audioTitle}</td>
-        <td className="py-2 px-4">
-          {canContribute && (
-            <Link
-              to={`/records/${recordId}/audio/${encodeURIComponent(item.source)}/transcribe`}
-              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
-            >
-              <span className="px-1 underline underline-offset-2">Skriv av</span>
-            </Link>
-          )}
-        </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
           { canContribute && (<a
             className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
@@ -150,6 +140,14 @@ function AudioItemRow({
             <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
             <FontAwesomeIcon icon={faDownload} />
           </a>
+          {canContribute && (
+            <Link
+              to={`/records/${recordId}/audio/${encodeURIComponent(item.source)}/transcribe`}
+              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+            >
+              <span className="px-1 underline underline-offset-2">Skriv av</span>
+            </Link>
+          )}
         </td>
       </tr>
 
@@ -158,8 +156,9 @@ function AudioItemRow({
         <tr
           id={`descriptions-${item.source}`}
           aria-hidden={!openItems[item.source]}
+          className="w-full"
         >
-          <td colSpan={3} className="py-4 px-4 border-isof">
+          <td colSpan={3} className="py-4 px-4 w-full border-isof">
             {/* List existing descriptions. Pass a callback to start editing */}
             <DescriptionList
               item={item}
