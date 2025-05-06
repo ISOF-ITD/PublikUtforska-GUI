@@ -138,7 +138,7 @@ RecordTable.propTypes = {
   sort: PropTypes.string.isRequired,
   order: PropTypes.string.isRequired,
   handleSort: PropTypes.func.isRequired,
-  mode: PropTypes.string.isRequired,
+  mode: PropTypes.string,
   useRouteParams: PropTypes.bool,
   smallTitle: PropTypes.bool,
   columns: PropTypes.array,

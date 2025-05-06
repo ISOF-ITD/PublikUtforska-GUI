@@ -34,8 +34,10 @@
     "react-dom": "^18.3.1",
     "react-input-mask": "^2.0.4",
     "react-router-dom": "^6.26.2",
+    "react-window": "^1.8.11",
     "route-parser": "0.0.5",
     "sanitize-html": "^2.13.1",
+    "wavesurfer.js": "^7.9.5",
     "whatwg-fetch": "^3.6.20",
     "xmlbuilder": "^15.1.1"
   },
