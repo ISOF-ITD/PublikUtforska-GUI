@@ -151,7 +151,7 @@ export default function PersonView({ mode = 'material' }) {
             params={{
               person_id: id,
               has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
+              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute',
             }}
             mode={mode}
             hasFilter={mode !== 'transcribe'}
