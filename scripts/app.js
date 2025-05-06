@@ -6,8 +6,8 @@ import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './components/views/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
-import TranscribePage from './features/ASRCorrection/TranscribePage';
-import TranscriptionView from './features/ASRCorrection/TranscriptionView';
+import CorrectionEditor from './features/ASRCorrection/CorrectionEditor';
+import CorrectionView from './features/ASRCorrection/CorrectionView';
 import "../tw.css";
 
 import {
@@ -97,7 +97,7 @@ function createPopupRoutes(prefix) {
       children: [
         {
           path: 'audio/:source/transcribe',
-          element: <TranscribePage />,
+          element: <CorrectionEditor />,
           loader: ({ params: { recordId } }) => defer({ results: fetchRecordAndCountSubrecords(recordId) }),
         }
       ],
