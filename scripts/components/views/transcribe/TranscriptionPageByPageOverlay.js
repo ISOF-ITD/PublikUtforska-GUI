@@ -14,9 +14,10 @@ import TranscribeButton from './TranscribeButton';
  */
 export default function TranscriptionPageByPageOverlay() {
   /* ------------------------------------------------------------ */
-  /* Synlighet & dokumentdata                                     */
+  /* Synlighet, dokumentdata och sidinformation                   */
   /* ------------------------------------------------------------ */
   const [visible, setVisible] = useState(false);
+  const [sending, setSending] = useState(false);
   const [recordDetails, setRecordDetails] = useState(null);
   const [pages, setPages] = useState([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -107,7 +108,7 @@ export default function TranscriptionPageByPageOverlay() {
     fetch(`${config.restApiUrl}transcribestart/`, { method: 'POST', body: fd })
       .then((r) => r.json())
       .then((j) => {
-        if (j.success === 'true') {
+        if (j.success === 'true' || j.success === true) {
           if (j.data) {
             transcribesessionLocal = j.data.transcribesession;
             setTranscribesession(j.data.transcribesession);
@@ -215,7 +216,7 @@ export default function TranscriptionPageByPageOverlay() {
       alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
       return;
     }
-    const goToNext = e.target.getAttribute('data-gotonext') === 'true';
+    const goToNext = e.currentTarget.dataset.gotonext === 'true';
 
     const fd = new FormData();
     fd.append('json', JSON.stringify({
@@ -235,30 +236,37 @@ export default function TranscriptionPageByPageOverlay() {
     }));
 
     const btn = e.target;
-    btn.textContent = 'Skickar…';
+    
+    if (sending) return; // dubbelklick-skydd
+    setSending(true);
 
     fetch(`${config.restApiUrl}transcribe/`, { method: 'POST', body: fd })
-      .then((r) => r.json())
-      .then((j) => {
-        if (j.success === 'true') {
+      .then((response) => response.json())
+      .then((json) => {
+        if (json.success === 'true' || json.success === true) {
           setPages((prev) => {
             const next = [...prev];
             next[currentPageIndex] = {
-              ...next[currentPageIndex], isSent: true, unsavedChanges: false, transcriptionstatus: 'transcribed',
+              ...next[currentPageIndex],
+              isSent: true,
+              unsavedChanges: false,
+              transcriptionstatus: 'transcribed',
             };
             return next;
           });
           if (goToNext) goToNextTranscribePage();
-          if (window.eventBus) window.eventBus.dispatch('overlay.transcribe.sent');
+          // if (window.eventBus) window.eventBus.dispatch('overlay.transcribe.sent');
         } else {
           btn.textContent = 'Skicka';
-          console.error('Serverfel:', j);
+          console.error('Serverfel:', json);
         }
       })
       .catch((err) => {
         btn.textContent = 'Skicka';
         console.error('send error:', err);
-      });
+      })
+      // När vi är klara, sätt tillbaka knappen till "Skicka" och stäng av "sending"
+      .finally(() => setSending(false));
   };
 
   /* ------------------------------------------------------------ */
@@ -341,6 +349,7 @@ export default function TranscriptionPageByPageOverlay() {
         <div className="row">
           <div className="four columns">
             <TranscriptionForm
+              sending={sending}
               recordDetails={recordDetails}
               currentPageIndex={currentPageIndex}
               pages={pages}

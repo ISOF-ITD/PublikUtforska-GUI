@@ -49,7 +49,7 @@ export default function TranscribeButton({
           // `${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`, // <-- det vanliga sättet, återställ detta när vi går live!
           randomNumber < 0.5
             ? `${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`
-            : `${config.apiUrl}document/ifgh04468_203642_7`,
+            : `${config.apiUrl}document/ifgh04468_203642_7/`,
         )
           .then((response) => response.json())
           .then((json) => {
