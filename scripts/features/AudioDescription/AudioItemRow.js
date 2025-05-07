@@ -40,6 +40,7 @@ function AudioItemRow({
   setHasUnsavedChanges,
   savedUserInfo,
   canContribute,
+  highlightData,
 }) {
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
@@ -155,6 +156,7 @@ function AudioItemRow({
               recordId={recordId}
               audioTitle={audioTitle}
               onEditDesc={onEditDesc}
+              highlightData={highlightData}
             />
 
             {/* If we are editing something, show that form. Otherwise show the "Add new" button + form */}
