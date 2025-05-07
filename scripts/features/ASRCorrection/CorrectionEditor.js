@@ -54,14 +54,22 @@ export default function CorrectionEditor() {
   const [editedText, setEditedText] = useState("");
   const [filter, setFilter] = useState("all"); // all | needs-work | completed
   const [saving, setSaving] = useState(false);
-  const [utterances, setUtterances] = useState(audioItem?.utterances || []);
+
+  const buildUtterances = useCallback(
+    () =>
+      (audioItem?.utterances ?? []).map((u, idx) => ({
+        id: u.id ?? `${audioItem?.source ?? "utt"}‑${idx}`, // safe id
+        ...u,
+      })),
+    [audioItem]
+  );
+
+  const [utterances, setUtterances] = useState(buildUtterances());
 
   const listRef = useRef(null); // react‑window ref
 
   const BASE_ROW = 56; // includes padding + 1 px border
   const EXTRA_LINE = 22; // ≈ height of a wrapped line
-
-  
 
   /* ---------- helpers ---------- */
   const filteredUtterances = useMemo(() => {
@@ -109,9 +117,8 @@ export default function CorrectionEditor() {
   }, [editingId, filteredUtterances]);
 
   useEffect(() => {
-    // keep in sync when you load a new file
-    setUtterances(audioItem?.utterances || []);
-  }, [audioItem]);
+    setUtterances(buildUtterances());
+  }, [buildUtterances]);
 
   // top of component
   const isDirty = Boolean(editingId);
@@ -251,6 +258,40 @@ export default function CorrectionEditor() {
     return () => window.removeEventListener("keydown", onKey);
   }, [editingId, filteredUtterances]);
 
+  const listData = useMemo(
+    () => ({
+      rows: filteredUtterances,
+      editingId,
+      editedText,
+      isPlaying,
+      beginEdit,
+      discardEdit,
+      saveEdit,
+      gotoPrev,
+      gotoNext,
+      handlePlay,
+      setEditedText,
+      formatTimestamp,
+      updateSpeaker,
+      speakers: data?.speakers ?? [],
+    }),
+    [
+      filteredUtterances,
+      editingId,
+      editedText,
+      isPlaying,
+      beginEdit,
+      discardEdit,
+      saveEdit,
+      gotoPrev,
+      gotoNext,
+      handlePlay,
+      formatTimestamp,
+      updateSpeaker,
+      data?.speakers,
+    ]
+  );
+
   /* ---------- render ---------- */
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -317,22 +358,7 @@ export default function CorrectionEditor() {
           itemCount={filteredUtterances.length}
           itemSize={getItemSize}
           itemKey={(index) => filteredUtterances[index].id}
-          itemData={{
-            rows: filteredUtterances,
-            editingId,
-            editedText,
-            isPlaying,
-            beginEdit,
-            discardEdit,
-            saveEdit,
-            gotoPrev,
-            gotoNext,
-            handlePlay,
-            setEditedText,
-            formatTimestamp,
-            updateSpeaker,
-            speakers: data?.speakers ?? [],
-          }}
+          itemData={listData}
           width="100%"
         >
           {UtteranceRow}
