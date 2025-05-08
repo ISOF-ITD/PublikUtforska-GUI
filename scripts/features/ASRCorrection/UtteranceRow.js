@@ -23,9 +23,53 @@ const STATUS_COLORS = {
   complete: "text-green-500",
 };
 
+/* ------------------------------------------------------------------ */
+/*  MobileEditBar – appears only while editing and only on < 640 px   */
+/* ------------------------------------------------------------------ */
+export function MobileEditBar({
+  visible,
+  disabled,
+  onSave,
+  onCancel,
+  onPrev,
+  onNext,
+}) {
+  if (!visible) return null; // nothing if not editing
+  return (
+    <div
+      className="fixed bottom-0 inset-x-0 z-20 sm:hidden
+                      bg-white/95 backdrop-blur border-t shadow-md"
+    >
+      <div className="flex justify-between items-center p-3 text-lg">
+        <button onClick={onPrev} className="px-2" title="↑">
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </button>
+        <div className="flex gap-6">
+          <button
+            onClick={onCancel}
+            className="px-3 py-1 rounded-lg bg-red-100 text-red-700"
+          >
+            Avbryt
+          </button>
+          <button
+            disabled={disabled}
+            onClick={onSave}
+            className="px-3 py-1 rounded-lg bg-green-600 text-white disabled:opacity-50"
+          >
+            Spara
+          </button>
+        </div>
+        <button onClick={onNext} className="px-2" title="↓">
+          <FontAwesomeIcon icon={faChevronRight} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export const UtteranceRow = React.memo(function UtteranceRow({
   index,
-  style,
+  style = {},
   data,
 }) {
   const {
@@ -49,8 +93,13 @@ export const UtteranceRow = React.memo(function UtteranceRow({
   return (
     <div
       style={style}
+      /* On phones we fall back to a stacked flex layout;
+     from sm: ≥640 px we switch back to your grid. */
       className={classNames(
-        "grid grid-cols-[16px_96px_1fr_56px_1fr_auto] items-start border-b last:border-none px-4 py-2",
+        // ⬇️  Mobile
+        "flex flex-col gap-2 border-b last:border-none px-4 py-3",
+        // ⬆️  Desktop
+        "sm:grid sm:grid-cols-[16px_52px_60px_44px_1fr_auto] sm:items-center sm:gap-4",
         isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
         utterance.status === "complete" && "opacity-60"
       )}
@@ -89,7 +138,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
       </span>
 
       {/* play/pause */}
-      <span className="text-center">
+      <span className="text-left">
         <button
           onClick={() => handlePlay(utterance.start)}
           className="text-isof"
@@ -103,17 +152,23 @@ export const UtteranceRow = React.memo(function UtteranceRow({
       </span>
 
       {/* text */}
-      <span className="w-full">
+      <span className="">
         {isEditing ? (
           <textarea
             autoFocus
             value={editedText}
             onChange={(e) => setEditedText(e.target.value)}
-            rows={Math.max(2, editedText.split("\n").length)}
-            className="w-full p-2 border rounded focus:ring-isof focus:border-isof text-sm"
+            rows={1}
+            style={{ height: "auto" }}
+            onInput={(e) => {
+              e.target.style.height = "auto";
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
+            className="w-full p-3 text-base sm:text-sm border rounded
+                     focus:ring-isof focus:border-isof"
           />
         ) : (
-          <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap">
+          <span className="w-full overflow-hidden text-ellipsis">
             {utterance.text}
           </span>
         )}
@@ -175,6 +230,16 @@ export const UtteranceRow = React.memo(function UtteranceRow({
           </div>
         )}
       </span>
+      <MobileEditBar
+        visible={Boolean(editingId)}
+        disabled={editedText.trim() === utterance?.text?.trim()}
+        onSave={() =>
+          editingId && saveEdit(utterances.find((u) => u.id === editingId))
+        }
+        onCancel={discardEdit}
+        onPrev={gotoPrev}
+        onNext={gotoNext}
+      />
     </div>
   );
 });

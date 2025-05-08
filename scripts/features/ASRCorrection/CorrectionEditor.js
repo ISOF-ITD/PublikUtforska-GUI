@@ -68,7 +68,7 @@ export default function CorrectionEditor() {
 
   const listRef = useRef(null); // react‑window ref
 
-  const BASE_ROW = 56; // includes padding + 1 px border
+  const BASE_ROW = 76; // includes padding + 1 px border
   const EXTRA_LINE = 22; // ≈ height of a wrapped line
 
   /* ---------- helpers ---------- */
@@ -258,6 +258,27 @@ export default function CorrectionEditor() {
     return () => window.removeEventListener("keydown", onKey);
   }, [editingId, filteredUtterances]);
 
+  function useIsMobile() {
+    const [mobile, setMobile] = React.useState(
+      window.matchMedia("(max-width:639px)").matches
+    );
+    React.useEffect(() => {
+      const mq = window.matchMedia("(max-width:639px)");
+      const handler = (e) => setMobile(e.matches);
+      // Safari <16 uses addListener/removeListener
+      (mq.addEventListener || mq.addListener).call(mq, "change", handler);
+      return () =>
+        (mq.removeEventListener || mq.removeListener).call(
+          mq,
+          "change",
+          handler
+        );
+    }, []);
+    return mobile;
+  }
+
+  const isMobile = useIsMobile();
+
   const listData = useMemo(
     () => ({
       rows: filteredUtterances,
@@ -340,9 +361,9 @@ export default function CorrectionEditor() {
       </header>
 
       {/* utterances list */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow rounded-lg w-full">
         {/* table header */}
-        <div className="grid grid-cols-[16px_96px_1fr_56px_1fr_auto] bg-gray-50 text-sm font-medium px-4 py-2 sticky top-0 z-10">
+        <div className="grid grid-cols-[16px_56px_56px_56px_1fr_auto] gap-4 bg-gray-50 text-sm font-medium px-4 py-2 sticky top-0 z-10">
           <span />
           <span>Tid</span>
           <span>Talare</span>
@@ -352,17 +373,32 @@ export default function CorrectionEditor() {
         </div>
 
         {/* virtualised rows */}
-        <List
-          ref={listRef}
-          height={600}
-          itemCount={filteredUtterances.length}
-          itemSize={getItemSize}
-          itemKey={(index) => filteredUtterances[index].id}
-          itemData={listData}
-          width="100%"
-        >
-          {UtteranceRow}
-        </List>
+        {isMobile ? (
+          /* Plain list (no virtualisation) */
+          <div className="divide-y">
+            {filteredUtterances.map((_, idx) => (
+              <UtteranceRow
+                key={filteredUtterances[idx].id}
+                index={idx}
+                data={listData}
+                /*  we don’t pass “style” when not virtualised  */
+              />
+            ))}
+          </div>
+        ) : (
+          /* The original react‑window list for ≥640 px */
+          <List
+            ref={listRef}
+            height={600}
+            itemCount={filteredUtterances.length}
+            itemSize={getItemSize}
+            itemKey={(index) => filteredUtterances[index].id}
+            itemData={listData}
+            width="100%"
+          >
+            {UtteranceRow}
+          </List>
+        )}
       </div>
     </div>
   );
@@ -373,7 +409,8 @@ const FilterButton = ({ label, value, filter, setFilter }) => (
   <button
     onClick={() => setFilter(value)}
     className={classNames(
-      "px-2 py-1 rounded focus:ring-2 focus:ring-isof focus:outline-none",
+      "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-isof",
       filter === value
         ? "bg-isof text-white"
         : "hover:bg-gray-200 text-gray-700"
