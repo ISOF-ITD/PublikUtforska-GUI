@@ -1,0 +1,415 @@
+/* eslint-disable react/require-default-props */
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFolder,
+  faFolderOpen,
+  faCommentDots,
+} from "@fortawesome/free-solid-svg-icons";
+import PropTypes from "prop-types";
+
+import HighlightedText from "./HighlightedText";
+import MediaIcons from "./MediaIcons";
+import TranscriptionStatus from "./TranscriptionStatus";
+import AccessionIdCell from "./AccessionIdCell";
+import CollectorList from "./CollectorList";
+import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
+import TranscribeButton from "../../../components/views/transcribe/TranscribeButton";
+
+import { l } from "../../../lang/Lang";
+import config from "../../../config";
+import {
+  createSearchRoute,
+  createParamsFromSearchRoute,
+} from "../../../utils/routeHelper";
+import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
+import useSubrecords from "../hooks/useSubrecords";
+
+export default function RecordListItem(props) {
+  const {
+    id,
+    item,
+    searchParams,
+    useRouteParams,
+    archiveIdClick,
+    columns,
+    shouldRenderColumn,
+    highlightRecordsWithMetadataField,
+    mode,
+    smallTitle,
+  } = props;
+
+  const {
+    _source: {
+      archive,
+      contents,
+      id: recordId,
+      materialtype,
+      media,
+      metadata,
+      persons,
+      places,
+      recordtype,
+      taxonomy,
+      text,
+      title,
+      transcribedby,
+      transcriptionstatus,
+      transcriptiontype,
+      year,
+    },
+    highlight,
+    inner_hits: innerHits,
+  } = item;
+
+  const navigate = useNavigate();
+  const params = useParams();
+  // Re-use same Tailwind classes in similar many elements
+  const pillClasses =
+    "inline-flex flex-wrap max-w-full shadow border border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs bg-white";
+
+  /* ---------- sub-records hook ---------- */
+  const {
+    subrecords,
+    visible,
+    toggle,
+    count,
+    countDone,
+    mediaCount,
+    mediaCountDone,
+  } = useSubrecords({
+    recordtype,
+    id,
+    ...item._source,
+  });
+
+  /* ---------- flags ---------- */
+  const displayTextSummary =
+    highlightRecordsWithMetadataField &&
+    metadata.some((m) => m.type === highlightRecordsWithMetadataField);
+
+  const summary =
+    displayTextSummary && text
+      ? text.length > 300
+        ? `${text.slice(0, 300)}…`
+        : text
+      : "";
+
+  const audioItem =
+    config.siteOptions.recordList?.displayPlayButton &&
+    media.find((m) => m.type === "audio");
+
+  /* ---------- #beskrivningar for AUDIO ---------- */
+  /* ---------- helper to count beskrivningar ---------- */
+  const countDescriptionsInMedia = (mediaArr = []) =>
+    mediaArr.reduce(
+      (acc, m) =>
+        acc + (Array.isArray(m.description) ? m.description.length : 0),
+      0
+    );
+
+  const descriptionCountSelf = countDescriptionsInMedia(media);
+
+  // descriptions that live in every sub-record’s media (if we have them)
+  const descriptionCountSubrecords =
+    recordtype === "one_accession_row"
+      ? subrecords.reduce(
+          (acc, sr) => acc + countDescriptionsInMedia(sr._source.media),
+          0
+        )
+      : 0;
+
+  // grand total for the badge
+  const descriptionCount = descriptionCountSelf + descriptionCountSubrecords;
+
+  /* ---------- hrefs ---------- */
+  const recordHref = `${
+    mode === "transcribe" ? "/transcribe" : ""
+  }/records/${id}${createSearchRoute(
+    useRouteParams
+      ? createParamsFromSearchRoute(params["*"])
+      : {
+          category: searchParams.category,
+          search: searchParams.search,
+          search_field: searchParams.search_field,
+        }
+  )}`;
+
+  /* ---------- render ---------- */
+  return (
+    <tr
+      className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-100 ${
+        displayTextSummary ? "bg-gray-100" : ""
+      }`}
+    >
+      {/* ---------- title (mobile+desktop) ---------- */}
+      {shouldRenderColumn("title", columns) && (
+        <td className={`${smallTitle ? "" : "text-base"} !px-2 py-2 space-y-1`}>
+          <Link
+            to={recordHref}
+            target={config.embeddedApp ? "_parent" : "_self"}
+            className="item-title text-isof hover:underline"
+          >
+            {audioItem && (
+              <ListPlayButton
+                disablePlayback
+                media={audioItem}
+                recordId={recordId}
+                recordTitle={title || l("(Utan titel)")}
+              />
+            )}
+            <MediaIcons media={media} />
+            <span
+              dangerouslySetInnerHTML={{
+                __html: getTitle(
+                  title,
+                  contents,
+                  archive,
+                  transcriptionstatus === "readytotranscribe"
+                    ? undefined
+                    : highlight
+                ),
+              }}
+            />
+          </Link>
+
+          {summary && (
+            <div className="item-summary text-sm text-gray-600 mt-2">
+              {summary}
+            </div>
+          )}
+
+          {/* Show hits for double nested hits without highlight */}
+          {innerHits?.media_with_description?.hits?.hits.map((mediaHit) =>
+            mediaHit.inner_hits?.["media.description"]?.hits?.hits.map(
+              (descHit) => (
+                <HighlightedText
+                  key={descHit._id}
+                  text={descHit._source.start + " " + descHit._source.text}
+                  // text={descHit._source.start + "\n <span class='highlight'>" + descHit._source.text + "</span>"}
+                  className="block mt-2"
+                />
+              ))
+          )}
+          {/* ES highlighted hits */}
+          {highlight?.text?.[0] && (
+            <HighlightedText text={highlight.text[0]} className="block mt-2" />
+          )}
+          {innerHits?.media?.hits?.hits.map(
+            (hit) =>
+              hit.highlight["media.text"] && (
+                <HighlightedText
+                  key={`${hit._id}`}
+                  text={hit.highlight["media.text"][0]}
+                  className="block mt-2"
+                />
+              )
+          )}
+
+          {/* sub-records accordion */}
+          {recordtype === "one_accession_row" && count !== 0 && (
+            <div className="subrecords mt-1">
+              <small>
+                <a
+                  onClick={toggle}
+                  className="text-isof hover:underline cursor-pointer"
+                >
+                  <FontAwesomeIcon
+                    icon={visible ? faFolderOpen : faFolder}
+                    className="mr-1"
+                  />
+                  {!visible && " Visa "}
+                  {transcriptiontype === "audio"
+                    ? "Inspelningar"
+                    : "Uppteckningar"}
+                  {visible && " i den här accessionen"} ({count})
+                  {visible && ":"}
+                </a>
+              </small>
+
+              {visible && (
+                <ul className="ml-2 mt-1 list-disc text-sm">
+                  {subrecords
+                    .sort(
+                      (a, b) =>
+                        parseInt(a._source.archive.page, 10) -
+                        parseInt(b._source.archive.page, 10)
+                    )
+                    .map((s) => {
+                      const pub = s._source.transcriptionstatus === "published";
+                      return (
+                        <li key={s._source.id} className="mb-1">
+                          <small>
+                            <Link
+                              to={`${
+                                mode === "transcribe" ? "/transcribe" : ""
+                              }/records/${s._source.id}${createSearchRoute({
+                                search: searchParams.search,
+                                search_field: searchParams.search_field,
+                              })}`}
+                              className={`${
+                                pub ? "font-bold" : ""
+                              } hover:underline text-isof`}
+                            >
+                              {transcriptiontype !== "audio" && (
+                                <>Sida {pageFromTo(s)}: </>
+                              )}
+                              <span
+                                dangerouslySetInnerHTML={{
+                                  __html: `${getTitle(
+                                    s._source.title,
+                                    s._source.contents,
+                                    s._source.archive
+                                  )}${
+                                    !pub
+                                      ? transcriptiontype === "audio"
+                                        ? " (kan bidra)"
+                                        : " (ej avskriven)"
+                                      : ""
+                                  }`,
+                                }}
+                              />
+                            </Link>
+                          </small>
+                        </li>
+                      );
+                    })}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {/* immediate transcribe button */}
+          {transcriptionstatus === "readytotranscribe" && media.length > 0 && (
+            <TranscribeButton
+              className="button button-primary mt-2"
+              label={l("Skriv av")}
+              title={title}
+              recordId={recordId}
+              archiveId={archive.archive_id}
+              places={places}
+              images={media}
+              transcriptionType={transcriptiontype}
+            />
+          )}
+        </td>
+      )}
+
+      {/* ---------- other columns ---------- */}
+      {shouldRenderColumn("archive_id", columns) &&
+        !config.siteOptions.recordList?.hideAccessionpage && (
+          <AccessionIdCell
+            archive={archive}
+            recordtype={recordtype}
+            pillClasses={pillClasses}
+            searchParams={searchParams}
+            archiveIdClick={archiveIdClick}
+          />
+        )}
+
+      {shouldRenderColumn("place", columns) && (
+        <td data-title={`${l("Ort")}:`} className="py-2">
+          {places?.length > 0 && (
+            <div className={pillClasses}>
+              {places[0].specification && (
+                <span className="mr-1">{places[0].specification} i</span>
+              )}
+              <Link
+                to={`${mode === "transcribe" ? "/transcribe" : ""}/places/${
+                  places[0].id
+                }${createSearchRoute({
+                  category: searchParams.category,
+                  search: searchParams.search,
+                  search_field: searchParams.search_field,
+                })}`}
+                className="text-isof hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(`/places/${places[0].id}`);
+                }}
+              >
+                {getPlaceString(places)}
+              </Link>
+            </div>
+          )}
+        </td>
+      )}
+
+      {shouldRenderColumn("collector", columns) && (
+        <td data-title={`${l("Insamlare")}:`} className="py-2">
+          <CollectorList
+            persons={persons}
+            mode={mode}
+            searchParams={searchParams}
+            pillClasses={pillClasses}
+          />
+        </td>
+      )}
+
+      {shouldRenderColumn("year", columns) && (
+        <td data-title={`${l("År")}:`} className="py-2">
+          {year && (
+            <span className={`${pillClasses} bg-white`}>
+              {year.split("-")[0]}
+            </span>
+          )}
+        </td>
+      )}
+
+      {shouldRenderColumn("material_type", columns) &&
+        !config.siteOptions.recordList?.hideMaterialType && (
+          <td data-title={`${l("Materialtyp")}:`} className="py-2">
+            {materialtype}
+          </td>
+        )}
+
+      {shouldRenderColumn("transcription_status", columns) && (
+        <td data-title={`${l("Avskriven")}:`} className="py-2">
+          <TranscriptionStatus
+            status={transcriptionstatus}
+            type={recordtype === "one_accession_row" ? "accession" : "record"}
+            total={
+              transcriptiontype === "audio" || descriptionCount > 0
+                ? descriptionCount
+                : transcriptiontype === "sida"
+                ? mediaCount
+                : count
+            }
+            done={
+              transcriptiontype === "audio" || descriptionCount > 0
+                ? descriptionCount
+                : transcriptiontype === "sida"
+                ? mediaCountDone
+                : countDone
+            }
+            transcriptiontype={
+              transcriptiontype === "audio" || descriptionCount > 0
+                ? "audio"
+                : transcriptiontype
+            }
+            pillClasses={pillClasses}
+          />
+        </td>
+      )}
+
+      {columns?.includes("transcribedby") && (
+        <td data-title={`${l("Transkriberad av")}:`} className="py-2">
+          {transcribedby && <span className="text-sm">{transcribedby}</span>}
+        </td>
+      )}
+    </tr>
+  );
+}
+
+RecordListItem.propTypes = {
+  id: PropTypes.string.isRequired,
+  item: PropTypes.object.isRequired,
+  searchParams: PropTypes.object.isRequired,
+  archiveIdClick: PropTypes.func.isRequired,
+  columns: PropTypes.array,
+  shouldRenderColumn: PropTypes.func.isRequired,
+  highlightRecordsWithMetadataField: PropTypes.string,
+  mode: PropTypes.string,
+  useRouteParams: PropTypes.bool,
+  smallTitle: PropTypes.bool,
+};

@@ -7,7 +7,6 @@ import {
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { createSearchRoute, createParamsFromRecordRoute } from '../../../utils/routeHelper';
-import AudioItems from './AudioItems';
 import ContentsElement from './ContentsElement';
 import Disclaimer from '../Disclaimer';
 import HeadwordsElement from './HeadwordsElement';
@@ -27,6 +26,7 @@ import TranscriptionPrompt from './TranscriptionPrompt';
 import SimilarRecords from './SimilarRecords';
 import { getTitleText } from '../../../utils/helpers';
 import config from '../../../config';
+import AudioItems from '../../../features/AudioDescription/AudioItems';
 
 function RecordView({ mode = 'material' }) {
   const { results: resultsPromise } = useLoaderData();
@@ -94,7 +94,10 @@ function RecordView({ mode = 'material' }) {
                   />
                   <ContentsElement data={data} />
                   <HeadwordsElement data={data} />
-                  <AudioItems data={data} />
+                  <AudioItems
+                    data={data}
+                    highlightData={highlightData}
+                  />
                   <PdfElement data={data} />
                   <TextElement
                     data={data}

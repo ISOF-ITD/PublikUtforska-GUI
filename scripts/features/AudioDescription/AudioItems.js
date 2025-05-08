@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
-import config from "../../../config";
-import { getAudioTitle } from "../../../utils/helpers";
-import ConfirmationModal from "../../ConfirmationModal";
+import ConfirmationModal from "./ConfirmationModal";
 import AudioItemRow from "./AudioItemRow";
 import "./DescriptionForm";
+import config from "../../config";
+import { getAudioTitle } from "../../utils/helpers";
 
-function AudioItems({ data }) {
+function AudioItems({ data, highlightData = null }) {
   // Initialize localData state with the prop data
   const [localData, setLocalData] = useState(data);
 
@@ -153,15 +153,20 @@ function AudioItems({ data }) {
   const handleToggle = (source) => {
     setOpenItems((prev) => ({ ...prev, [source]: !prev[source] }));
   };
-
+  
   // Whenever AudioItems unmounts, if there's an active session, cancel it.
   useEffect(() => {
-  return () => {
-    if (transcribeSession) {
-      cancelTranscribe();
-    }
-  };
-}, [transcribeSession, cancelTranscribe]);
+    return () => {
+      if (transcribeSession) {
+        cancelTranscribe();
+      }
+    };
+  }, [transcribeSession, cancelTranscribe]);
+
+  const innerHits = highlightData?.data?.[0]?.inner_hits?.media_with_description?.hits?.hits?.[0]?.inner_hits?.["media.description"]?.hits?.hits?.map(hit => ({
+    _source: hit._source,
+    _nested: hit._nested
+  })) || [];
 
   // The "Add new description" toggler with concurrency check
   const handleToggleAddFormWithConcurrency = async (source) => {
@@ -424,6 +429,7 @@ function AudioItems({ data }) {
                   handleDelete={handleDelete}
                   savedUserInfo={savedUserInfo}
                   canContribute={canContribute}
+                  highlightData={innerHits}
                 />
               );
             })}
@@ -473,6 +479,7 @@ AudioItems.propTypes = {
     persons: PropTypes.arrayOf(PropTypes.object),
     transcriptionstatus: PropTypes.string,
   }).isRequired,
+  highlightData: PropTypes.object
 };
 
 export default AudioItems;

@@ -9,11 +9,11 @@ import {
   faTimes,
   faCirclePlus,
 } from "@fortawesome/free-solid-svg-icons";
-import ListPlayButton from "../ListPlayButton";
+import ListPlayButton from "./ListPlayButton";
 import DescriptionList from "./DescriptionList";
 import DescriptionForm from "./DescriptionForm";
-import config from "../../../config";
-import ConfirmationModal from "../../ConfirmationModal";
+import config from "../../config";
+import ConfirmationModal from "./ConfirmationModal";
 
 function AudioItemRow({
   item,
@@ -40,6 +40,7 @@ function AudioItemRow({
   setHasUnsavedChanges,
   savedUserInfo,
   canContribute,
+  highlightData,
 }) {
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
@@ -155,6 +156,7 @@ function AudioItemRow({
               recordId={recordId}
               audioTitle={audioTitle}
               onEditDesc={onEditDesc}
+              highlightData={highlightData}
             />
 
             {/* If we are editing something, show that form. Otherwise show the "Add new" button + form */}

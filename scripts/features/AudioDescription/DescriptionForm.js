@@ -358,11 +358,7 @@ const UserInfoSection = ({ data, onChange }) => (
           Varför frågar vi efter namn/e-post?
         </summary>
         <p className="pt-4 pl-6">
-          Vi samlar in den här informationen enbart för att skapa statistik och
-          listor över bidragsgivare. Ditt namn visas i bidragsgivarelistan för
-          den här uppteckningen, och kan även synas på hemsidan om du hamnar
-          bland toppbidragsgivarna. Din e-postadress används endast om vi
-          behöver kontakta dig angående ditt bidrag.
+          Vill du att vi anger att det är du som har skrivit av uppteckningen? Ange i så fall ditt namn och din e-postadress nedan. E-postadressen publiceras inte. Vi hanterar personuppgifter enligt dataskyddsförordningen. <a href="https://www.isof.se/om-oss/om-webbplatsen/hantering-av-personuppgifter" target="_blank" className="text-isof underline hover:cursor-pointer" >Läs mer.</a>
         </p>
       </details>
     </div>

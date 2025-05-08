@@ -4,11 +4,11 @@ import { useLoaderData, useLocation, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ContributeInfoButton from './ContributeInfoButton';
 import SimpleMap from './SimpleMap';
-import RecordList from './RecordList';
 import FeedbackButton from './FeedbackButton';
 import { l } from '../../lang/Lang';
 
 import config from '../../config';
+import RecordList from '../../features/RecordList/RecordList';
 
 export default function PersonView({ mode = 'material' }) {
   const {
@@ -151,7 +151,7 @@ export default function PersonView({ mode = 'material' }) {
             params={{
               person_id: id,
               has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
+              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute',
             }}
             mode={mode}
             hasFilter={mode !== 'transcribe'}
