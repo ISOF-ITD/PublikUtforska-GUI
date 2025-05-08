@@ -19,7 +19,8 @@ const API_PARAMS = {
   publishstatus: 'published',
   has_media: 'true',
   add_aggregations: 'false',
-  transcriptionstatus: 'published,accession',
+  // readytocontribute also has valid data
+  transcriptionstatus: 'published,accession,readytocontribute',
 };
 
 // Funktion för att omvandla objekt till query-string

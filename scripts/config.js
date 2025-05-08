@@ -36,7 +36,7 @@ const getLastThreeMonthsRange = () => {
 };
 
 const apiUrlObject = {
-  dev: 'https://garm.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
+  dev: 'https://garm-test.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
   // 'dev': 'http://localhost:5001/api/es/', //feel free to change according to your local environment
   test: 'https://garm-test.isof.se/folkeservice/api/es/',
   prod: 'https://garm.isof.se/folkeservice/api/es/',
@@ -208,6 +208,10 @@ export default {
       'https://creativecommons.org/licenses/by/2.5/se/': '<a rel="license" target="_blank" href="https://creativecommons.org/licenses/by/2.5/se/"><img alt="Creative Commons-licens" style="border-width:0" src="https://i.creativecommons.org/l/by/2.5/se/88x31.png" /></a>&nbsp;Detta verk är licensierat under en <a rel="license" target="_blank" href="https://creativecommons.org/licenses/by/2.5/se/">Creative Commons Erkännande 2.5 Sverige Licens</a>.',
     },
   },
+
+  // use this to filter the random transcriptions by category
+  // specialEventTranscriptionCategory: '&category=pask2025',
+  // specialEventTranscriptionCategoryLabel: 'Tema Påsk 2025',
 
   // Application specific filter parameter First value (0) is false
   // Probably not needed anymore

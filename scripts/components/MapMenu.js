@@ -8,8 +8,9 @@ import FilterSwitch from './FilterSwitch';
 import StatisticsContainer from './StatisticsContainer';
 import Folkelogga from '../../img/folke-white.svg';
 import TranscribeButton from './views/transcribe/TranscribeButton';
-import RecordList from './views/RecordList';
+import RecordList from '../features/RecordList/RecordList';
 import { l } from '../lang/Lang';
+import config from '../config';
 
 // bara tillfälligt, för att visa en länk till enkäten
 function SurveyLink() {
@@ -128,6 +129,8 @@ export default function MapMenu({
               <FontAwesomeIcon icon={faPen} />
               {' '}
               {l('Skriv av slumpmässig uppteckning')}
+              {config.specialEventTranscriptionCategoryLabel && <br />}
+              {config.specialEventTranscriptionCategoryLabel || ''}
             </>
           )}
           random

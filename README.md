@@ -1,5 +1,5 @@
 # Folke sök GUI (aka PublikUtforska-GUI)
-Public crowdsource map based interface
+Public crowdsource map-based interface
 
 [Accessibility](Accessibility.md)
 
@@ -42,6 +42,36 @@ cd /var/www/react/PublikUtforska-GUI/
 ./deploy.sh
 ```
 
+### Optional: Deploy with a custom public path
+
+If you want to deploy the application to a subpath (for example `/demo/test/www/` instead of `/`), you can pass the `--publicPath` flag to `deploy.sh`.
+
+```bash
+./deploy.sh --publicPath /demo/test/www/
+```
+
+The script will automatically make sure that the path ends with a trailing slash (/), even if you forget to add it.
+
+Examples:
+
+* `./deploy.sh --publicPath /demo/test/www/` → uses `/demo/test/www/`
+
+* `./deploy.sh --publicPath /demo/test/www` → automatically corrected to `/demo/test/www/`
+
+In development, `publicPath` is passed as an environment variable (`PUBLIC_PATH`) and picked up by `webpack.config.js`:
+
+```bash
+PUBLIC_PATH=/demo/test/www/ npm run start
+```
+
+If no `--publicPath` is provided, it defaults to `/`.
+
+During the build, the `webpack.config.js` will print the active `PUBLIC_PATH` to the console, so you can easily see which path is being used:
+
+```bash
+🏗️  Bygger med PUBLIC_PATH=/demo/test/www/ 🚀
+```
+
 ## Create or update sitemap
 
 Run on server:
@@ -54,7 +84,8 @@ npm run create-sitemap
 A cron job on the production server garm runs the sitemap generation script every Monday at 04:00 AM:
 
 ```bash	
-cd /var/www/react/PublikUtforska-GUI/ && npm run create-sitemap > /var/www/react/PublikUtforska-GUI/logs/sitemap.log 2> /var/www/react/PublikUtforska-GUI/logs/sitemap-error.log
+cd /var/www/react/PublikUtforska-GUI/ && npm run create-sitemap | awk '{print strftime("[%Y-%m-%d %H:%M:%S]"), $0}' >> /var/www/react/PublikUtforska-GUI/logs/sitemap.log 2>> >(awk '{print strftime("[%Y-%m-%d %H:%M:%S]"), $0}' >> /var/www/react/PublikUtforska-GUI/logs/sitemap-error.log)
+
 ```
 
 This command changes to the project directory, runs the create-sitemap script, and logs output and errors separately.
@@ -114,18 +145,28 @@ This configuration ensures that the appropriate robots.txt file is used dependin
 
 If modifications to `robots.txt` are required, update the corresponding file in the `/robots/` directory and verify that the proxy correctly points to the intended version. 
 
+## Styling migration
 
+We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
 
-## css 
-Uses less. Every component states its main css in a comment 
-Example:
-// Main CSS: ui-components/audio-player.less
+* **New or rewritten components must use Tailwind** utility classes.  
+* Old `.less` files stay only until their component is migrated.  
+* Tailwind JIT is configured in `tailwind.config.js`; just run `npm run start` as usual.  
 
 ## Components
 Types:
 - scripts\components\collections
 - scripts\components\views
 - scripts\components\
+
+## Project structure update, WIP (2025‑05‑02)
+
+We have started migrating from a **layer‑based** tree (`components/`, `views/` …) to a **feature‑first** structure.  
+The first step was moving everything that belonged to the RecordList into its own folder: 
+- all files that implement one behaviour now live together, local hooks/UI/state stay near the feature
+See: 
+- Robin Wieruch, React Folder Structure in 5 Steps: https://www.robinwieruch.de/react-folder-structure/
+- Feature‑Sliced Design methodology: https://feature-sliced.github.io/documentation/
 
 ### Props
 
@@ -163,6 +204,16 @@ messageSent: false,
 ..
 setState((prevState) => ({ ...prevState, visible: false }));
 ```
+
+## Global state and State handling
+
+* Routing
+* React.createContext
+    Global?
+    for states/data from REST-calls according to route?
+* eventBus
+    loadedmetadata, timeupdate are internal events in audio used
+    Many internal events
 
 ## Routing
 

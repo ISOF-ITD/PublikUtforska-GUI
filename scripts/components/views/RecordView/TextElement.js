@@ -6,6 +6,7 @@ import HighlightSwitcher from './HighlightSwitcher';
 import { l } from '../../../lang/Lang';
 import TranscribeButton from '../transcribe/TranscribeButton';
 import ArchiveImage from './ArchiveImage';
+import ContributorInfo from './ContributorInfo';
 
 function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   const {
@@ -76,42 +77,51 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
     return (
       <main>
         {
-          innerHits.length > 0
-          && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
-        }
+      innerHits.length > 0
+      && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
+      }
         {media.map((mediaItem, index) => (
           // Only show if type is 'image'
           mediaItem.type === 'image' && (
-            <div
-              className="row record-text-and-image"
-              key={mediaItem.source || index}
-            >
-              <div className="eight columns">
-                {mediaItem.text ? (
-                  <p
-                    className="display-line-breaks"
-                    dangerouslySetInnerHTML={{
-                      __html: (highlight && highlightedMediaTexts[`${index}`])
-                        || mediaItem.text,
-                    }}
-                  />
-                ) : (
-                  // if JPEG image exists but no text, show TranscribeButton
-                  <TranscribeButton
-                    className="button button-primary"
-                    label={l('Skriv av')}
-                    title={title}
-                    recordId={recordId}
-                    archiveId={archive.archive_id}
-                    places={places}
-                    images={media}
-                    transcriptionType={transcriptiontype}
-                    random={false}
-                  />
-                )}
-              </div>
-              {renderMedia(mediaItem, index)}
+          <div
+            className="row record-text-and-image"
+            key={mediaItem.source || index}
+          >
+            <div className="eight columns">
+              {(() => {
+                if (mediaItem.text) {
+                  return (
+                    <p
+                      className="display-line-breaks"
+                      dangerouslySetInnerHTML={{
+                        __html: (highlight && highlightedMediaTexts[`${index}`])
+                          ? highlightedMediaTexts[`${index}`]
+                          : mediaItem.text,
+                      }}
+                    />
+                  );
+                } if (transcriptionstatus === 'readytotranscribe') {
+                  return (
+                    <TranscribeButton
+                      className="button button-primary"
+                      label={l('Skriv av')}
+                      title={title}
+                      recordId={recordId}
+                      archiveId={archive.archive_id}
+                      places={places}
+                      images={media}
+                      transcriptionType={transcriptiontype}
+                      random={false}
+                    />
+                  );
+                }
+                // Visa tomt fält:
+                // return <div style={{ height: '0px' }} className="button button-primary" />;
+                return <p>{l('Denna text håller på att skrivas av, av en användare eller är under behandling.')}</p>;
+              })()}
             </div>
+            {renderMedia(mediaItem, index)}
+          </div>
           )
         ))}
       </main>
@@ -141,21 +151,18 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
             <p
               className="display-line-breaks"
               dangerouslySetInnerHTML={{
-                __html: textParts ? textParts[index] : '&nbsp;'
+                __html: textParts ? textParts[index] : '&nbsp;',
               }}
             />
           </div>
           {renderMedia(mediaItem, index)}
         </div>
         )))}
-      {transcribedby && (
-        <p className="text-small">
-          <strong>{`${l('Transkriberad av')}: `}</strong>
-          <span>
-            {transcribedby}
-          </span>
-        </p>
-      )}
+      <ContributorInfo
+        transcribedby={transcribedby}
+        comment={data.comment}
+        transcriptiondate={data.transcriptiondate}
+      />
     </main>
   );
 }

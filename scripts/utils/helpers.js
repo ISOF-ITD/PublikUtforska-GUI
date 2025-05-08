@@ -4,10 +4,13 @@ import archiveLogoIsof from '../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../img/archive-logo-ikos.png';
 
 export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
-  let text = `${page}`;
-  if (totalPages > 1) {
-    const toPage = parseInt(page, 10) + (totalPages - 1);
-    text += `-${toPage}`;
+  let text = ``;
+  if (page) {
+    text = `${page}`;
+    if (totalPages > 1) {
+      const toPage = parseInt(page, 10) + (totalPages - 1);
+      text += `-${toPage}`;
+    }
   }
   return text;
 }
@@ -348,14 +351,19 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
                 birthYear = ` född ${persons[i].birthyear}`;
               }
               personbasedTitle = personbasedTitle + name + birthYear;
+              if (i < persons.length - 1) {
+                personbasedTitle = personbasedTitle + ', ';
+              }
             }
           }
         }
         if (personbasedTitle) {
           if (personbasedTitle.length > 0) {
+            let yearString = '';
             if (year) {
-              personbasedTitle = `${personbasedTitle} intervju ${year.substring(0, 4)}`;
+              yearString = year.substring(0, 4);
             }
+            personbasedTitle = `${personbasedTitle} intervju ${yearString}`;
           }
           if (personbasedTitle.length > 0) {
             return personbasedTitle;

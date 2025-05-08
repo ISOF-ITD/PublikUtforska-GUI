@@ -116,7 +116,7 @@ function createRootRoute() {
     loader: ({ params }) => {
       const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
-        transcriptionstatus: 'published,accession',
+        transcriptionstatus: 'published,accession,readytocontribute',
       };
       return defer({
         results: fetchMapAndCountRecords(queryParams),

@@ -23,24 +23,24 @@ export default function Uppteckningsblankett({
 
       <div className="row">
         <div className="mark-below-img">
-          <input id="transcription_informantname" name="informantNameInput" className="six columns" type="text" value={informantNameInput} onChange={inputChangeHandler} />
+          <input id="transcription_informantname" name="informantNameInput" className="six columns" type="text" value={informantNameInput ?? ''} onChange={inputChangeHandler} />
         </div>
 
         <div className="mark-below-img">
-          <input id="transcription_informantbirthdate" name="informantBirthDateInput" className="two columns" type="text" value={informantBirthDateInput} onChange={inputChangeHandler} />
+          <input id="transcription_informantbirthdate" name="informantBirthDateInput" className="two columns" type="text" value={informantBirthDateInput ?? ''} onChange={inputChangeHandler} />
         </div>
 
         <div className="mark-below-img">
-          <input id="transcription_informantbirthplace" name="informantBirthPlaceInput" className="four columns" type="text" value={informantBirthPlaceInput} onChange={inputChangeHandler} />
+          <input id="transcription_informantbirthplace" name="informantBirthPlaceInput" className="four columns" type="text" value={informantBirthPlaceInput ?? ''} onChange={inputChangeHandler} />
         </div>
       </div>
 
       <label htmlFor="transcription_informant" className="u-full-width margin-bottom-zero">Fält under berättat av (om det finns fler uppgifter nedskrivna):</label>
-      <input id="transcription_informant" name="informantInformationInput" className="u-full-width margin-bottom-minimal" type="text" value={informantInformationInput} onChange={inputChangeHandler} />
+      <input id="transcription_informant" name="informantInformationInput" className="u-full-width margin-bottom-minimal" type="text" value={informantInformationInput ?? ''} onChange={inputChangeHandler} />
 
       <div className="mark-above-img">
         <label htmlFor="transcription_title" className="u-full-width margin-bottom-zero">Titel:</label>
-        <input id="transcription_title" name="titleInput" className="u-full-width margin-bottom-minimal" type="text" value={title} onChange={inputChangeHandler} />
+        <input id="transcription_title" name="titleInput" className="u-full-width margin-bottom-minimal" type="text" value={title ?? ''} onChange={inputChangeHandler} />
       </div>
 
       <div className="mark-above-img">
@@ -49,7 +49,7 @@ export default function Uppteckningsblankett({
           {pageIndex !== undefined && pageIndex !== null ? ` på sidan ${pageIndex + 1} (av ${numberOfPages})` : ''}
           :
         </label>
-        <textarea lang="sv" spellCheck="false" id="transcription_text" name="messageInput" className="u-full-width margin-bottom-minimal" value={messageInput} onChange={inputChangeHandler} />
+        <textarea lang="sv" spellCheck="false" id="transcription_text" name="messageInput" className="u-full-width margin-bottom-minimal" value={messageInput ?? ''} onChange={inputChangeHandler} />
       </div>
     </div>
   );

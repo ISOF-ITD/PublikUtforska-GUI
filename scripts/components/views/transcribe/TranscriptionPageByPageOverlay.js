@@ -1,6 +1,4 @@
-// Användningsfall: https://github.com/ISOF-ITD/kartplattformen_common/blob/master/anvandningsfall/transkribera_uppteckning_sida_for_sida.md
-
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import config from '../../../config';
 import { l } from '../../../lang/Lang';
 import TranscriptionForm from './TranscriptionForm';
@@ -8,315 +6,277 @@ import ImageMap from '../ImageMap';
 import TranscriptionThumbnails from './TranscriptionThumbnails';
 import NavigationPanel from './NavigationPanel';
 import OverlayHeader from './OverlayHeader';
+import TranscribeButton from './TranscribeButton';
 
-function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
-  const [recordDetails, setRecordDetails] = useState({
-    url: transcriptionOverlayEvent.target.url,
-    id: transcriptionOverlayEvent.target.id,
-    archiveId: transcriptionOverlayEvent.target.archiveId,
-    title: transcriptionOverlayEvent.target.title,
-    type: transcriptionOverlayEvent.target.type,
-    transcriptionType: transcriptionOverlayEvent.target.transcriptionType,
-    placeString: transcriptionOverlayEvent.target.placeString,
-  });
-  const [pages, setPages] = useState(
-    (transcriptionOverlayEvent.target.images || []).map((page) => ({
-      ...page,
-      isSent: false,
-      unsavedChanges: false,
-      text: page.text || '',
-      comment: page.comment || '',
-    })),
-  );
-  const [currentPageIndex, setCurrentPageIndex] = useState(
-    // go to first page with transcriptionstatus === 'readytotranscribe', or first page
-    pages.findIndex((page) => page.transcriptionstatus === 'readytotranscribe') || 0,
-  );
+/**
+ * Sida‑för‑sida‑overlay som hanterar sin egen synlighet via eventBus
+ * och har en “Slumpa ny uppteckning”‑knapp i headern.
+ */
+export default function TranscriptionPageByPageOverlay() {
+  /* ------------------------------------------------------------ */
+  /* Synlighet, dokumentdata och sidinformation                   */
+  /* ------------------------------------------------------------ */
+  const [visible, setVisible] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [recordDetails, setRecordDetails] = useState(null);
+  const [pages, setPages] = useState([]);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+
+  /* ------------------------------------------------------------ */
+  /* Formulärfält                                                 */
+  /* ------------------------------------------------------------ */
   const [messageSent, setMessageSent] = useState(false);
-
   const [informantNameInput, setInformantNameInput] = useState('');
   const [informantBirthDateInput, setInformantBirthDateInput] = useState('');
   const [informantBirthPlaceInput, setInformantBirthPlaceInput] = useState('');
   const [informantInformationInput, setInformantInformationInput] = useState('');
-
   const [transcriptionText, setTranscriptionText] = useState('');
   const [comment, setComment] = useState('');
-
   const [nameInput, setNameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
 
+  /* ------------------------------------------------------------ */
+  /* Sessions & refs                                              */
+  /* ------------------------------------------------------------ */
+  const [transcribesession, setTranscribesession] = useState(null);
+  let transcribesessionLocal = null; // fallback innan state uppdaterats
   const thumbnailContainerRef = useRef(null);
 
-  let transcribesessionLocal = null;
-  const [transcribesession, setTranscribesession] = useState(null);
-
+  /* ------------------------------------------------------------ */
+  /* Utils                                                        */
+  /* ------------------------------------------------------------ */
   const scrollToActiveThumbnail = (index) => {
     const thumbnails = thumbnailContainerRef.current;
     if (!thumbnails) return;
-
-    const thumbnailRect = thumbnails.children[index].getBoundingClientRect();
-    const containerRect = thumbnails.getBoundingClientRect();
-    if (thumbnailRect.left < containerRect.left || thumbnailRect.right > containerRect.right) {
-      thumbnails.scrollLeft = thumbnailRect.left
-        - containerRect.left
-        + thumbnails.scrollLeft
-        - (thumbnailRect.width / 2);
+    const thumbRect = thumbnails.children[index].getBoundingClientRect();
+    const contRect = thumbnails.getBoundingClientRect();
+    if (thumbRect.left < contRect.left || thumbRect.right > contRect.right) {
+      thumbnails.scrollLeft = thumbRect.left - contRect.left + thumbnails.scrollLeft - thumbRect.width / 2;
     }
+  };
+
+  /* ------------------------------------------------------------ */
+  /* Event‑listeners                                              */
+  /* ------------------------------------------------------------ */
+  useEffect(() => {
+    const showHandler = (e) => {
+      const t = e.target;
+      setRecordDetails({
+        url: t.url,
+        id: t.id,
+        archiveId: t.archiveId,
+        title: t.title,
+        type: t.type,
+        transcriptionType: t.transcriptionType,
+        placeString: t.placeString,
+      });
+
+      const initial = (t.images || []).map((p) => ({
+        ...p,
+        isSent: false,
+        unsavedChanges: false,
+        text: p.text || '',
+        comment: p.comment || '',
+      }));
+      setPages(initial);
+
+      const startIdx = initial.findIndex((p) => p.transcriptionstatus === 'readytotranscribe');
+      setCurrentPageIndex(startIdx !== -1 ? startIdx : 0);
+
+      transcribeStart(t.id);
+      requestAnimationFrame(() => scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0));
+
+      setVisible(true);
+    };
+
+    const hideHandler = () => setVisible(false);
+
+    window.eventBus.addEventListener('overlay.transcribePageByPage', showHandler);
+    window.eventBus.addEventListener('overlay.hide', hideHandler);
+    return () => {
+      window.eventBus.removeEventListener('overlay.transcribePageByPage', showHandler);
+      window.eventBus.removeEventListener('overlay.hide', hideHandler);
+    };
+  }, []);
+
+  /* ------------------------------------------------------------ */
+  /* Backend‑helpers                                              */
+  /* ------------------------------------------------------------ */
+  const transcribeStart = (recordid) => {
+    const fd = new FormData();
+    fd.append('json', JSON.stringify({ recordid }));
+    fetch(`${config.restApiUrl}transcribestart/`, { method: 'POST', body: fd })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.success === 'true' || j.success === true) {
+          if (j.data) {
+            transcribesessionLocal = j.data.transcribesession;
+            setTranscribesession(j.data.transcribesession);
+          }
+          setMessageSent(false);
+        } else {
+          alert(j.message || 'Ett fel inträffade.');
+          handleHideOverlay();
+        }
+      })
+      .catch((err) => console.error('transcribeStart error:', err));
   };
 
   const transcribeCancel = async () => {
-    if (!messageSent) {
-      const data = {
+    if (!messageSent && recordDetails) {
+      const fd = new FormData();
+      fd.append('json', JSON.stringify({
         recordid: recordDetails.id,
         transcribesession: transcribesession || transcribesessionLocal,
-      };
-
-      const formData = new FormData();
-      formData.append('json', JSON.stringify(data));
-
+      }));
       try {
-        const response = await fetch(`${config.restApiUrl}transcribecancel/`, {
+        await fetch(`${config.restApiUrl}transcribecancel/`, {
           method: 'POST',
-          body: formData,
+          body: fd,
         });
-        const data = await response.json();
-        // Hantera svaret vid framgång
-        // if (data.status === 'ok') {
-        // if there are any pages with 'isSent' set to true, reload the page
-        if (pages.some((page) => page.isSent)) {
-          // do a proper page reload:
-          // window.location.reload();
-        }
-      } catch (error) {
-        console.error(`Error when cancelling transcription: ${error}`);
+      } catch (err) {
+        console.error('transcribeCancel error:', err);
       }
+      // Reset everything
+      setVisible(false);
+      setRecordDetails(null);
+      setPages([]);
+      setCurrentPageIndex(0);
+      setTranscribesession(null);
+      setMessageSent(false);
+      setInformantNameInput('');
+      setInformantBirthDateInput('');
+      setInformantBirthPlaceInput('');
+      setInformantInformationInput('');
+      setTranscriptionText('');
+      setComment('');
+      setNameInput('');
+      setEmailInput('');
     }
   };
 
-  const navigatePages = async (index) => {
-    // Spara den aktuella transkriberingstexten och kommentaren innan navigering
-    setPages((prevPages) => {
-      const newPages = [...prevPages];
-      newPages[currentPageIndex].text = transcriptionText;
-      newPages[currentPageIndex].comment = comment;
-      return newPages;
-    });
-
-    // Uppdatera den aktuella sidan och återställ text och kommentar
-    setCurrentPageIndex(index);
-    if ((pages[index].transcriptionstatus && pages[index].transcriptionstatus !== 'readytotranscribe')) {
-      setTranscriptionText(pages[index]?.text || '');
-    } else {
-      // If ready to transcribe clear text field if it is not transcribed by user
-      if (pages[index].unsavedChanges == true) { 
-        setTranscriptionText(pages[index]?.text || '');
-      } else
-      {
-        setTranscriptionText('');
-      }
+  /* ------------------------------------------------------------ */
+  /* Close / navigation helpers                                   */
+  /* ------------------------------------------------------------ */
+  const handleHideOverlay = () => {
+    if (pages.some((p) => p.unsavedChanges)) {
+      if (!window.confirm('Det finns osparade ändringar. Är du säker på att du vill stänga?')) return;
     }
-    setComment(pages[index]?.comment || '');
+    // window.eventBus.dispatch('overlay.hide');
+    transcribeCancel();
+  };
+
+  const navigatePages = (index) => {
+    setPages((prev) => {
+      const next = [...prev];
+      next[currentPageIndex].text = transcriptionText;
+      next[currentPageIndex].comment = comment;
+      return next;
+    });
+    setCurrentPageIndex(index);
+
+    const page = pages[index];
+    if (page.transcriptionstatus && page.transcriptionstatus !== 'readytotranscribe') {
+      setTranscriptionText(page.text || '');
+    } else if (page.unsavedChanges) {
+      setTranscriptionText(page.text || '');
+    } else {
+      setTranscriptionText('');
+    }
+    setComment(page.comment || '');
   };
 
   const goToPreviousPage = () => {
-    const newIndex = currentPageIndex - 1;
-    if (newIndex >= 0) {
-      navigatePages(newIndex);
-      scrollToActiveThumbnail(newIndex);
+    if (currentPageIndex > 0) {
+      navigatePages(currentPageIndex - 1);
+      scrollToActiveThumbnail(currentPageIndex - 1);
     }
   };
 
   const goToNextPage = () => {
-    const newIndex = currentPageIndex + 1;
-    if (newIndex < pages.length) {
-      navigatePages(newIndex);
-      scrollToActiveThumbnail(newIndex);
+    if (currentPageIndex < pages.length - 1) {
+      navigatePages(currentPageIndex + 1);
+      scrollToActiveThumbnail(currentPageIndex + 1);
     }
   };
 
   const goToNextTranscribePage = () => {
-    const nextIndex = pages.findIndex((page, index) => index > currentPageIndex && page.transcriptionstatus === 'readytotranscribe');
-    if (nextIndex !== -1) {
-      navigatePages(nextIndex);
-      scrollToActiveThumbnail(nextIndex);
+    const nextIdx = pages.findIndex((p, i) => i > currentPageIndex && p.transcriptionstatus === 'readytotranscribe');
+    if (nextIdx !== -1) {
+      navigatePages(nextIdx);
+      scrollToActiveThumbnail(nextIdx);
     }
   };
 
-  const transcribeStart = (recordid) => {
-    const data = {
-      recordid,
-    };
+  /* ------------------------------------------------------------ */
+  /* Skicka‑knapp                                                 */
+  /* ------------------------------------------------------------ */
+  const sendButtonClickHandler = (e) => {
+    if (transcriptionText.trim().indexOf(' ') === -1) {
+      alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
+      return;
+    }
+    const goToNext = e.currentTarget.dataset.gotonext === 'true';
 
-    const formData = new FormData();
-    formData.append('json', JSON.stringify(data));
+    const fd = new FormData();
+    fd.append('json', JSON.stringify({
+      transcribesession,
+      url: recordDetails.url,
+      from_email: emailInput,
+      from_name: nameInput,
+      subject: 'Crowdsource: Transkribering',
+      informantName: informantNameInput,
+      informantBirthDate: informantBirthDateInput,
+      informantBirthPlace: informantBirthPlaceInput,
+      informantInformation: informantInformationInput,
+      message: transcriptionText,
+      messageComment: comment,
+      recordid: recordDetails.id,
+      page: pages[currentPageIndex].source,
+    }));
 
-    fetch(`${config.restApiUrl}transcribestart/`, {
-      method: 'POST',
-      body: formData,
-    })
+    const btn = e.target;
+    
+    if (sending) return; // dubbelklick-skydd
+    setSending(true);
+
+    fetch(`${config.restApiUrl}transcribe/`, { method: 'POST', body: fd })
       .then((response) => response.json())
       .then((json) => {
-        if (json.success && json.success === 'true') {
-          // let transcribesession = false;
-          if (json.data) {
-            transcribesessionLocal = json.data.transcribesession;
-            setTranscribesession(json.data.transcribesession);
-          }
-          setMessageSent(false);
-          // setTranscribesession(transcribesession);
+        if (json.success === 'true' || json.success === true) {
+          setPages((prev) => {
+            const next = [...prev];
+            next[currentPageIndex] = {
+              ...next[currentPageIndex],
+              isSent: true,
+              unsavedChanges: false,
+              transcriptionstatus: 'transcribed',
+            };
+            return next;
+          });
+          if (goToNext) goToNextTranscribePage();
+          // if (window.eventBus) window.eventBus.dispatch('overlay.transcribe.sent');
         } else {
-          setMessageSent(false);
+          btn.textContent = 'Skicka';
+          console.error('Serverfel:', json);
         }
       })
-      .catch((error) => {
-        console.error(`Error when starting transcription: ${error}`);
-      });
-  };
-
-  const handleHideOverlay = () => {
-    if (pages.some((page) => page.unsavedChanges)) {
-      const confirmLeave = window.confirm('Det finns osparade ändringar. Är du säker på att du vill stänga?');
-      if (!confirmLeave) return;
-    }
-    window.eventBus.dispatch('overlay.hide');
-  };
-
-  useEffect(() => {
-    // setIsVisible(true);
-
-    // // Initialisera pages med isSent satt till false och inkludera comment
-    // const initialPages = (transcriptionOverlayEvent.target.images || []).map((page) => ({
-    //   ...page,
-    //   isSent: false,
-    //   unsavedChanges: false,
-    //   text: page.text || '',
-    //   comment: page.comment || '',
-    // }));
-    // setPages(initialPages);
-
-    // Lås hela dokumentet när vyn öppnas
-    transcribeStart(transcriptionOverlayEvent.target.id);
-    scrollToActiveThumbnail(currentPageIndex);
-
-    const handleBeforeUnload = (event) => {
-      // Make sure transcribecancel called even if user leaves page
-      transcribeCancel();
-      // Prevent page unload if there are unsaved changes in TranscriptionPageByPageOverlay
-      // Visar "säker att du vill lämna":
-      // The main use case for this event is to trigger a browser-generated confirmation dialog that asks users to confirm if they really want to leave the page when they try to close or reload it, or navigate somewhere else. This is intended to help prevent loss of unsaved data.
-      event.preventDefault();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Körs när komponenten stängs, unmount, dvs tas bort från DOM
-    // Unmount görs nu alltid när komponenten inte visas
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      // console.log('Cleaning up, recordDetails.id:', recordDetails.id);
-      transcribeCancel();
-    };
-  }, []);
-
-  const sendButtonClickHandler = (event) => {
-    const text = transcriptionText;
-    const isMinimum2Words = text.trim().indexOf(' ') !== -1;
-    const goToNext = event.target.getAttribute('data-gotonext') === 'true';
-
-    if (!isMinimum2Words) {
-      alert(l('Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'));
-    } else {
-      console.log('transcribesession:', transcribesession);
-      const data = {
-        transcribesession,
-        url: recordDetails.url,
-        from_email: emailInput,
-        from_name: nameInput,
-        subject: 'Crowdsource: Transkribering',
-        informantName: informantNameInput,
-        informantBirthDate: informantBirthDateInput,
-        informantBirthPlace: informantBirthPlaceInput,
-        informantInformation: informantInformationInput,
-        message: transcriptionText,
-        messageComment: comment,
-        recordid: recordDetails.id,
-        page: pages[currentPageIndex].source,
-      };
-
-      const formData = new FormData();
-      formData.append('json', JSON.stringify(data));
-
-      const sendButton = event.target;
-      sendButton.textContent = 'Skickar...';
-
-      fetch(`${config.restApiUrl}transcribe/`, {
-        method: 'POST',
-        body: formData,
+      .catch((err) => {
+        btn.textContent = 'Skicka';
+        console.error('send error:', err);
       })
-        .then((response) => response.json())
-        .then((responseData) => {
-          // Kolla att värdet på success är 'true' och inte 'false'
-          if (responseData.success && responseData.success === 'true') {
-            // Markera sidan som skickad och sparad
-            setPages((prevPages) => {
-              const newPages = [...prevPages];
-              newPages[currentPageIndex].isSent = true;
-              newPages[currentPageIndex].unsavedChanges = false;
-              newPages[currentPageIndex].transcriptionstatus = 'transcribed';
-              return newPages;
-            });
-            if (goToNext) {
-              goToNextTranscribePage();
-            }
-
-            if (window.eventBus) {
-              window.eventBus.dispatch('overlay.transcribe.sent');
-            }
-
-            // setComment('');
-            // setTranscriptionText('');
-            // setInformantNameInput('');
-            // setInformantBirthDateInput('');
-            // setInformantBirthPlaceInput('');
-            // setInformantInformationInput('');
-            // setEmailInput('');
-            // setNameInput('');
-          } else {
-            sendButton.textContent = 'Skicka';
-            console.error(`Server does not respond for: ${recordDetails.url}`);
-            const errorLabel = document.createElement('span');
-            errorLabel.textContent = 'Fel vid sändning';
-            errorLabel.style.color = 'red';
-            sendButton.parentElement.appendChild(errorLabel);
-          }
-        })
-        .catch((error) => {
-          sendButton.textContent = 'Skicka';
-          console.error(`Error when sending data: ${error}`);
-          const errorLabel = document.createElement('span');
-          errorLabel.textContent = `Fel: ${error.message}`;
-          errorLabel.style.color = 'red';
-          sendButton.parentElement.appendChild(errorLabel);
-        });
-    }
+      // När vi är klara, sätt tillbaka knappen till "Skicka" och stäng av "sending"
+      .finally(() => setSending(false));
   };
 
-  // if (!isVisible) return null;
-
-  const inputChangeHandler = (event) => {
-    const { name, value } = event.target;
+  /* ------------------------------------------------------------ */
+  /* Input change handler                                         */
+  /* ------------------------------------------------------------ */
+  const inputChangeHandler = (e) => {
+    const { name, value } = e.target;
     switch (name) {
       case 'transcriptionText':
-/*         console.log('pages[index].unsavedChanges: ' + pages[currentPageIndex].unsavedChanges)
-        if ((pages[currentPageIndex].transcriptionstatus && pages[currentPageIndex].transcriptionstatus !== 'readytotranscribe')) {
-          setTranscriptionText(pages[currentPageIndex]?.text || '');
-        } else {
-          // If ready to transcribe clear text field if not transcribed by user
-          if (pages[currentPageIndex].unsavedChanges == false) {
-            setTranscriptionText('');
-          }
-        }
- */        // Old
+      case 'messageInput':
         setTranscriptionText(value);
         break;
       case 'informantNameInput':
@@ -331,12 +291,6 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
       case 'informantInformationInput':
         setInformantInformationInput(value);
         break;
-      case 'title':
-        setRecordDetails((prevDetails) => ({
-          ...prevDetails,
-          title: value,
-        }));
-        break;
       case 'nameInput':
         setNameInput(value);
         break;
@@ -346,29 +300,56 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
       case 'messageCommentInput':
         setComment(value);
         break;
-      case 'messageInput':
-        setTranscriptionText(value);
+      case 'title':
+        setRecordDetails((prev) => ({ ...prev, title: value }));
         break;
       default:
-        console.log(`Okänt fält: ${name}`);
+        console.log('Okänt fält:', name);
     }
 
-    // Markera som osparad när en förändring sker
-    setPages((prevPages) => {
-      const newPages = [...prevPages];
-      newPages[currentPageIndex].isSent = false;
-      newPages[currentPageIndex].unsavedChanges = true;
-      return newPages;
+    setPages((prev) => {
+      const next = [...prev];
+      next[currentPageIndex].isSent = false;
+      next[currentPageIndex].unsavedChanges = true;
+      return next;
     });
   };
+
+  /* ------------------------------------------------------------ */
+  /* Render                                                       */
+  /* ------------------------------------------------------------ */
+  if (!visible || !recordDetails) return null;
 
   return (
     <div className="overlay-container visible transcription-page-by-page-overlay">
       <div className="overlay-window large">
-        <OverlayHeader recordDetails={recordDetails} handleHideOverlay={handleHideOverlay} />
+        <div className="overlay-header">
+          <OverlayHeader
+            recordDetails={recordDetails}
+            handleHideOverlay={handleHideOverlay}
+            transcribeCancel={transcribeCancel}
+          />
+          {/* Stäng‑knapp */}
+          <button
+            type="button"
+            title="stäng"
+            className="close-button white"
+            onClick={handleHideOverlay}
+            aria-label="Stäng"
+          />
+          <div className="next-random-record-button-container">
+            <TranscribeButton
+              className="button button-primary next-random-record-button"
+              random
+              label="Skriv av annan slumpmässig uppteckning"
+              transcribeCancel={transcribeCancel}
+            />
+          </div>
+        </div>
         <div className="row">
           <div className="four columns">
             <TranscriptionForm
+              sending={sending}
               recordDetails={recordDetails}
               currentPageIndex={currentPageIndex}
               pages={pages}
@@ -384,10 +365,12 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
               sendButtonClickHandler={sendButtonClickHandler}
             />
           </div>
+
           <div className="eight columns">
             {pages.length > 0 && (
               <ImageMap image={`${config.imageUrl}${pages[currentPageIndex].source}`} />
             )}
+
             <div className="row">
               <NavigationPanel
                 currentPageIndex={currentPageIndex}
@@ -397,6 +380,7 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
                 goToNextTranscribePage={goToNextTranscribePage}
               />
             </div>
+
             <TranscriptionThumbnails
               thumbnailContainerRef={thumbnailContainerRef}
               pages={pages}
@@ -409,5 +393,3 @@ function TranscriptionPageByPageOverlay({ event: transcriptionOverlayEvent }) {
     </div>
   );
 }
-
-export default TranscriptionPageByPageOverlay;

@@ -77,6 +77,9 @@ export default function GlobalAudioPlayer() {
       setCurrentTime(audio.currentTime * 1000);
     };
 
+    // these events are fired from the audio element
+    // API: https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement
+    // and https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
     audio.addEventListener('loadedmetadata', setAudioData);
     audio.addEventListener('timeupdate', setAudioTime);
 

@@ -6,12 +6,12 @@ import {
 
 import { Suspense, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import RecordList from './RecordList';
 import SimpleMap from './SimpleMap';
 
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 import config from '../../config';
 import { l } from '../../lang/Lang';
+import RecordList from '../../features/RecordList/RecordList';
 
 export default function PlaceView({ highlightRecordsWithMetadataField = null, mode = 'material' }) {
   const { results } = useLoaderData();
@@ -139,7 +139,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                         ...createParamsFromSearchRoute(params['*']),
                         place_id: results.id,
                         has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-                        transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
+                        transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute',
                       }}
                       mode={mode}
                       hasFilter={mode !== 'transcribe'}
@@ -176,7 +176,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                     params={{
                       place_id: results.id,
                       has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-                      transcriptionstatus: mode === 'transcribe' ? null : 'published,accession',
+                      transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute',
                     }}
                     mode={mode}
                     hasFilter={mode !== 'transcribe'}
