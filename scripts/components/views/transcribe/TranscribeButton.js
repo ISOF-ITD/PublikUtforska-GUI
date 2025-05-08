@@ -1,5 +1,4 @@
 /* eslint-disable react/require-default-props */
-import React from 'react';
 import PropTypes from 'prop-types';
 import config from '../../../config';
 import { getPlaceString } from '../../../utils/helpers';
