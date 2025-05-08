@@ -5,6 +5,7 @@ import config from '../../../config';
 import HighlightSwitcher from './HighlightSwitcher';
 import { l } from '../../../lang/Lang';
 import TranscribeButton from '../transcribe/TranscribeButton';
+import ArchiveImage from './ArchiveImage';
 import ContributorInfo from './ContributorInfo';
 
 function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
@@ -42,41 +43,15 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
   );
 
   const renderMedia = (mediaItem, index) => (
-    <div className="four columns">
-      <div
-        data-type="image"
-        data-image={mediaItem.source}
-        onClick={() => handleMediaClick(mediaItem, index)}
-        onKeyDown={(e) => handleKeyDown(e, mediaItem, index)}
-        className="archive-image"
-        role="button"
-        tabIndex="0"
-      >
-        <img
-          src={imageUrl + mediaItem.source}
-          alt={mediaItem.title || ''}
-          // lazy loading for long texts with many images
-          loading="lazy"
-          style={{
-            // Förhindrar att bilden blir markerad
-            // när man markerar texten
-            userSelect: 'none',
-            pointerEvents: 'none',
-          }}
-        />
-
-        <div className="media-title sv-portlet-image-caption">
-          {mediaItem.title || ''}
-          {mediaItem.comment && mediaItem.comment.trim() !== '' && (
-            <div>
-              <br />
-              <strong>Kommentar:</strong>
-              <br />
-              {mediaItem.comment}
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="four columns" key={mediaItem.source || index}>
+      <ArchiveImage
+        mediaItem={mediaItem}
+        index={index}
+        onMediaClick={handleMediaClick}
+        onKeyDown={handleKeyDown}
+        imageUrl={imageUrl}
+        renderMagnifyingGlass
+      />
     </div>
   );
 
@@ -180,7 +155,7 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
               }}
             />
           </div>
-          {renderMedia(mediaItem)}
+          {renderMedia(mediaItem, index)}
         </div>
         )))}
       <ContributorInfo
