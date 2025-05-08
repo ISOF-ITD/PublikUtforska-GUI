@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Uppteckningsblankett from './transcriptionForms/Uppteckningsblankett';
 import Fritext from './transcriptionForms/Fritext';
 import { l } from '../../../lang/Lang';
 
 function TranscriptionForm({
+  sending,
   recordDetails,
   currentPageIndex,
   pages,
@@ -112,8 +113,14 @@ function TranscriptionForm({
             disabled={disableInput}
           />
 
-          <button className="button-primary" onClick={sendButtonClickHandler} type="button" data-gotonext disabled={disableInput}>
-            {sendButtonLabel}
+          <button
+            className="button-primary"
+            onClick={sendButtonClickHandler}
+            type="button"
+            data-gotonext="true"
+            disabled={disableInput || sending}
+          >
+            {sending ? 'Skickar…' : sendButtonLabel}
           </button>
           {
             pages[currentPageIndex]?.isSent

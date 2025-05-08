@@ -312,43 +312,43 @@ export default function TranscriptionOverlay(props) {
 	useEffect(() => {
 		// Handler for overlay.transcribe
 		const handleOverlayTranscribe = (event) => {
-			if (event.target.random) {
-				// If random -> fetch a random document
-				fetch(
-					`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`
-				)
-					.then((response) => response.json())
-					.then((json) => {
-						const randomDocument = json.hits.hits[0]._source;
-						setVisible(true);
-						setUrl(`${config.siteUrl}/records/${randomDocument.id}` ?? '');
-						setId(randomDocument.id ?? null);
-						setArchiveId(randomDocument.archive?.archive_id ?? null);
-						setTitle(randomDocument.title ?? '');
-						setImages(randomDocument.media || []);
-						setTranscriptionType(randomDocument.transcriptiontype || '');
-						setImageIndex(0);
-						setPlaceString(getPlaceString(randomDocument.places) ?? '');
-						setRandomRecord(true);
+			// if (event.target.random) {
+			// 	// If random -> fetch a random document
+			// 	fetch(
+			// 		`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`
+			// 	)
+			// 		.then((response) => response.json())
+			// 		.then((json) => {
+			// 			const randomDocument = json.hits.hits[0]._source;
+			// 			setVisible(true);
+			// 			setUrl(`${config.siteUrl}/records/${randomDocument.id}` ?? '');
+			// 			setId(randomDocument.id ?? null);
+			// 			setArchiveId(randomDocument.archive?.archive_id ?? null);
+			// 			setTitle(randomDocument.title ?? '');
+			// 			setImages(randomDocument.media || []);
+			// 			setTranscriptionType(randomDocument.transcriptiontype || '');
+			// 			setImageIndex(0);
+			// 			setPlaceString(getPlaceString(randomDocument.places) ?? '');
+			// 			setRandomRecord(true);
 
-						transcribeStart(randomDocument.id);
-					})
-					.catch((err) => {
-						// console.error('Failed to fetch random document:', err);
-						// visa overlay: "Det finns inga dokument kvar att transkribera"
-						setVisible(true);
-						setMessageSent(true);
-						setMessageOnFailure(
-							l('Det finns inga dokument kvar att transkribera.')
-						);
-						setUrl('');
-						setId(null);
-						setArchiveId(null);
-						setTitle('');
-						setImages([]);
-						setTranscriptionType('');
-					});
-			} else {
+			// 			transcribeStart(randomDocument.id);
+			// 		})
+			// 		.catch((err) => {
+			// 			// console.error('Failed to fetch random document:', err);
+			// 			// visa overlay: "Det finns inga dokument kvar att transkribera"
+			// 			setVisible(true);
+			// 			setMessageSent(true);
+			// 			setMessageOnFailure(
+			// 				l('Det finns inga dokument kvar att transkribera.')
+			// 			);
+			// 			setUrl('');
+			// 			setId(null);
+			// 			setArchiveId(null);
+			// 			setTitle('');
+			// 			setImages([]);
+			// 			setTranscriptionType('');
+			// 		});
+			// } else {
 				setVisible(true);
 				setType(event.target.type ?? '');
 				setTitle(event.target.title ?? '');
@@ -362,7 +362,7 @@ export default function TranscriptionOverlay(props) {
 				setRandomRecord(!!event.target.random);
 
 				transcribeStart(event.target.id);
-			}
+			// }
 		};
 
 		// Handler for overlay.hide
@@ -544,7 +544,8 @@ export default function TranscriptionOverlay(props) {
 							<TranscribeButton
 								label={l('Skriv av annan slumpmässig uppteckning')}
 								random
-								onClick={randomButtonClickHandler}
+								transcribeCancel={transcribeCancel}
+								// onClick={randomButtonClickHandler}
 								className="button button-primary next-random-record-button"
 							/>
 						</div>

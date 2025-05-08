@@ -158,6 +158,86 @@
 
     <!-- </div> -->
 
+    <!-- Error monitor (dev only): shows console errors in-app -->
+    <script>
+        (function () {
+            const { hostname } = window.location;
+            const isDev = ['127.0.0.1', 'localhost', '0.0.0.0'].some((element) => hostname.includes(element));
+            const isTest = ['-test.'].some((element) => hostname.includes(element));
+            if (!isDev) return;
+            const monitor = document.createElement('div');
+            monitor.id = 'errorMonitor';
+            monitor.style.position = 'fixed';
+            monitor.style.bottom = '0';
+            monitor.style.left = '0';
+            monitor.style.width = '100%';
+            monitor.style.maxHeight = '200px';
+            monitor.style.overflowY = 'auto';
+            monitor.style.backgroundColor = '#f8d7da';
+            monitor.style.color = '#721c24';
+            monitor.style.borderTop = '1px solid #f5c6cb';
+            monitor.style.fontSize = '14px';
+            monitor.style.fontFamily = 'monospace';
+            monitor.style.padding = '5px';
+            monitor.style.zIndex = '9999';
+            // start hidden; show only when an error occurs
+            monitor.style.display = 'none';
+            document.body.appendChild(monitor);
+            const closeButton = document.createElement('button');
+            closeButton.textContent = '×';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '4px';
+            closeButton.style.right = '8px';
+            closeButton.style.background = 'transparent';
+            closeButton.style.border = 'none';
+            closeButton.style.fontSize = '16px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.color = '#721c24';
+            closeButton.addEventListener('click', function () {
+                monitor.style.display = 'none';
+            });
+            monitor.appendChild(closeButton);
+            const header = document.createElement('div');
+            header.textContent = 'Error:';
+            header.style.fontWeight = 'bold';
+            header.style.marginBottom = '4px';
+            monitor.appendChild(header);
+            const list = document.createElement('ul');
+            list.id = 'errList';
+            list.style.margin = '0';
+            list.style.padding = '0';
+            list.style.listStyle = 'none';
+            monitor.appendChild(list);
+            function addError(msg) {
+                // reveal on first error
+                if (monitor.style.display === 'none') monitor.style.display = 'block';
+                const li = document.createElement('li');
+                li.textContent = msg;
+                li.style.padding = '2px 0';
+                list.appendChild(li);
+            }
+            window.addEventListener('error', function (event) {
+                const m = event.message + ' at ' + event.filename + ':' + event.lineno + ':' + event.colno;
+                if (m.startsWith('Warning: ')) return;
+                addError(m);
+            });
+            window.addEventListener('unhandledrejection', function (event) {
+                const reason = event.reason;
+                const m = 'Unhandled Rejection: ' + (reason && reason.stack ? reason.stack : reason);
+                addError(m);
+            });
+            const origConsoleError = console.error;
+            console.error = function (...args) {
+                origConsoleError.apply(console, args);
+                args.forEach(arg => {
+                    const m = typeof arg === 'string' ? arg : (arg && arg.stack ? arg.stack : JSON.stringify(arg));
+                    if (m.startsWith('Warning: ')) return;
+                    addError(m);
+                });
+            };
+        })();
+    </script>
+
 </body>
 
 </html>
