@@ -42,6 +42,36 @@ cd /var/www/react/PublikUtforska-GUI/
 ./deploy.sh
 ```
 
+### Optional: Deploy with a custom public path
+
+If you want to deploy the application to a subpath (for example `/demo/test/www/` instead of `/`), you can pass the `--publicPath` flag to `deploy.sh`.
+
+```bash
+./deploy.sh --publicPath /demo/test/www/
+```
+
+The script will automatically make sure that the path ends with a trailing slash (/), even if you forget to add it.
+
+Examples:
+
+* `./deploy.sh --publicPath /demo/test/www/` → uses `/demo/test/www/`
+
+* `./deploy.sh --publicPath /demo/test/www` → automatically corrected to `/demo/test/www/`
+
+In development, `publicPath` is passed as an environment variable (`PUBLIC_PATH`) and picked up by `webpack.config.js`:
+
+```bash
+PUBLIC_PATH=/demo/test/www/ npm run start
+```
+
+If no `--publicPath` is provided, it defaults to `/`.
+
+During the build, the `webpack.config.js` will print the active `PUBLIC_PATH` to the console, so you can easily see which path is being used:
+
+```bash
+🏗️  Bygger med PUBLIC_PATH=/demo/test/www/ 🚀
+```
+
 ## Create or update sitemap
 
 Run on server:

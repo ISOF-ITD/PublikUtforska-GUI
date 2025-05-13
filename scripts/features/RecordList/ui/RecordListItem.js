@@ -179,6 +179,18 @@ export default function RecordListItem(props) {
             </div>
           )}
 
+          {/* Show hits for double nested hits without highlight */}
+          {innerHits?.media_with_description?.hits?.hits.map((mediaHit) =>
+            mediaHit.inner_hits?.["media.description"]?.hits?.hits.map(
+              (descHit) => (
+                <HighlightedText
+                  key={descHit._id}
+                  text={descHit._source.start + " " + descHit._source.text}
+                  // text={descHit._source.start + "\n <span class='highlight'>" + descHit._source.text + "</span>"}
+                  className="block mt-2"
+                />
+              ))
+          )}
           {/* ES highlighted hits */}
           {highlight?.text?.[0] && (
             <HighlightedText text={highlight.text[0]} className="block mt-2" />

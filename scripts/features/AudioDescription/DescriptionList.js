@@ -5,7 +5,7 @@ import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import InstructionBox from "./InstructionBox";
 import ListPlayButton from "./ListPlayButton";
 
-function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
+function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData }) {
   function parseTimeString(timeString = "00:00") {
     try {
       const parts = timeString.split(":").map(Number).reverse();
@@ -64,45 +64,56 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc }) {
           </tr>
         </thead>
         <tbody>
-          {sortedDescriptions.map((desc, index) => (
-            <tr
-              key={index}
-              className="odd:bg-white even:bg-gray-100 border-b last:border-b-0 border-gray-200"
-            >
-              <td className="py-3 px-4">
-                <div className="flex items-center">
-                  <ListPlayButton
-                    media={item}
-                    recordId={recordId}
-                    recordTitle={audioTitle}
-                    startTime={parseTimeString(desc.start)}
-                    isSubList
-                  />
-                  <span className="ml-2 font-mono">{desc.start}</span>
-                </div>
-              </td>
-              <td className="py-3 px-4">{desc.text}</td>
-              <td className="py-3 px-4 flex gap-2 flex-wrap gap-y-3">
-                {desc.terms?.map((termObj) => (
-                  <div key={termObj?.termid}>
-                    <span className="bg-isof text-white rounded-xl px-2 py-1 whitespace-nowrap">
-                      #{termObj.term}
-                    </span>
+          {sortedDescriptions.map((desc, index) => {
+            const isHighlighted = highlightData.some(
+              (hit) => hit._source.start === desc.start
+            );
+            return (
+              <tr
+                key={index}
+                className="odd:bg-white even:bg-gray-100 border-b last:border-b-0 border-gray-200"
+              >
+                <td className="py-3 px-4">
+                  <div className="flex items-center">
+                    <ListPlayButton
+                      media={item}
+                      recordId={recordId}
+                      recordTitle={audioTitle}
+                      startTime={parseTimeString(desc.start)}
+                      isSubList
+                    />
+                    <span className="ml-2 font-mono">{desc.start}</span>
                   </div>
-                ))}
-              </td>
-              <td className="py-3 px-4 text-right">
-                <a
-                  type="button"
-                  className="text-isof hover:cursor-pointer hover:text-darker-isof hover:bg-gray-100 rounded-md px-2 py-1 flex gap-1 items-center justify-end transition-colors"
-                  onClick={() => onEditDesc(desc)}
+                </td>
+                <td
+                  className={`py-3 px-4 ${
+                    isHighlighted ? "bg-yellow-200" : ""
+                  }`}
                 >
-                  <FontAwesomeIcon icon={faPenToSquare} />
-                  <span className="underline">Ändra</span>
-                </a>
-              </td>
-            </tr>
-          ))}
+                  {desc.text}
+                </td>
+                <td className="py-3 px-4 flex gap-2 flex-wrap gap-y-3">
+                  {desc.terms?.map((termObj) => (
+                    <div key={termObj?.termid}>
+                      <span className="bg-isof text-white rounded-xl px-2 py-1 whitespace-nowrap">
+                        #{termObj.term}
+                      </span>
+                    </div>
+                  ))}
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <a
+                    type="button"
+                    className="text-isof hover:cursor-pointer hover:text-darker-isof hover:bg-gray-100 rounded-md px-2 py-1 flex gap-1 items-center justify-end transition-colors"
+                    onClick={() => onEditDesc(desc)}
+                  >
+                    <FontAwesomeIcon icon={faPenToSquare} />
+                    <span className="underline">Ändra</span>
+                  </a>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

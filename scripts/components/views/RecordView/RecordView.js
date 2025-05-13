@@ -101,7 +101,7 @@ function RecordView({ mode = 'material' }) {
                       />
                       <ContentsElement data={data} />
                       <HeadwordsElement data={data} />
-                      <AudioItems data={data} />
+                      <AudioItems data={data} highlightData={highlightData} />
                       <PdfElement data={data} />
                       <TextElement
                         data={data}
