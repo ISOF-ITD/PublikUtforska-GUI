@@ -96,9 +96,13 @@ function createPopupRoutes(prefix) {
       ),
       children: [
         {
+          index: true,
+        },
+        {
           path: 'audio/:source/transcribe',
-          element: <CorrectionEditor />,
-          loader: ({ params: { recordId } }) => defer({ results: fetchRecordAndCountSubrecords(recordId) }),
+          element: <CorrectionView />,
+          loader: ({ params: { recordId } }) =>
+            defer({ results: fetchRecordAndCountSubrecords(recordId) })
         }
       ],
     },
