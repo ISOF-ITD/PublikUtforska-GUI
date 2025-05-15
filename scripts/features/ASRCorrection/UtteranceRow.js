@@ -85,10 +85,11 @@ export const UtteranceRow = React.memo(function UtteranceRow({
     handlePlay,
     setEditedText,
     formatTimestamp,
+    readOnly,
   } = data;
 
   const utterance = rows[index];
-  const isEditing = editingId === utterance.id;
+  const isEditing = !readOnly && editingId === utterance.id;
 
   return (
     <div
@@ -99,7 +100,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
         // ⬇️  Mobile
         "flex flex-col gap-2 border-b last:border-none px-4 py-3",
         // ⬆️  Desktop
-        "sm:grid sm:grid-cols-[16px_52px_60px_44px_1fr_auto] sm:items-center sm:gap-4",
+        "sm:grid sm:grid-cols-[16px_auto_44px_1fr_auto] sm:items-center sm:gap-4",
         isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
         utterance.status === "complete" && "opacity-60"
       )}
@@ -111,13 +112,11 @@ export const UtteranceRow = React.memo(function UtteranceRow({
           className={classNames("w-2 h-2", STATUS_COLORS[utterance.status])}
         />
       </span>
-
       {/* timestamp */}
       <span className="font-mono whitespace-nowrap">
         {formatTimestamp(utterance.start)}
       </span>
-
-      {/* speaker */}
+      {/* speaker 
       <span>
         {isEditing ? (
           <select
@@ -135,11 +134,10 @@ export const UtteranceRow = React.memo(function UtteranceRow({
         ) : (
           utterance.speaker || "—"
         )}
-      </span>
-
+      </span>*/}
       {/* play/pause */}
       <span className="text-left">
-        <button
+        <a
           onClick={() => handlePlay(utterance.start)}
           className="text-isof"
           aria-label={isPlaying ? "Pausa uppspelning" : "Spela upp"}
@@ -148,9 +146,8 @@ export const UtteranceRow = React.memo(function UtteranceRow({
             icon={isPlaying ? faPause : faPlay}
             className="w-3 h-3"
           />
-        </button>
+        </a>
       </span>
-
       {/* text */}
       <span className="">
         {isEditing ? (
@@ -173,73 +170,77 @@ export const UtteranceRow = React.memo(function UtteranceRow({
           </span>
         )}
       </span>
-
-      {/* actions */}
-      <span className="whitespace-nowrap text-right">
-        {isEditing ? (
-          <div className="flex gap-2 justify-end">
-            <button
-              className="text-green-600 disabled:opacity-50"
-              title="Spara (⌘/Ctrl+Enter)"
-              disabled={editedText.trim() === utterance.text.trim()}
-              onClick={() => saveEdit(utterance)}
-            >
-              <FontAwesomeIcon icon={faCheck} />
-            </button>
-            <button
-              className="text-red-600"
-              title="Avbryt (Esc)"
-              onClick={discardEdit}
-            >
-              <FontAwesomeIcon icon={faTimes} />
-            </button>
-            <button
-              className="text-gray-500"
-              onClick={gotoPrev}
-              title="Föregående (↑)"
-            >
-              <FontAwesomeIcon icon={faChevronLeft} />
-            </button>
-            <button
-              className="text-gray-500"
-              onClick={gotoNext}
-              title="Nästa (↓)"
-            >
-              <FontAwesomeIcon icon={faChevronRight} />
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2 justify-end">
-            {utterance.status !== "complete" && (
+      {/* actions (hidden in read-only) */}+{" "}
+      {!readOnly && (
+        <span className="whitespace-nowrap text-right">
+          {isEditing ? (
+            <div className="flex gap-2 justify-end">
               <button
-                className="text-isof"
-                onClick={() => beginEdit(utterance)}
-                aria-label="Redigera"
+                className="text-green-600 disabled:opacity-50"
+                title="Spara (⌘/Ctrl+Enter)"
+                disabled={editedText.trim() === utterance.text.trim()}
+                onClick={() => saveEdit(utterance)}
               >
-                <FontAwesomeIcon icon={faEdit} />
+                <FontAwesomeIcon icon={faCheck} />
               </button>
-            )}
-            <button
-              className="text-red-500"
-              onClick={() => alert("Flag TODO")}
-              title="Flagga för fel"
-              aria-label="Flagga"
-            >
-              <FontAwesomeIcon icon={faFlag} />
-            </button>
-          </div>
-        )}
-      </span>
-      <MobileEditBar
-        visible={Boolean(editingId)}
-        disabled={editedText.trim() === utterance?.text?.trim()}
-        onSave={() =>
-          editingId && saveEdit(utterances.find((u) => u.id === editingId))
-        }
-        onCancel={discardEdit}
-        onPrev={gotoPrev}
-        onNext={gotoNext}
-      />
+              <button
+                className="text-red-600"
+                title="Avbryt (Esc)"
+                onClick={discardEdit}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+              <button
+                className="text-gray-500"
+                onClick={gotoPrev}
+                title="Föregående (↑)"
+              >
+                <FontAwesomeIcon icon={faChevronLeft} />
+              </button>
+              <button
+                className="text-gray-500"
+                onClick={gotoNext}
+                title="Nästa (↓)"
+              >
+                <FontAwesomeIcon icon={faChevronRight} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2 justify-end">
+              {utterance.status !== "complete" && (
+                <button
+                  className="text-isof"
+                  onClick={() => beginEdit(utterance)}
+                  aria-label="Redigera"
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                </button>
+              )}
+              <button
+                className="text-red-500"
+                onClick={() => alert("Flag TODO")}
+                title="Flagga för fel"
+                aria-label="Flagga"
+              >
+                <FontAwesomeIcon icon={faFlag} />
+              </button>
+            </div>
+          )}
+        </span>
+      )}
+      {/* Mobile edit bar never shown in read-only */}+{" "}
+      {!readOnly && (
+        <MobileEditBar
+          visible={Boolean(editingId)}
+          disabled={editedText.trim() === utterance?.text?.trim()}
+          onSave={() =>
+            editingId && saveEdit(utterances.find((u) => u.id === editingId))
+          }
+          onCancel={discardEdit}
+          onPrev={gotoPrev}
+          onNext={gotoNext}
+        />
+      )}
     </div>
   );
 });

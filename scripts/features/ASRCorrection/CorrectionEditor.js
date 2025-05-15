@@ -20,18 +20,25 @@ import { UtteranceRow } from "./UtteranceRow";
  */
 const ROW_HEIGHT = 56;
 
-export default function CorrectionEditor() {
+export default function CorrectionEditor({ readOnly = true }) {
   /* ---------- routing / context ---------- */
   const { source } = useParams();
   const { data } = useOutletContext();
   const { playAudio, isPlaying, pauseAudio } = useContext(AudioContext);
 
   /* ---------- derived data ---------- */
-  const audioItem = useMemo(
-    () =>
-      data?.media?.find((item) => item.source === decodeURIComponent(source)),
-    [data, source]
-  );
+  const audioItem = useMemo(() => {
+    const sameSrc =
+      data?.media?.filter((m) => m.source === decodeURIComponent(source)) ?? [];
+
+    // Prefer the one that actually contains utterances
+    return (
+      sameSrc.find(
+        (m) =>
+          Array.isArray(m.utterances?.utterances) || Array.isArray(m.utterances)
+      ) || sameSrc[0]
+    );
+  }, [data, source]);
 
   const audioTitle = useMemo(
     () =>
@@ -50,19 +57,32 @@ export default function CorrectionEditor() {
   );
 
   /* ---------- local ui state ---------- */
-  const [editingId, setEditingId] = useState(null); // utterance.id being edited
+  // When read-only, never enter edit mode
+  const [editingId, setEditingId] = useState(null);
   const [editedText, setEditedText] = useState("");
   const [filter, setFilter] = useState("all"); // all | needs-work | completed
   const [saving, setSaving] = useState(false);
 
-  const buildUtterances = useCallback(
-    () =>
-      (audioItem?.utterances ?? []).map((u, idx) => ({
-        id: u.id ?? `${audioItem?.source ?? "utt"}‑${idx}`, // safe id
-        ...u,
-      })),
-    [audioItem]
-  );
+  const buildUtterances = useCallback(() => {
+    if (!audioItem) return [];
+
+    // 2a. peel off wrapper if present
+    const raw = Array.isArray(audioItem.utterances)
+      ? audioItem.utterances
+      : audioItem.utterances?.utterances ?? [];
+
+    // 2b. bring the shape back to what the UI expects
+    return raw.map((u, idx) => ({
+      id: u.id ?? `${audioItem.source}-${idx}`,
+      text: u.text ?? "",
+      start: u.start ?? 0,
+      end: u.end ?? 0,
+      speaker: u.speaker ?? "",
+
+      // new API has no per‑row status – default to “initialized”
+      status: u.status ?? "initialized",
+    }));
+  }, [audioItem]);
 
   const [utterances, setUtterances] = useState(buildUtterances());
 
@@ -158,15 +178,19 @@ export default function CorrectionEditor() {
   }, [editingId, editedText, filteredUtterances]);
 
   /* ---------- action handlers ---------- */
-  const beginEdit = useCallback((utterance) => {
-    if (utterance.status === "complete") return;
-    setEditingId(utterance.id);
-    setEditedText(utterance.text);
-  }, []);
+  const beginEdit = useCallback(
+    (utterance) => {
+      if (readOnly || utterance.status === "complete") return;
+      setEditingId(utterance.id);
+      setEditedText(utterance.text);
+    },
+    [readOnly]
+  );
 
   const discardEdit = () => setEditingId(null);
 
   const updateSpeaker = useCallback((id, speaker) => {
+    if (readOnly) return;
     setUtterances((prev) =>
       prev.map((u) =>
         u.id === id
@@ -182,6 +206,7 @@ export default function CorrectionEditor() {
 
   const saveEdit = useCallback(
     async (utterance) => {
+      if (readOnly) return;
       setSaving(true);
       try {
         const updated = { ...utterance, text: editedText, status: "edited" };
@@ -213,12 +238,14 @@ export default function CorrectionEditor() {
   };
 
   const gotoPrev = useCallback(() => {
+    if (readOnly) return;
     if (!editingId) return;
     const idx = filteredUtterances.findIndex((u) => u.id === editingId);
     if (idx > 0) beginEdit(filteredUtterances[idx - 1]);
   }, [editingId, filteredUtterances, beginEdit]);
 
   const gotoNext = useCallback(() => {
+    if (readOnly) return;
     if (!editingId) return;
     const idx = filteredUtterances.findIndex((u) => u.id === editingId);
     if (idx < filteredUtterances.length - 1)
@@ -238,7 +265,7 @@ export default function CorrectionEditor() {
   /* ---------- keyboard shortcuts ---------- */
   useEffect(() => {
     const onKey = (e) => {
-      if (!editingId) return;
+      if (!editingId || readOnly) return;
       if (e.key === "Escape") discardEdit();
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -290,6 +317,7 @@ export default function CorrectionEditor() {
       saveEdit,
       gotoPrev,
       gotoNext,
+      readOnly,
       handlePlay,
       setEditedText,
       formatTimestamp,
@@ -333,30 +361,33 @@ export default function CorrectionEditor() {
             style={{ width: `${progress.percent}%` }}
           />
         </div>
+        <div>Maskin­transkription – kan innehålla fel</div>
         <div className="flex justify-between text-sm text-gray-600">
           <span>
             Färdigt: {progress.complete}/{progress.total} ({progress.percent}%)
           </span>
-          <div className="flex gap-2 items-center">
-            <FilterButton
-              label="Alla"
-              value="all"
-              filter={filter}
-              setFilter={setFilter}
-            />
-            <FilterButton
-              label={`Behöver arbete (${counts.needsWork})`}
-              value="needs-work"
-              filter={filter}
-              setFilter={setFilter}
-            />
-            <FilterButton
-              label={`Klart (${counts.completed})`}
-              value="completed"
-              filter={filter}
-              setFilter={setFilter}
-            />
-          </div>
+          {!readOnly && (
+            <div className="flex gap-2 items-center">
+              <FilterButton
+                label="Alla"
+                value="all"
+                filter={filter}
+                setFilter={setFilter}
+              />
+              <FilterButton
+                label={`Behöver arbete (${counts.needsWork})`}
+                value="needs-work"
+                filter={filter}
+                setFilter={setFilter}
+              />
+              <FilterButton
+                label={`Klart (${counts.completed})`}
+                value="completed"
+                filter={filter}
+                setFilter={setFilter}
+              />
+            </div>
+          )}
         </div>
       </header>
 
@@ -366,10 +397,9 @@ export default function CorrectionEditor() {
         <div className="grid grid-cols-[16px_56px_56px_56px_1fr_auto] gap-4 bg-gray-50 text-sm font-medium px-4 py-2 sticky top-0 z-10">
           <span />
           <span>Tid</span>
-          <span>Talare</span>
           <span>Spela</span>
           <span>Text</span>
-          <span className="text-right">Åtgärder</span>
+          {!readOnly && <span className="text-right">Åtgärder</span>}
         </div>
 
         {/* virtualised rows */}
@@ -422,4 +452,5 @@ const FilterButton = ({ label, value, filter, setFilter }) => (
 
 CorrectionEditor.propTypes = {
   audioTitle: PropTypes.string,
+  readOnly: PropTypes.bool,
 };

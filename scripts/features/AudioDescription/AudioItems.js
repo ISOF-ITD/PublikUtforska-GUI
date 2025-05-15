@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import ConfirmationModal from "./ConfirmationModal";
 import AudioItemRow from "./AudioItemRow";
@@ -67,7 +67,20 @@ function AudioItems({ data, highlightData = null }) {
     !localLockOverride &&
     transcriptionstatus === "undertranscription";
 
-  const canContribute = (data.recordtype === "one_record") && (data.transcriptionstatus === "readytotranscribe" || "undertranscription") && (data.transcriptiontype === "audio");
+  const hasContent = (m) =>
+    // utterances wrapped in an object
+    (Array.isArray(m.utterances?.utterances) &&
+      m.utterances.utterances.length) ||
+    // old flat utterances array (in case both formats exist for a while)
+    (Array.isArray(m.utterances) && m.utterances.length) ||
+    (Array.isArray(m.description) && m.description.length);
+
+  const canContribute =
+    data.recordtype === "one_record" &&
+    (data.transcriptionstatus === "readytotranscribe" ||
+      "undertranscription" ||
+      "readytocontribute") &&
+    data.transcriptiontype === "audio";
 
   // ---- MAIN ACTIONS ----
 
@@ -153,7 +166,7 @@ function AudioItems({ data, highlightData = null }) {
   const handleToggle = (source) => {
     setOpenItems((prev) => ({ ...prev, [source]: !prev[source] }));
   };
-  
+
   // Whenever AudioItems unmounts, if there's an active session, cancel it.
   useEffect(() => {
     return () => {
@@ -163,10 +176,13 @@ function AudioItems({ data, highlightData = null }) {
     };
   }, [transcribeSession, cancelTranscribe]);
 
-  const innerHits = highlightData?.data?.[0]?.inner_hits?.media_with_description?.hits?.hits?.[0]?.inner_hits?.["media.description"]?.hits?.hits?.map(hit => ({
-    _source: hit._source,
-    _nested: hit._nested
-  })) || [];
+  const innerHits =
+    highlightData?.data?.[0]?.inner_hits?.media_with_description?.hits?.hits?.[0]?.inner_hits?.[
+      "media.description"
+    ]?.hits?.hits?.map((hit) => ({
+      _source: hit._source,
+      _nested: hit._nested,
+    })) || [];
 
   // The "Add new description" toggler with concurrency check
   const handleToggleAddFormWithConcurrency = async (source) => {
@@ -386,8 +402,19 @@ function AudioItems({ data, highlightData = null }) {
     }
   };
 
-  // We'll only show items that are audio type
-  const audioDataItems = media.filter((item) => item.type === "audio");
+  // Build the list that the table will render
+  const audioDataItems = useMemo(() => {
+    const bySrc = {};
+    media.forEach((m) => {
+      if (m.type !== "audio") return;
+
+      const key = m.source;
+      const content = hasContent(m);
+
+      if (!bySrc[key] || content) bySrc[key] = m;
+    });
+    return Object.values(bySrc);
+  }, [media]);
 
   return (
     <div className="mx-auto border-none">
@@ -479,7 +506,7 @@ AudioItems.propTypes = {
     persons: PropTypes.arrayOf(PropTypes.object),
     transcriptionstatus: PropTypes.string,
   }).isRequired,
-  highlightData: PropTypes.object
+  highlightData: PropTypes.object,
 };
 
 export default AudioItems;
