@@ -5,6 +5,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 import config from '../../../config';
+import ArchiveImage from './ArchiveImage';
 
 const getIndicator = (item) => {
   if (item.transcriptionstatus === 'transcribed') {
@@ -29,29 +30,19 @@ const getIndicator = (item) => {
 function getImageItems(data, mediaImageClickHandler) {
   const imageDataItems = data?.media?.filter((dataItem) => dataItem.type === 'image');
   return imageDataItems.map((mediaItem, index) => (
-    <div
+    <ArchiveImage
       key={mediaItem.source}
-      data-type="image"
-      data-image={mediaItem.source}
-      onClick={() => mediaImageClickHandler(mediaItem, imageDataItems, index)}
-      onKeyDown={(e) => {
+      mediaItem={mediaItem}
+      index={index}
+      imageUrl={config.imageUrl}
+      onMediaClick={(item, idx) => mediaImageClickHandler(item, imageDataItems, idx)}
+      onKeyDown={(e, item, idx) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          mediaImageClickHandler(mediaItem, imageDataItems, index);
+          mediaImageClickHandler(item, imageDataItems, idx);
         }
       }}
-      className="archive-image"
-      role="button"
-      tabIndex={0}
-      style={{ position: 'relative' }}
-    >
-      <img src={config.imageUrl + mediaItem.source} alt="" />
-      {getIndicator(mediaItem)}
-      {mediaItem.title && (
-      <div className="media-title sv-portlet-image-caption">
-        {mediaItem.title}
-      </div>
-      )}
-    </div>
+      renderIndicator={getIndicator}
+    />
   ));
 }
 

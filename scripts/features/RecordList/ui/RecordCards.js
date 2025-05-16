@@ -20,5 +20,5 @@ export default function RecordCards({ records, params, mode }) {
 RecordCards.propTypes = {
   records: PropTypes.array.isRequired,
   params: PropTypes.object.isRequired,
-  mode: PropTypes.string,
+  mode: PropTypes.string.isRequired,
 };
