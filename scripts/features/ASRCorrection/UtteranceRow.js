@@ -86,10 +86,12 @@ export const UtteranceRow = React.memo(function UtteranceRow({
     setEditedText,
     formatTimestamp,
     readOnly,
+    activeId,
   } = data;
 
   const utterance = rows[index];
   const isEditing = !readOnly && editingId === utterance.id;
+  const isActive = data.activeId === utterance.id;
 
   return (
     <div
@@ -102,7 +104,8 @@ export const UtteranceRow = React.memo(function UtteranceRow({
         // ⬆️  Desktop
         "sm:grid sm:grid-cols-[16px_auto_44px_1fr_auto] sm:items-center sm:gap-4",
         isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
-        utterance.status === "complete" && "opacity-60"
+        utterance.status === "complete" && "opacity-60",
+        isActive && "bg-isof/10 border-l-4 border-isof"
       )}
     >
       {/* status dot */}

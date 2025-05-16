@@ -16,7 +16,7 @@ import { AudioContext } from "../../contexts/AudioContext";
 import { UtteranceRow } from "./UtteranceRow";
 
 /**
- * Height of a single row in pixels (tweak if you change row padding)
+ * Height of a single row in pixels
  */
 const ROW_HEIGHT = 56;
 
@@ -304,6 +304,27 @@ export default function CorrectionEditor({ readOnly = true }) {
     return mobile;
   }
 
+  // -- Which utterance is being spoken right now --------------------------
+  const [activeId, setActiveId] = useState(null);
+
+  useEffect(() => {
+    // Global event fired from GlobalAudioPlayer (see b) below)
+    const onTick = ({ detail: { pos } }) => {
+      // Find the utterance whose start ≤ pos < end
+      const current = utterances.find((u) => pos >= u.start && pos < u.end);
+      if (current && current.id !== activeId) {
+        setActiveId(current.id);
+
+        // make sure it is visible inside react-window
+        const idx = filteredUtterances.findIndex((u) => u.id === current.id);
+        if (idx >= 0) listRef.current?.scrollToItem(idx, "center");
+      }
+    };
+
+    window.addEventListener("audio.time", onTick);
+    return () => window.removeEventListener("audio.time", onTick);
+  }, [utterances, filteredUtterances, activeId]);
+
   const isMobile = useIsMobile();
 
   const listData = useMemo(
@@ -323,6 +344,7 @@ export default function CorrectionEditor({ readOnly = true }) {
       formatTimestamp,
       updateSpeaker,
       speakers: data?.speakers ?? [],
+      activeId,
     }),
     [
       filteredUtterances,
@@ -338,6 +360,7 @@ export default function CorrectionEditor({ readOnly = true }) {
       formatTimestamp,
       updateSpeaker,
       data?.speakers,
+      activeId,
     ]
   );
 

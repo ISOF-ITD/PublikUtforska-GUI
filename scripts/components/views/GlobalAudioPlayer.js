@@ -81,7 +81,13 @@ export default function GlobalAudioPlayer() {
     // API: https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement
     // and https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
     audio.addEventListener('loadedmetadata', setAudioData);
-    audio.addEventListener('timeupdate', setAudioTime);
+    audio.addEventListener("timeupdate", () => {
+      setCurrentTime(audio.currentTime * 1000);
+      // Broadcast current time in seconds
+      window.dispatchEvent(
+        new CustomEvent("audio.time", { detail: { pos: audio.currentTime } })
+      );
+    });
 
     return () => {
       audio.removeEventListener('loadedmetadata', setAudioData);
