@@ -93,6 +93,23 @@ export const UtteranceRow = React.memo(function UtteranceRow({
   const isEditing = !readOnly && editingId === utterance?.id;
   const isActive = data.activeId === utterance?.id;
 
+  // helper
+  const highlight = (txt, q) => {
+    if (!q.trim()) return txt;
+    const parts = txt.split(
+      new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "i")
+    );
+    return parts.map((p, i) =>
+      p.toLowerCase() === q.toLowerCase() ? (
+        <mark key={i} className="bg-yellow-200">
+          {p}
+        </mark>
+      ) : (
+        p
+      )
+    );
+  };
+
   return (
     <div
       style={style}
@@ -143,10 +160,10 @@ export const UtteranceRow = React.memo(function UtteranceRow({
         <a
           onClick={() => handlePlay(utterance?.start)}
           className="text-isof"
-          aria-label={isPlaying ? "Pausa uppspelning" : "Spela upp"}
+          aria-label={isPlaying && isActive ? "Pausa uppspelning" : "Spela upp"}
         >
           <FontAwesomeIcon
-            icon={isPlaying ? faPause : faPlay}
+            icon={isPlaying && isActive ? faPause : faPlay}
             className="w-3 h-3"
           />
         </a>
@@ -169,11 +186,10 @@ export const UtteranceRow = React.memo(function UtteranceRow({
           />
         ) : (
           <span className="w-full overflow-hidden text-ellipsis">
-            {utterance?.text}
+            {highlight(utterance?.text ?? "", data.query)}
           </span>
         )}
       </span>
-      {/* actions (hidden in read-only) */}+{" "}
       {!readOnly && (
         <span className="whitespace-nowrap text-right">
           {isEditing ? (
@@ -231,7 +247,6 @@ export const UtteranceRow = React.memo(function UtteranceRow({
           )}
         </span>
       )}
-      {/* Mobile edit bar never shown in read-only */}+{" "}
       {!readOnly && (
         <MobileEditBar
           visible={Boolean(editingId)}

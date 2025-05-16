@@ -105,7 +105,18 @@ export default function CorrectionEditor({ readOnly = true }) {
     }
   }, [filter, utterances]);
 
-  const [query, setQuery] = useState("");
+  const [queryRaw, setQueryRaw] = useState("");
+
+  function useDebounce(value, delay) {
+    const [debounced, setDebounced] = React.useState(value);
+    React.useEffect(() => {
+      const id = setTimeout(() => setDebounced(value), delay);
+      return () => clearTimeout(id);
+    }, [value, delay]);
+    return debounced;
+  }
+
+  const query = useDebounce(queryRaw, 200);
 
   const visibleUtterances = useMemo(() => {
     if (!query.trim()) return filteredUtterances;
@@ -234,15 +245,12 @@ export default function CorrectionEditor({ readOnly = true }) {
   );
 
   const handlePlay = (startTime) => {
-    if (isPlaying) {
-      pauseAudio();
-    } else {
-      playAudio({
-        record: { id: data?.id, title: audioTitle },
-        audio: audioItem,
-        time: startTime,
-      });
-    }
+    // Always start (or restart) from the requested offset
+    playAudio({
+      record: { id: data?.id, title: audioTitle },
+      audio: audioItem,
+      time: startTime,
+    });
   };
 
   const gotoPrev = useCallback(() => {
@@ -326,6 +334,7 @@ export default function CorrectionEditor({ readOnly = true }) {
         // make sure it is visible inside react-window
         const idx = visibleUtterances.findIndex((u) => u.id === current.id);
         if (idx >= 0) listRef.current?.scrollToItem(idx, "center");
+        else setActiveId(null); // row hidden by filter/search
       }
     };
 
@@ -353,6 +362,7 @@ export default function CorrectionEditor({ readOnly = true }) {
       updateSpeaker,
       speakers: data?.speakers ?? [],
       activeId,
+      query,
     }),
     [
       visibleUtterances,
@@ -369,6 +379,7 @@ export default function CorrectionEditor({ readOnly = true }) {
       updateSpeaker,
       data?.speakers,
       activeId,
+      query,
     ]
   );
 
@@ -395,7 +406,7 @@ export default function CorrectionEditor({ readOnly = true }) {
         <div>Maskin­transkription – kan innehålla fel</div>
         <div className="flex justify-between text-sm text-gray-600">
           <span>
-            Färdigt: {progress.complete}/{progress.total} ({progress.percent}%)
+            Klart: {progress.complete}/{progress.total} ({progress.percent}%)
           </span>
           {!readOnly && (
             <div className="flex gap-2 items-center">
@@ -423,18 +434,28 @@ export default function CorrectionEditor({ readOnly = true }) {
         {readOnly && (
           <input
             type="search"
+            autoFocus
             placeholder="Sök i texten…"
             className="mt-3 max-w-xs border rounded px-3 py-1 text-sm"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={queryRaw}
+            onChange={(e) => setQueryRaw(e.target.value)}
           />
         )}
+        <button
+          onClick={() =>
+            navigator.clipboard.writeText(
+              visibleUtterances.map((u) => u.text).join("\n\n")
+            )
+          }
+        >
+          Kopiera allt
+        </button>
       </header>
 
       {/* utterances list */}
       <div className="bg-white shadow rounded-lg w-full">
         {/* table header */}
-        <div className="grid grid-cols-[16px_auto_44px_1fr_auto] gap-4 bg-gray-50 text-sm font-medium px-4 py-2 sticky top-0 z-10">
+        <div className="grid grid-cols-[16px_auto_44px_1fr_auto] gap-6 bg-gray-50 text-sm font-medium px-4 py-2 sticky top-0 z-10">
           <span />
           <span>Tid</span>
           <span>Spela</span>
