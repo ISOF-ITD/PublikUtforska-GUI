@@ -62,10 +62,9 @@ function AudioItems({ data, highlightData = null }) {
   // Track which source is currently being edited (either adding or editing existing)
   const [editingSource, setEditingSource] = useState(null);
 
-  const isLocked =
-    !transcribeSession &&
-    !localLockOverride &&
-    transcriptionstatus === "undertranscription";
+  const isLocked = !transcribeSession
+    && !localLockOverride
+    && transcriptionstatus === "undertranscription";
 
   const canContribute = (data.recordtype === "one_record") && (data.transcriptionstatus === "readytotranscribe" || "undertranscription") && (data.transcriptiontype === "audio");
 
@@ -161,12 +160,21 @@ function AudioItems({ data, highlightData = null }) {
         cancelTranscribe();
       }
     };
-  }, [transcribeSession, cancelTranscribe]);
+    }, [transcribeSession, cancelTranscribe]);
 
-  const innerHits = highlightData?.data?.[0]?.inner_hits?.media_with_description?.hits?.hits?.[0]?.inner_hits?.["media.description"]?.hits?.hits?.map(hit => ({
+  // Extract innerHits and _media_nested if present
+  const mediaWithDescription = highlightData?.data?.[0]?.inner_hits?.media_with_description?.hits?.hits?.[0];
+  const mediaWithUtterances = highlightData?.data?.[0]?.inner_hits?.media_with_utterances?.hits?.hits?.[0];
+  const _media_nested = mediaWithDescription?._nested || mediaWithUtterances?._nested;
+  const innerHits = (
+    mediaWithDescription?.inner_hits?.["media.description"]?.hits?.hits
+    || mediaWithUtterances?.inner_hits?.["media.utterances.utterances"]?.hits?.hits
+    || []
+  ).map((hit) => ({
     _source: hit._source,
-    _nested: hit._nested
-  })) || [];
+    _nested: hit._nested,
+    ...(_media_nested ? { _media_nested } : {}),
+  }));
 
   // The "Add new description" toggler with concurrency check
   const handleToggleAddFormWithConcurrency = async (source) => {
@@ -195,11 +203,10 @@ function AudioItems({ data, highlightData = null }) {
     const currentInitialData = initialFormData[source] || {};
 
     const formChanged = Object.keys(currentFormData).some((key) => {
-      if (key === "name" || key === "email" || key === "rememberMe")
-        return false;
+      if (key === "name" || key === "email" || key === "rememberMe") { return false; }
       return (
-        JSON.stringify(currentFormData[key]) !==
-        JSON.stringify(currentInitialData[key])
+        JSON.stringify(currentFormData[key])
+        !== JSON.stringify(currentInitialData[key])
       );
     });
 
@@ -322,8 +329,7 @@ function AudioItems({ data, highlightData = null }) {
         body: JSON.stringify(finalPayload),
       });
 
-      if (!response.ok)
-        throw new Error(`POST failed with status ${response.status}`);
+      if (!response.ok) { throw new Error(`POST failed with status ${response.status}`); }
       await response.json();
 
       // 1. Cancel transcription session
@@ -402,8 +408,23 @@ function AudioItems({ data, highlightData = null }) {
                 archive,
                 item.source,
                 year,
-                persons
+                persons,
               );
+                // Find the matching highlightData for this audio item by comparing index and _media_nested.offset
+              let highlightForItem = [];
+              if (Array.isArray(innerHits) && item && typeof item === "object") {
+                // Find if any innerHit has _media_nested.offset matching this item"s index
+                const itemIndex = audioDataItems.indexOf(item);
+                const hasMatch = innerHits.some(
+                  (hit) => hit._media_nested.offset === itemIndex
+                );
+                if (hasMatch) {
+                  highlightForItem = innerHits.filter(
+                    (hit) => hit._media_nested.offset === itemIndex
+                  );
+                }
+              }
+
               return (
                 <AudioItemRow
                   key={item.source}
@@ -429,7 +450,7 @@ function AudioItems({ data, highlightData = null }) {
                   handleDelete={handleDelete}
                   savedUserInfo={savedUserInfo}
                   canContribute={canContribute}
-                  highlightData={innerHits}
+                  highlightData={highlightForItem}
                 />
               );
             })}
@@ -464,11 +485,11 @@ AudioItems.propTypes = {
               PropTypes.shape({
                 term: PropTypes.string,
                 termid: PropTypes.string,
-              })
+              }),
             ),
-          })
+          }),
         ),
-      })
+      }),
     ).isRequired,
     contents: PropTypes.string,
     archive: PropTypes.shape({
@@ -479,7 +500,7 @@ AudioItems.propTypes = {
     persons: PropTypes.arrayOf(PropTypes.object),
     transcriptionstatus: PropTypes.string,
   }).isRequired,
-  highlightData: PropTypes.object
+  highlightData: PropTypes.object,
 };
 
 export default AudioItems;

@@ -107,7 +107,20 @@ function AudioItemRow({
             recordTitle={audioTitle}
           />
         </td>
-        <td className="py-2 px-4">{audioTitle}</td>
+        <td className="py-2 px-4">
+          {audioTitle}
+          {Array.isArray(highlightData) && highlightData.some(h => h._source && h._source.text) ? (
+            <div className="bg-yellow-200 mt-1">
+              {highlightData
+                .filter(h => h._source && h._source.text)
+                .map((h, idx) => (
+              <div key={idx}>
+                {`${h._source.start} ${h._source.text}`}
+              </div>
+                ))}
+            </div>
+          ) : null}
+        </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
           { canContribute && (<a
             className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
