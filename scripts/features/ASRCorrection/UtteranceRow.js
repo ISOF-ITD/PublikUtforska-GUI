@@ -90,8 +90,8 @@ export const UtteranceRow = React.memo(function UtteranceRow({
   } = data;
 
   const utterance = rows[index];
-  const isEditing = !readOnly && editingId === utterance.id;
-  const isActive = data.activeId === utterance.id;
+  const isEditing = !readOnly && editingId === utterance?.id;
+  const isActive = data.activeId === utterance?.id;
 
   return (
     <div
@@ -104,7 +104,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
         // ⬆️  Desktop
         "sm:grid sm:grid-cols-[16px_auto_44px_1fr_auto] sm:items-center sm:gap-4",
         isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
-        utterance.status === "complete" && "opacity-60",
+        utterance?.status === "complete" && "opacity-60",
         isActive && "bg-isof/10 border-l-4 border-isof"
       )}
     >
@@ -112,12 +112,12 @@ export const UtteranceRow = React.memo(function UtteranceRow({
       <span className="flex items-center justify-center">
         <FontAwesomeIcon
           icon={faCircle}
-          className={classNames("w-2 h-2", STATUS_COLORS[utterance.status])}
+          className={classNames("w-2 h-2", STATUS_COLORS[utterance?.status])}
         />
       </span>
       {/* timestamp */}
       <span className="font-mono whitespace-nowrap">
-        {formatTimestamp(utterance.start)}
+        {formatTimestamp(utterance?.start)}
       </span>
       {/* speaker 
       <span>
@@ -141,7 +141,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
       {/* play/pause */}
       <span className="text-left">
         <a
-          onClick={() => handlePlay(utterance.start)}
+          onClick={() => handlePlay(utterance?.start)}
           className="text-isof"
           aria-label={isPlaying ? "Pausa uppspelning" : "Spela upp"}
         >
@@ -169,7 +169,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
           />
         ) : (
           <span className="w-full overflow-hidden text-ellipsis">
-            {utterance.text}
+            {utterance?.text}
           </span>
         )}
       </span>
@@ -181,7 +181,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
               <button
                 className="text-green-600 disabled:opacity-50"
                 title="Spara (⌘/Ctrl+Enter)"
-                disabled={editedText.trim() === utterance.text.trim()}
+                disabled={editedText.trim() === utterance?.text.trim()}
                 onClick={() => saveEdit(utterance)}
               >
                 <FontAwesomeIcon icon={faCheck} />
@@ -210,7 +210,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
             </div>
           ) : (
             <div className="flex gap-2 justify-end">
-              {utterance.status !== "complete" && (
+              {utterance?.status !== "complete" && (
                 <button
                   className="text-isof"
                   onClick={() => beginEdit(utterance)}
@@ -237,7 +237,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
           visible={Boolean(editingId)}
           disabled={editedText.trim() === utterance?.text?.trim()}
           onSave={() =>
-            editingId && saveEdit(utterances.find((u) => u.id === editingId))
+            editingId && saveEdit(utterances?.find((u) => u.id === editingId))
           }
           onCancel={discardEdit}
           onPrev={gotoPrev}

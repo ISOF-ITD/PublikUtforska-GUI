@@ -327,9 +327,17 @@ export default function CorrectionEditor({ readOnly = true }) {
 
   const isMobile = useIsMobile();
 
+  const [query, setQuery] = useState("");
+
+  const searchedUtterances = useMemo(() => {
+    if (!query.trim()) return filteredUtterances;
+    const q = query.toLowerCase();
+    return filteredUtterances.filter((u) => u.text.toLowerCase().includes(q));
+  }, [filteredUtterances, query]);
+
   const listData = useMemo(
     () => ({
-      rows: filteredUtterances,
+      rows: searchedUtterances,
       editingId,
       editedText,
       isPlaying,
@@ -412,6 +420,15 @@ export default function CorrectionEditor({ readOnly = true }) {
             </div>
           )}
         </div>
+        {readOnly && (
+          <input
+            type="search"
+            placeholder="Sök i texten…"
+            className="mt-3 max-w-xs border rounded px-3 py-1 text-sm"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        )}
       </header>
 
       {/* utterances list */}
