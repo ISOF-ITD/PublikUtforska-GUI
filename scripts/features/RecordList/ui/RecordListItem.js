@@ -179,13 +179,25 @@ export default function RecordListItem(props) {
             </div>
           )}
 
-          {/* Show hits for double nested hits without highlight */}
+          {/* Show hits for double nested hits without highlight for descriptions */}
           {innerHits?.media_with_description?.hits?.hits.map((mediaHit) =>
             mediaHit.inner_hits?.["media.description"]?.hits?.hits.map(
               (descHit) => (
                 <HighlightedText
                   key={descHit._id}
-                  text={descHit._source.start + " " + descHit._source.text}
+                  text={"Innehållsbeskriving: " + descHit._source.start + " " + descHit._source.text}
+                  // text={descHit._source.start + "\n <span class='highlight'>" + descHit._source.text + "</span>"}
+                  className="block mt-2"
+                />
+              ))
+          )}
+          {/* Show hits for double nested hits without highlight for utterances */}
+          {innerHits?.media_with_utterances?.hits?.hits.map((mediaHit) =>
+            mediaHit.inner_hits?.["media.utterances.utterances"]?.hits?.hits.map(
+              (descHit) => (
+                <HighlightedText
+                  key={descHit._id}
+                  text={"Ljudavskrift: " + descHit._source.start + " " + descHit._source.text}
                   // text={descHit._source.start + "\n <span class='highlight'>" + descHit._source.text + "</span>"}
                   className="block mt-2"
                 />

@@ -166,5 +166,6 @@ export default function Application({
 }
 
 Application.propTypes = {
+  // The mode of the application, either 'transcribe' or 'material'
   mode: PropTypes.string.isRequired,
 };
