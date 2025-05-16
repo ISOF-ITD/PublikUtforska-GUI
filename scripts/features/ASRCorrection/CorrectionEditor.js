@@ -105,6 +105,14 @@ export default function CorrectionEditor({ readOnly = true }) {
     }
   }, [filter, utterances]);
 
+  const [query, setQuery] = useState("");
+
+  const visibleUtterances = useMemo(() => {
+    if (!query.trim()) return filteredUtterances;
+    const q = query.toLowerCase();
+    return filteredUtterances.filter((u) => u.text.toLowerCase().includes(q));
+  }, [filteredUtterances, query]);
+
   const progress = useMemo(() => {
     const complete = utterances.filter((u) => u.status === "complete").length;
     return {
@@ -130,11 +138,11 @@ export default function CorrectionEditor({ readOnly = true }) {
   // When a row enters edit mode, scroll it into view inside the virtualised list
   useEffect(() => {
     if (!editingId) return;
-    const idx = filteredUtterances.findIndex((u) => u.id === editingId);
+    const idx = visibleUtterances.findIndex((u) => u.id === editingId);
     if (idx >= 0) {
       listRef.current?.scrollToItem(idx, "center");
     }
-  }, [editingId, filteredUtterances]);
+  }, [editingId, visibleUtterances]);
 
   useEffect(() => {
     setUtterances(buildUtterances());
@@ -156,7 +164,7 @@ export default function CorrectionEditor({ readOnly = true }) {
   }, [isDirty]);
 
   const getItemSize = (i) => {
-    const u = filteredUtterances[i];
+    const u = visibleUtterances[i];
     if (u.id === editingId) {
       const lines = Math.max(2, editedText.split("\n").length);
       return BASE_ROW + (lines - 2) * EXTRA_LINE;
@@ -170,12 +178,12 @@ export default function CorrectionEditor({ readOnly = true }) {
     // Which row needs to be re‑measured?
     const idx =
       editingId != null
-        ? filteredUtterances.findIndex((u) => u.id === editingId)
+        ? visibleUtterances.findIndex((u) => u.id === editingId)
         : 0; // fallback — recalc everything
 
     // Clear the cached sizes starting with that row
     listRef.current.resetAfterIndex(idx, /* forceUpdate = */ true);
-  }, [editingId, editedText, filteredUtterances]);
+  }, [editingId, editedText, visibleUtterances]);
 
   /* ---------- action handlers ---------- */
   const beginEdit = useCallback(
@@ -240,17 +248,17 @@ export default function CorrectionEditor({ readOnly = true }) {
   const gotoPrev = useCallback(() => {
     if (readOnly) return;
     if (!editingId) return;
-    const idx = filteredUtterances.findIndex((u) => u.id === editingId);
-    if (idx > 0) beginEdit(filteredUtterances[idx - 1]);
-  }, [editingId, filteredUtterances, beginEdit]);
+    const idx = visibleUtterances.findIndex((u) => u.id === editingId);
+    if (idx > 0) beginEdit(visibleUtterances[idx - 1]);
+  }, [editingId, visibleUtterances, beginEdit]);
 
   const gotoNext = useCallback(() => {
     if (readOnly) return;
     if (!editingId) return;
-    const idx = filteredUtterances.findIndex((u) => u.id === editingId);
-    if (idx < filteredUtterances.length - 1)
-      beginEdit(filteredUtterances[idx + 1]);
-  }, [editingId, filteredUtterances, beginEdit]);
+    const idx = visibleUtterances.findIndex((u) => u.id === editingId);
+    if (idx < visibleUtterances.length - 1)
+      beginEdit(visibleUtterances[idx + 1]);
+  }, [editingId, visibleUtterances, beginEdit]);
 
   const counts = useMemo(
     () => ({
@@ -283,7 +291,7 @@ export default function CorrectionEditor({ readOnly = true }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [editingId, filteredUtterances]);
+  }, [editingId, visibleUtterances]);
 
   function useIsMobile() {
     const [mobile, setMobile] = React.useState(
@@ -316,28 +324,20 @@ export default function CorrectionEditor({ readOnly = true }) {
         setActiveId(current.id);
 
         // make sure it is visible inside react-window
-        const idx = filteredUtterances.findIndex((u) => u.id === current.id);
+        const idx = visibleUtterances.findIndex((u) => u.id === current.id);
         if (idx >= 0) listRef.current?.scrollToItem(idx, "center");
       }
     };
 
     window.addEventListener("audio.time", onTick);
     return () => window.removeEventListener("audio.time", onTick);
-  }, [utterances, filteredUtterances, activeId]);
+  }, [utterances, visibleUtterances, activeId]);
 
   const isMobile = useIsMobile();
 
-  const [query, setQuery] = useState("");
-
-  const searchedUtterances = useMemo(() => {
-    if (!query.trim()) return filteredUtterances;
-    const q = query.toLowerCase();
-    return filteredUtterances.filter((u) => u.text.toLowerCase().includes(q));
-  }, [filteredUtterances, query]);
-
   const listData = useMemo(
     () => ({
-      rows: searchedUtterances,
+      rows: visibleUtterances,
       editingId,
       editedText,
       isPlaying,
@@ -355,7 +355,7 @@ export default function CorrectionEditor({ readOnly = true }) {
       activeId,
     }),
     [
-      filteredUtterances,
+      visibleUtterances,
       editingId,
       editedText,
       isPlaying,
@@ -434,7 +434,7 @@ export default function CorrectionEditor({ readOnly = true }) {
       {/* utterances list */}
       <div className="bg-white shadow rounded-lg w-full">
         {/* table header */}
-        <div className="grid grid-cols-[16px_56px_56px_56px_1fr_auto] gap-4 bg-gray-50 text-sm font-medium px-4 py-2 sticky top-0 z-10">
+        <div className="grid grid-cols-[16px_auto_44px_1fr_auto] gap-4 bg-gray-50 text-sm font-medium px-4 py-2 sticky top-0 z-10">
           <span />
           <span>Tid</span>
           <span>Spela</span>
@@ -446,9 +446,9 @@ export default function CorrectionEditor({ readOnly = true }) {
         {isMobile ? (
           /* Plain list (no virtualisation) */
           <div className="divide-y">
-            {filteredUtterances.map((_, idx) => (
+            {visibleUtterances.map((_, idx) => (
               <UtteranceRow
-                key={filteredUtterances[idx].id}
+                key={visibleUtterances[idx].id}
                 index={idx}
                 data={listData}
                 /*  we don’t pass “style” when not virtualised  */
@@ -460,9 +460,9 @@ export default function CorrectionEditor({ readOnly = true }) {
           <List
             ref={listRef}
             height={600}
-            itemCount={filteredUtterances.length}
+            itemCount={visibleUtterances.length}
             itemSize={getItemSize}
-            itemKey={(index) => filteredUtterances[index].id}
+            itemKey={(index) => visibleUtterances[index].id}
             itemData={listData}
             width="100%"
           >

@@ -28,16 +28,9 @@ export default function GlobalAudioPlayer() {
 
   // once after first render
   useEffect(() => {
-    // add listener for when size of the viewport changes
-    window.addEventListener('resize', () => {
-      setViewportWidth(window.innerWidth);
-    });
-
-    return () => {
-      window.removeEventListener('resize', () => {
-        setViewportWidth(window.innerWidth);
-      });
-    };
+      const handleResize = () => setViewportWidth(window.innerWidth);
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // every time playerLabelText or viewportWidth changes
