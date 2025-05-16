@@ -113,6 +113,13 @@ export const UtteranceRow = React.memo(function UtteranceRow({
   return (
     <div
       style={style}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          handlePlay(utterance?.start);
+          e.preventDefault();
+        }
+      }}
       /* On phones we fall back to a stacked flex layout;
      from sm: ≥640 px we switch back to your grid. */
       className={classNames(

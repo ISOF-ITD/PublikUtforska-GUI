@@ -14,6 +14,8 @@ import classNames from "classnames";
 import { getAudioTitle } from "../../utils/helpers";
 import { AudioContext } from "../../contexts/AudioContext";
 import { UtteranceRow } from "./UtteranceRow";
+import { faCheck, faCopy, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * Height of a single row in pixels
@@ -441,15 +443,37 @@ export default function CorrectionEditor({ readOnly = true }) {
             onChange={(e) => setQueryRaw(e.target.value)}
           />
         )}
-        <button
-          onClick={() =>
-            navigator.clipboard.writeText(
-              visibleUtterances.map((u) => u.text).join("\n\n")
-            )
-          }
-        >
-          Kopiera allt
-        </button>
+        <div className="flex justify-end gap-2 text-sm text-gray-600">
+          <button
+            onClick={() =>
+              navigator.clipboard.writeText(
+                visibleUtterances.map((u) => u.text).join("\n\n")
+              )
+            }
+            className="flex gap-1  items-center"
+          >
+            <FontAwesomeIcon icon={faCopy} />
+            Kopiera allt
+          </button>
+          <button
+            onClick={() => {
+              const blob = new Blob(
+                [visibleUtterances.map((u) => u.text).join("\r\n\r\n")],
+                { type: "text/plain;charset=utf-8" }
+              );
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${audioTitle || "transcript"}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="flex gap-1 items-center"
+          >
+            <FontAwesomeIcon icon={faDownload} />
+            Ladda ned text-fil
+          </button>
+        </div>
       </header>
 
       {/* utterances list */}
