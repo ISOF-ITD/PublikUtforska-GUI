@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useRef,
   useCallback,
-  forwardRef,
 } from "react";
 import PropTypes from "prop-types";
 import { useParams, useOutletContext } from "react-router-dom";
@@ -14,12 +13,10 @@ import classNames from "classnames";
 import { getAudioTitle } from "../../utils/helpers";
 import { AudioContext } from "../../contexts/AudioContext";
 import { UtteranceRow } from "./UtteranceRow";
-import { faCheck, faCopy, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faCopy, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-/**
- * Height of a single row in pixels
- */
+// Height of a single row in pixels
 const ROW_HEIGHT = 56;
 
 export default function CorrectionEditor({ readOnly = true }) {
@@ -64,6 +61,7 @@ export default function CorrectionEditor({ readOnly = true }) {
   const [editedText, setEditedText] = useState("");
   const [filter, setFilter] = useState("all"); // all | needs-work | completed
   const [saving, setSaving] = useState(false);
+  const [matchIdx, setMatchIdx] = useState(0);
 
   const buildUtterances = useCallback(() => {
     if (!audioItem) return [];
@@ -87,6 +85,9 @@ export default function CorrectionEditor({ readOnly = true }) {
   }, [audioItem]);
 
   const [utterances, setUtterances] = useState(buildUtterances());
+
+  // -- Which utterance is being spoken right now --------------------------
+  const [activeId, setActiveId] = useState(null);
 
   const listRef = useRef(null); // react‑window ref
 
@@ -121,10 +122,20 @@ export default function CorrectionEditor({ readOnly = true }) {
   const query = useDebounce(queryRaw, 200);
 
   const visibleUtterances = useMemo(() => {
-    if (!query.trim()) return filteredUtterances;
-    const q = query.toLowerCase();
-    return filteredUtterances.filter((u) => u.text.toLowerCase().includes(q));
-  }, [filteredUtterances, query]);
+    const list = query.trim()
+      ? filteredUtterances.filter((u) =>
+          u.text.toLowerCase().includes(query.toLowerCase())
+        )
+      : filteredUtterances;
+
+    const active = utterances.find((u) => u.id === activeId);
+    return active && !list.includes(active) ? [...list, active] : list;
+  }, [filteredUtterances, query, utterances, activeId]);
+
+  // reset the match index whenever the search term changes
+  useEffect(() => {
+    setMatchIdx(0);
+  }, [query]);
 
   const progress = useMemo(() => {
     const complete = utterances.filter((u) => u.status === "complete").length;
@@ -152,8 +163,8 @@ export default function CorrectionEditor({ readOnly = true }) {
   useEffect(() => {
     if (!editingId) return;
     const idx = visibleUtterances.findIndex((u) => u.id === editingId);
-    if (idx >= 0) {
-      listRef.current?.scrollToItem(idx, "center");
+    if (idx >= 0 && listRef.current?.scrollToItem) {
+      listRef.current.scrollToItem(idx, "center");
     }
   }, [editingId, visibleUtterances]);
 
@@ -322,9 +333,6 @@ export default function CorrectionEditor({ readOnly = true }) {
     return mobile;
   }
 
-  // -- Which utterance is being spoken right now --------------------------
-  const [activeId, setActiveId] = useState(null);
-
   useEffect(() => {
     // Global event fired from GlobalAudioPlayer (see b) below)
     const onTick = ({ detail: { pos } }) => {
@@ -389,7 +397,10 @@ export default function CorrectionEditor({ readOnly = true }) {
   return (
     <div className="max-w-6xl mx-auto p-4">
       {/* header */}
-      <header className="bg-white p-6 mb-6 shadow rounded-lg flex flex-col gap-2">
+      <header
+        className="bg-white p-6 mb-6 shadow rounded-lg flex flex-col gap-2
+              sticky top-0 z-30 backdrop-blur supports-backdrop-blur:bg-white/90"
+      >
         <h1 className="text-2xl font-semibold">Transkribering</h1>
         <p className="text-gray-600">{audioTitle}</p>
         {/* progress bar */}
@@ -398,6 +409,7 @@ export default function CorrectionEditor({ readOnly = true }) {
           aria-valuenow={progress.percent}
           aria-valuemin={0}
           aria-valuemax={100}
+          aria-valuetext={`${progress.percent}% klart`}
           className="w-full h-2 bg-gray-200 rounded overflow-hidden"
         >
           <div
@@ -434,26 +446,42 @@ export default function CorrectionEditor({ readOnly = true }) {
           )}
         </div>
         {readOnly && (
-          <input
-            type="search"
-            autoFocus
-            placeholder="Sök i texten…"
-            className="mt-3 max-w-xs border rounded px-3 py-1 text-sm"
-            value={queryRaw}
-            onChange={(e) => setQueryRaw(e.target.value)}
-          />
+          <div className="flex gap-1  items-center">
+            <input
+              type="search"
+              autoFocus
+              aria-label="Sök i transkriptionen"
+              placeholder="Sök i texten…"
+              className="mt-3 max-w-xs border rounded px-3 py-1 text-sm"
+              value={queryRaw}
+              onChange={(e) => setQueryRaw(e.target.value)}
+            />
+            {queryRaw && (
+              <span className="ml-2 text-sm text-gray-500">
+                {visibleUtterances?.length} träffar
+              </span>
+            )}
+          </div>
         )}
+
         <div className="flex justify-end gap-2 text-sm text-gray-600">
           <button
-            onClick={() =>
-              navigator.clipboard.writeText(
-                visibleUtterances.map((u) => u.text).join("\n\n")
-              )
-            }
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(
+                  visibleUtterances.map((u) => u.text).join("\n\n")
+                );
+                alert("Texten har kopierats!");
+              } catch {
+                alert(
+                  "Kunde inte kopiera – prova den nya 'Ladda ned fil'-knappen."
+                );
+              }
+            }}
             className="flex gap-1  items-center"
           >
             <FontAwesomeIcon icon={faCopy} />
-            Kopiera allt
+            Kopiera text
           </button>
           <button
             onClick={() => {
@@ -471,7 +499,7 @@ export default function CorrectionEditor({ readOnly = true }) {
             className="flex gap-1 items-center"
           >
             <FontAwesomeIcon icon={faDownload} />
-            Ladda ned text-fil
+            Hämta .txt
           </button>
         </div>
       </header>
@@ -505,7 +533,7 @@ export default function CorrectionEditor({ readOnly = true }) {
           <List
             ref={listRef}
             height={600}
-            itemCount={visibleUtterances.length}
+            itemCount={visibleUtterances?.length}
             itemSize={getItemSize}
             itemKey={(index) => visibleUtterances[index].id}
             itemData={listData}

@@ -124,7 +124,7 @@ export const UtteranceRow = React.memo(function UtteranceRow({
      from sm: ≥640 px we switch back to your grid. */
       className={classNames(
         // ⬇️  Mobile
-        "flex flex-col gap-2 border-b last:border-none px-4 py-3",
+        "flex flex-col gap-2 border-b border-gray-200 last:border-none px-4 py-3",
         // ⬆️  Desktop
         "sm:grid sm:grid-cols-[16px_auto_44px_1fr_auto] sm:items-center sm:gap-4",
         isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
@@ -133,14 +133,17 @@ export const UtteranceRow = React.memo(function UtteranceRow({
       )}
     >
       {/* status dot */}
-      <span className="flex items-center justify-center">
-        <FontAwesomeIcon
-          icon={faCircle}
-          className={classNames("w-2 h-2", STATUS_COLORS[utterance?.status])}
-        />
-      </span>
+        <span className="flex items-center justify-center">
+          <FontAwesomeIcon
+            icon={faCircle}
+            className={classNames("w-2 h-2", STATUS_COLORS[utterance?.status])}
+          />
+        </span>
       {/* timestamp */}
-      <span className="font-mono whitespace-nowrap">
+      <span
+        className="font-mono whitespace-nowrap text-gray-500"
+        title={new Date(utterance.start * 1000).toISOString().substr(11, 8)}
+      >
         {formatTimestamp(utterance?.start)}
       </span>
       {/* speaker 
