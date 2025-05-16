@@ -24,6 +24,7 @@ export default function EditorHeader({
     >
       <h1 className="text-2xl font-semibold">Transkribering</h1>
       <p className="text-gray-600">{audioTitle}</p>
+      <div><strong>OBS!</strong> Automatisk transkription – kan innehålla fel</div>
 
       {/* progress bar */}
       <div
@@ -39,8 +40,6 @@ export default function EditorHeader({
           style={{ width: `${progress.percent}%` }}
         />
       </div>
-
-      <div>Maskin-transkription – kan innehålla fel</div>
 
       <div className="flex justify-between text-sm text-gray-600">
         <span>
