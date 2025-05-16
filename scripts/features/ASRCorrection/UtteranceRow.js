@@ -112,14 +112,13 @@ export const UtteranceRow = React.memo(function UtteranceRow({
 
   return (
     <div
+      type="button"
+      onClick={() => handlePlay(utterance.start)}
+      onKeyDown={(e) =>
+        (e.key === " " || e.key === "Enter") && handlePlay(utterance.start)
+      }
       style={style}
       tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          handlePlay(utterance?.start);
-          e.preventDefault();
-        }
-      }}
       /* On phones we fall back to a stacked flex layout;
      from sm: ≥640 px we switch back to your grid. */
       className={classNames(
@@ -129,16 +128,17 @@ export const UtteranceRow = React.memo(function UtteranceRow({
         "sm:grid sm:grid-cols-[16px_auto_44px_1fr_auto] sm:items-center sm:gap-4",
         isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
         utterance?.status === "complete" && "opacity-60",
-        isActive && "bg-isof/10 border-l-4 border-isof"
+        "text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof/70",
+        isActive ? "bg-isof/10 ring-isof/40" : "hover:bg-gray-50"
       )}
     >
       {/* status dot */}
-        <span className="flex items-center justify-center">
-          <FontAwesomeIcon
-            icon={faCircle}
-            className={classNames("w-2 h-2", STATUS_COLORS[utterance?.status])}
-          />
-        </span>
+      <span className="flex items-center justify-center">
+        <FontAwesomeIcon
+          icon={faCircle}
+          className={classNames("w-2 h-2", STATUS_COLORS[utterance?.status])}
+        />
+      </span>
       {/* timestamp */}
       <span
         className="font-mono whitespace-nowrap text-gray-500"
@@ -168,7 +168,10 @@ export const UtteranceRow = React.memo(function UtteranceRow({
       {/* play/pause */}
       <span className="text-left">
         <a
-          onClick={() => handlePlay(utterance?.start)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePlay(utterance.start);
+          }}
           className="text-isof"
           aria-label={isPlaying && isActive ? "Pausa uppspelning" : "Spela upp"}
         >

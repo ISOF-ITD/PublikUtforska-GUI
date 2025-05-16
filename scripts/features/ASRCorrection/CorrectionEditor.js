@@ -62,6 +62,7 @@ export default function CorrectionEditor({ readOnly = true }) {
   const [filter, setFilter] = useState("all"); // all | needs-work | completed
   const [saving, setSaving] = useState(false);
   const [matchIdx, setMatchIdx] = useState(0);
+  const [followActive, setFollowActive] = useState(true);
 
   const buildUtterances = useCallback(() => {
     if (!audioItem) return [];
@@ -136,6 +137,25 @@ export default function CorrectionEditor({ readOnly = true }) {
   useEffect(() => {
     setMatchIdx(0);
   }, [query]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!query.trim()) return;
+      const hits = visibleUtterances;
+      if (e.key === "Enter" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setMatchIdx((i) => {
+          const next = e.shiftKey
+            ? (i - 1 + hits.length) % hits.length
+            : (i + 1) % hits.length;
+          listRef.current?.scrollToItem(next, "center");
+          return next;
+        });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [visibleUtterances, query]);
 
   const progress = useMemo(() => {
     const complete = utterances.filter((u) => u.status === "complete").length;
@@ -343,8 +363,9 @@ export default function CorrectionEditor({ readOnly = true }) {
 
         // make sure it is visible inside react-window
         const idx = visibleUtterances.findIndex((u) => u.id === current.id);
-        if (idx >= 0) listRef.current?.scrollToItem(idx, "center");
-        else setActiveId(null); // row hidden by filter/search
+        if (followActive && idx >= 0) {
+          listRef.current?.scrollToItem(idx, "center");
+        } else setActiveId(null); // row hidden by filter/search
       }
     };
 
@@ -465,6 +486,15 @@ export default function CorrectionEditor({ readOnly = true }) {
         )}
 
         <div className="flex justify-end gap-2 text-sm text-gray-600">
+          <label className="flex items-center gap-2 text-sm select-none">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-isof"
+              checked={followActive}
+              onChange={(e) => setFollowActive(e.target.checked)}
+            />
+            Följ texten
+          </label>
           <button
             onClick={async () => {
               try {
