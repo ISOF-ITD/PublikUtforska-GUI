@@ -15,7 +15,7 @@ export function createPlacePathFromPlaces(placeId, placesPath) {
   routeParams.place_id = placeId;
   // decode and re-encode the search param to make sure it's encoded properly
   routeParams.search = routeParams.search
-    ? encodeURIComponent(decodeURIComponent(routeParams.search)) : undefined;
+    ? routeParams.search : undefined;
   return router.reverse(routeParams) || '';
 }
 
@@ -58,13 +58,24 @@ export function createPlacesPathFromRecord(recordId) {
 }
 
 export function createSearchRoute(params) {
-  const newParams = { ...params };
   const router = new RouteParser(searchRoute);
-  // const newParams = {...params};
-  // on the search parameter, decode and re-encode to make sure it's encoded properly
-  newParams.search = newParams.search ? encodeURIComponent(decodeURIComponent(newParams.search)) : undefined;
 
-  return router.reverse(newParams) || '/';
+  // shallow-copy så vi inte muterar original-objektet
+  const newParams = { ...params };
+  newParams.search = newParams.search ? newParams.search : undefined;
+
+  try {
+    const url = router.reverse(newParams);
+    return url || '/'; // fallback om router.reverse() ger null
+  } catch (err) {
+    /*  👇  Logga snyggt men låt appen leva vidare  */
+    console.error('[routeHelper] Kunde inte bygga search-route', {
+      message: err.message,
+      params: newParams,
+    });
+
+    return '/'; // sista utvägen – skicka hem användaren
+  }
 }
 
 export function removeViewParamsFromRoute(path) {
