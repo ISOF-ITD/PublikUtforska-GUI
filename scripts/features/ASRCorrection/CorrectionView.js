@@ -18,7 +18,7 @@ function CorrectionView() {
   }, []);
 
   return (
-    <div className="container">
+    <div className="">
       <Suspense
         fallback={
           <>

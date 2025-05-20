@@ -99,14 +99,17 @@ export default function CorrectionEditor({ readOnly = true }) {
   });
 
   /* -------- play helper -------- */
-  const handlePlay = (startTime, id) => {
-    setActiveId(id); // highlight current row
-    playAudio({
-      record: { id: data?.id, title: audioTitle },
-      audio: audioItem,
-      time: startTime,
-    });
-  };
+  const handlePlay = useCallback(
+    (startTime, id) => {
+      setActiveId(id); // highlight current row
+      playAudio({
+        record: { id: data?.id, title: audioTitle },
+        audio: audioItem,
+        time: startTime,
+      });
+    },
+    [playAudio, data?.id, audioTitle, audioItem]
+  );
 
   /* -------- listData passed to each row -------- */
   const listData = useMemo(
@@ -144,7 +147,7 @@ export default function CorrectionEditor({ readOnly = true }) {
 
   /* -------- render -------- */
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto lg:p-4">
       <EditorHeader
         audioTitle={audioTitle}
         progress={progress}

@@ -35,6 +35,14 @@ export default function UtterancesList({
     if (idx >= 0) listRef.current.scrollToItem(idx, "center");
   }, [getActiveIndex, followActive]);
 
+  /* --- keep row heights in sync when rows change (search / filter) --- */
+  React.useEffect(() => {
+    if (!listRef.current) return;
+    // Re-measure from row 0 – cheaper because it only recalculates sizes,
+    // it doesn’t re-render invisible rows.
+    listRef.current.resetAfterIndex(0, /* shouldForceUpdate */ false);
+  }, [rows.length, editingId, editedText]);
+
   /* --- list variants --- */
   return isMobile ? (
     <div className="divide-y">
