@@ -58,7 +58,9 @@ export default function PdfViewer({ url = null, height = '500' }) {
   };
 
   return (
-    <div className="pdf-viewer">
+    // gömmer pdf-viewer på mobila enheter,
+    // men pdfen laddas ändå i bakgrunden!
+    <div className="pdf-viewer hidden md:block">
       {loading && <p>Hämtar filinfo...</p>}
       {/* Visa knappen endast om pdfUrl inte är satt, dvs. filen inte har laddats */}
       {!loading && !pdfUrl && fileSize && (
