@@ -24,13 +24,13 @@ export default function EditorHeader({
 
   return (
     <header
-      className="bg-white p-6 mb-6 shadow rounded-lg sticky top-0 z-30
+      className="bg-white p-4 sm:p-6 mb-6 shadow rounded-lg sticky top-0 z-30
                  backdrop-blur supports-backdrop-blur:bg-white/90
                  flex flex-col gap-6 divide-y divide-gray-200"
     >
       {/* ─── Title ─────────────────────────────────── */}
       <section className="first:pt-0">
-        <h1 className="text-2xl sm:text-3xl font-semibold">
+        <h1 className="text-2xl sm:text-3xl font-semibold break-words">
           {audioTitle || "Transkribering"}
         </h1>
         <p className="mt-1 text-gray-600">
@@ -41,7 +41,10 @@ export default function EditorHeader({
 
       {/* ─── Progress ──────────────────────────────── */}
       <section className="pt-1">
-        <span className="block font-semibold text-gray-500 mb-2">
+        <span
+          className="block font-semibold text-gray-500 mb-2"
+          aria-live="polite"
+        >
           Färdigt&nbsp;{progress.complete}/{progress.total}
           <span className="sr-only"> rader</span> ({progress.percent}%)
         </span>
@@ -61,14 +64,18 @@ export default function EditorHeader({
       </section>
 
       {/* ─── Filter & Search ───────────────────────── */}
-      <section className="pt-4 flex flex-col sm:flex-row sm:items-end gap-4">
+      <section className="pt-4 flex flex-col gap-4 sm:grid sm:grid-cols-[auto_1fr] sm:items-end">
         {/* Filters */}
-        {readOnly && (
-          <div className="flex flex-col gap-2">
+        {!readOnly && (
+          <div className="flex flex-col gap-2 min-w-0">
             <span className="text-xs font-semibold text-gray-500 uppercase">
               Filter
             </span>
-            <div className="flex gap-2">
+            <div
+              className="flex gap-2 flex-nowrap overflow-x-auto pb-1
+                         sm:flex-wrap sm:overflow-visible
+                         -mx-4 px-4 sm:mx-0 sm:px-0"
+            >
               <FilterButton
                 label="Alla"
                 value="all"
@@ -89,25 +96,34 @@ export default function EditorHeader({
         )}
 
         {/* Search */}
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1 min-w-0">
           <span className="hidden sm:block text-xs font-semibold text-gray-500 uppercase mb-1">
             Sök
           </span>
+
+          {/* search icon */}
           <FontAwesomeIcon
             icon={faSearch}
-            className="pointer-events-none absolute inset-y-0 right-3 my-auto pt-4 h-4 w-4 text-gray-400"
+            className="pointer-events-none absolute right-3 top-1/4 lg:top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
           />
+
           <input
             type="search"
+            id="transcript-search"
             placeholder="Sök i texten…"
             aria-label="Sök i transkriptionen"
             value={queryRaw}
             onChange={(e) => setQueryRaw(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 border rounded-md text-sm
-                       focus:outline-none focus:ring-2 focus:ring-isof"
+            className="w-full pl-10 pr-14 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-isof"
           />
+
+          {/* hit-count pill */}
           {queryRaw && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
+            <span
+              className="absolute right-3 top-1/2 -translate-y-1/2
+                         text-xs px-1.5 py-0.5 rounded-full
+                         bg-gray-200 text-gray-600"
+            >
               {visibleUtterances.length}
             </span>
           )}
@@ -115,7 +131,10 @@ export default function EditorHeader({
       </section>
 
       {/* ─── Actions ───────────────────────────────── */}
-      <section className="pt-4 flex flex-wrap justify-between sm:justify-end gap-4 text-sm text-gray-600">
+      <section
+        className="pt-4 flex flex-col sm:flex-row
+                   justify-between sm:justify-end gap-4 text-sm text-gray-600"
+      >
         <label className="flex items-center gap-2 select-none">
           <input
             type="checkbox"
@@ -148,7 +167,7 @@ function TextActions({ visibleUtterances, audioTitle }) {
   };
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 flex-wrap">
       {/* copy */}
       <button
         onClick={async () => {
