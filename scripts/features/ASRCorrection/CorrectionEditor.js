@@ -11,7 +11,7 @@ import ScrollTopButton from "./ui/ScrollTopButton";
 import useUtterances from "./hooks/useUtterances";
 import useEditorShortcuts from "./hooks/useEditorShortcuts";
 
-export default function CorrectionEditor({ readOnly = true }) {
+export default function CorrectionEditor({ readOnly = false }) {
   /* -------- routing / context -------- */
   const { source } = useParams();
   const { data } = useOutletContext();
