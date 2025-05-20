@@ -17,7 +17,8 @@ import StatusDot from "./StatusDot";
 import MobileEditBar from "./MobileEditBar";
 
 /** Re-usable Tailwind snippets */
-const rowBase = "px-4 py-3 focus:outline-none focus:ring-2 focus:ring-isof/70";
+const rowBase =
+  "px-4 py-4 sm:py-3 focus:outline-none focus:ring-2 focus:ring-isof/70 rounded-md";
 
 export default React.memo(function UtteranceRow({ index, style = {}, data }) {
   const {
@@ -45,8 +46,8 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
   const disabledSave = editedText.trim() === (utterance.text ?? "").trim();
 
   const commonRowClasses = classNames(
-    // mobile layout
-    "flex flex-col gap-2 sm:grid sm:grid-cols-[16px_auto_44px_1fr_auto] sm:items-center sm:gap-4",
+    /* Mobile = card; ≥ sm = table row */
+    "flex flex-col gap-3 sm:grid sm:grid-cols-[16px_auto_auto_1fr_auto] sm:items-center sm:gap-4",
     rowBase,
     isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
     utterance.status === "complete" && "opacity-60",
@@ -67,7 +68,7 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
 
   /* ----------- render ------------ */
   return (
-    <div
+    <article
       role="button"
       tabIndex={0}
       style={style}
@@ -83,32 +84,30 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
         handlePlay(utterance.start, utterance.id);
       }}
       onKeyDown={(e) => {
-        if (e.key === " " || e.key === "Enter") handlePlay(utterance.start, utterance.id);
+        if (e.key === " " || e.key === "Enter")
+          handlePlay(utterance.start, utterance.id);
       }}
       className={commonRowClasses}
+      aria-label={`Uttalande ${index + 1}, starttid ${formatTimestamp(
+        utterance.start
+      )}`}
     >
       {/* status dot */}
       <span className="flex items-center justify-center">
         <StatusDot status={utterance.status} />
       </span>
 
-      {/* timestamp */}
-      <span
-        className="font-mono whitespace-nowrap text-gray-500"
-        title={new Date(utterance.start * 1000).toISOString().substr(11, 8)}
-      >
-        {formatTimestamp(utterance.start)}
-      </span>
-
-      {/* play / pause */}
-      <span>
+      {/* meta line (mobile) | timestamp & play (desktop) */}
+      <span className="flex items-center gap-3">
         <a
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             handlePlay(utterance.start, utterance.id);
           }}
-          className="inline-flex items-center justify-center w-8 h-8 rounded-full text-isof hover:cursor-pointer
-                     focus-visible:ring-2 focus-visible:ring-isof"
+          className="inline-flex items-center justify-center w-9 h-9 rounded-full
+                     shrink-0 text-isof hover:bg-isof/10
+                     focus-visible:ring-2 focus-visible:ring-isof focus:outline-none"
           aria-label={isPlaying && isActive ? "Pausa uppspelning" : "Spela upp"}
         >
           <FontAwesomeIcon
@@ -116,6 +115,13 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
             className="w-4 h-4"
           />
         </a>
+        <time
+          dateTime={formatTimestamp(utterance.start)}
+          className="font-mono text-xs text-gray-500 sm:text-sm"
+          title={new Date(utterance.start * 1000).toISOString().substr(11, 8)}
+        >
+          {formatTimestamp(utterance.start)}
+        </time>
       </span>
 
       {/* text / textarea */}
@@ -134,7 +140,7 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
                        focus:ring-isof focus:border-isof"
           />
         ) : (
-          <span className="w-full overflow-hidden text-ellipsis">
+          <span className="w-full whitespace-pre-wrap break-words">
             {highlight(utterance.text, query)}
           </span>
         )}
@@ -212,6 +218,6 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
           onNext={gotoNext}
         />
       )}
-    </div>
+    </article>
   );
 });
