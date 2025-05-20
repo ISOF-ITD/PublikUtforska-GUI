@@ -68,7 +68,7 @@ export function createSearchRoute(params) {
     const url = router.reverse(newParams);
     return url || '/'; // fallback om router.reverse() ger null
   } catch (err) {
-    /*  👇  Logga snyggt men låt appen leva vidare  */
+    /*  👇  Logga och låt appen leva vidare  */
     console.error('[routeHelper] Kunde inte bygga search-route', {
       message: err.message,
       params: newParams,
