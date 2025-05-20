@@ -24,7 +24,9 @@ export default function EditorHeader({
     >
       <h1 className="text-2xl font-semibold">Transkribering</h1>
       <p className="text-gray-600">{audioTitle}</p>
-      <div><strong>OBS!</strong> Automatisk transkription – kan innehålla fel</div>
+      <div>
+        <strong>OBS!</strong> Automatisk transkription – kan innehålla fel
+      </div>
 
       {/* progress bar */}
       <div
@@ -36,7 +38,7 @@ export default function EditorHeader({
         className="w-full h-2 bg-gray-200 rounded overflow-hidden"
       >
         <div
-          className="bg-isof h-full transition-all"
+          className="bg-gradient-to-r from-isof to-isof/60 h-full transition-all"
           style={{ width: `${progress.percent}%` }}
         />
       </div>
@@ -55,13 +57,13 @@ export default function EditorHeader({
               setFilter={setFilter}
             />
             <FilterButton
-              label={`Behöver arbete (${counts.needsWork})`}
+              label={`Behöver granskas (${counts.needsWork})`}
               value="needs-work"
               filter={filter}
               setFilter={setFilter}
             />
             <FilterButton
-              label={`Klart (${counts.completed})`}
+              label={`Färdigt (${counts.completed})`}
               value="completed"
               filter={filter}
               setFilter={setFilter}
@@ -70,24 +72,22 @@ export default function EditorHeader({
         )}
       </div>
 
-      {readOnly && (
-        <div className="flex gap-2 items-center">
-          <input
-            type="search"
-            autoFocus
-            aria-label="Sök i transkriptionen"
-            placeholder="Sök i texten…"
-            className="mt-3 max-w-xs border rounded px-3 py-1 text-sm"
-            value={queryRaw}
-            onChange={(e) => setQueryRaw(e.target.value)}
-          />
-          {queryRaw && (
-            <span className="ml-2 text-sm text-gray-500">
-              {visibleUtterances.length} träffar
-            </span>
-          )}
-        </div>
-      )}
+      <div className="flex gap-2 items-center">
+        <input
+          type="search"
+          autoFocus
+          aria-label="Sök i transkriptionen"
+          placeholder="Sök i texten…"
+          className="mt-3 max-w-xs border rounded px-3 py-1 text-sm"
+          value={queryRaw}
+          onChange={(e) => setQueryRaw(e.target.value)}
+        />
+        {queryRaw && (
+          <span className="ml-2 text-sm text-gray-500">
+            {visibleUtterances.length} träffar
+          </span>
+        )}
+      </div>
 
       {/* actions */}
       <div className="flex justify-end gap-2 text-sm text-gray-600">
@@ -118,7 +118,9 @@ function TextActions({ visibleUtterances, audioTitle }) {
     const a = document.createElement("a");
     a.href = url;
     a.download = `${audioTitle || "transcript"}.${ext}`;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(url);
   };
 
@@ -161,7 +163,7 @@ function TextActions({ visibleUtterances, audioTitle }) {
       <button
         onClick={() =>
           download("vtt", "text/vtt;charset=utf-8", () => {
-            const pad = (n) => String(n).padStart(2, "0");
+            const pad = (n, size = 2) => String(n).padStart(size, "0");
             const ts = (s, sep = ".") => {
               const h = pad(Math.floor(s / 3600));
               const m = pad(Math.floor((s % 3600) / 60));

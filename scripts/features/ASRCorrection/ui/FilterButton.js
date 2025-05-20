@@ -8,7 +8,7 @@ export default function FilterButton({ label, value, filter, setFilter }) {
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-isof",
       filter === value
         ? "bg-isof text-white"
-        : "hover:bg-gray-200 text-gray-700"
+        : "hover:bg-gray-200 text-gray-700" 
     )}
   >
     {label}

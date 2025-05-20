@@ -38,8 +38,8 @@ export default function UtterancesList({
   /* --- list variants --- */
   return isMobile ? (
     <div className="divide-y">
-      {rows.map((_, idx) => (
-        <UtteranceRow key={rows[idx].id} index={idx} data={listData} />
+      {rows.map((row, idx) => (
+        <UtteranceRow key={row.id} index={idx} data={listData} />
       ))}
     </div>
   ) : (

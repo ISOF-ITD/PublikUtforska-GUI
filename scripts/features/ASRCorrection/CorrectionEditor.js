@@ -11,7 +11,7 @@ import ScrollTopButton from "./ui/ScrollTopButton";
 import useUtterances from "./hooks/useUtterances";
 import useEditorShortcuts from "./hooks/useEditorShortcuts";
 
-export default function CorrectionEditor({ readOnly = false }) {
+export default function CorrectionEditor({ readOnly = true }) {
   /* -------- routing / context -------- */
   const { source } = useParams();
   const { data } = useOutletContext();
@@ -60,7 +60,7 @@ export default function CorrectionEditor({ readOnly = false }) {
   const [editingId, setEditingId] = useState(null);
   const [editedText, setEditedText] = useState("");
   const [followActive, setFollowActive] = useState(true);
-  const activeId = null; // updated in handlePlay tick if needed
+  const [activeId, setActiveId] = useState(null);
 
   /* -------- helpers -------- */
   const beginEdit = useCallback(
@@ -99,12 +99,14 @@ export default function CorrectionEditor({ readOnly = false }) {
   });
 
   /* -------- play helper -------- */
-  const handlePlay = (startTime) =>
+  const handlePlay = (startTime, id) => {
+    setActiveId(id); // highlight current row
     playAudio({
       record: { id: data?.id, title: audioTitle },
       audio: audioItem,
       time: startTime,
     });
+  };
 
   /* -------- listData passed to each row -------- */
   const listData = useMemo(

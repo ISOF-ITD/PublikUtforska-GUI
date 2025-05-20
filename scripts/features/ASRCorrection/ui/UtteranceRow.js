@@ -17,9 +17,7 @@ import StatusDot from "./StatusDot";
 import MobileEditBar from "./MobileEditBar";
 
 /** Re-usable Tailwind snippets */
-const rowBase =
-  "border-b border-gray-200 last:border-none px-4 py-3 focus:outline-none \
-   focus:ring-2 focus:ring-isof/70";
+const rowBase = "px-4 py-3 focus:outline-none focus:ring-2 focus:ring-isof/70";
 
 export default React.memo(function UtteranceRow({ index, style = {}, data }) {
   const {
@@ -73,9 +71,19 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
       role="button"
       tabIndex={0}
       style={style}
-      onClick={() => handlePlay(utterance.start)}
+      onClick={(e) => {
+        // Don’t start playback when interacting with form controls
+        if (
+          e.target instanceof HTMLTextAreaElement ||
+          e.target instanceof HTMLInputElement ||
+          e.target.closest("button, a")
+        ) {
+          return;
+        }
+        handlePlay(utterance.start, utterance.id);
+      }}
       onKeyDown={(e) => {
-        if (e.key === " " || e.key === "Enter") handlePlay(utterance.start);
+        if (e.key === " " || e.key === "Enter") handlePlay(utterance.start, utterance.id);
       }}
       className={commonRowClasses}
     >
@@ -97,7 +105,7 @@ export default React.memo(function UtteranceRow({ index, style = {}, data }) {
         <a
           onClick={(e) => {
             e.stopPropagation();
-            handlePlay(utterance.start);
+            handlePlay(utterance.start, utterance.id);
           }}
           className="inline-flex items-center justify-center w-8 h-8 rounded-full text-isof hover:cursor-pointer
                      focus-visible:ring-2 focus-visible:ring-isof"
