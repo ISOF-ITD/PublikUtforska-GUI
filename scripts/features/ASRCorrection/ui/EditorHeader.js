@@ -64,7 +64,7 @@ export default function EditorHeader({
       </section>
 
       {/* ─── Filter & Search ───────────────────────── */}
-      <section className="pt-4 flex flex-col gap-4 sm:grid sm:grid-cols-[auto_1fr] sm:items-end">
+      <section className="pt-4 !flex !flex-col gap-4 sm:grid sm:grid-cols-[auto_1fr] sm:items-start">
         {/* Filters */}
         {!readOnly && (
           <div className="flex flex-col gap-2 min-w-0">

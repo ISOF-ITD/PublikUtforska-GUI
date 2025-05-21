@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useParams, useOutletContext } from "react-router-dom";
 import { AudioContext } from "../../contexts/AudioContext";
 import { getAudioTitle } from "../../utils/helpers";
@@ -15,7 +15,7 @@ export default function CorrectionEditor({ readOnly = false }) {
   /* -------- routing / context -------- */
   const { source } = useParams();
   const { data } = useOutletContext();
-  const { playAudio, isPlaying } = useContext(AudioContext);
+  const { playAudio, isPlaying, currentTime } = useContext(AudioContext);
 
   /* -------- audio item & title -------- */
   const audioItem = useMemo(() => {
@@ -110,6 +110,23 @@ export default function CorrectionEditor({ readOnly = false }) {
     },
     [playAudio, data?.id, audioTitle, audioItem]
   );
+
+  useEffect(() => {
+    if (!audioItem || currentTime == null) return;
+
+    // currentTime is stored in **ms**; utterance times are in **s**
+    const t = currentTime / 1000;
+
+    // utterances are already sorted, so a simple find is fine
+    const current = utterances.find(
+      (u) => t >= u.start && t < u.end // within this segment
+    );
+
+    // only update when the id really changes
+    if (current?.id !== activeId) {
+      setActiveId(current?.id ?? null);
+    }
+  }, [currentTime, utterances, audioItem, activeId]);
 
   /* -------- listData passed to each row -------- */
   const listData = useMemo(

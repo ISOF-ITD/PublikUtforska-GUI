@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { VariableSizeList as List } from "react-window";
 import UtteranceRow from "./UtteranceRow";
 import useIsMobile from "../hooks/useIsMobile";
@@ -14,6 +14,7 @@ export default function UtterancesList({
   getActiveIndex,
   followActive,
   readOnly,
+  activeId,
 }) {
   const listRef = useRef(null);
   const isMobile = useIsMobile();
@@ -29,14 +30,14 @@ export default function UtterancesList({
   };
 
   /* --- auto-scroll when active row changes --- */
-  React.useEffect(() => {
-    if (!followActive || !listRef.current) return;
-    const idx = getActiveIndex?.();
-    if (idx >= 0) listRef.current.scrollToItem(idx, "center");
-  }, [getActiveIndex, followActive]);
+  useEffect(() => {
+  if (!followActive || !listRef.current) return;
+  const idx = getActiveIndex();
+  if (idx >= 0) listRef.current.scrollToItem(idx, "center");
+}, [activeId, followActive]);
 
   /* --- keep row heights in sync when rows change (search / filter) --- */
-  React.useEffect(() => {
+  useEffect(() => {
     if (!listRef.current) return;
     // Re-measure from row 0 – cheaper because it only recalculates sizes,
     // it doesn’t re-render invisible rows.
