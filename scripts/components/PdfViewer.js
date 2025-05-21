@@ -58,13 +58,11 @@ export default function PdfViewer({ url = null, height = '500' }) {
   };
 
   return (
-    // gömmer pdf-viewer på mobila enheter,
-    // men pdfen laddas ändå i bakgrunden!
-    <div className="pdf-viewer hidden md:block">
+    <div className="pdf-viewer">
       {loading && <p>Hämtar filinfo...</p>}
       {/* Visa knappen endast om pdfUrl inte är satt, dvs. filen inte har laddats */}
       {!loading && !pdfUrl && fileSize && (
-        <button onClick={handleLoadLargePdf} type="button">
+        <button onClick={handleLoadLargePdf} type="button" className="w-full">
           {`Visa Pdf (${fileSize})`}
         </button>
       )}

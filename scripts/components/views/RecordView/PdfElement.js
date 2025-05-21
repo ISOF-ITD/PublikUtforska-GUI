@@ -15,18 +15,18 @@ export default function PdfElement({ data }) {
 
   return (
     <>
-      <div className="row">
-        <div className="twelve columns">
-          {
-            pdfObjects.map((pdfObject) => (
+      {/* visa inte i mobilläge */}
+      <div className="row hidden md:block">
+        {
+          pdfObjects.map((pdfObject) => (
+            <div className={`${pdfObjects.length > 1 ? 'six' : 'twelve'} columns`} key={`pdf-${pdfObject.source}`}>
               <PdfViewer
                 height="100%"
                 url={baseUrl + pdfObject.source}
-                key={pdfObject.source}
               />
-            ))
-          }
-        </div>
+            </div>
+          ))
+        }
       </div>
       <div className="row">
         <div className="twelve columns pdf-wrapper">
