@@ -11,6 +11,12 @@ import SpeedSelector from "./SpeedSelector";
 
 const JUMP_SEC = 15;
 
+const BTN_BASE =
+  "relative flex h-11 w-11 items-center justify-center rounded-full \
+   bg-gray-50 text-gray-700 shadow-sm hover:bg-gray-100 \
+   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-isof \
+   sm:h-12 sm:w-12";
+
 export default function PlayerButtons({ audioRef, playing, togglePlay }) {
   const backwardBtn = useRef(null);
   const forwardBtn = useRef(null);
@@ -38,23 +44,25 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
   const baseBtn =
     "relative w-8 h-8 sm:w-10 sm:h-10 rounded hover:bg-gray-100 flex items-center justify-center";
   return (
-    <div className="flex items-center gap-2 sm:gap-3">
+    <div className="flex items-center gap-3">
       {/* ← 15 s */}
       <a
         ref={backwardBtn}
         aria-label={`Spola tillbaka ${JUMP_SEC} sekunder`}
         onClick={() => seekRelative(-JUMP_SEC)}
-        className={`${baseBtn} text-gray-700`}
+        className={BTN_BASE}
       >
         <FontAwesomeIcon icon={faRotateLeft} />
-        <span className="absolute text-[0.6rem] -bottom-1">{JUMP_SEC}</span>
+        <span className="absolute bottom-0.5 right-1 text-[0.6rem]">
+          {JUMP_SEC}
+        </span>
       </a>
 
-      {/* play / pause */}
+      {/* play / pause (accent colour uses brand) */}
       <a
-        aria-label="Spela"
+        aria-label={playing ? "Pausa" : "Spela"}
         onClick={togglePlay}
-        className={`${baseBtn} bg-isof text-white`}
+        className={`${BTN_BASE} bg-isof text-white hover:bg-isof/90`}
       >
         <FontAwesomeIcon icon={playing ? faPause : faPlay} />
       </a>
@@ -64,10 +72,12 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
         ref={forwardBtn}
         aria-label={`Spola framåt ${JUMP_SEC} sekunder`}
         onClick={() => seekRelative(JUMP_SEC)}
-        className={`${baseBtn} text-gray-700`}
+        className={BTN_BASE}
       >
         <FontAwesomeIcon icon={faRotateRight} />
-        <span className="absolute text-[0.6rem] -bottom-1">{JUMP_SEC}</span>
+        <span className="absolute bottom-0.5 left-1 text-[0.6rem]">
+          {JUMP_SEC}
+        </span>
       </a>
 
       <SpeedSelector audioRef={audioRef} />

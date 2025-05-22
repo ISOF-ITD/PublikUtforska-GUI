@@ -16,8 +16,9 @@ export default function SpeedSelector({ audioRef }) {
       value={speed}
       onChange={change}
       aria-label="Uppspelningshastighet"
-      className="h-8 w-16 rounded border-gray-300 text-xs font-medium
-                 focus-visible:ring-2 focus-visible:ring-isof"
+      className="h-9 w-20 cursor-pointer rounded border border-gray-300 bg-white
+             pl-2 pr-6 text-xs font-medium focus-visible:ring-2
+             focus-visible:ring-isof sm:h-10 !mb-0"
     >
       {SPEEDS.map((s) => (
         <option key={s} value={s}>
