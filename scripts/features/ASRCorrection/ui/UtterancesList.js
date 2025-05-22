@@ -5,6 +5,7 @@ import useIsMobile from "../hooks/useIsMobile";
 
 const BASE_ROW = 76;
 const EXTRA_LINE = 22;
+const AVG_CHARS_PER_LINE = 95;
 
 export default function UtterancesList({
   rows,
@@ -26,15 +27,20 @@ export default function UtterancesList({
       const lines = Math.max(2, editedText.split("\n").length);
       return BASE_ROW + (lines - 2) * EXTRA_LINE;
     }
-    return BASE_ROW;
+    /* -------- normal rows: estimate how many lines the text wraps into ---- */
+    const estLines = Math.max(
+      1,
+      Math.ceil(((u.text ?? "").length || 1) / AVG_CHARS_PER_LINE)
+    );
+    return BASE_ROW + (estLines - 1) * EXTRA_LINE;
   };
 
   /* --- auto-scroll when active row changes --- */
   useEffect(() => {
-  if (!followActive || !listRef.current) return;
-  const idx = getActiveIndex();
-  if (idx >= 0) listRef.current.scrollToItem(idx, "center");
-}, [activeId, followActive]);
+    if (!followActive || !listRef.current) return;
+    const idx = getActiveIndex();
+    if (idx >= 0) listRef.current.scrollToItem(idx, "center");
+  }, [activeId, followActive]);
 
   /* --- keep row heights in sync when rows change (search / filter) --- */
   useEffect(() => {

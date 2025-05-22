@@ -61,7 +61,7 @@ export default React.memo(function UtteranceRow({
         handlePlay(utterance.start, utterance.id)
       }
       className={classNames(
-        "rounded-2xl bg-white shadow p-4 space-y-3",
+        "m-0 rounded-2xl bg-white shadow p-4 space-y-3",
         isEditing && "bg-yellow-50",
         isActive && "ring-2 ring-isof/70 ring-inset"
       )}
@@ -206,9 +206,9 @@ export default React.memo(function UtteranceRow({
         handlePlay(utterance.start, utterance.id)
       }
       className={classNames(
-        "hidden sm:grid sm:grid-cols-[16px_auto_2fr_1fr_auto] sm:items-center sm:gap-4",
+        "m-0 hidden sm:grid sm:grid-cols-[16px_auto_2fr_1fr_auto] sm:items-center sm:gap-4",
         "px-4 py-3 focus:outline-none focus:ring-2 focus:ring-isof/70 rounded-md",
-        isEditing ? "bg-yellow-50" : "hover:bg-gray-50",
+        isEditing ? "bg-yellow-50" : "",
         utterance.status === "complete" && "opacity-60",
         isActive &&
           "bg-isof/10 ring-2 ring-inset ring-isof border-l-4 border-isof"
