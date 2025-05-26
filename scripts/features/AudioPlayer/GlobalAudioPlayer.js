@@ -12,7 +12,7 @@ import PlayerButtons from "./PlayerButtons";
 import Timeline from "./Timeline";
 import msToTime from "./msToTime";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWindowClose } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faWindowClose } from "@fortawesome/free-solid-svg-icons";
 
 const KEY = {
   SPACE: "Space",
@@ -38,38 +38,39 @@ export default function GlobalAudioPlayer() {
     setCurrentAudio,
   } = useContext(AudioContext);
 
-  const [viewportW, setViewportW] = useState(window.innerWidth);
-  const [showKeys, setShowKeys] = useState(false);
-  const labelRef = useRef(null);
-  const labelTextRef = useRef(null);
-
-  /* resize – recalc marquee width */
+  /* ==========  NEW: viewport helpers  ========== */
+  const [vw, setVw] = useState(window.innerWidth);
   useEffect(() => {
-    const onResize = () => setViewportW(window.innerWidth);
+    const onResize = () => setVw(window.innerWidth);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  /* label marquee */
+  /* ==========  marquee re-calc ========== */
+  const labelRef = useRef(null);
+  const labelTextRef = useRef(null);
   useEffect(() => {
     const label = labelRef.current;
     const txt = labelTextRef.current;
     if (!label || !txt) return;
 
     const needsScroll = txt.offsetWidth > label.offsetWidth;
-    txt.classList.toggle("animate-marquee", needsScroll);
 
+    // remove + force reflow + add → guarantees fresh animation tick
+    txt.classList.remove("marquee-runner");
+    // forcing a read refreshes styles
+    void txt.offsetWidth;
     if (needsScroll) {
-      const diff = txt.offsetWidth - label.offsetWidth;
-      txt.style.animationDuration = `${diff / 20}s`; // slower = easier to read
+      const seconds = (txt.offsetWidth - label.offsetWidth) / 20; // 20 px ⁄ s
+      txt.style.setProperty("--marquee-duration", `${seconds}s`);
+      txt.classList.add("marquee-runner");
     }
-  }, [playerLabelText, viewportW]);
+  }, [playerLabelText, vw]);
 
-  /* audio events */
+  /* ==========  audio events  ========== */
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     const onLoaded = () => {
       setDurationTime(audio.duration * 1000);
       setCurrentTime(audio.currentTime * 1000);
@@ -80,7 +81,6 @@ export default function GlobalAudioPlayer() {
         new CustomEvent("audio.time", { detail: { pos: audio.currentTime } })
       );
     };
-
     audio.addEventListener("loadedmetadata", onLoaded);
     audio.addEventListener("timeupdate", onTime);
     return () => {
@@ -89,16 +89,31 @@ export default function GlobalAudioPlayer() {
     };
   }, [audioRef, setDurationTime, setCurrentTime]);
 
-  /* seek from slider */
-  const handleSeek = (val) => {
-    setCurrentTime(val);
-    audioRef.current.currentTime = val / 1000;
+  /* ==========  NEW: swipe left / right to seek 15 s on mobile  ========== */
+  const swipeRef = useRef({ x: null, t: 0 });
+  const onTouchStart = (e) => {
+    swipeRef.current = { x: e.touches[0].clientX, t: Date.now() };
+  };
+  const onTouchEnd = (e) => {
+    const startX = swipeRef.current.x;
+    if (startX == null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dt = Date.now() - swipeRef.current.t;
+    if (dt < 400 && Math.abs(dx) > 60) {
+      // quick, deliberate swipe
+      const audio = audioRef.current;
+      if (!audio) return;
+      const jump = dx > 0 ? 15 : -15;
+      audio.currentTime = Math.min(
+        Math.max(0, audio.currentTime + jump),
+        audio.duration
+      );
+    }
   };
 
-  /* close */
+  /* ==========  housekeeping / keyboard  ========== */
   const handleClose = useCallback(() => {
-    const audio = audioRef.current;
-    if (audio) audio.pause();
+    audioRef.current?.pause();
     setPlaying(false);
     setVisible(false);
     setCurrentTime(0);
@@ -106,7 +121,6 @@ export default function GlobalAudioPlayer() {
     window.eventBus.dispatch("audio.playerhidden");
   }, [audioRef, setPlaying, setVisible, setCurrentTime, setCurrentAudio]);
 
-  /* keyboard shortcuts */
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -129,10 +143,10 @@ export default function GlobalAudioPlayer() {
         case KEY.RATE_UP:
           audio.playbackRate = Math.min(2, audio.playbackRate + 0.1);
           break;
-        case "KeyM": // mute/unmute
+        case "KeyM":
           audio.muted = !audio.muted;
           break;
-        case "Escape": // quick close
+        case "Escape":
           handleClose();
           break;
         default:
@@ -142,52 +156,65 @@ export default function GlobalAudioPlayer() {
     return () => window.removeEventListener("keydown", handler);
   }, [audioRef, togglePlay, handleClose]);
 
+  /* ==========  RENDER  ========== */
   return (
     <div
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       className={classNames(
-        "bg-white fixed inset-x-0 bottom-0 z-[2000] transition-transform duration-300 ease-in-out",
-        "px-3 sm:px-6 !border border-t-2 border-isof shadow-lg/10 rounded-2xl",
+        "fixed inset-x-0 bottom-0 z-[2000] bg-white shadow-lg/10 border-t-2 border-isof rounded-t-2xl",
+        "transition-transform duration-300 ease-in-out",
+        "pb-[env(safe-area-inset-bottom,var(--tw-empty,0px))] px-3 sm:px-6",
         visible
           ? "translate-y-0 opacity-100"
           : "translate-y-full opacity-0 pointer-events-none"
       )}
     >
+      {/* ── grab handle ───────────────────────────────────── */}
+      <div className="mx-auto mt-1 mb-1 h-1.5 w-10 rounded-full bg-gray-300/80 sm:hidden" />
+
+      {/* ──  content grid / flex fallback ─────────────────── */}
       <div
-        className="mx-auto w-full max-w-[1200px] grid items-center gap-4 !py-2.5"
-        style={{
-          gridTemplateColumns: "auto 84px 1fr auto",
-        }}
+        className="mx-auto w-full max-w-[1200px] py-3 gap-x-4 gap-y-2
+       flex flex-col sm:grid
+       sm:grid-cols-[auto_64px_1fr_auto] sm:grid-rows-1 items-center"
       >
-        {/* transport buttons */}
+        {/* transport */}
         <PlayerButtons
-          className="group"
-          iconClassName="transition-transform duration-200 group-aria-[pressed=true]:scale-[1.15]"
           audioRef={audioRef}
           playing={playing}
           togglePlay={togglePlay}
         />
 
-        {/* time */}
-        <div className="text-right text-sm font-mono">
-          <span>{msToTime(currentTime)}</span>
-          <div className="text-xs text-gray-500">{msToTime(durationTime)}</div>
+        {/* time (desktop only) */}
+        <div className="hidden sm:block font-mono text-gray-500 text-right">
+          <span>
+            {msToTime(currentTime)}
+            <br />
+          </span>
         </div>
 
-        {/* label + slider */}
-        <div className="flex flex-col gap-1 overflow-hidden">
+        {/* label & timeline */}
+        <div className="w-full flex flex-col gap-1 overflow-hidden">
+          {/* title strip */}
           <div
             ref={labelRef}
-            className="relative h-5 overflow-hidden whitespace-nowrap"
+            className="relative marquee-mask overflow-hidden
+               text-sm leading-tight
+               line-clamp-2 sm:line-clamp-none"
             aria-live="polite"
           >
-            <div
+            <span
               ref={labelTextRef}
-              className="inline-block relative pr-4"
+              className="whitespace-nowrap pr-6   
+                 sm:will-change-transform"
               title={playerLabelText}
             >
               {playerLabelText}
-            </div>
+            </span>
           </div>
+
+          {/* timeline  */}
           <Timeline
             current={currentTime}
             duration={durationTime || 1}
@@ -200,14 +227,20 @@ export default function GlobalAudioPlayer() {
           />
         </div>
 
-        {/* close button */}
+        {/* close button – now absolute on mobile, inline on ≥ sm */}
         <a
           onClick={handleClose}
           aria-label="Stäng"
           role="button"
-          className="ml-8 text-isof hover:text-darker-isof hover:cursor-pointer !p-2 focus-visible:ring-2 focus-visible:ring-isof"
+          className={classNames(
+            // mobile: floating pill over the sheet header
+            "absolute top-1.5 right-3 sm:static sm:ml-auto",
+            "flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full",
+            "bg-gray-100 text-gray-500 hover:bg-gray-200",
+            "focus-visible:ring-2 focus-visible:ring-isof hover:cursor-pointer"
+          )}
         >
-          <FontAwesomeIcon icon={faWindowClose} className=" w-8 h-8" />
+          <FontAwesomeIcon icon={faClose} className="h-5 w-5 sm:h-4 sm:w-4" />
         </a>
       </div>
     </div>

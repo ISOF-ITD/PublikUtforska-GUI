@@ -703,4 +703,19 @@ span.highlight {
 input.invalid {
 	border: 2px solid red;
   }
-  
+
+@keyframes marquee {
+  0%   { transform: translateX(0);    }
+  100% { transform: translateX(-100%); }
+}
+
+.marquee-runner {
+  display: inline-block;
+  will-change: transform;
+  animation: marquee var(--marquee-duration,12s) linear infinite;
+}
+
+/* respects reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-runner { animation: none; }
+}
