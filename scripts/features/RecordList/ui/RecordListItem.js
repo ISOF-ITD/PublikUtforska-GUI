@@ -1,3 +1,4 @@
+// RecordListItem.js
 /* eslint-disable react/require-default-props */
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -209,7 +210,7 @@ export default function RecordListItem(props) {
           )}
           {innerHits?.media?.hits?.hits.map(
             (hit) =>
-              hit.highlight["media.text"] && (
+              hit.highlight?.["media.text"] && (
                 <HighlightedText
                   key={`${hit._id}`}
                   text={hit.highlight["media.text"][0]}
