@@ -43,15 +43,13 @@ export default function PdfElement({ data }) {
         ))}
       <div className="w-full">
         <div className="flex gap-5 flex-wrap">
-          {pdfObjects.map((pdfObject) => {
-            return (
-              <PdfThumbnail
-                key={`pdf-${pdfObject.source}`}
-                url={buildPdfUrl(pdfObject.source)}
-                title={pdfObject.title || pdfObject.source.split('/').pop()}
-              />
-            );
-          })}
+          {pdfObjects.map((pdfObject) => (
+            <PdfThumbnail
+              key={`pdf-${pdfObject.source}`}
+              url={buildPdfUrl(pdfObject.source)}
+              title={pdfObject.title || pdfObject.source.split('/').pop()}
+            />
+          ))}
         </div>
       </div>
     </>
