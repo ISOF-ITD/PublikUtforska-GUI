@@ -1,3 +1,4 @@
+// webpack.common.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -5,7 +6,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 console.log(`🏗️  Bygger med PUBLIC_PATH=${process.env.PUBLIC_PATH || '/'} 🚀`);
 
 module.exports = {
-  mode: 'development',
   entry: './scripts/app.js',
   output: {
     // add a rev-hash to the filename to avoid caching issues
@@ -35,6 +35,7 @@ module.exports = {
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
+          options: { sourceMaps: true }, // enable source maps for babel
         },
       },
       // add support for .less files
