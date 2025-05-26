@@ -48,8 +48,16 @@ export default function Timeline({ current, duration, onSeek }) {
         className="relative h-3 rounded bg-gray-200 dark:bg-gray-700"
       >
         <div
-          style={{ width: `${pct}%` }}
-          className="absolute inset-y-0 rounded bg-lighter-isof transition-[width]"
+          style={{
+            width: `${pct}%`,
+            backgroundImage: `
+            repeating-linear-gradient(
+                135deg,
+                rgba(255,255,255,.35) 0 4px,
+                transparent 4px 8px)`,
+            backgroundBlendMode: "lighten",
+          }}
+          className="absolute inset-y-0 bg-lighter-isof rounded transition-all"
         />
         {/* bubble on hover */}
         {hoverMs != null && (

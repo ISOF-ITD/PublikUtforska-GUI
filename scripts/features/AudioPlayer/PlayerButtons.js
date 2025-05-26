@@ -15,7 +15,7 @@ const BTN_BASE =
   "relative flex h-11 w-11 items-center justify-center rounded-full \
    bg-gray-50 text-gray-700 shadow-sm hover:bg-gray-100 \
    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-isof \
-   sm:h-12 sm:w-12";
+   sm:h-12 sm:w-12 hover:cursor-pointer";
 
 export default function PlayerButtons({ audioRef, playing, togglePlay }) {
   const backwardBtn = useRef(null);
@@ -48,12 +48,13 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
       {/* ← 15 s */}
       <a
         ref={backwardBtn}
+        role="button"
         aria-label={`Spola tillbaka ${JUMP_SEC} sekunder`}
         onClick={() => seekRelative(-JUMP_SEC)}
         className={BTN_BASE}
       >
         <FontAwesomeIcon icon={faRotateLeft} />
-        <span className="absolute bottom-0.5 right-1 text-[0.6rem]">
+        <span className="absolute bottom-0.5 right-1 text-xs">
           {JUMP_SEC}
         </span>
       </a>
@@ -62,7 +63,8 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
       <a
         aria-label={playing ? "Pausa" : "Spela"}
         onClick={togglePlay}
-        className={`${BTN_BASE} bg-isof text-white hover:bg-isof/90`}
+        role="button"
+        className={`${BTN_BASE} bg-isof text-white hover:bg-isof/90 hover:cursor-pointer`}
       >
         <FontAwesomeIcon icon={playing ? faPause : faPlay} />
       </a>
@@ -70,12 +72,13 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
       {/* → 15 s */}
       <a
         ref={forwardBtn}
+        role="button"
         aria-label={`Spola framåt ${JUMP_SEC} sekunder`}
         onClick={() => seekRelative(JUMP_SEC)}
         className={BTN_BASE}
       >
         <FontAwesomeIcon icon={faRotateRight} />
-        <span className="absolute bottom-0.5 left-1 text-[0.6rem]">
+        <span className="absolute bottom-0.5 left-1 text-xs">
           {JUMP_SEC}
         </span>
       </a>

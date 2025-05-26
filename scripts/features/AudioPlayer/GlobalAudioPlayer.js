@@ -11,6 +11,8 @@ import { AudioContext } from "../../contexts/AudioContext";
 import PlayerButtons from "./PlayerButtons";
 import Timeline from "./Timeline";
 import msToTime from "./msToTime";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWindowClose } from "@fortawesome/free-solid-svg-icons";
 
 const KEY = {
   SPACE: "Space",
@@ -144,18 +146,22 @@ export default function GlobalAudioPlayer() {
     <div
       className={classNames(
         "bg-white fixed inset-x-0 bottom-0 z-[2000] transition-transform duration-300 ease-in-out",
-        "px-3 sm:px-6 !border border-t-2 border-isof",
-        visible ? "translate-y-0 visible" : "translate-y-full hidden"
+        "px-3 sm:px-6 !border border-t-2 border-isof shadow-lg/10 rounded-2xl",
+        visible
+          ? "translate-y-0 opacity-100"
+          : "translate-y-full opacity-0 pointer-events-none"
       )}
     >
       <div
-        className="bg-white mx-auto w-full max-w-[1200px] grid items-center gap-4 !py-2.5"
+        className="mx-auto w-full max-w-[1200px] grid items-center gap-4 !py-2.5"
         style={{
           gridTemplateColumns: "auto 84px 1fr auto",
         }}
       >
         {/* transport buttons */}
         <PlayerButtons
+          className="group"
+          iconClassName="transition-transform duration-200 group-aria-[pressed=true]:scale-[1.15]"
           audioRef={audioRef}
           playing={playing}
           togglePlay={togglePlay}
@@ -189,6 +195,8 @@ export default function GlobalAudioPlayer() {
               setCurrentTime(ms);
               audioRef.current.currentTime = ms / 1000;
             }}
+            audioRef={audioRef}
+            playing={playing}
           />
         </div>
 
@@ -196,9 +204,10 @@ export default function GlobalAudioPlayer() {
         <a
           onClick={handleClose}
           aria-label="Stäng"
-          className="rounded-full p-2 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-isof"
+          role="button"
+          className="ml-8 text-isof hover:text-darker-isof hover:cursor-pointer !p-2 focus-visible:ring-2 focus-visible:ring-isof"
         >
-          ✕
+          <FontAwesomeIcon icon={faWindowClose} className=" w-8 h-8" />
         </a>
       </div>
     </div>
