@@ -58,7 +58,7 @@ export default function Timeline({ current, duration, onSeek }) {
         {hoverMs != null && (
           <span
             ref={bubble}
-            className="absolute -top-5 px-1.5 -translate-x-1/2 rounded bg-gray-800 text-[11px] text-white font-mono"
+            className="absolute -top-5 px-1.5 -translate-x-1/2 rounded bg-gray-800 text-sm text-white font-mono"
           >
             {msToTime(hoverMs)}
           </span>

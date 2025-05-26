@@ -54,16 +54,25 @@ export default function GlobalAudioPlayer() {
     const txt = labelTextRef.current;
     if (!label || !txt) return;
 
-    const needsScroll = txt.offsetWidth > label.offsetWidth;
+    const needsScroll = txt.scrollWidth > label.clientWidth;
 
-    // remove + force reflow + add → guarantees fresh animation tick
-    txt.classList.remove("marquee-runner");
-    // forcing a read refreshes styles
+    // Reset animation and layout
+    txt.style.animation = "none";
+    label.classList.remove("line-clamp-2");
+
+    // Force reflow
     void txt.offsetWidth;
+
     if (needsScroll) {
-      const seconds = (txt.offsetWidth - label.offsetWidth) / 20; // 20 px ⁄ s
-      txt.style.setProperty("--marquee-duration", `${seconds}s`);
-      txt.classList.add("marquee-runner");
+      const containerWidth = label.clientWidth;
+      const textWidth = txt.scrollWidth;
+      const duration = (textWidth + containerWidth) / 50; // Adjust speed (50px/s)
+
+      txt.style.setProperty("--marquee-container-width", `${containerWidth}px`);
+      txt.style.animation = `marquee-run ${duration}s linear infinite`;
+      label.classList.add("marquee-mask");
+    } else {
+      label.classList.add("line-clamp-2");
     }
   }, [playerLabelText, vw]);
 
@@ -195,19 +204,15 @@ export default function GlobalAudioPlayer() {
         </div>
 
         {/* label & timeline */}
-        <div className="w-full flex flex-col gap-1 overflow-hidden">
+        <div className="w-full flex flex-col gap-2 overflow-hidden">
           {/* title strip */}
           <div
             ref={labelRef}
-            className="relative marquee-mask overflow-hidden
-               text-sm leading-tight
-               line-clamp-2 sm:line-clamp-none"
-            aria-live="polite"
+            className="relative overflow-hidden text-sm leading-tight "
           >
             <span
               ref={labelTextRef}
-              className="whitespace-nowrap pr-6   
-                 sm:will-change-transform"
+              className="whitespace-nowrap inline-block will-change-transform "
               title={playerLabelText}
             >
               {playerLabelText}

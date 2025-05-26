@@ -704,18 +704,29 @@ input.invalid {
 	border: 2px solid red;
   }
 
-@keyframes marquee {
-  0%   { transform: translateX(0);    }
-  100% { transform: translateX(-100%); }
+@keyframes marquee-run {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(calc(-100% + var(--marquee-container-width)));
+  }
+}
+
+.marquee-mask {
+  position: relative;
+  mask: linear-gradient(
+    90deg,
+    transparent 0,
+    #fff 20px,
+    #fff calc(100% - 20px),
+    transparent
+  );
 }
 
 .marquee-runner {
-  display: inline-block;
-  will-change: transform;
-  animation: marquee var(--marquee-duration,12s) linear infinite;
+  animation: marquee-run var(--marquee-duration) linear infinite;
+  animation-delay: 1s;
+  padding-right: 20px;
 }
 
-/* respects reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  .marquee-runner { animation: none; }
-}
