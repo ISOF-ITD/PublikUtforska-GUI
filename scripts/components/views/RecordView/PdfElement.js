@@ -56,7 +56,7 @@ export default function PdfElement({ data }) {
                 rel="noopener noreferrer"
               >
                 {/* ikon + titel */}
-                <div className="h-[115px] bg-[#fafbfc] bg-center bg-no-repeat bg-[length:55px_55px] bg-[url('/img/icon-pdf.png')] border border-[#eaeaea] rounded" role="img" aria-hidden="true" />
+                <div className="h-[115px] bg-[#fafbfc] bg-center bg-no-repeat bg-[length:55px_55px] bg-[url('/img/icon-pdf.png')] border border-[#eaeaea] border-solid rounded" role="img" aria-hidden="true" />
                 <span className="max-w-full break-words mt-[5px] mb-[15px] text-center">{titleString}</span>
               </a>
             );
