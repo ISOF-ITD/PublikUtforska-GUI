@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import PdfViewer from '../../PdfViewer';
 import config from '../../../config';
+import PdfThumbnail from './PdfThumbnail';
 
 export function useMediaQuery(query) {
   if (typeof window === 'undefined') return false;
@@ -34,31 +35,21 @@ export default function PdfElement({ data }) {
     <>
       {isAtLeastMediumScreen
         && pdfObjects.map((pdfObject) => (
-          <div className="hidden md:block w-full" key={`pdf-row-${pdfObject.source}`}>
-            <PdfViewer
-              height="100%"
-              url={buildPdfUrl(pdfObject.source)}
-            />
-          </div>
+          <PdfViewer
+            height="100%"
+            url={buildPdfUrl(pdfObject.source)}
+            key={`pdf-viewer-${pdfObject.source}`}
+          />
         ))}
       <div className="w-full">
         <div className="flex gap-5 flex-wrap">
           {pdfObjects.map((pdfObject) => {
-            const titleString = pdfObject.title || pdfObject.source.split('/').pop();
             return (
-              <a
-                title="Öppna PDF"
-                data-type="pdf"
-                href={buildPdfUrl(pdfObject.source)}
+              <PdfThumbnail
                 key={`pdf-${pdfObject.source}`}
-                className="inline-block w-[115px] cursor-pointer"
-                download
-                rel="noopener noreferrer"
-              >
-                {/* ikon + titel */}
-                <div className="h-[115px] bg-[#fafbfc] bg-center bg-no-repeat bg-[length:55px_55px] bg-[url('/img/icon-pdf.png')] border border-[#eaeaea] border-solid rounded" role="img" aria-hidden="true" />
-                <span className="max-w-full break-words mt-[5px] mb-[15px] text-center">{titleString}</span>
-              </a>
+                url={buildPdfUrl(pdfObject.source)}
+                title={pdfObject.title || pdfObject.source.split('/').pop()}
+              />
             );
           })}
         </div>

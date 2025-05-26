@@ -15,7 +15,7 @@ export default function PdfViewer({ url = null, height = '500' }) {
   }, [url, height]);
 
   return (
-    <div className="pdf-viewer">
+    <div className="hidden md:block w-full pdf-viewer">
       {pdfUrl ? (
         <object data={pdfUrl} width="100%" height={pdfHeight} type="application/pdf">
           <a href={pdfUrl}>Öppna Pdf</a>
