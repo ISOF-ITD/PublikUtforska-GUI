@@ -1,8 +1,8 @@
 import classNames from "classnames";
 import { useContext, useEffect } from "react";
 import { AudioContext } from "../../contexts/AudioContext";
-import PlayerButtons from "./PlayerButtons";
-import Timeline from "./Timeline";
+import PlayerButtons from "./ui/PlayerButtons";
+import Timeline from "./ui/Timeline";
 import msToTime from "./msToTime";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";

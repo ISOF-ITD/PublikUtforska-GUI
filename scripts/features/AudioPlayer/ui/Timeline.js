@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import msToTime from "./msToTime";
+import msToTime from "../msToTime";
 
 export default function Timeline({ current, duration, onSeek }) {
   /* % complete */
