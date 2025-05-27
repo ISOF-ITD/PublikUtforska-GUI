@@ -20,7 +20,7 @@ import TranscriptionHelpOverlay from './views/transcribe/TranscriptionHelpOverla
 import TranscriptionOverlay from './views/transcribe/TranscriptionOverlay';
 import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPageByPageOverlay';
 import HelpTextOverlay from './views/HelpTextOverlay';
-import GlobalAudioPlayer from './views/GlobalAudioPlayer';
+import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
 import RequestToTranscribeOverlay from './views/RequestToTranscribeOverlay';
 

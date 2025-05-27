@@ -17,7 +17,6 @@
 @import "ui-components/local-library.less";
 @import "local-library.less";
 @import "ui-components/overlay.less";
-@import "ui-components/audio-player.less";
 @import "nouislider.min.less";
 @import "./ui-components/element-notification-message.less";
 @import "ui-components/share-buttons.less";
@@ -704,4 +703,23 @@ span.highlight {
 input.invalid {
 	border: 2px solid red;
   }
-  
+
+@keyframes marquee-run {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(calc(-100% + var(--marquee-container-width)));
+  }
+}
+
+.marquee-mask {
+  position: relative;
+  mask: linear-gradient(
+    90deg,
+    transparent 0,
+    #fff 20px,
+    #fff calc(100% - 20px),
+    transparent
+  );
+}
