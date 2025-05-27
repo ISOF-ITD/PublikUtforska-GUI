@@ -98,8 +98,22 @@ export default function GlobalAudioPlayer() {
         />
 
         {/* elapsed time (desktop only) */}
-        <div className="hidden sm:block font-mono text-gray-500 text-right">
-          {msToTime(currentTime)}
+        <div className="hidden sm:flex flex-col items-end w-16 leading-tight">
+          <time
+            aria-label="Tid"
+            dateTime={(currentTime / 1000).toFixed(0)}
+            className="font-mono tabular-nums text-lg tracking-tight"
+          >
+            {msToTime(currentTime)}
+          </time>
+
+          <time
+            aria-label="Total tid"
+            dateTime={(durationTime / 1000).toFixed(0)}
+            className="font-mono tabular-nums text-xs text-gray-400 tracking-tight"
+          >
+            {durationTime ? msToTime(durationTime) : "--:--"}
+          </time>
         </div>
 
         {/* label + timeline */}
