@@ -13,7 +13,7 @@ const JUMP_SEC = 15;
 
 /* 48 dp = WCAG-AA target for mobile */
 const BTN = `relative flex items-center justify-center rounded-full 
-   bg-white/90 border border-gray-200/50 shadow-sm hover:shadow-md 
+   bg-white border border-gray-200 shadow-sm hover:shadow-md 
    hover:bg-gray-50 active:scale-95 transition-all duration-150 ease-out
    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-isof
    h-14 w-14 sm:h-12 sm:w-12 hover:cursor-pointer
@@ -58,8 +58,8 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
         aria-label={playing ? "Pausa" : "Spela"}
         onClick={togglePlay}
         role="button"
-        className={`${BTN} bg-isof/90 hover:bg-isof border-isof/30 
-        text-white shadow-isof/20 hover:shadow-isof/30`}
+        className={`${BTN} !bg-isof bg-opacity-90 hover:bg-darker-isof 
+        text-white shadow-darker-isof`}
       >
         <FontAwesomeIcon icon={playing ? faPause : faPlay} />
       </a>

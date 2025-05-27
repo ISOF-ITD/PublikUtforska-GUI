@@ -151,7 +151,9 @@ We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
 
 * **New or rewritten components must use Tailwind** utility classes.  
 * Old `.less` files stay only until their component is migrated.  
-* Tailwind JIT is configured in `tailwind.config.js`; just run `npm run start` as usual.  
+* Tailwind JIT is configured in `tailwind.config.js`; just run `npm run start` as usual.
+
+* For conditional or dynamic styling, compose your Tailwind classes with the **classnames** helper (e.g. classnames('p-4', isActive && 'bg-blue-500')) instead of manual string concatenation.
 
 ## Components
 Types:
