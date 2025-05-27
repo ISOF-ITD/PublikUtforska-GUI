@@ -41,7 +41,7 @@ export default function Timeline({ current, duration, onSeek }) {
         ref={rail}
         onPointerMove={move}
         onPointerLeave={() => setHoverMs(null)}
-        className="relative h-3 rounded bg-gray-200 dark:bg-gray-700"
+        className="relative h-2.5 rounded-full bg-gray-100 dark:bg-gray-700"
       >
         {/* played bar */}
         <div
@@ -51,7 +51,7 @@ export default function Timeline({ current, duration, onSeek }) {
               "repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 4px,transparent 4px 8px)",
             backgroundBlendMode: "lighten",
           }}
-          className="absolute inset-y-0 bg-lighter-isof rounded transition-all"
+          className="absolute inset-y-0 bg-lighter-isof rounded-full transition-all"
         />
 
         {/* bubble */}
@@ -81,13 +81,16 @@ export default function Timeline({ current, duration, onSeek }) {
                      [&::-webkit-slider-thumb]:bg-isof
                      [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6
                      min-[430px]:[&::-webkit-slider-thumb]:w-4 min-[430px]:[&::-webkit-slider-thumb]:h-4"
-          aria-label="Sök i ljudet"
+          aria-label="Välj starttid"
         />
       </div>
 
-      <div className="mt-0.5 pr-2 flex justify-end gap-1 font-mono text-sm text-gray-500">
-        <span>{msToTime(isSeeking ? scrub : current)}</span>/
-        <span>{msToTime(duration)}</span>
+      <div className="mt-1 pr-2 flex justify-end gap-1 font-mono text-sm text-gray-600">
+        <span className="text-isof">
+          {msToTime(isSeeking ? scrub : current)}
+        </span>
+        <span className="text-gray-400">/</span>
+        <span className="text-gray-500">{msToTime(duration)}</span>
       </div>
     </div>
   );

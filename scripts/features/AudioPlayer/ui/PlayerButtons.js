@@ -12,11 +12,12 @@ import SpeedSelector from "./SpeedSelector";
 const JUMP_SEC = 15;
 
 /* 48 dp = WCAG-AA target for mobile */
-const BTN =
-  "relative flex items-center justify-center rounded-full \
-   bg-gray-50 text-gray-700 shadow-sm hover:bg-gray-100 active:scale-95 \
-   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-isof \
-   h-14 w-14 sm:h-12 sm:w-12 hover:cursor-pointer";
+const BTN = `relative flex items-center justify-center rounded-full 
+   bg-white/90 border border-gray-200/50 shadow-sm hover:shadow-md 
+   hover:bg-gray-50 active:scale-95 transition-all duration-150 ease-out
+   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-isof
+   h-14 w-14 sm:h-12 sm:w-12 hover:cursor-pointer
+   [&>svg]:hover:scale-110 [&>svg]:transition-transform`;
 
 export default function PlayerButtons({ audioRef, playing, togglePlay }) {
   const backwardBtn = useRef(null),
@@ -50,16 +51,15 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
         className={BTN}
       >
         <FontAwesomeIcon icon={faRotateLeft} />
-        <span className="absolute bottom-0.5 right-1 text-sm">
-          {JUMP_SEC}
-        </span>
+        <span className="absolute bottom-0.5 right-1 text-sm">{JUMP_SEC}</span>
       </a>
 
       <a
         aria-label={playing ? "Pausa" : "Spela"}
         onClick={togglePlay}
         role="button"
-        className={`${BTN} bg-isof text-white hover:bg-isof/90`}
+        className={`${BTN} bg-isof/90 hover:bg-isof border-isof/30 
+        text-white shadow-isof/20 hover:shadow-isof/30`}
       >
         <FontAwesomeIcon icon={playing ? faPause : faPlay} />
       </a>
@@ -72,9 +72,7 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
         className={BTN}
       >
         <FontAwesomeIcon icon={faRotateRight} />
-        <span className="absolute bottom-0.5 left-1 text-sm">
-          {JUMP_SEC}
-        </span>
+        <span className="absolute bottom-0.5 left-1 text-sm">{JUMP_SEC}</span>
       </a>
 
       {/* hide speed picker where width < 430 px */}

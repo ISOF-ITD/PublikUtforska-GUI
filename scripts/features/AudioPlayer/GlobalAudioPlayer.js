@@ -73,7 +73,8 @@ export default function GlobalAudioPlayer() {
     <div
       {...swipeHandlers}
       className={classNames(
-        "fixed inset-x-0 bottom-0 z-[2000] bg-white shadow-lg/10 border-t-2 border-isof rounded-t-2xl",
+        "fixed inset-x-0 bottom-0 z-[2000] bg-white shadow-lg/10",
+        "border-t border-gray-300 rounded-t-2xl",
         "transition-transform duration-300 ease-in-out",
         "pb-[env(safe-area-inset-bottom,var(--tw-empty,0px))] px-3 sm:px-6",
         visible
