@@ -91,7 +91,7 @@ function RecordView({ mode = "material" }) {
             /* ---------- show ONLY the editor ---------- */
             if (onlyTranscribe) {
               /* still pass the context for useOutletContext() */
-              return <Outlet context={{ data }} />;
+               return <Outlet context={{ data, subrecordsCount }} />;
             }
 
             /* ---------- normal record screen ---------- */

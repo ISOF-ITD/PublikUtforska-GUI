@@ -85,7 +85,11 @@ function createPopupRoutes(prefix) {
     {
       path: 'records/:recordId/*?',
       id: `${prefix}record`,
-      loader: ({ params: { recordId, '*': star } }) => defer({ results: fetchRecordAndCountSubrecords(recordId, createParamsFromSearchRoute(star).search) }),
+      loader: ({ params: { recordId, '*': star } }) => {
+   const cleaned = star?.startsWith('audio/') ? '' : star;
+   const { search } = createParamsFromSearchRoute(cleaned);
+   return defer({ results: fetchRecordAndCountSubrecords(recordId, search) });
+ },
       element: (
         <RoutePopupWindow
           manuallyOpen={false}
@@ -96,13 +100,8 @@ function createPopupRoutes(prefix) {
       ),
       children: [
         {
-          index: true,
-        },
-        {
           path: 'audio/:source/transcribe',
           element: <CorrectionView />,
-          loader: ({ params: { recordId } }) =>
-            defer({ results: fetchRecordAndCountSubrecords(recordId) })
         }
       ],
     },

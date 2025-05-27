@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useParams, useOutletContext } from "react-router-dom";
 import { AudioContext } from "../../contexts/AudioContext";
 import { getAudioTitle } from "../../utils/helpers";
@@ -11,10 +17,15 @@ import ScrollTopButton from "./ui/ScrollTopButton";
 import useUtterances from "./hooks/useUtterances";
 import useEditorShortcuts from "./hooks/useEditorShortcuts";
 
-export default function CorrectionEditor({ readOnly = false }) {
+export default function CorrectionEditor({
+  data: propData = null,
+  readOnly = false,
+}) {
   /* -------- routing / context -------- */
   const { source } = useParams();
-  const { data } = useOutletContext();
+  // prefer an explicit prop, otherwise fall back to the outlet context
+  const outletCtx = useOutletContext() || {};
+  const data = propData ?? outletCtx.data;
   const { playAudio, isPlaying, currentTime } = useContext(AudioContext);
 
   /* -------- audio item & title -------- */
