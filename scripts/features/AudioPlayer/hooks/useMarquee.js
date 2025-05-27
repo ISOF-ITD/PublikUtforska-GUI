@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
  * Returns the two refs you need to attach to the container and text span.
  */
 export default function useMarquee(deps = []) {
+  // labelRef - container, textRef - the text in the container that needs to be animated
   const labelRef = useRef(null);
   const textRef = useRef(null);
 
