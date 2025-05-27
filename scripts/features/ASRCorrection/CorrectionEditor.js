@@ -31,7 +31,11 @@ export default function CorrectionEditor({
   /* -------- audio item & title -------- */
   const audioItem = useMemo(() => {
     const sameSrc =
-      data?.media?.filter((m) => m.source === decodeURIComponent(source)) ?? [];
+      data?.media?.filter(
+        (m) =>
+          decodeURIComponent(m.source) === decodeURIComponent(source) ||
+          m.source === source
+      ) ?? [];
     return (
       sameSrc.find(
         (m) =>

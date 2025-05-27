@@ -27,6 +27,10 @@ const RoutePopupWindow = memo(({
     previousNavigation,
   } = useContext(NavigationContext);
 
+  const isNestedTranscribe = /\/audio\/[^/]+\/transcribe\/?$/.test(
+    location.pathname,
+  );
+
   const closeButtonClick = () => {
     if (manuallyOpenPopup) {
       setWindowOpen(false);
@@ -47,8 +51,12 @@ const RoutePopupWindow = memo(({
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      navigate('/');
-    }
+      const recordPath = location.pathname.replace(
+        /\/audio\/[^/]+\/transcribe\/?$/,
+        '',
+      );
+      navigate(recordPath);
+   }
   };
 
   const closeButtonKeyUp = (event) => {
@@ -69,12 +77,11 @@ const RoutePopupWindow = memo(({
   };
 
   useEffect(() => {
-    if (window.eventBus) {
-      window.eventBus.addEventListener('routePopup.show', showRoutePopup);
-    }
+    window.eventBus?.addEventListener('routePopup.show', showRoutePopup);
     setWindowOpen(!manuallyOpenPopup);
 
     return () => {
+      window.eventBus?.removeEventListener('routePopup.show', showRoutePopup);
       if (onHide) {
         onHide();
       }
@@ -108,7 +115,7 @@ const RoutePopupWindow = memo(({
     }
   }, [windowOpen, manualOpen, onShow, onHide]);
 
-  const shouldShowBackButton = previousNavigation;
+  const shouldShowBackButton = previousNavigation || isNestedTranscribe;
 
   if (windowOpen || manualOpen) {
     return (

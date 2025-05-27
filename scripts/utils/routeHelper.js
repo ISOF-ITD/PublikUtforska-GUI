@@ -81,6 +81,12 @@ export function createSearchRoute(params) {
 export function removeViewParamsFromRoute(path) {
   let newPath = path.startsWith('/') ? path : `/${path}`;
   [newPath] = newPath.split('?');
+
+  /* If we’re inside the nested ASR editor “…/records/:id/audio/:source/transcribe”
+   * we have to cut that part away **before** the normal place / record / person logic starts.
+   */
+  newPath = newPath.replace(/\/audio\/[^/]+\/transcribe\/?$/, '');
+
   // Handle placeview
   const placesRouter = new RouteParser(placeRoute);
   let newParams = placesRouter.match(newPath.replace(/\/$/, ''));
