@@ -159,7 +159,7 @@ function AudioItemRow({
               to={`/records/${recordId}/audio/${encodeURIComponent(item.source)}/transcribe`}
               className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
             >
-              <span className="px-1 underline underline-offset-2">Skriv av</span>
+              <span className="px-1 underline underline-offset-2">Avskrift</span>
             </Link>
           )}
         </td>
