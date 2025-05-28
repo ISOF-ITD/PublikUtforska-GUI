@@ -16,6 +16,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@react-input/mask": "^2.0.4",
     "@react-spring/web": "^9.7.4",
     "classnames": "^2.5.1",
     "d3-array": "^3.2.4",
