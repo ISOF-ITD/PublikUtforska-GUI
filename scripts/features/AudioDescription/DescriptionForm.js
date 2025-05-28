@@ -149,7 +149,7 @@ function DescriptionForm({
   // Form validation state
   const isValid = Boolean(
     hasSession &&
-      dataForSource.start?.trim() &&
+      !dataForSource.startError &&
       dataForSource.descriptionText?.trim() &&
       dataForSource.selectedTags?.length
   );
@@ -358,7 +358,17 @@ const UserInfoSection = ({ data, onChange }) => (
           Varför frågar vi efter namn/e-post?
         </summary>
         <p className="pt-4 pl-6">
-          Vill du att vi anger att det är du som har skrivit av uppteckningen? Ange i så fall ditt namn och din e-postadress nedan. E-postadressen publiceras inte. Vi hanterar personuppgifter enligt dataskyddsförordningen. <a href="https://www.isof.se/om-oss/om-webbplatsen/hantering-av-personuppgifter" target="_blank" className="text-isof underline hover:cursor-pointer" >Läs mer.</a>
+          Vill du att vi anger att det är du som har skrivit av uppteckningen?
+          Ange i så fall ditt namn och din e-postadress nedan. E-postadressen
+          publiceras inte. Vi hanterar personuppgifter enligt
+          dataskyddsförordningen.{" "}
+          <a
+            href="https://www.isof.se/om-oss/om-webbplatsen/hantering-av-personuppgifter"
+            target="_blank"
+            className="text-isof underline hover:cursor-pointer"
+          >
+            Läs mer.
+          </a>
         </p>
       </details>
     </div>

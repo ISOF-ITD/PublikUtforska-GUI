@@ -1,33 +1,70 @@
-import React, { useCallback, useContext, useState } from "react";
-import InputMask from "react-input-mask";
+import PropTypes from "prop-types";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { InputMask } from "@react-input/mask";
 import { AudioContext } from "../../contexts/AudioContext";
 
-function StartTimeInput({ value, onChange }) {
+/* ----------  helpers  ---------- */
+const mmssToSeconds = (str) => {
+  const [m, s] = str.split(":").map(Number);
+  return m * 60 + s;
+};
+const secondsToMMSS = (sec) =>
+  `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(
+    2,
+    "0"
+  )}`;
+
+/* ----------  component  ---------- */
+function StartTimeInput({ value, onChange, maxSeconds }) {
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const inputValue = e.target.value;
-    const isValid = /^\d{2}:\d{2}$/.test(inputValue);
-
-    if (isValid || inputValue === "") {
+  const validate = (raw) => {
+    if (raw === "") {
       setError("");
-    } else {
-      setError("Ogiltigt format. Ange MM:SS.");
+      return true;
     }
 
-    onChange(inputValue);
+    if (!/^\d{2}:\d{2}$/.test(raw)) {
+      setError("Ogiltigt format. Ange MM:SS.");
+      return false;
+    }
+
+    // seconds must be 00-59
+    const seconds = Number(raw.slice(-2));
+    if (seconds > 59) {
+      setError("Sekunder måste vara 00-59.");
+      return false;
+    }
+
+    if (maxSeconds !== undefined && mmssToSeconds(raw) > maxSeconds) {
+      setError(
+        `Tiden får inte överstiga inspelningens längd (${secondsToMMSS(
+          maxSeconds
+        )}).`
+      );
+      return false;
+    }
+
+    setError("");
+    return true;
+  };
+
+  /* run the validator when the parent changes `value` or `maxSeconds` */
+  useEffect(() => {
+    validate(value);
+  }, [value, maxSeconds]);
+
+  const handleChange = (e) => {
+    const v = e.target.value;
+    onChange(v); // always let the parent keep what the user sees
+    validate(v);
   };
 
   const handlePaste = (e) => {
-    const pastedText = e.clipboardData.getData("text");
-    const isValid = /^\d{2}:\d{2}$/.test(pastedText);
-
-    if (isValid) {
+    const text = e.clipboardData.getData("text");
+    if (validate(text)) {
       e.preventDefault();
-      onChange(pastedText);
-      setError("");
-    } else {
-      setError("Ogiltigt format. Ange MM:SS.");
+      onChange(text);
     }
   };
 
@@ -35,8 +72,8 @@ function StartTimeInput({ value, onChange }) {
     <div>
       <InputMask
         mask="99:99"
-        maskChar={null}
         value={value}
+        replacement={{ 9: /\d/ }} // only digits in the slots
         onChange={handleChange}
         onPaste={handlePaste}
         placeholder="MM:SS"
@@ -49,34 +86,37 @@ function StartTimeInput({ value, onChange }) {
   );
 }
 
-export default function StartTimeInputWithPlayer({ value, onChange }) {
-  const { currentTime, visible } = useContext(AudioContext);
+StartTimeInput.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  /** Recording length (in seconds).  If omitted, no upper-limit check is applied. */
+  maxSeconds: PropTypes.number,
+};
 
-  // Memoize the onChange handler to prevent unnecessary re-renders
-  const handleChange = useCallback(
-    (newValue) => {
-      onChange(newValue);
-    },
-    [onChange]
-  );
+export default function StartTimeInputWithPlayer({ value, onChange }) {
+  const { currentTime, visible, durationTime } = useContext(AudioContext);
+
+  /* handler memoisation */
+  const handleChange = useCallback((v) => onChange(v), [onChange]);
 
   const handleInsertCurrentTime = useCallback(() => {
     if (!visible) return;
-
-    const seconds = Math.floor((currentTime || 0) / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainder = seconds % 60;
-
-    const formatted = `${String(minutes).padStart(2, "0")}:${String(
-      remainder
-    ).padStart(2, "0")}`;
-    onChange(formatted);
+    const secs = Math.floor((currentTime || 0) / 1000);
+    const mm = String(Math.floor(secs / 60)).padStart(2, "0");
+    const ss = String(secs % 60).padStart(2, "0");
+    onChange(`${mm}:${ss}`);
   }, [currentTime, visible, onChange]);
 
   return (
     <div className="flex items-center gap-2 mt-2">
-      {/* Masked MM:SS input */}
-      <StartTimeInput value={value} onChange={handleChange} />
+      <StartTimeInput
+        value={value}
+        onChange={handleChange}
+        /* enforce upper limit once metadata has loaded */
+        maxSeconds={
+          durationTime > 0 ? Math.floor(durationTime / 1000) : undefined
+        }
+      />
 
       <a
         className={`px-4 py-2 rounded text-white ${
