@@ -55,8 +55,14 @@ export default function useUtterances(audioItem, activeId) {
         )
       : filteredUtterances;
 
-    const active = utterances.find((u) => u.id === activeId);
-    return active && !list.includes(active) ? [...list, active] : list;
+    // Ensure active utterance is always in the list
+    if (activeId) {
+      const activeUtterance = utterances.find((u) => u.id === activeId);
+      if (activeUtterance && !list.some((u) => u.id === activeId)) {
+        return [...list, activeUtterance];
+      }
+    }
+    return list;
   }, [filteredUtterances, query, utterances, activeId]);
 
   /* ---- counters ---- */

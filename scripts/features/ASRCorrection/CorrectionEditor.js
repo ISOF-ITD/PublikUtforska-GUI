@@ -3,6 +3,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useParams, useOutletContext } from "react-router-dom";
@@ -26,7 +27,13 @@ export default function CorrectionEditor({
   // prefer an explicit prop, otherwise fall back to the outlet context
   const outletCtx = useOutletContext() || {};
   const data = propData ?? outletCtx.data;
-  const { playAudio, isPlaying, currentTime } = useContext(AudioContext);
+  const {
+    playAudio,
+    playing: isPlaying,
+    activeSegmentId,
+    setActiveSegmentId,
+  } = useContext(AudioContext);
+  const scrollRef = useRef(null);
 
   /* -------- audio item & title -------- */
   const audioItem = useMemo(() => {
@@ -69,13 +76,12 @@ export default function CorrectionEditor({
     visibleUtterances,
     counts,
     progress,
-  } = useUtterances(audioItem);
+  } = useUtterances(audioItem, activeSegmentId);
 
   /* -------- editor state -------- */
   const [editingId, setEditingId] = useState(null);
   const [editedText, setEditedText] = useState("");
   const [followActive, setFollowActive] = useState(true);
-  const [activeId, setActiveId] = useState(null);
 
   /* -------- helpers -------- */
   const beginEdit = useCallback(
@@ -116,32 +122,30 @@ export default function CorrectionEditor({
   /* -------- play helper -------- */
   const handlePlay = useCallback(
     (startTime, id) => {
-      setActiveId(id); // highlight current row
+      setActiveSegmentId(id); // highlight current row
       playAudio({
         record: { id: data?.id, title: audioTitle },
-        audio: audioItem,
+        audio: { ...audioItem, utterances },
         time: startTime,
       });
     },
-    [playAudio, data?.id, audioTitle, audioItem]
+    [playAudio, data?.id, audioTitle, audioItem, setActiveSegmentId]
   );
 
   useEffect(() => {
-    if (!audioItem || currentTime == null) return;
+    if (!followActive || !activeSegmentId || !scrollRef.current) return;
 
-    // currentTime is stored in **ms**; utterance times are in **s**
-    const t = currentTime / 1000;
-
-    // utterances are already sorted, so a simple find is fine
-    const current = utterances.find(
-      (u) => t >= u.start && t < u.end // within this segment
+    const activeElement = document.querySelector(
+      `[data-utt="${activeSegmentId}"]`
     );
-
-    // only update when the id really changes
-    if (current?.id !== activeId) {
-      setActiveId(current?.id ?? null);
+    if (activeElement) {
+      activeElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
     }
-  }, [currentTime, utterances, audioItem, activeId]);
+  }, [activeSegmentId, followActive]);
 
   /* -------- listData passed to each row -------- */
   const listData = useMemo(
@@ -159,8 +163,9 @@ export default function CorrectionEditor({
       handlePlay,
       setEditedText,
       speakers: data?.speakers ?? [],
-      activeId,
+      activeId: activeSegmentId,
       query: searchState.query,
+      followActive,
     }),
     [
       visibleUtterances,
@@ -172,14 +177,14 @@ export default function CorrectionEditor({
       handlePlay,
       setEditedText,
       data?.speakers,
-      activeId,
+      activeSegmentId,
       searchState.query,
     ]
   );
 
   /* -------- render -------- */
   return (
-    <div className="max-w-6xl mx-auto lg:p-4">
+    <div className="max-w-6xl mx-auto lg:p-4" ref={scrollRef}>
       <EditorHeader
         audioTitle={audioTitle}
         progress={progress}
@@ -200,10 +205,11 @@ export default function CorrectionEditor({
           editedText={editedText}
           listData={listData}
           getActiveIndex={() =>
-            visibleUtterances.findIndex((u) => u.id === activeId)
+            visibleUtterances.findIndex((u) => u.id === activeSegmentId)
           }
           followActive={followActive}
           readOnly={readOnly}
+          activeId={activeSegmentId}
         />
       </div>
 

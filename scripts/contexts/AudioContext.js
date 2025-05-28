@@ -11,6 +11,7 @@ export function AudioProvider({ children }) {
   const [playerLabelText, setPlayerLabelText] = useState("");
   const [visible, setVisible] = useState(false);
   const [currentAudio, setCurrentAudio] = useState(null);
+  const [activeSegmentId, setActiveSegmentId] = useState(null);
   const audioRef = useRef(new Audio());
 
   const playAudio = ({ record, audio, time = 0 }) => {
@@ -79,8 +80,18 @@ export function AudioProvider({ children }) {
       setVisible,
       currentAudio,
       setCurrentAudio,
+      activeSegmentId,
+      setActiveSegmentId,
     }),
-    [playing, currentTime, durationTime, playerLabelText, visible, currentAudio]
+    [
+      playing,
+      currentTime,
+      durationTime,
+      playerLabelText,
+      visible,
+      currentAudio,
+      activeSegmentId,
+    ]
   );
 
   return (

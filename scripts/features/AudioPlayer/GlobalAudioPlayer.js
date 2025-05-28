@@ -26,6 +26,8 @@ export default function GlobalAudioPlayer() {
     visible,
     setVisible,
     setCurrentAudio,
+    currentAudio,
+    setActiveSegmentId,
   } = useContext(AudioContext);
 
   /* ——  viewport & marquee  —— */
@@ -42,10 +44,15 @@ export default function GlobalAudioPlayer() {
       setCurrentTime(audio.currentTime * 1000);
     };
     const onTime = () => {
-      setCurrentTime(audio.currentTime * 1000);
-      window.dispatchEvent(
-        new CustomEvent("audio.time", { detail: { pos: audio.currentTime } })
-      );
+      const pos = audio.currentTime;
+      setCurrentTime(pos * 1000);
+
+      // Find current utterance
+      const segs = currentAudio?.audio?.utterances ?? [];
+      if (segs.length) {
+        const activeUtt = segs.find((u) => pos >= u.start && pos < u.end);
+        setActiveSegmentId(activeUtt?.id || null);
+      }
     };
 
     audio.addEventListener("loadedmetadata", onLoaded);
@@ -54,7 +61,7 @@ export default function GlobalAudioPlayer() {
       audio.removeEventListener("loadedmetadata", onLoaded);
       audio.removeEventListener("timeupdate", onTime);
     };
-  }, [audioRef, setDurationTime, setCurrentTime]);
+  }, [audioRef, setDurationTime, setCurrentTime, currentAudio]);
 
   /* ——  swipe + keyboard shortcuts  —— */
   const swipeHandlers = useSwipeSeek(audioRef);

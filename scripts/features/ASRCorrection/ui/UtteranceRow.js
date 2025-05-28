@@ -55,6 +55,7 @@ export default React.memo(function UtteranceRow({
     <article
       role="button"
       tabIndex={0}
+      data-utt={utterance.id}
       onClick={() => handlePlay(utterance.start, utterance.id)}
       onKeyDown={(e) =>
         (e.key === " " || e.key === "Enter") &&
@@ -192,6 +193,7 @@ export default React.memo(function UtteranceRow({
       role="button"
       tabIndex={0}
       style={style}
+      data-utt={utterance.id}
       onClick={(e) => {
         if (
           e.target instanceof HTMLTextAreaElement ||

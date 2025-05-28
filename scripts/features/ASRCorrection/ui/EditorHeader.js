@@ -209,7 +209,7 @@ function TextActions({ visibleUtterances, audioTitle }) {
               const m = pad(Math.floor((s % 3600) / 60));
               const sc = pad(Math.floor(s % 60));
               const ms = pad(Math.round((s % 1) * 1000), 3);
-              return `${h}:${m}:${sc},${ms}`;
+              return `${h}:${m}:${sc}.${ms}`;
             };
             return [
               "WEBVTT",

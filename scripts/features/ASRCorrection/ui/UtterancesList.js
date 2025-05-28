@@ -37,10 +37,18 @@ export default function UtterancesList({
 
   /* --- auto-scroll when active row changes --- */
   useEffect(() => {
-    if (!followActive || !listRef.current) return;
-    const idx = getActiveIndex();
+    if (!followActive || !activeId || !listRef.current) return;
+    const idx = rows.findIndex((u) => u.id === activeId);
     if (idx >= 0) listRef.current.scrollToItem(idx, "center");
-  }, [activeId, followActive]);
+  }, [activeId, followActive, rows]);
+
+  useEffect(() => {
+    if (!isMobile || !followActive) return;
+    const el = document.querySelector(`[data-utt="${activeId}"]`);
+    if (el) {
+      el.scrollIntoView({ behaviour: "smooth", block: "center" });
+    }
+  }, [activeId, followActive, isMobile]);
 
   /* --- keep row heights in sync when rows change (search / filter) --- */
   useEffect(() => {
