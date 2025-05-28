@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import { VariableSizeList as List } from "react-window";
 import UtteranceRow from "./UtteranceRow";
 import useIsMobile from "../hooks/useIsMobile";
@@ -6,6 +6,11 @@ import useIsMobile from "../hooks/useIsMobile";
 const BASE_ROW = 76;
 const EXTRA_LINE = 22;
 const AVG_CHARS_PER_LINE = 95;
+
+/* --- custom outer element that adds mobile spacing --- */
+const MobileOuter = forwardRef(function MobileOuter(props, ref) {
+  return <div ref={ref} className="space-y-3 px-2" {...props} />;
+});
 
 export default function UtterancesList({
   rows,
@@ -58,26 +63,17 @@ export default function UtterancesList({
     listRef.current.resetAfterIndex(0, /* shouldForceUpdate */ false);
   }, [rows.length, editingId, editedText]);
 
-  /* --- list variants --- */
-  return isMobile ? (
-    <div className="space-y-3 px-2">
-      {rows.map((row, idx) => (
-        <UtteranceRow
-          key={`${row.id}-${row.text?.length}`}
-          index={idx}
-          data={listData}
-        />
-      ))}
-    </div>
-  ) : (
+  /* --- always virtualised --- */
+  return (
     <List
       ref={listRef}
-      height={600}
+      height={isMobile ? window.innerHeight * 0.75 : 600}
       itemCount={rows.length}
       itemSize={getItemSize}
       itemKey={(index) => rows[index].id}
       itemData={listData}
       width="100%"
+      outerElementType={isMobile ? MobileOuter : undefined}
     >
       {UtteranceRow}
     </List>

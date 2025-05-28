@@ -17,7 +17,7 @@ export default function Timeline({
 
   /* ─── semantic tick-marks for utterances ─── */
   const ticks = useMemo(() => {
-    if (!duration || !markers.length) return null;
+    if (!duration || !markers?.length) return null;
     return markers.map((m) => (
       <span
         key={m.id}

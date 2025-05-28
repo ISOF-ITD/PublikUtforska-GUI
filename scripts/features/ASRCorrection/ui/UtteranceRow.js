@@ -87,7 +87,7 @@ export default React.memo(function UtteranceRow({
             }}
           >
             <FontAwesomeIcon
-              icon={isPlaying && isActive ? faPause : faPlay}
+              icon={isPlaying ? faPause : faPlay}
               className="w-5 h-5"
             />
           </a>
