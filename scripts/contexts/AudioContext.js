@@ -1,4 +1,4 @@
-import { createContext, useState, useRef, useMemo } from "react";
+import { createContext, useState, useRef, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import config from "../config";
 
@@ -40,7 +40,7 @@ export function AudioProvider({ children }) {
     player.load();
     player.currentTime = time;
 
-    setCurrentTime(time);
+    setCurrentTime(time * 1000);
     setPlaying(true);
     setVisible(true);
     setCurrentAudio({ record, audio, time });
@@ -59,6 +59,36 @@ export function AudioProvider({ children }) {
     }
     setPlaying(!playing);
   };
+
+  /* ─────────────────  <audio> ⇒ Context Sync  ───────────────── */
+  useEffect(() => {
+    const player = audioRef.current;
+    if (!player) return;
+
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+    const onLoaded = () => setDurationTime(player.duration * 1000);
+    const onTime = () => {
+      const pos = player.currentTime;
+      setCurrentTime(pos * 1000);
+
+      // Update active segment
+      const segs = currentAudio?.audio?.utterances ?? [];
+      const active = segs.find((u) => pos >= u.start && pos < u.end);
+      setActiveSegmentId(active?.id ?? null);
+    };
+
+    player.addEventListener("play", onPlay);
+    player.addEventListener("pause", onPause);
+    player.addEventListener("loadedmetadata", onLoaded);
+    player.addEventListener("timeupdate", onTime);
+    return () => {
+      player.removeEventListener("play", onPlay);
+      player.removeEventListener("pause", onPause);
+      player.removeEventListener("loadedmetadata", onLoaded);
+      player.removeEventListener("timeupdate", onTime);
+    };
+  }, [audioRef, currentAudio]);
 
   // Vi använder useMemo för att skapa context-värdet endast när någon av dess beroenden ändras.
   // Detta förhindrar att ett nytt objekt skapas vid varje render, vilket minskar onödiga

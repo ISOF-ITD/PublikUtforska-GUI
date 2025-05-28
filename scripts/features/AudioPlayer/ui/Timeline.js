@@ -1,12 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import msToTime from "../msToTime";
+import classNames from "classnames";
 
-export default function Timeline({ current, duration, onSeek }) {
+export default function Timeline({
+  current,
+  duration,
+  onSeek,
+  markers = [],
+  activeId = null,
+}) {
   /* % complete */
   const pct = useMemo(
     () => (duration ? Math.min(100, (current / duration) * 100) : 0),
     [current, duration]
   );
+
+  /* ─── semantic tick-marks for utterances ─── */
+  const ticks = useMemo(() => {
+    if (!duration || !markers.length) return null;
+    return markers.map((m) => (
+      <span
+        key={m.id}
+        className={classNames(
+          "absolute bottom-0 w-px h-1 sm:h-1.5",
+          m.id === activeId ? "bg-isof" : "bg-gray-400/60"
+        )}
+        style={{ left: `${(m.start / duration) * 100}%` }}
+      />
+    ));
+  }, [markers, duration, activeId]);
 
   /* when user grabs the thumb */
   const [isSeeking, setIsSeeking] = useState(false);
@@ -53,6 +75,9 @@ export default function Timeline({ current, duration, onSeek }) {
           }}
           className="absolute inset-y-0 bg-lighter-isof rounded-full transition-all"
         />
+
+        {/* segment boundaries */}
+        {ticks}
 
         {/* bubble */}
         {hoverMs != null && (

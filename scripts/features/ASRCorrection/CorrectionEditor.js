@@ -183,6 +183,15 @@ export default function CorrectionEditor({
   );
 
   /* -------- render -------- */
+
+  if (!visibleUtterances?.length) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 text-center text-gray-600">
+        <p>Det finns ingen transkription för den här inspelningen ännu.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto lg:p-4" ref={scrollRef}>
       <EditorHeader

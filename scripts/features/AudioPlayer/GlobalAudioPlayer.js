@@ -21,47 +21,17 @@ export default function GlobalAudioPlayer() {
     currentTime,
     setCurrentTime,
     durationTime,
-    setDurationTime,
-    playerLabelText,
-    visible,
     setVisible,
     setCurrentAudio,
     currentAudio,
-    setActiveSegmentId,
+    activeSegmentId,
+    playerLabelText,
+    visible,
   } = useContext(AudioContext);
 
   /* ——  viewport & marquee  —— */
   const vw = useViewportWidth(); //Triggers marquee recalculation
   const [labelRef, textRef] = useMarquee([playerLabelText, vw]);
-
-  /* ——  audio <loaded|timeupdate>  —— */
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const onLoaded = () => {
-      setDurationTime(audio.duration * 1000);
-      setCurrentTime(audio.currentTime * 1000);
-    };
-    const onTime = () => {
-      const pos = audio.currentTime;
-      setCurrentTime(pos * 1000);
-
-      // Find current utterance
-      const segs = currentAudio?.audio?.utterances ?? [];
-      if (segs.length) {
-        const activeUtt = segs.find((u) => pos >= u.start && pos < u.end);
-        setActiveSegmentId(activeUtt?.id || null);
-      }
-    };
-
-    audio.addEventListener("loadedmetadata", onLoaded);
-    audio.addEventListener("timeupdate", onTime);
-    return () => {
-      audio.removeEventListener("loadedmetadata", onLoaded);
-      audio.removeEventListener("timeupdate", onTime);
-    };
-  }, [audioRef, setDurationTime, setCurrentTime, currentAudio]);
 
   /* ——  swipe + keyboard shortcuts  —— */
   const swipeHandlers = useSwipeSeek(audioRef);
@@ -145,8 +115,8 @@ export default function GlobalAudioPlayer() {
               setCurrentTime(ms);
               audioRef.current.currentTime = ms / 1000;
             }}
-            audioRef={audioRef}
-            playing={playing}
+            markers={currentAudio?.audio?.utterances}
+            activeId={activeSegmentId}
           />
         </div>
 
