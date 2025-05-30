@@ -393,13 +393,21 @@ function Timeline({
   }, [data, containerWidth]);
 
   useEffect(() => {
-  if (!containerRef.current) return;
-  const ro = new ResizeObserver(({[0]: e}) =>
-    setContainerWidth(e.contentRect.width)
-  );
-  ro.observe(containerRef.current);
-  return () => ro.unobserve(containerRef.current);
-}, [containerRef]);
+    const el = containerRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
+    });
+
+    ro.observe(el);
+
+    return () => {
+      /* only unobserve if the element still exists */
+      if (el) ro.unobserve(el);
+      ro.disconnect();
+    };
+  }, [containerRef]);
 
   return (
     <>
