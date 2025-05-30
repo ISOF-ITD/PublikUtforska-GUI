@@ -192,7 +192,6 @@ export default React.memo(function UtteranceRow({
     <article
       role="button"
       tabIndex={0}
-      style={style}
       data-utt={utterance.id}
       onClick={(e) => {
         if (
@@ -332,10 +331,13 @@ export default React.memo(function UtteranceRow({
 
   /* ---------- choose version ---------- */
   return (
-    <>
-      {/* `sm:hidden` = only on small, `sm:block` = only on ≥ sm */}
+    /* <List> needs this element – it’s what gets positioned */
+    <div style={{ ...style, width: "100%" }}>
+      {/* mobile (< sm) */}
       <div className="sm:hidden">{mobileCard}</div>
+
+      {/* desktop (≥ sm) */}
       <div className="hidden sm:block">{desktopRow}</div>
-    </>
+    </div>
   );
 });
