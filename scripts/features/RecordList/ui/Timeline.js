@@ -12,19 +12,12 @@ import { drag } from 'd3-drag';
 function Timeline({
   containerRef, params, filter, mode, onYearFilter, resetOnYearFilter,
 }) {
-  Timeline.propTypes = {
-    containerRef: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    filter: PropTypes.string.isRequired,
-    mode: PropTypes.string.isRequired,
-    onYearFilter: PropTypes.func.isRequired,
-    resetOnYearFilter: PropTypes.func.isRequired,
-  };
 
   const [containerWidth, setContainerWidth] = useState(800); // default value
 
   // fetch data med params när params ändras
   const [data, setData] = useState([]);
+  const abortRef = useRef(null);
 
   const svgHeight = 60;
 
@@ -101,24 +94,35 @@ function Timeline({
     // Skapa fetchUrl. Om värde är undefined så ignoreras det
     const fetchUrl = `${config.apiUrl}collection_years/?${paramString}`;
 
-    fetch(fetchUrl, {
-      method: 'GET',
-    })
+    /* kill the previous request if params change quickly */
+  abortRef.current?.abort();
+  const ctrl = new AbortController();
+  abortRef.current = ctrl;
+
+  const handler = setTimeout(() => {
+    fetch(fetchUrl, { signal: ctrl.signal })
       .then((response) => response.json())
       .then((data) => {
         setData(data.data);
       })
-      .catch((err) => console.error('Något gick fel:', err));
-  // När params, filter eller mode ändras, hämta data
+      .catch((err) => console.error("Något gick fel:", err));
+  }, 250);
+
+  return () => {
+    clearTimeout(handler);
+    ctrl.abort();
+  };
+
   }, [params, filter, mode]);
 
   const svgRef = useRef();
 
   useEffect(() => {
-    const newWidth = containerRef.current ? containerRef.current.offsetWidth : 800;
-    setContainerWidth(newWidth);
-    // bandWidth is the width of each band
-    const bandWidth = containerWidth / (data.length || 1);
+    const width = containerRef.current ? containerRef.current.offsetWidth : 800;
+    setContainerWidth(width);
+    const bandWidth = width / (data.length || 1);
+    const minYear = data[0]?.year;
+    const maxYear = data[data.length - 1]?.year;
 
     const svg = select(svgRef.current);
     svg.selectAll('*').remove();
@@ -126,7 +130,7 @@ function Timeline({
     const xScale = scaleBand()
       // följande gör att banden börjar vid 40px offset
       .domain(data.map((d) => d.year))
-      .range([0, containerWidth])
+      .range([0, width])
       .padding(0.2);
 
     // Lägg till en x-axel
@@ -144,13 +148,23 @@ function Timeline({
       .domain([0, max(data, (d) => d.doc_count)])
       .range([svgHeight, 0]);
 
+    svg
+      .attr("role", "slider")
+      .attr("aria-valuemin", minYear)
+      .attr("aria-valuemax", maxYear)
+      .attr("aria-valuenow", filter?.from ?? minYear)
+      .attr(
+        "aria-valuetext",
+        filter ? `${filter.from}–${filter.to}` : `${minYear}`
+      );
+
     // Lägg till horisontella linjer
     svg.selectAll('line.horizontal')
       .data(yScale.ticks(5))
       .enter()
       .append('line')
       .attr('class', 'horizontal')
-      .attr('x2', containerWidth)
+      .attr('x2', width)
       .attr('y1', (d) => yScale(d))
       .attr('y2', (d) => yScale(d))
       .attr('stroke', 'lightgray')
@@ -166,11 +180,28 @@ function Timeline({
       .data(data)
       .enter()
       .append('rect')
+      .style('cursor', 'pointer')          // mouse pointer
+      .on('focus', function () {           // keyboard focus colour
+        select(this).attr('fill', '#026e7b');
+      })
+      .on('blur', function () {
+        select(this).attr('fill', '#01535d');
+      })
+      .attr('tabindex', 0) // focusable
+      .attr('role', 'button') // semantic
+      .attr('aria-label', (d) =>
+    `${d.year}: ${d.doc_count} sökträffar`)
       .attr('x', (d) => xScale(d.year))
       .attr('y', (d) => (d.doc_count > 0 ? Math.min(yScale(d.doc_count), svgHeight - minBarHeight) : yScale(d.doc_count)))
       .attr('height', (d) => (d.doc_count > 0 ? Math.max(svgHeight - yScale(d.doc_count), minBarHeight) : svgHeight - yScale(d.doc_count)))
       .attr('width', xScale.bandwidth())
-      .attr('fill', '#01535d');
+      .attr('fill', '#01535d')
+      .on('keydown', (event, d) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onYearFilter(d.year, d.year); // single-year filter
+        }
+      });
 
     const verticalLine = svg.append('line')
       .style('display', 'none')
@@ -194,11 +225,16 @@ function Timeline({
     const svgLeftOffset = svg.node().getBoundingClientRect().left;
 
     const d3Drag = drag()
-      .touchable(false) // disable touch events
       .on('start', (event) => {
         dragEnd = null;
-        const [x] = pointer(event);
-        const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
+        const [x] = pointer(event, svg.node());
+        const clampedX = Math.min(
+          Math.max(x, xScale.range()[0]),
+          xScale.range()[1] - 1
+        );
+        const hoveredBand = Math.floor(
+          (clampedX - xScale.range()[0]) / bandWidth
+        );
         const year = xScale.domain()[hoveredBand];
         dragStartYear = year;
         dragStart = xScale(year);
@@ -220,7 +256,7 @@ function Timeline({
           .text(dragStartYear)
           .style('font-size', '12px');
 
-        const x = pointer(event)[0] - svgLeftOffset;
+        const x = pointer(event, svg.node())[0];
         const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
         const year = xScale.domain()[hoveredBand]
           || xScale.domain()[
@@ -301,8 +337,12 @@ function Timeline({
       .attr('x', 10)
       .attr('y', 15); // justera så att texten hamnar mitt i rektangeln
 
+    let rafId;
     svg.on('mousemove', (event) => {
-      const [x, y] = pointer(event);
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const [x, y] = pointer(event, svg.node());
 
       const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
       const year = xScale.domain()[hoveredBand];
@@ -336,33 +376,51 @@ function Timeline({
           .style('display', null)
           .attr('transform', `translate(${x + xOffset}, ${y + yOffset})`);
       }
+      });
     });
 
     svg.on('mouseleave', () => {
+      cancelAnimationFrame(rafId);
+      rafId = null;
       verticalLine.style('display', 'none');
+      tooltip.style('display', 'none');
     });
-  }, [data, containerRef.current, containerWidth]);
+
+    return () => {
+      svg.on('.drag', null).on('mousemove', null).on('mouseleave', null);
+    }; 
+
+  }, [data, containerWidth]);
 
   useEffect(() => {
-    const updateWidth = () => {
-      // set container width to containerRefs offsetWidth
-      const newWidth = containerRef.current ? containerRef.current.offsetWidth : 800;
-      setContainerWidth(newWidth);
-    };
+  if (!containerRef.current) return;
+  const ro = new ResizeObserver(({[0]: e}) =>
+    setContainerWidth(e.contentRect.width)
+  );
+  ro.observe(containerRef.current);
+  return () => ro.unobserve(containerRef.current);
+}, [containerRef]);
 
-    // Uppdatera bredden när komponenten monteras
-    updateWidth();
-
-    // Lyssna på resize-händelsen
-    window.addEventListener('resize', updateWidth);
-
-    // Rensa upp efter sig när komponenten avmonteras
-    return () => {
-      window.removeEventListener('resize', updateWidth);
-    };
-  }, []);
-
-  return <svg ref={svgRef} width={containerWidth} height={svgHeight + 30} />;
+  return (
+    <>
+      {!data.length && (
+        <p className="text-center text-gray-500">Laddar tidslinje…</p>
+      )}
+      <svg ref={svgRef} width={containerWidth} height={svgHeight + 30} />
+      <span role="status" aria-live="polite" className="sr-only">
+        {filter?.from && `Visar ${filter.from}–${filter.to}`}
+      </span>
+    </>
+  );
 }
+
+Timeline.propTypes = {
+  containerRef: PropTypes.object.isRequired,
+  params: PropTypes.object.isRequired,
+  filter: PropTypes.string.isRequired,
+  mode: PropTypes.string.isRequired,
+  onYearFilter: PropTypes.func.isRequired,
+  resetOnYearFilter: PropTypes.func.isRequired,
+};
 
 export default Timeline;
