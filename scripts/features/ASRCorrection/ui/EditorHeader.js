@@ -3,9 +3,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCopy,
   faDownload,
+  faInfoCircle,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import FilterButton from "./FilterButton";
+import { toastError, toastOk } from "../../../utils/toast";
 
 /* ─────────────────  HEADER CARD  ───────────────── */
 export default function EditorHeader({
@@ -29,13 +31,14 @@ export default function EditorHeader({
                  flex flex-col gap-6 divide-y divide-gray-200"
     >
       {/* ─── Title ─────────────────────────────────── */}
-      <section className="first:pt-0">
+      <section className="first:pt-0 space-y-1">
         <h1 className="text-2xl sm:text-3xl font-semibold break-words">
           {audioTitle || "Transkribering"}
         </h1>
-        <p className="mt-1 text-gray-600">
-          <strong className="text-red-600">OBS!</strong> Automatisk
-          transkription – kan innehålla fel
+
+        <p className="flex items-center gap-2 text-orange-600">
+          <FontAwesomeIcon icon={faInfoCircle} />
+          OBS! Automat­genererad text – kan innehålla fel
         </p>
       </section>
 
@@ -160,8 +163,10 @@ function TextActions({ visibleUtterances, audioTitle }) {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+    toastOk(`Laddade ned .${ext}-filen`);
   };
 
+  /* — render — */
   return (
     <div className="flex gap-3 flex-wrap">
       {/* copy */}
@@ -171,9 +176,9 @@ function TextActions({ visibleUtterances, audioTitle }) {
             await navigator.clipboard.writeText(
               visibleUtterances.map((u) => u.text).join("\n\n")
             );
-            alert("Texten är kopierad till urklipp");
+            toastOk("Texten ligger på urklipp!");
           } catch {
-            alert("Kunde inte kopiera – prova 'Ladda ned fil'-knappen.");
+            toastError("Kunde inte kopiera – prova 'Ladda ned fil'-knappen.");
           }
         }}
         className="flex items-center gap-1 hover:text-isof focus-visible:ring-2 focus-visible:ring-isof"
@@ -199,22 +204,17 @@ function TextActions({ visibleUtterances, audioTitle }) {
       <button
         onClick={() =>
           download("vtt", "text/vtt;charset=utf-8", () => {
-            const pad = (n, size = 2) => String(n).padStart(size, "0");
-            const ts = (s) => {
-              const h = pad(Math.floor(s / 3600));
-              const m = pad(Math.floor((s % 3600) / 60));
-              const sc = pad(Math.floor(s % 60));
-              const ms = pad(Math.round((s % 1) * 1000), 3);
-              return `${h}:${m}:${sc}.${ms}`;
-            };
+            const pad = (n, s = 2) => String(n).padStart(s, "0");
+            const ts = (sec) =>
+              `${pad(sec / 3600)}:${pad((sec % 3600) / 60)}:${pad(
+                sec % 60
+              )}.${pad(Math.round((sec % 1) * 1000), 3)}`;
+
             return [
-              "WEBVTT",
-              "",
+              "WEBVTT\n",
               ...visibleUtterances.map(
-                (u, i) => `${i + 1}
-${ts(u.start)} --> ${ts(u.end)}
-${u.text}
-`
+                (u, i) =>
+                  `${i + 1}\n${ts(u.start)} --> ${ts(u.end)}\n${u.text}\n`
               ),
             ].join("\n");
           })

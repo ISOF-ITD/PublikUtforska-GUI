@@ -9,6 +9,7 @@ import PlaceView from './components/views/PlaceView';
 import CorrectionEditor from './features/ASRCorrection/CorrectionEditor';
 import CorrectionView from './features/ASRCorrection/CorrectionView';
 import "../tw.css";
+import { Toaster } from "react-hot-toast";
 
 import {
   getMapFetchLocation,
@@ -184,5 +185,6 @@ root.render(
   // vi vill hålla koll på Navigationen i hela appen
   <NavigationContextProvider>
     <RouterProvider router={router} />
+    <Toaster position="bottom-center" toastOptions={{ duration: 3500 }} />
   </NavigationContextProvider>,
 );
