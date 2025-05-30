@@ -56,6 +56,7 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
 
       <a
         aria-label={playing ? "Pausa" : "Spela"}
+        aria-pressed={playing}
         onClick={togglePlay}
         role="button"
         className={`${BTN} !bg-isof bg-opacity-90 hover:bg-darker-isof 

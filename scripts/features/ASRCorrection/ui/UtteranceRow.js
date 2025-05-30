@@ -48,6 +48,7 @@ export default React.memo(function UtteranceRow({
   const utterance = rows[index];
   const isEditing = !readOnly && editingId === utterance.id;
   const isActive = activeId === utterance.id;
+  const isCurrentPlaying = isPlaying && isActive;
   const disabledSave = editedText.trim() === (utterance.text ?? "").trim();
 
   /* ---------- MOBILE (“< sm”) – card ---------- */
@@ -78,16 +79,15 @@ export default React.memo(function UtteranceRow({
             className="w-11 h-11 flex items-center justify-center rounded-full
                        bg-isof/10 text-isof focus:outline-none focus:ring-2
                        focus:ring-isof/70"
-            aria-label={
-              isPlaying && isActive ? "Pausa uppspelning" : "Spela upp"
-            }
+            aria-label={isCurrentPlaying ? "Pausa uppspelning" : "Spela upp"}
+            aria-pressed={isCurrentPlaying}
             onClick={(e) => {
               e.stopPropagation();
               handlePlay(utterance.start, utterance.id);
             }}
           >
             <FontAwesomeIcon
-              icon={isPlaying ? faPause : faPlay}
+              icon={isCurrentPlaying ? faPause : faPlay}
               className="w-5 h-5"
             />
           </a>
@@ -233,10 +233,11 @@ export default React.memo(function UtteranceRow({
           className="inline-flex items-center justify-center w-9 h-9 rounded-full
                      shrink-0 text-isof hover:bg-isof/10
                      focus-visible:ring-2 focus-visible:ring-isof focus:outline-none"
-          aria-label={isPlaying && isActive ? "Pausa uppspelning" : "Spela upp"}
+          aria-label={isCurrentPlaying ? "Pausa uppspelning" : "Spela upp"}
+          aria-pressed={isCurrentPlaying}
         >
           <FontAwesomeIcon
-            icon={isPlaying && isActive ? faPause : faPlay}
+            icon={isCurrentPlaying ? faPause : faPlay}
             className="w-4 h-4"
           />
         </a>

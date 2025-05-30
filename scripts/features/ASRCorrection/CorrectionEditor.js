@@ -30,6 +30,7 @@ export default function CorrectionEditor({
   const {
     playAudio,
     playing: isPlaying,
+    audioRef,
     activeSegmentId,
     setActiveSegmentId,
   } = useContext(AudioContext);
@@ -119,17 +120,41 @@ export default function CorrectionEditor({
     },
   });
 
-  /* -------- play helper -------- */
+  /**
+   * Play-/pause-toggle, same everywhere:
+   * – clicking the active segment toggles play/pause
+   * – clicking a different segment jumps there and starts playing
+   */
   const handlePlay = useCallback(
     (startTime, id) => {
-      setActiveSegmentId(id); // highlight current row
+      // Same segment → toggle
+      if (id === activeSegmentId) {
+        if (audioRef.current?.paused) {
+          audioRef.current.play();
+        } else {
+          audioRef.current.pause();
+        }
+        return;
+      }
+
+      // New segment → jump + play
+      setActiveSegmentId(id);
       playAudio({
         record: { id: data?.id, title: audioTitle },
         audio: { ...audioItem, utterances },
         time: startTime,
       });
     },
-    [playAudio, data?.id, audioTitle, audioItem, setActiveSegmentId]
+    [
+      activeSegmentId,
+      audioRef,
+      playAudio,
+      data?.id,
+      audioTitle,
+      audioItem,
+      utterances,
+      setActiveSegmentId,
+    ]
   );
 
   useEffect(() => {
