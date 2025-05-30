@@ -88,6 +88,7 @@ export default function CorrectionEditor({
   const beginEdit = useCallback(
     (utt) => {
       if (readOnly || utt.status === "complete") return;
+      audioRef.current?.pause();
       setEditingId(utt.id);
       setEditedText(utt.text);
     },

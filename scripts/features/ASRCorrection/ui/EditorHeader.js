@@ -48,19 +48,15 @@ export default function EditorHeader({
           Färdigt&nbsp;{progress.complete}/{progress.total}
           <span className="sr-only"> rader</span> ({progress.percent}%)
         </span>
+        <progress
+          className="block w-full h-2 rounded-full overflow-hidden !bg-gray-200"
+          value={progress.percent}
+          max={100}
+        />
         <div
-          role="progressbar"
-          aria-valuenow={progress.percent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuetext={`${progress.percent}% klart`}
-          className="h-2 w-full rounded-full bg-gray-200 overflow-hidden"
-        >
-          <div
-            className="h-full bg-gradient-to-r from-isof to-isof/60 transition-[width] duration-300"
-            style={{ width: `${progress.percent}%` }}
-          />
-        </div>
+          className="h-full bg-gradient-to-r from-isof to-isof/60 transition-[width] duration-300"
+          style={{ width: `${progress.percent}%` }}
+        />
       </section>
 
       {/* ─── Filter & Search ───────────────────────── */}

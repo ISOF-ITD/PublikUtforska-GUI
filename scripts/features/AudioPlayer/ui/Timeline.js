@@ -20,6 +20,12 @@ export default function Timeline({
     if (!duration || !markers?.length) return null;
     return markers.map((m) => (
       <span
+        role="button"
+        tabIndex={0}
+        onClick={() => onSeek(m.start * 1000)} // jump to marker
+        onKeyDown={(e) =>
+          (e.key === " " || e.key === "Enter") && onSeek(m.start * 1000)
+        }
         key={m.id}
         className={classNames(
           "absolute bottom-0 w-px h-1 sm:h-1.5",

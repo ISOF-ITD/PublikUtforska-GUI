@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useRef } from "react";
 import { VariableSizeList as List } from "react-window";
 import UtteranceRow from "./UtteranceRow";
 import useIsMobile from "../hooks/useIsMobile";
@@ -24,21 +24,25 @@ export default function UtterancesList({
 }) {
   const listRef = useRef(null);
   const isMobile = useIsMobile();
+  const scrollingByUser = useRef(false);
 
   /* --- height calculator for react-window --- */
-  const getItemSize = (i) => {
-    const u = rows[i];
-    if (u.id === editingId) {
-      const lines = Math.max(2, editedText.split("\n").length);
-      return BASE_ROW + (lines - 2) * EXTRA_LINE;
-    }
-    /* -------- normal rows: estimate how many lines the text wraps into ---- */
-    const estLines = Math.max(
-      1,
-      Math.ceil(((u.text ?? "").length || 1) / AVG_CHARS_PER_LINE)
-    );
-    return BASE_ROW + (estLines - 1) * EXTRA_LINE;
-  };
+  const getItemSize = useCallback(
+    (i) => {
+      const u = rows[i];
+      if (u.id === editingId) {
+        const lines = Math.max(2, editedText.split("\n").length);
+        return BASE_ROW + (lines - 2) * EXTRA_LINE;
+      }
+      /* -------- normal rows: estimate how many lines the text wraps into ---- */
+      const estLines = Math.max(
+        1,
+        Math.ceil(((u.text ?? "").length || 1) / AVG_CHARS_PER_LINE)
+      );
+      return BASE_ROW + (estLines - 1) * EXTRA_LINE;
+    },
+    [rows, editingId, editedText]
+  );
 
   /* --- auto-scroll when active row changes --- */
   useEffect(() => {
@@ -62,6 +66,29 @@ export default function UtterancesList({
     // it doesn’t re-render invisible rows.
     listRef.current.resetAfterIndex(0, /* shouldForceUpdate */ false);
   }, [rows.length, editingId, editedText]);
+
+  /* — stop auto-follow when the user manually scrolls — */
+  useEffect(() => {
+    const el = listRef.current?._outerRef; // react-window outer div
+    if (!el) return;
+    const stop = () => {
+      scrollingByUser.current = true;
+      setTimeout(() => (scrollingByUser.current = false), 1500); // debounce
+    };
+    el.addEventListener("wheel", stop, { passive: true });
+    el.addEventListener("touchstart", stop, { passive: true });
+    return () => {
+      el.removeEventListener("wheel", stop);
+      el.removeEventListener("touchstart", stop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (scrollingByUser.current) return; // user overrules auto scroll
+    if (!followActive || !activeId || !listRef.current) return;
+    const idx = rows.findIndex((u) => u.id === activeId);
+    if (idx >= 0) listRef.current.scrollToItem(idx, "center");
+  }, [activeId]);
 
   /* --- always virtualised --- */
   return (
