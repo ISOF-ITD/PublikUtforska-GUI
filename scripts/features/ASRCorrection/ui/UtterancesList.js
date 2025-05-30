@@ -1,6 +1,6 @@
 import { forwardRef, useCallback, useEffect, useRef } from "react";
 import { VariableSizeList as List } from "react-window";
-import UtteranceRow from "./UtteranceRow";
+import { ReadOnlyUtteranceRow, default as UtteranceRow } from "./UtteranceRow";
 import useIsMobile from "../hooks/useIsMobile";
 
 const BASE_ROW = 76;
@@ -102,7 +102,7 @@ export default function UtterancesList({
       width="100%"
       outerElementType={isMobile ? MobileOuter : undefined}
     >
-      {UtteranceRow}
+      {readOnly ? ReadOnlyUtteranceRow : UtteranceRow}
     </List>
   );
 }

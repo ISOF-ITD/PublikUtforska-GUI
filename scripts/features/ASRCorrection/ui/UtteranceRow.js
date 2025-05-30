@@ -23,6 +23,64 @@ const formatTimestamp = (sec) =>
     .map((v) => v.toString().padStart(2, "0"))
     .join(":");
 
+/* ─────────────────── READ-ONLY ROW ─────────────────── */
+export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
+  index,
+  style = {},
+  data,
+}) {
+  const { rows, handlePlay, isPlaying, activeId } = data;
+  const u = rows[index];
+  const isActive = activeId === u.id;
+  const isCurrentPlaying = isPlaying && isActive;
+
+  const ts = (sec) =>
+    [sec / 3600, (sec % 3600) / 60, sec % 60]
+      .map((v) => Math.floor(v).toString().padStart(2, "0"))
+      .filter((v, i) => v !== "00" || i)
+      .join(":");
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      data-utt={u.id}
+      style={{ ...style, width: "100%" }}
+      onClick={() => handlePlay(u.start, u.id)}
+      onKeyDown={(e) =>
+        [" ", "Enter"].includes(e.key) && handlePlay(u.start, u.id)
+      }
+      className={`grid grid-cols-[auto_1fr] gap-4 px-4 py-3 rounded-md
+                  focus:outline-none focus:ring-2 focus:ring-isof/70
+                  hover:bg-gray-50 ${isActive ? "bg-isof/10 ring-isof" : ""}`}
+    >
+      <button
+        aria-label={isCurrentPlaying ? "Pausa uppspelning" : "Spela upp"}
+        aria-pressed={isCurrentPlaying}
+        className="inline-flex items-center justify-center w-9 h-9 rounded-full
+                   text-isof hover:bg-isof/10 focus-visible:ring-2
+                   focus-visible:ring-isof"
+        onClick={(e) => {
+          e.stopPropagation();
+          handlePlay(u.start, u.id);
+        }}
+      >
+        <FontAwesomeIcon icon={isCurrentPlaying ? faPause : faPlay} />
+      </button>
+
+      <div className="flex flex-col">
+        <time
+          dateTime={ts(u.start)}
+          className="font-mono text-xs text-gray-400"
+        >
+          {ts(u.start)}
+        </time>
+        <p className="whitespace-pre-wrap break-words">{u.text}</p>
+      </div>
+    </div>
+  );
+});
+
 export default React.memo(function UtteranceRow({
   index,
   style = {}, // from react-window (desktop only)

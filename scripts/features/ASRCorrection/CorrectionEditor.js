@@ -20,7 +20,7 @@ import useEditorShortcuts from "./hooks/useEditorShortcuts";
 
 export default function CorrectionEditor({
   data: propData = null,
-  readOnly = false,
+  readOnly = true,
 }) {
   /* -------- routing / context -------- */
   const { source } = useParams();
@@ -79,9 +79,9 @@ export default function CorrectionEditor({
     progress,
   } = useUtterances(audioItem, activeSegmentId);
 
-  /* -------- editor state -------- */
-  const [editingId, setEditingId] = useState(null);
-  const [editedText, setEditedText] = useState("");
+  // Editing state, only needed when *not* read-only
+  const [editingId, setEditingId] = useState(() => (readOnly ? null : null));
+  const [editedText, setEditedText] = useState(() => (readOnly ? "" : ""));
   const [followActive, setFollowActive] = useState(true);
 
   /* -------- helpers -------- */
@@ -96,7 +96,7 @@ export default function CorrectionEditor({
   );
 
   /* -- keyboard shortcuts -- */
-  useEditorShortcuts({
+  !readOnly && useEditorShortcuts({
     enabled: !!editingId && !readOnly,
     onDiscard: () => setEditingId(null),
     onSaveCurrent: () => {
@@ -172,6 +172,8 @@ export default function CorrectionEditor({
       });
     }
   }, [activeSegmentId, followActive]);
+
+  useEffect(() => { document.title = audioTitle || "Transkription"; }, [audioTitle]);
 
   /* -------- listData passed to each row -------- */
   const listData = useMemo(

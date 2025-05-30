@@ -50,8 +50,12 @@ export default function useUtterances(audioItem, activeId) {
 
   const visibleUtterances = useMemo(() => {
     const list = query.trim()
-      ? filteredUtterances.filter((u) =>
-          u.text.toLowerCase().includes(query.toLowerCase())
+      ? filteredUtterances.filter(
+          (u) =>
+            u.text.localeCompare(query, "sv", { sensitivity: "base" }) === 0 ||
+            u.text
+              .toLocaleLowerCase("sv")
+              .includes(query.toLocaleLowerCase("sv"))
         )
       : filteredUtterances;
 
