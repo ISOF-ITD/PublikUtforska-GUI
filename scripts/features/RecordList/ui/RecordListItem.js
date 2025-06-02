@@ -192,19 +192,24 @@ export default function RecordListItem(props) {
                 />
               ))
           )}
-          {/* Show hits for double nested hits without highlight for utterances */}
-          {innerHits?.media_with_utterances?.hits?.hits.map((mediaHit) =>
-            mediaHit.inner_hits?.["media.utterances.utterances"]?.hits?.hits.map(
-              (descHit) => (
-                <HighlightedText
-                  key={descHit._id}
-                  text={"Ljudavskrift: " + descHit._source.start + " " + descHit._source.text}
-                  // text={descHit._source.start + "\n <span class='highlight'>" + descHit._source.text + "</span>"}
-                  className="block mt-2"
-                />
-              ))
-          )}
+          {/* Show hits for double nested hits with highlight for utterances */}
+          {innerHits?.['media.utterances.utterances']?.hits?.hits.map((descHit) => (
+            <HighlightedText
+              key={descHit._id}
+              text={
+                `Ljudavskrift: ${ 
+                  descHit._source?.start !== undefined
+                    ? `${descHit._source.start} `
+                    : ''
+                }${descHit.highlight?.['media.utterances.utterances.text']
+                  ? descHit.highlight['media.utterances.utterances.text'][0]
+                  : descHit._source?.text || ''}`
+              }
+              className="block mt-2"
+            />
+          ))}
           {/* ES highlighted hits */}
+
           {highlight?.text?.[0] && (
             <HighlightedText text={highlight.text[0]} className="block mt-2" />
           )}
