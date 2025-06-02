@@ -42,25 +42,29 @@ export default function EditorHeader({
         </p>
       </section>
 
-      {/* ─── Progress ──────────────────────────────── */}
-      <section className="pt-1">
-        <span
-          className="block font-semibold text-gray-500 mb-2"
-          aria-live="polite"
-        >
-          Färdigt&nbsp;{progress.complete}/{progress.total}
-          <span className="sr-only"> rader</span> ({progress.percent}%)
-        </span>
-        <progress
-          className="block w-full h-2 rounded-full overflow-hidden !bg-gray-200"
-          value={progress.percent}
-          max={100}
-        />
-        <div
-          className="h-full bg-gradient-to-r from-isof to-isof/60 transition-[width] duration-300"
-          style={{ width: `${progress.percent}%` }}
-        />
-      </section>
+      {
+        /* ─── Progress ──────────────────────────────── */
+        !readOnly && (
+          <section className="pt-1">
+            <span
+              className="block font-semibold text-gray-500 mb-2"
+              aria-live="polite"
+            >
+              Färdigt&nbsp;{progress.complete}/{progress.total}
+              <span className="sr-only"> rader</span> ({progress.percent}%)
+            </span>
+            <progress
+              className="block w-full h-2 rounded-full overflow-hidden !bg-gray-200"
+              value={progress.percent}
+              max={100}
+            />
+            <div
+              className="h-full bg-gradient-to-r from-isof to-isof/60 transition-[width] duration-300"
+              style={{ width: `${progress.percent}%` }}
+            />
+          </section>
+        )
+      }
 
       {/* ─── Filter & Search ───────────────────────── */}
       <section className="pt-4 !flex !flex-col gap-4 sm:grid sm:grid-cols-[auto_1fr] sm:items-start">
