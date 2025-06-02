@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -45,6 +45,16 @@ function AudioItemRow({
 }) {
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
+
+  const hasUtterances = useMemo(() => {
+    if (Array.isArray(item?.utterances?.utterances)) {
+      return item.utterances.utterances.length > 0;
+    }
+    if (Array.isArray(item?.utterances)) {
+      return item.utterances.length > 0;
+    }
+    return false;
+  }, [item]);
 
   const descriptionsCount = item.description?.length || 0;
 
@@ -110,41 +120,42 @@ function AudioItemRow({
         </td>
         <td className="py-2 px-4">
           {audioTitle}
-          {Array.isArray(highlightData) && highlightData.some(h => h._source && h._source.text) ? (
+          {Array.isArray(highlightData) &&
+          highlightData.some((h) => h._source && h._source.text) ? (
             <div className="bg-yellow-200 mt-1">
               {highlightData
-                .filter(h => h._source && h._source.text)
+                .filter((h) => h._source && h._source.text)
                 .map((h, idx) => (
-              <div key={idx}>
-                {`${h._source.start} ${h._source.text}`}
-              </div>
+                  <div key={idx}>{`${h._source.start} ${h._source.text}`}</div>
                 ))}
             </div>
           ) : null}
         </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
-          { canContribute && (<a
-            className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
-            aria-expanded={openItems[item.source] ? "true" : "false"}
-            aria-controls={`descriptions-${item.source}`}
-            onClick={() => onToggle(item.source)}
-          >
-            {openItems[item.source] ? (
-              <span className="whitespace-nowrap">
-                <span className="px-1">Stäng</span>{" "}
-                <FontAwesomeIcon icon={faCaretUp} />
-              </span>
-            ) : (
-              <span className="whitespace-nowrap">
-                <span className="px-1">
-                  {descriptionsCount > 0
-                    ? `Visa Innehåll (${descriptionsCount})`
-                    : "Lägg till beskrivning"}
+          {canContribute && (
+            <a
+              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+              aria-expanded={openItems[item.source] ? "true" : "false"}
+              aria-controls={`descriptions-${item.source}`}
+              onClick={() => onToggle(item.source)}
+            >
+              {openItems[item.source] ? (
+                <span className="whitespace-nowrap">
+                  <span className="px-1">Stäng</span>{" "}
+                  <FontAwesomeIcon icon={faCaretUp} />
                 </span>
-                <FontAwesomeIcon icon={faCaretDown} />
-              </span>
-            )}
-          </a>)}
+              ) : (
+                <span className="whitespace-nowrap">
+                  <span className="px-1">
+                    {descriptionsCount > 0
+                      ? `Visa Innehåll (${descriptionsCount})`
+                      : "Lägg till beskrivning"}
+                  </span>
+                  <FontAwesomeIcon icon={faCaretDown} />
+                </span>
+              )}
+            </a>
+          )}
           <a
             href={`${config.audioUrl}${item.source}`}
             download
@@ -154,12 +165,16 @@ function AudioItemRow({
             <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
             <FontAwesomeIcon icon={faDownload} />
           </a>
-          {canContribute && (
+          {canContribute && hasUtterances && (
             <Link
-              to={`/records/${recordId}/audio/${encodeURIComponent(item.source)}/transcribe`}
+              to={`/records/${recordId}/audio/${encodeURIComponent(
+                item.source
+              )}/transcribe`}
               className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
             >
-              <span className="px-1 underline underline-offset-2">Avskrift</span>
+              <span className="px-1 underline underline-offset-2">
+                Avskrift
+              </span>
             </Link>
           )}
         </td>
