@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import {
   faCheck,
   faChevronLeft,
@@ -29,7 +29,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
   style = {},
   data,
 }) {
-  const { rows, handlePlay, isPlaying, activeId } = data;
+  const { rows, handlePlay, isPlaying, activeId, setSize } = data;
   const u = rows[index];
   const isActive = activeId === u.id;
   const isCurrentPlaying = isPlaying && isActive;
@@ -40,25 +40,37 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
       .filter((v, i) => v !== "00" || i)
       .join(":");
 
+  const rowRef = useRef(null);
+
+  // measure once the row is rendered (or when its text changes)
+  useLayoutEffect(() => {
+    const h = rowRef.current?.getBoundingClientRect().height;
+    if (h) setSize(index, h);
+  }, [index, u.text, setSize]);
+
   return (
     <div
       role="button"
       tabIndex={0}
+      ref={rowRef}
       data-utt={u.id}
       style={{ ...style, width: "100%" }}
       onClick={() => handlePlay(u.start, u.id)}
       onKeyDown={(e) =>
         [" ", "Enter"].includes(e.key) && handlePlay(u.start, u.id)
       }
-      className={`grid grid-cols-[auto_1fr] gap-4 px-4 py-3 rounded-md
-                  focus:outline-none focus:ring-2 focus:ring-isof/70
-                  hover:bg-gray-50 ${isActive ? "bg-isof/10 ring-isof" : ""}`}
+      className={classNames(
+        "grid grid-cols-[auto_1fr] gap-4 px-4 py-3 rounded-md items-center",
+        "relative overflow-hidden min-w-0",
+        "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-isof/70",
+        isActive && "bg-isof/10 ring-2 ring-inset ring-isof"
+      )}
     >
       <button
         aria-label={isCurrentPlaying ? "Pausa uppspelning" : "Spela upp"}
         aria-pressed={isCurrentPlaying}
         className="inline-flex items-center justify-center w-9 h-9 rounded-full
-                   text-isof hover:bg-isof/10 focus-visible:ring-2
+                   text-isof focus-visible:ring-2
                    focus-visible:ring-isof"
         onClick={(e) => {
           e.stopPropagation();
@@ -68,14 +80,14 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
         <FontAwesomeIcon icon={isCurrentPlaying ? faPause : faPlay} />
       </button>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-0">
         <time
           dateTime={ts(u.start)}
           className="font-mono text-xs text-gray-400"
         >
           {ts(u.start)}
         </time>
-        <p className="whitespace-pre-wrap break-words">{u.text}</p>
+        <p className="whitespace-pre-wrap break-words !mr-2">{u.text}</p>
       </div>
     </div>
   );
@@ -101,6 +113,7 @@ export default React.memo(function UtteranceRow({
     readOnly,
     activeId,
     query,
+    setSize,
   } = data;
 
   const utterance = rows[index];
@@ -108,6 +121,13 @@ export default React.memo(function UtteranceRow({
   const isActive = activeId === utterance.id;
   const isCurrentPlaying = isPlaying && isActive;
   const disabledSave = editedText.trim() === (utterance.text ?? "").trim();
+
+  /* ---------- dynamic height ---------- */
+  const rowRef = useRef(null);
+  useLayoutEffect(() => {
+    const h = rowRef.current?.getBoundingClientRect().height;
+    if (h) setSize(index, h);
+  }, [index, utterance.text, editedText, isEditing, setSize]);
 
   /* ---------- MOBILE (“< sm”) – card ---------- */
   const mobileCard = (
@@ -265,7 +285,7 @@ export default React.memo(function UtteranceRow({
         handlePlay(utterance.start, utterance.id)
       }
       className={classNames(
-        "m-0 hidden sm:grid sm:grid-cols-[16px_auto_2fr_1fr_auto] sm:items-center sm:gap-4",
+        "m-0 hidden sm:grid sm:grid-cols-[16px_auto_2fr_1fr_auto] sm:items-center sm:gap-4 min-w-0",
         "px-4 py-3 focus:outline-none focus:ring-2 focus:ring-isof/70 rounded-md",
         isEditing ? "bg-yellow-50" : "",
         utterance.status === "complete" && "opacity-60",
@@ -307,7 +327,7 @@ export default React.memo(function UtteranceRow({
         </time>
       </span>
       {/* text / textarea */}
-      <span className="w-full">
+      <span className="w-full min-w-0">
         {isEditing ? (
           <textarea
             autoFocus
@@ -322,7 +342,7 @@ export default React.memo(function UtteranceRow({
                        focus:ring-isof focus:border-isof resize-none"
           />
         ) : (
-          <span className="whitespace-pre-wrap break-words">
+          <span className="whitespace-pre-wrap break-all break-words">
             {highlight(utterance.text, query)}
           </span>
         )}
@@ -391,7 +411,7 @@ export default React.memo(function UtteranceRow({
   /* ---------- choose version ---------- */
   return (
     /* <List> needs this element – it’s what gets positioned */
-    <div style={{ ...style, width: "100%" }}>
+    <div ref={rowRef} style={{ ...style, width: "100%" }}>
       {/* mobile (< sm) */}
       <div className="sm:hidden">{mobileCard}</div>
 

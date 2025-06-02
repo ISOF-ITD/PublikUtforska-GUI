@@ -1,9 +1,9 @@
-import { forwardRef, useCallback, useEffect, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { VariableSizeList as List } from "react-window";
 import { ReadOnlyUtteranceRow, default as UtteranceRow } from "./UtteranceRow";
 import useIsMobile from "../hooks/useIsMobile";
 
-const BASE_ROW = 76;
+const BASE_ROW = 52;
 const EXTRA_LINE = 22;
 const AVG_CHARS_PER_LINE = 95;
 
@@ -16,7 +16,7 @@ export default function UtterancesList({
   rows,
   editingId,
   editedText,
-  listData,
+  listData: baseData,
   getActiveIndex,
   followActive,
   readOnly,
@@ -27,21 +27,20 @@ export default function UtterancesList({
   const scrollingByUser = useRef(false);
 
   /* --- height calculator for react-window --- */
+  // 1. keep an up-to-date map with the real heights
+  const sizeMap = useRef({}); // { [index]: px }
+
+  const setSize = useCallback((index, size) => {
+    if (sizeMap.current[index] !== size) {
+      sizeMap.current[index] = size;
+      listRef.current?.resetAfterIndex(index); // tells react-window to re-layout
+    }
+  }, []);
+
+  // 2. let VariableSizeList ask that map
   const getItemSize = useCallback(
-    (i) => {
-      const u = rows[i];
-      if (u.id === editingId) {
-        const lines = Math.max(2, editedText.split("\n").length);
-        return BASE_ROW + (lines - 2) * EXTRA_LINE;
-      }
-      /* -------- normal rows: estimate how many lines the text wraps into ---- */
-      const estLines = Math.max(
-        1,
-        Math.ceil(((u.text ?? "").length || 1) / AVG_CHARS_PER_LINE)
-      );
-      return BASE_ROW + (estLines - 1) * EXTRA_LINE;
-    },
-    [rows, editingId, editedText]
+    (i) => sizeMap.current[i] ?? BASE_ROW, // fall back to base height the first time
+    []
   );
 
   /* --- auto-scroll when active row changes --- */
@@ -90,6 +89,11 @@ export default function UtterancesList({
     if (idx >= 0) listRef.current.scrollToItem(idx, "center");
   }, [activeId]);
 
+  const itemData = useMemo(
+    () => ({ ...baseData, setSize }),
+    [baseData, setSize]
+  );
+
   /* --- always virtualised --- */
   return (
     <List
@@ -98,7 +102,7 @@ export default function UtterancesList({
       itemCount={rows.length}
       itemSize={getItemSize}
       itemKey={(index) => rows[index].id}
-      itemData={listData}
+      itemData={itemData}
       width="100%"
       outerElementType={isMobile ? MobileOuter : undefined}
     >

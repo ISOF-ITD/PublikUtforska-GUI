@@ -96,30 +96,31 @@ export default function CorrectionEditor({
   );
 
   /* -- keyboard shortcuts -- */
-  !readOnly && useEditorShortcuts({
-    enabled: !!editingId && !readOnly,
-    onDiscard: () => setEditingId(null),
-    onSaveCurrent: () => {
-      const utt = utterances.find((u) => u.id === editingId);
-      if (utt) {
-        setUtterances((prev) =>
-          prev.map((u) =>
-            u.id === utt.id ? { ...u, text: editedText, status: "edited" } : u
-          )
-        );
-        setEditingId(null);
-      }
-    },
-    onPrev: () => {
-      const idx = visibleUtterances.findIndex((u) => u.id === editingId);
-      if (idx > 0) beginEdit(visibleUtterances[idx - 1]);
-    },
-    onNext: () => {
-      const idx = visibleUtterances.findIndex((u) => u.id === editingId);
-      if (idx < visibleUtterances.length - 1)
-        beginEdit(visibleUtterances[idx + 1]);
-    },
-  });
+  !readOnly &&
+    useEditorShortcuts({
+      enabled: !!editingId && !readOnly,
+      onDiscard: () => setEditingId(null),
+      onSaveCurrent: () => {
+        const utt = utterances.find((u) => u.id === editingId);
+        if (utt) {
+          setUtterances((prev) =>
+            prev.map((u) =>
+              u.id === utt.id ? { ...u, text: editedText, status: "edited" } : u
+            )
+          );
+          setEditingId(null);
+        }
+      },
+      onPrev: () => {
+        const idx = visibleUtterances.findIndex((u) => u.id === editingId);
+        if (idx > 0) beginEdit(visibleUtterances[idx - 1]);
+      },
+      onNext: () => {
+        const idx = visibleUtterances.findIndex((u) => u.id === editingId);
+        if (idx < visibleUtterances.length - 1)
+          beginEdit(visibleUtterances[idx + 1]);
+      },
+    });
 
   /**
    * Play-/pause-toggle, same everywhere:
@@ -173,7 +174,9 @@ export default function CorrectionEditor({
     }
   }, [activeSegmentId, followActive]);
 
-  useEffect(() => { document.title = audioTitle || "Transkription"; }, [audioTitle]);
+  useEffect(() => {
+    document.title = audioTitle || "Transkription";
+  }, [audioTitle]);
 
   /* -------- listData passed to each row -------- */
   const listData = useMemo(
@@ -221,7 +224,7 @@ export default function CorrectionEditor({
   }
 
   return (
-    <div className="max-w-6xl mx-auto lg:p-4" ref={scrollRef}>
+    <div className="max-w-6xl mx-auto lg:p-4 overflow-y-auto" ref={scrollRef}>
       <EditorHeader
         audioTitle={audioTitle}
         progress={progress}
@@ -249,8 +252,6 @@ export default function CorrectionEditor({
           activeId={activeSegmentId}
         />
       </div>
-
-      <ScrollTopButton />
     </div>
   );
 }
