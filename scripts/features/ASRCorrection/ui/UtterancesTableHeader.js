@@ -4,7 +4,7 @@ export default function UtterancesTableHeader({ readOnly }) {
       <span />
       <span></span>
       <span>Starttid</span>
-      <span>Text</span>
+      <span></span>
       {!readOnly && <span className="text-right">Åtgärder</span>}
     </div>
   );

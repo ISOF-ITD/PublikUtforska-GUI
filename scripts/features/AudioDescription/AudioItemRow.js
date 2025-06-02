@@ -165,18 +165,21 @@ function AudioItemRow({
             <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
             <FontAwesomeIcon icon={faDownload} />
           </a>
-          {canContribute && hasUtterances && (
-            <Link
-              to={`/records/${recordId}/audio/${encodeURIComponent(
-                item.source
-              )}/transcribe`}
-              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
-            >
-              <span className="px-1 underline underline-offset-2">
-                Avskrift
-              </span>
-            </Link>
-          )}
+          {
+            // Read-only mode: "canContribute" is not nessesary
+            hasUtterances && (
+              <Link
+                to={`/records/${recordId}/audio/${encodeURIComponent(
+                  item.source
+                )}/transcribe`}
+                className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+              >
+                <span className="px-1 underline underline-offset-2">
+                  Avskrift
+                </span>
+              </Link>
+            )
+          }
         </td>
       </tr>
 
