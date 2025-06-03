@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,6 +15,7 @@ import DescriptionList from "./DescriptionList";
 import DescriptionForm from "./DescriptionForm";
 import config from "../../config";
 import ConfirmationModal from "./ConfirmationModal";
+import useAudioDuration from "./hooks/useAudioDuration";
 
 function AudioItemRow({
   item,
@@ -45,6 +46,40 @@ function AudioItemRow({
 }) {
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
+
+  const durationSec = useAudioDuration(`${config.audioUrl}${item.source}`);
+
+  function TimeChip({ seconds, className = "" }) {
+    if (seconds == null) {
+      return (
+        <span
+          role="status"
+          aria-label="Laddar längd …"
+          className={`inline-block h-4 w-12 animate-pulse rounded bg-gray-200 ${className}`}
+        />
+      );
+    }
+
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60)
+      .toString()
+      .padStart(hrs ? 2 : 1, "0");
+    const secs = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, "0");
+
+    const label = hrs ? `${hrs}:${mins}:${secs}` : `${mins}:${secs}`;
+
+    return (
+      <span
+        title={`${label} lång`}
+        aria-label={`Ljudlängd ${label.replace(/:/g, " : ")}`}
+        className={`font-mono ml-2 text-xs text-gray-500 ${className}`}
+      >
+        ({label})
+      </span>
+    );
+  }
 
   const hasUtterances = useMemo(() => {
     if (Array.isArray(item?.utterances?.utterances)) {
@@ -120,6 +155,7 @@ function AudioItemRow({
         </td>
         <td className="py-2 px-4">
           {audioTitle}
+          {<TimeChip seconds={durationSec} />}
           {Array.isArray(highlightData) &&
           highlightData.some((h) => h._source && h._source.text) ? (
             <div className="bg-yellow-200 mt-1">
