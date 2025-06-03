@@ -176,18 +176,15 @@ function AudioItems({ data, highlightData = null }) {
     }, [transcribeSession, cancelTranscribe]);
 
   // Extract innerHits and _media_nested if present
-  const mediaWithDescription = highlightData?.data?.[0]?.inner_hits?.media_with_description?.hits?.hits?.[0];
-  const mediaWithUtterances = highlightData?.data?.[0]?.inner_hits?.media_with_utterances?.hits?.hits?.[0];
-  const _media_nested = mediaWithDescription?._nested || mediaWithUtterances?._nested;
-  const innerHits = (
-    mediaWithDescription?.inner_hits?.["media.description"]?.hits?.hits
-    || mediaWithUtterances?.inner_hits?.["media.utterances.utterances"]?.hits?.hits
-    || []
-  ).map((hit) => ({
-    _source: hit._source,
-    _nested: hit._nested,
-    ...(_media_nested ? { _media_nested } : {}),
-  }));
+  const mediaWithDescription = highlightData?.data?.[0]?.inner_hits?.["media.description"]?.hits?.hits;
+  const mediaWithUtterances = highlightData?.data?.[0]?.inner_hits?.["media.utterances.utterances"]?.hits?.hits;
+  let innerHits;
+  if (mediaWithDescription) {
+    innerHits = mediaWithDescription;
+  }
+  if (mediaWithUtterances) {
+    innerHits = mediaWithDescription;
+  }
 
   // The "Add new description" toggler with concurrency check
   const handleToggleAddFormWithConcurrency = async (source) => {
@@ -440,11 +437,11 @@ function AudioItems({ data, highlightData = null }) {
                 // Find if any innerHit has _media_nested.offset matching this item"s index
                 const itemIndex = audioDataItems.indexOf(item);
                 const hasMatch = innerHits.some(
-                  (hit) => hit._media_nested.offset === itemIndex
+                  (hit) => hit._nested.offset === itemIndex
                 );
                 if (hasMatch) {
                   highlightForItem = innerHits.filter(
-                    (hit) => hit._media_nested.offset === itemIndex
+                    (hit) => hit._nested.offset === itemIndex
                   );
                 }
               }
