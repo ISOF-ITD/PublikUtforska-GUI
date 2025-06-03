@@ -157,12 +157,22 @@ function AudioItemRow({
           {audioTitle}
           {<TimeChip seconds={durationSec} />}
           {Array.isArray(highlightData) &&
-          highlightData.some((h) => h._source && h._source.text) ? (
-            <div className="bg-yellow-200 mt-1">
+          highlightData.some((h) => h._source && h._source.start && h.highlight && h.highlight['media.description.text']) ? (
+            <div>
               {highlightData
-                .filter((h) => h._source && h._source.text)
+                .filter((h) => h._source && h._source.start)
                 .map((h, idx) => (
-                  <div key={idx}>{`${h._source.start} ${h._source.text}`}</div>
+                  <div key={idx} dangerouslySetInnerHTML={{ __html: `Innehållsbeskrivning: ${h._source.start} ${h.highlight['media.description.text'][0]}` }} />
+                ))}
+            </div>
+          ) : null}
+          {Array.isArray(highlightData) &&
+          highlightData.some((h) => h._source && h._source.start && h.highlight && h.highlight['media.utterances.utterances.text']) ? (
+            <div>
+              {highlightData
+                .filter((h) => h._source && h._source.start)
+                .map((h, idx) => (
+                  <div key={idx} dangerouslySetInnerHTML={{ __html: `Ljudavskrift: ${h._source.start} ${h.highlight['media.utterances.utterances.text'][0]}` }} />
                 ))}
             </div>
           ) : null}

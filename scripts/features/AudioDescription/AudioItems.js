@@ -178,12 +178,11 @@ function AudioItems({ data, highlightData = null }) {
   // Extract innerHits and _media_nested if present
   const mediaWithDescription = highlightData?.data?.[0]?.inner_hits?.["media.description"]?.hits?.hits;
   const mediaWithUtterances = highlightData?.data?.[0]?.inner_hits?.["media.utterances.utterances"]?.hits?.hits;
-  let innerHits;
-  if (mediaWithDescription) {
+  let innerHits = [];
+  if (mediaWithDescription && mediaWithDescription.length > 0) {
     innerHits = mediaWithDescription;
-  }
-  if (mediaWithUtterances) {
-    innerHits = mediaWithDescription;
+  } else if (mediaWithUtterances && mediaWithUtterances.length > 0) {
+    innerHits = mediaWithUtterances;
   }
 
   // The "Add new description" toggler with concurrency check
