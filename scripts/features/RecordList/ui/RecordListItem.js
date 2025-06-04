@@ -25,6 +25,7 @@ import {
 } from "../../../utils/routeHelper";
 import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
 import useSubrecords from "../hooks/useSubrecords";
+import { secondsToMMSS } from "../../../utils/timeHelper";
 
 export default function RecordListItem(props) {
   const {
@@ -203,7 +204,7 @@ export default function RecordListItem(props) {
               text={
                 `Ljudavskrift: ${ 
                   descHit._source?.start !== undefined
-                    ? `${descHit._source.start} `
+                    ? `${secondsToMMSS(descHit._source.start)} `
                     : ''
                 }${descHit.highlight?.['media.utterances.utterances.text']
                   ? descHit.highlight['media.utterances.utterances.text'][0]
