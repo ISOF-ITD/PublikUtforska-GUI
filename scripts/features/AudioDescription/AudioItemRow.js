@@ -16,6 +16,7 @@ import DescriptionForm from "./DescriptionForm";
 import config from "../../config";
 import ConfirmationModal from "./ConfirmationModal";
 import useAudioDuration from "./hooks/useAudioDuration";
+import secondsToMinuteSeconds, { secondsToMMSS } from "../../utils/timeHelper";
 
 function AudioItemRow({
   item,
@@ -172,7 +173,7 @@ function AudioItemRow({
               {highlightData
                 .filter((h) => h._source && h._source.start)
                 .map((h, idx) => (
-                  <div key={idx} dangerouslySetInnerHTML={{ __html: `Ljudavskrift: ${h._source.start} ${h.highlight['media.utterances.utterances.text'][0]}` }} />
+                  <div key={idx} dangerouslySetInnerHTML={{ __html: `Ljudavskrift: ${secondsToMMSS(h._source.start)} ${h.highlight['media.utterances.utterances.text'][0]}` }} />
                 ))}
             </div>
           ) : null}

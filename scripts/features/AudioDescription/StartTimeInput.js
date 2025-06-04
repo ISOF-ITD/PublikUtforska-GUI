@@ -2,17 +2,13 @@ import PropTypes from "prop-types";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { InputMask } from "@react-input/mask";
 import { AudioContext } from "../../contexts/AudioContext";
+import { secondsToMMSS } from "../../utils/timeHelper";
 
 /* ----------  helpers  ---------- */
 const mmssToSeconds = (str) => {
   const [m, s] = str.split(":").map(Number);
   return m * 60 + s;
 };
-const secondsToMMSS = (sec) =>
-  `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(
-    2,
-    "0"
-  )}`;
 
 /* ----------  component  ---------- */
 function StartTimeInput({ value, onChange, maxSeconds }) {
