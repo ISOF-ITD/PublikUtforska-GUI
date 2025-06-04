@@ -176,14 +176,8 @@ function AudioItems({ data, highlightData = null }) {
     }, [transcribeSession, cancelTranscribe]);
 
   // Extract innerHits and _media_nested if present
-  const mediaWithDescription = highlightData?.data?.[0]?.inner_hits?.["media.description"]?.hits?.hits;
-  const mediaWithUtterances = highlightData?.data?.[0]?.inner_hits?.["media.utterances.utterances"]?.hits?.hits;
-  let innerHits = [];
-  if (mediaWithDescription && mediaWithDescription.length > 0) {
-    innerHits = mediaWithDescription;
-  } else if (mediaWithUtterances && mediaWithUtterances.length > 0) {
-    innerHits = mediaWithUtterances;
-  }
+  const hitsMediaWithDescription = highlightData?.data?.[0]?.inner_hits?.["media.description"]?.hits?.hits;
+  const hitsMediaWithUtterances = highlightData?.data?.[0]?.inner_hits?.["media.utterances.utterances"]?.hits?.hits;
 
   // The "Add new description" toggler with concurrency check
   const handleToggleAddFormWithConcurrency = async (source) => {
@@ -432,14 +426,26 @@ function AudioItems({ data, highlightData = null }) {
               );
                 // Find the matching highlightData for this audio item by comparing index and _media_nested.offset
               let highlightForItem = [];
-              if (Array.isArray(innerHits) && item && typeof item === "object") {
+              if (Array.isArray(hitsMediaWithDescription) && item && typeof item === "object") {
                 // Find if any innerHit has _media_nested.offset matching this item"s index
                 const itemIndex = audioDataItems.indexOf(item);
-                const hasMatch = innerHits.some(
+                const hasMatch = hitsMediaWithDescription.some(
                   (hit) => hit._nested.offset === itemIndex
                 );
                 if (hasMatch) {
-                  highlightForItem = innerHits.filter(
+                  highlightForItem = hitsMediaWithDescription.filter(
+                    (hit) => hit._nested.offset === itemIndex
+                  );
+                }
+              }
+              if (Array.isArray(hitsMediaWithUtterances) && item && typeof item === "object") {
+                // Find if any innerHit has _media_nested.offset matching this item"s index
+                const itemIndex = audioDataItems.indexOf(item);
+                const hasMatch = hitsMediaWithUtterances.some(
+                  (hit) => hit._nested.offset === itemIndex
+                );
+                if (hasMatch) {
+                  highlightForItem = hitsMediaWithUtterances.filter(
                     (hit) => hit._nested.offset === itemIndex
                   );
                 }
