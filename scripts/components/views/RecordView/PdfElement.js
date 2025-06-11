@@ -30,7 +30,6 @@ export default function PdfElement({ data }) {
   const isAtLeastMediumScreen = useMediaQuery('(min-width: 768px)');
   const buildPdfUrl = (src) => `${config.pdfUrl ?? config.imageUrl ?? ''}${src}`;
 
-
   return (
     <>
       {isAtLeastMediumScreen
