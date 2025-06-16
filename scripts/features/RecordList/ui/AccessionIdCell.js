@@ -21,8 +21,8 @@ export default function AccessionIdCell({
     </span>
   );
 
-  /* one_accession_row */
-  if (recordtype === "one_accession_row")
+  /* one_accession_row and one_audio_record are both at parent level*/
+  if (recordtype === "one_accession_row" || recordtype === "one_audio_record")
     return (
       <td
         data-title={`${l("Arkivnummer")}:`}

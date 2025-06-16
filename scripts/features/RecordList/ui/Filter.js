@@ -23,8 +23,8 @@ export default function Filter({
         <input
           type="radio"
           name={`filter-${uniqueId}`}
-          value="one_accession_row"
-          checked={filter === 'one_accession_row'}
+          value="one_accession_row,one_audio_record"
+          checked={filter === 'one_accession_row,one_audio_record'}
           onChange={onChange}
           id={`one-accession-row-filter-${uniqueId}`}
         />
