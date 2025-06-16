@@ -58,7 +58,7 @@ function Timeline({
   useEffect(() => {
     const fetchParams = {
       search: params.search ? encodeURIComponent(params.search) : undefined,
-      recordtype: params.recordtype || (mode === 'transcribe' ? 'one_accession_row' : (filter || null)),
+      recordtype: params.recordtype || (mode === 'transcribe' ? 'one_accession_row,one_audio_record' : (filter || null)),
       transcriptionstatus: 'published,accession,readytocontribute',
       category: params.category ? encodeURIComponent(params.category) : undefined,
     };
