@@ -88,9 +88,10 @@ export default function RecordList(props) {
 
   /* ------- side-effect: url hash “showlist” ------- */
   useEffect(() => {
-    const hashParams = new URLSearchParams(location.hash.split("?")[1] || "");
-    if (hashParams.has("showlist"))
-      window.eventBus?.dispatch("routePopup.show");
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.has('showlist')) {
+      window.eventBus?.dispatch('routePopup.show');
+    }
   }, [location]);
 
   /* ------- render ------- */
