@@ -11,100 +11,105 @@ export default function Uppteckningsblankett({
   inputChangeHandler,
   pageIndex = null,
   numberOfPages = null,
+  disableInput = false,
 }) {
   return (
-    <div className="space-y-4 text-sm">
-      {/* Rad 1 – etiketter */}
-      <div className="grid gap-2 md:grid-cols-12 font-semibold">
-        <label htmlFor="transcription_informantname" className="md:col-span-6">
-          Berättat av
-        </label>
-        <label
-          htmlFor="transcription_informantbirthdate"
-          className="md:col-span-2"
-        >
-          Född år
-        </label>
-        <label
-          htmlFor="transcription_informantbirthplace"
-          className="md:col-span-4"
-        >
-          Född i
-        </label>
-      </div>
+    <fieldset disabled={disableInput} className="space-y-4">
+      {/* ───── Name / Birth year / Birth place ───── */}
+      <div className="grid gap-x-2 gap-y-4 md:grid-cols-12 mb-2">
+        {/* Berättat av / Name */}
+        <div className="md:col-span-6 flex flex-col">
+          <label
+            htmlFor="transcription_informantname"
+            className="font-semibold mb-1"
+          >
+            Berättat av
+          </label>
+          <input
+            id="transcription_informantname"
+            name="informantNameInput"
+            type="text"
+            placeholder="Namn"
+            value={informantNameInput}
+            onChange={inputChangeHandler}
+            className="rounded border p-2 font-serif disabled:bg-gray-100"
+          />
+        </div>
 
-      {/* Rad 2 – inputs */}
-      <div className="grid gap-2 md:grid-cols-12">
-        <input
-          id="transcription_informantname"
-          name="informantNameInput"
-          type="text"
-          value={informantNameInput}
-          onChange={inputChangeHandler}
-          className="md:col-span-6 border border-gray-300 rounded p-2 font-serif"
-        />
+        {/* Född år / Birth year */}
+        <div className="md:col-span-2 flex flex-col">
+          <label
+            htmlFor="transcription_informantbirthdate"
+            className="font-semibold mb-1"
+          >
+            Född&nbsp;år
+          </label>
+          <input
+            id="transcription_informantbirthdate"
+            name="informantBirthDateInput"
+            type="text"
+            placeholder="År"
+            value={informantBirthDateInput}
+            onChange={inputChangeHandler}
+            className="rounded border p-2 font-serif disabled:bg-gray-100"
+          />
+        </div>
 
-        <input
-          id="transcription_informantbirthdate"
-          name="informantBirthDateInput"
-          type="text"
-          value={informantBirthDateInput}
-          onChange={inputChangeHandler}
-          className="md:col-span-2 border border-gray-300 rounded p-2 font-serif"
-        />
-
-        <input
-          id="transcription_informantbirthplace"
-          name="informantBirthPlaceInput"
-          type="text"
-          value={informantBirthPlaceInput}
-          onChange={inputChangeHandler}
-          className="md:col-span-4 border border-gray-300 rounded p-2 font-serif"
-        />
+        {/* Född i / Birth place */}
+        <div className="md:col-span-4 flex flex-col">
+          <label
+            htmlFor="transcription_informantbirthplace"
+            className="font-semibold mb-1 text-right"
+          >
+            Född&nbsp;i
+          </label>
+          <input
+            id="transcription_informantbirthplace"
+            name="informantBirthPlaceInput"
+            type="text"
+            placeholder="Ort"
+            value={informantBirthPlaceInput}
+            onChange={inputChangeHandler}
+            className="rounded border p-2 font-serif disabled:bg-gray-100"
+          />
+        </div>
       </div>
 
       {/* Övrig informant-info */}
       <div>
-        <label
-          htmlFor="transcription_informant"
-          className="block mb-0 font-semibold"
-        >
-          Fält under berättat av (om det finns fler uppgifter nedskrivna)
+        <label htmlFor="transcription_informant" className="font-semibold">
+          Fält under berättat av (om det finns fler uppgifter nedskrivna):
         </label>
         <input
           id="transcription_informant"
           name="informantInformationInput"
           type="text"
+          placeholder=""
           value={informantInformationInput}
           onChange={inputChangeHandler}
-          className="w-full border border-gray-300 rounded p-2 font-serif mb-1"
+          className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
         />
       </div>
 
       {/* Titel */}
       <div>
-        <label
-          htmlFor="transcription_title"
-          className="block mb-0 font-semibold"
-        >
+        <label htmlFor="transcription_title" className="font-semibold">
           Titel
         </label>
         <input
           id="transcription_title"
           name="titleInput"
           type="text"
+          placeholder="Ex. Skördetraditioner"
           value={title}
           onChange={inputChangeHandler}
-          className="w-full border border-gray-300 rounded p-2 font-serif mb-1"
+          className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
         />
       </div>
 
       {/* Själva texten */}
       <div>
-        <label
-          htmlFor="transcription_text"
-          className="block mb-0 font-semibold"
-        >
+        <label htmlFor="transcription_text" className="font-semibold">
           Text
           {pageIndex !== null &&
             ` på sidan ${pageIndex + 1} (av ${numberOfPages})`}
@@ -116,10 +121,10 @@ export default function Uppteckningsblankett({
           spellCheck="false"
           value={messageInput}
           onChange={inputChangeHandler}
-          className="w-full border border-gray-300 rounded p-2 font-serif leading-relaxed h-96"
+          className="w-full min-h-[18rem] max-h-96 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100"
         />
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -133,4 +138,5 @@ Uppteckningsblankett.propTypes = {
   inputChangeHandler: PropTypes.func.isRequired,
   pageIndex: PropTypes.number,
   numberOfPages: PropTypes.number,
+  disableInput: PropTypes.bool,
 };
