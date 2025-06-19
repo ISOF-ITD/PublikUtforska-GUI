@@ -1,47 +1,40 @@
 /* eslint-disable react/require-default-props */
-import React from 'react';
-
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 export default function Fritext({
-  messageInput = '',
+  messageInput = "",
   inputChangeHandler,
   pageIndex = null,
   transcriptionstatus = null,
   numberOfPages = null,
 }) {
+  const disabled =
+    transcriptionstatus !== "readytotranscribe" && transcriptionstatus !== null;
+
   return (
-    <div className="transcriptionform fritext">
-      <div className="mark-above-img">
-        <label htmlFor="transcription_text" className="u-full-width margin-bottom-zero">
-          Text
-          {pageIndex !== undefined && pageIndex !== null ? ` på sidan ${pageIndex + 1} (av ${numberOfPages})` : ''}
-          :
-        </label>
-        <textarea
-          // disable if transcriptionstatus is not published or null
-          disabled={transcriptionstatus !== 'readytotranscribe' && transcriptionstatus !== null}
-          lang="sv"
-          spellCheck="false"
-          id="transcription_text"
-          name="messageInput"
-          className="u-full-width margin-bottom-minimal"
-          value={messageInput}
-          onChange={inputChangeHandler}
-        />
-        {//
-                    //	<figure>
-                    //    <img src="img/ifgh-card-upperpart-text.png" width="400" height="100" alt="photo"></img>
-                    // </figure>
-                    //
-                }
-      </div>
+    <div className="text-sm">
+      <label htmlFor="transcription_text" className="block mb-0 font-semibold">
+        Text
+        {pageIndex !== null &&
+          ` på sidan ${pageIndex + 1} (av ${numberOfPages})`}
+      </label>
+
+      <textarea
+        id="transcription_text"
+        name="messageInput"
+        lang="sv"
+        spellCheck="false"
+        disabled={disabled}
+        value={messageInput}
+        onChange={inputChangeHandler}
+        className="w-full border border-gray-300 rounded p-2 font-serif leading-relaxed h-96 mt-1"
+      />
     </div>
   );
 }
 
 Fritext.propTypes = {
-  messageInput: PropTypes.string.isRequired,
+  messageInput: PropTypes.string,
   inputChangeHandler: PropTypes.func.isRequired,
   pageIndex: PropTypes.number,
   transcriptionstatus: PropTypes.string,
