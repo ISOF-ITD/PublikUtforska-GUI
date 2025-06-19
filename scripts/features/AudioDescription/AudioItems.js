@@ -75,7 +75,7 @@ function AudioItems({ data, highlightData = null }) {
     (Array.isArray(m.description) && m.description.length);
 
   const canContribute =
-    data.recordtype === "one_record" &&
+    (data.recordtype === "one_record" || data.recordtype === "one_audio_record") &&
     (data.transcriptionstatus === "readytotranscribe" ||
       "undertranscription" ||
       "readytocontribute") &&
