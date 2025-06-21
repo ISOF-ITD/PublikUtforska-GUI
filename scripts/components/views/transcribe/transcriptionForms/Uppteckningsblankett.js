@@ -10,6 +10,7 @@ export default function Uppteckningsblankett({
   messageInput = "",
   inputChangeHandler,
   pageIndex = null,
+  titleInput = "",
   numberOfPages = null,
   disableInput = false,
 }) {
@@ -101,7 +102,7 @@ export default function Uppteckningsblankett({
           name="titleInput"
           type="text"
           placeholder="Ex. Skördetraditioner"
-          value={title}
+          value={titleInput}
           onChange={inputChangeHandler}
           className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
         />
@@ -134,6 +135,7 @@ Uppteckningsblankett.propTypes = {
   informantBirthPlaceInput: PropTypes.string,
   informantInformationInput: PropTypes.string,
   title: PropTypes.string,
+  titleInput: PropTypes.string,
   messageInput: PropTypes.string,
   inputChangeHandler: PropTypes.func.isRequired,
   pageIndex: PropTypes.number,
