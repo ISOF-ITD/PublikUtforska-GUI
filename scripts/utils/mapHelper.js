@@ -75,7 +75,7 @@ export default {
       label: 'Lantmäteriet topografisk karta',
       url: 'https://garm.isof.se/folkeservice/api/lm_epsg3857_proxy/{z}/{y}/{x}.png',
       options: {
-        attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning',
+        attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a>',
         crossOrigin: true,
       },
     },
@@ -83,7 +83,7 @@ export default {
       label: 'Lantmäteriet topografisk karta nedtonad',
       url: 'https://garm.isof.se/folkeservice/api/lm_nedtonad_epsg3857_proxy/{z}/{y}/{x}.png',
       options: {
-        attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning',
+        attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a>',
         crossOrigin: true,
       },
     },

@@ -63,8 +63,13 @@ export default class MapBase extends Component {
       // maxZoom: parseInt(this.props.maxZoom) || 13,
       layers: visibleLayers,
       // layers: [layers[Object.keys(layers)[0]]],
-      scrollWheelZoom: this.props.scrollWheelZoom || false,
+      scrollWheelZoom: (!this.props.disableInteraction && this.props.scrollWheelZoom) || false,
       zoomControl: false,
+      dragging: !this.props.disableInteraction,
+      touchZoom: !this.props.disableInteraction,
+      doubleClickZoom: !this.props.disableInteraction,
+      boxZoom: !this.props.disableInteraction,
+      keyboard: !this.props.disableInteraction,
     };
 
     // this.map.options.crs = L.CRS.EPSG3857;
@@ -82,12 +87,16 @@ export default class MapBase extends Component {
       paddingTopLeft: window.innerWidth >= 550 ? [400, 0] : [0, 100],
     });
 
-    control.zoom({
-      position: this.props.zoomControlPosition || 'topright',
-    }).addTo(this.map);
+    if (this.props.disableInteraction && this.map.tap) {
+      this.map.tap.disable();
+    }
+
+    if (!this.props.disableInteraction) {
+      control.zoom({ position: this.props.zoomControlPosition || 'topright' }).addTo(this.map);
+    }
 
     // Dölja locateControl knappen (som visar var användaren är på kartan)
-    if (!this.props.disableLocateControl) {
+    if (!this.props.disableInteraction && !this.props.disableLocateControl) {
       control.locate({
         showPopup: false,
         icon: 'map-location-icon',
@@ -97,10 +106,11 @@ export default class MapBase extends Component {
         circleStyle: { weight: 1, color: '#a6192e' },
       }).addTo(this.map);
     }
-
-    this.layersControl = control.activeLayers(layers, overlayLayers, {
-      position: this.props.layersControlPosition || 'topright',
-    }).addTo(this.map);
+    if (!this.props.disableInteraction) {
+      this.layersControl = control.activeLayers(layers, overlayLayers, {
+        positiona: this.props.layersControlPosition || 'topright',
+      }).addTo(this.map);
+    }
 
     // make sure that the layers control is
     //  -not opened on mouse over (only on click)

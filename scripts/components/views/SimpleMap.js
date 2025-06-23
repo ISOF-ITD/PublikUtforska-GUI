@@ -63,7 +63,7 @@ function SimpleMap({ marker, markers, animate }) {
     }
   }, [marker, markers]);
 
-  return <MapBase ref={mapView} />;
+  return <MapBase ref={mapView} disableInteraction />;
 }
 
 export default SimpleMap;
