@@ -40,7 +40,7 @@ export default function RequestToTranscribeButton({
 
 RequestToTranscribeButton.propTypes = {
   title: PropTypes.string,
-  type: PropTypes.string.isRequired,
+  type: PropTypes.string,
   country: PropTypes.string,
   id: PropTypes.string,
 };

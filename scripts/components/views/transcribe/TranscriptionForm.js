@@ -21,6 +21,7 @@ export default function TranscriptionForm({
   informantInformationInput,
   nameInput,
   emailInput,
+  titleInput,
   comment,
   inputChangeHandler,
   sendButtonClickHandler,
@@ -53,6 +54,7 @@ export default function TranscriptionForm({
       numberOfPages: pages.length,
       transcriptionstatus: page.transcriptionstatus,
       disableInput,
+      titleInput,
     }),
     [
       transcriptionText,
@@ -61,6 +63,7 @@ export default function TranscriptionForm({
       pages.length,
       page.transcriptionstatus,
       disableInput,
+      titleInput,
     ]
   );
 
@@ -70,6 +73,7 @@ export default function TranscriptionForm({
     informantBirthPlaceInput,
     informantInformationInput,
     title: recordDetails.title,
+    titleInput,
     ...commonProps,
   };
 

@@ -203,20 +203,22 @@ export default function TranscriptionPageByPageOverlay() {
   /* Send-button handler                                          */
   /* ------------------------------------------------------------ */
 
-  const buildPayload = () => ({
-    recordid: recordDetails.id,
-    url: recordDetails.url,
-    recordtitle: fields.titleInput || recordDetails.title,
-    message: fields.messageInput,
-    page: pages[currentPageIndex].source,
-    messageComment: fields.messageCommentInput,
-    informantName: fields.informantNameInput,
-    informantBirthDate: fields.informantBirthDateInput,
-    informantBirthPlace: fields.informantBirthPlaceInput,
-    informantInformation: fields.informantInformationInput,
-    from_name: fields.nameInput,
-    from_email: fields.emailInput,
-  });
+  const buildPayload = () => {
+    return {
+      id: recordDetails.id,
+      url: recordDetails.url,
+      recordtitle: fields.titleInput || recordDetails.title,
+      message: fields.messageInput,
+      page: pages[currentPageIndex].source,
+      messageComment: fields.messageCommentInput,
+      informantName: fields.informantNameInput,
+      informantBirthDate: fields.informantBirthDateInput,
+      informantBirthPlace: fields.informantBirthPlaceInput,
+      informantInformation: fields.informantInformationInput,
+      from_name: fields.nameInput,
+      from_email: fields.emailInput,
+    };
+  };
 
   const sendButtonClickHandler = async (e) => {
     if (fields.messageInput.trim().indexOf(" ") === -1) {
@@ -308,6 +310,7 @@ export default function TranscriptionPageByPageOverlay() {
               }}
               currentPageIndex={currentPageIndex}
               pages={pages}
+              titleInput={fields.titleInput}
               transcriptionText={fields.messageInput}
               informantNameInput={fields.informantNameInput}
               informantBirthDateInput={fields.informantBirthDateInput}
