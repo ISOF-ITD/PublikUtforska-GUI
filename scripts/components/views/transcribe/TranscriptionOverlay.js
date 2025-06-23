@@ -122,6 +122,23 @@ export default function TranscriptionOverlay(props) {
         {/* ── header ───────────────────────────────────────── */}
         <div className="overlay-header">
           {l("Skriv av")} {record.title ? <>“{record.title}”</> : "uppteckning"}
+          {record.archiveId && (
+            <small>
+              &nbsp;(ur {record.archiveId}
+              {record.placeString ? ` ${record.placeString}` : ""})
+            </small>
+          )}
+          {randomRecord && !sent && (
+            <div className="next-random-record-button-container">
+              <TranscribeButton
+                className="button button-primary next-random-record-button"
+                label={l("Skriv av annan slumpmässig uppteckning")}
+                random
+                /* when the user clicks, we first cancel the current session */
+                transcribeCancel={close}
+              />
+            </div>
+          )}
           <button
             className="close-button white"
             title="stäng"
