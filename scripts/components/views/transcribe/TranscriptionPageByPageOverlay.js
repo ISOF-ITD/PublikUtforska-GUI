@@ -205,7 +205,8 @@ export default function TranscriptionPageByPageOverlay() {
 
   const buildPayload = () => {
     return {
-      id: recordDetails.id,
+      recordid: recordDetails.id,
+      transcribesession: session,
       url: recordDetails.url,
       recordtitle: fields.titleInput || recordDetails.title,
       message: fields.messageInput,
@@ -231,7 +232,17 @@ export default function TranscriptionPageByPageOverlay() {
     }
     const goToNext = e.currentTarget.dataset.gotonext === "true";
 
-    const ok = await send(buildPayload());
+    const payload = buildPayload();
+
+    // If the string is empty after .trim(), it results false
+    if (!fields.informantNameInput.trim()) {
+      delete payload.informantName;
+      delete payload.informantBirthDate;
+      delete payload.informantBirthPlace;
+      delete payload.informantInformation;
+    }
+
+    const ok = await send(payload);
 
     if (ok) {
       /* mark page as sent + clean unsaved flags */

@@ -84,10 +84,10 @@ export default function TranscriptionForm({
   return (
     <div className="space-y-6">
       {/* inner form — chooses layout based on type */}
-      {page.transcriptiontype === "fritext" ? (
-        <Fritext {...commonProps} />
-      ) : (
+      {page.transcriptiontype === "uppteckningsblankett" ? (
         <Uppteckningsblankett {...uppteckningsProps} />
+      ) : (
+        <Fritext {...commonProps} />
       )}
 
       {(page.transcriptionstatus === "readytotranscribe" || isSent) && (
