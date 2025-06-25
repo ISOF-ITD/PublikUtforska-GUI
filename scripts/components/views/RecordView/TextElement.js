@@ -89,7 +89,8 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
           >
             <div className="eight columns">
               {(() => {
-                if (mediaItem.text) {
+                // Visa text den finns och om transcriptionstatus är readytotranscribe annars transcribe-knapp
+                if (mediaItem.text && mediaItem.transcriptionstatus !== 'readytotranscribe') {
                   return (
                     <p
                       className="display-line-breaks"
