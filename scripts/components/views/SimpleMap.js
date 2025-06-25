@@ -5,7 +5,7 @@ import 'leaflet.markercluster';
 import MapBase from './MapBase';
 import mapHelper from '../../utils/mapHelper';
 
-function SimpleMap({ marker, markers, animate }) {
+function SimpleMap({ marker, markers, animate = false }) {
   const mapView = useRef(null);
   const markersRef = useRef([]);
 
