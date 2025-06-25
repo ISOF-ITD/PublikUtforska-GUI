@@ -21,6 +21,7 @@ export default function TranscriptionOverlay(props) {
   const { session, sending, start, cancel, send } = useTranscriptionApi();
   const { fields, handleInputChange, reset } = useTranscriptionForm();
   const [sent, setSent] = useState(false);
+  const [imageIndex, setImageIndex] = useState(0);
 
   /* ───── helpers ─────────────────────────────────────────── */
   const close = () => {
@@ -28,6 +29,7 @@ export default function TranscriptionOverlay(props) {
     setVisible(false);
     reset();
     setSent(false);
+    setImageIndex(0);
   };
 
   const handleOverlayShow = useCallback(
@@ -39,6 +41,7 @@ export default function TranscriptionOverlay(props) {
       }
       setRecord(r);
       setRandomRecord(!!r.random);
+      setImageIndex(0);
       start(r.id);
       setVisible(true);
     },
@@ -194,10 +197,30 @@ export default function TranscriptionOverlay(props) {
           </div>
 
           <div className="eight columns">
-            {record.images?.[0] && (
-              <ImageMap
-                image={`${config.imageUrl}${record.images[0].source}`}
-              />
+            {record.images?.length > 0 && (
+              <>
+                <ImageMap
+                  image={`${config.imageUrl}${record.images[imageIndex].source}`}
+                />
+
+                {/* thumbnail strip */}
+                <div className="image-list">
+                  {record.images.map((img, idx) =>
+                    img.source && !img.source.toLowerCase().endsWith(".pdf") ? (
+                      <img
+                        key={idx}
+                        className={`image-item ${
+                          idx === imageIndex ? "selected" : ""
+                        }`}
+                        src={`${config.imageUrl}${img.source}`}
+                        alt=""
+                        data-index={idx}
+                        onClick={() => setImageIndex(idx)}
+                      />
+                    ) : null
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
