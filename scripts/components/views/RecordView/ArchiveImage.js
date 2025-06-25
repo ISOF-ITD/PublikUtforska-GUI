@@ -136,7 +136,7 @@ function ArchiveImage({
 
       <div className="media-title sv-portlet-image-caption">
         {mediaItem.title || ''}
-        {mediaItem.comment && mediaItem.comment.trim() !== '' && (
+        {mediaItem.comment && mediaItem.comment.trim() !== '' && mediaItem.comment.trim() !== 'None' && (
           <div>
             <br />
             <strong>Kommentar:</strong>
