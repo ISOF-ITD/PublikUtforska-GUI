@@ -73,6 +73,8 @@ export default function TranscriptionPrompt({ data }) {
     ? `${numberOfTranscribedMedia} ${l(STRINGS.of)} ${numberOfMedia} ${l(STRINGS.pagesTranscribed)}`
     : l(STRINGS.notTranscribed);
 
+  const isButtonEnabled = transcriptionstatus === 'readytotranscribe';
+  
   return (
     <div>
       <p>
@@ -93,6 +95,7 @@ export default function TranscriptionPrompt({ data }) {
         images={media}
         transcriptionType={transcriptiontype}
         random={false}
+        disabled={!isButtonEnabled}
       />
     </div>
   );

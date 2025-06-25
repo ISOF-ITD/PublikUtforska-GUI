@@ -28,6 +28,7 @@ export default function TranscribeButton({
   label,
   helptext = null,
   transcribeCancel = false,
+  disabled,
 }) {
   // This function handles button clicks. If a custom onClick handler is provided, it uses that;
   // otherwise, it defaults to dispatching an 'overlay.transcribe' event.
@@ -127,6 +128,7 @@ export default function TranscribeButton({
         className={`transcribe-button${className ? ` ${className}` : ''}`}
         onClick={effectiveOnClick}
         type="button"
+        disabled={disabled}
       >
         {label}
       </button>
