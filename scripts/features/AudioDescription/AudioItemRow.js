@@ -145,7 +145,7 @@ function AudioItemRow({
 
   return (
     <>
-      /* Main row for the audio item */}
+      {/* Main row for the audio item */}
         <tr className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200">
           <td className="py-2 px-4">
             <ListPlayButton
