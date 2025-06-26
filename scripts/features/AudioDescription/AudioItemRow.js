@@ -145,74 +145,86 @@ function AudioItemRow({
 
   return (
     <>
-      {/* Main row for the audio item */}
-      <tr className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200">
-        <td className="py-2 px-4">
-          <ListPlayButton
-            media={item}
-            recordId={recordId}
-            recordTitle={audioTitle}
-          />
-        </td>
-        <td className="py-2 px-4">
-          {audioTitle}
-          {<TimeChip seconds={durationSec} />}
-          {Array.isArray(highlightData) &&
-          highlightData.some((h) => h._source && h._source.start && h.highlight && h.highlight['media.description.text']) ? (
-            <div>
-              {highlightData
-                .filter((h) => h._source && h._source.start)
-                .map((h, idx) => (
-                  <div key={idx} dangerouslySetInnerHTML={{ __html: `Innehållsbeskrivning: ${h._source.start} ${h.highlight['media.description.text'][0]}` }} />
-                ))}
-            </div>
-          ) : null}
-          {Array.isArray(highlightData) &&
-          highlightData.some((h) => h._source && h._source.start && h.highlight && h.highlight['media.utterances.utterances.text']) ? (
-            <div>
-              {highlightData
-                .filter((h) => h._source && h._source.start)
-                .map((h, idx) => (
-                  <div key={idx} dangerouslySetInnerHTML={{ __html: `Ljudavskrift: ${secondsToMMSS(h._source.start)} ${h.highlight['media.utterances.utterances.text'][0]}` }} />
-                ))}
-            </div>
-          ) : null}
-        </td>
-        <td className="py-2 px-4 flex gap-2 items-center justify-end">
-          {canContribute && (
-            <a
-              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
-              aria-expanded={openItems[item.source] ? "true" : "false"}
-              aria-controls={`descriptions-${item.source}`}
-              onClick={() => onToggle(item.source)}
-            >
-              {openItems[item.source] ? (
-                <span className="whitespace-nowrap">
-                  <span className="px-1">Stäng</span>{" "}
-                  <FontAwesomeIcon icon={faCaretUp} />
-                </span>
-              ) : (
-                <span className="whitespace-nowrap">
-                  <span className="px-1">
-                    {descriptionsCount > 0
-                      ? `Visa Innehåll (${descriptionsCount})`
-                      : "Lägg till beskrivning"}
-                  </span>
-                  <FontAwesomeIcon icon={faCaretDown} />
-                </span>
-              )}
-            </a>
-          )}
+      /* Main row for the audio item */}
+        <tr className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200">
+          <td className="py-2 px-4">
+            <ListPlayButton
+          media={item}
+          recordId={recordId}
+          recordTitle={audioTitle}
+            />
+          </td>
+          <td className="py-2 px-4">
+            {audioTitle}
+            {<TimeChip seconds={durationSec} />}
+            {Array.isArray(highlightData) &&
+            highlightData.some((h) => h._source && h._source.start && h.highlight && h.highlight['media.description.text']) ? (
+          <div>
+            {highlightData
+              .filter((h) => h._source && h._source.start)
+              .map((h, idx) => (
+            <div
+              key={idx}
+              className="italic"
+              dangerouslySetInnerHTML={{
+                __html: `Innehållsbeskrivning: ${h._source.start} ${h.highlight['media.description.text'][0]}`
+              }}
+            />
+              ))}
+          </div>
+            ) : null}
+            {Array.isArray(highlightData) &&
+            highlightData.some((h) => h._source && h._source.start && h.highlight && h.highlight['media.utterances.utterances.text']) ? (
+          <div>
+            {highlightData
+              .filter((h) => h._source && h._source.start)
+              .map((h, idx) => (
+            <div
+              key={idx}
+              className="italic"
+              dangerouslySetInnerHTML={{
+                __html: `Ljudavskrift: ${secondsToMMSS(h._source.start)} ${h.highlight['media.utterances.utterances.text'][0]}`
+              }}
+            />
+              ))}
+          </div>
+            ) : null}
+          </td>
+          <td className="py-2 px-4 flex gap-2 items-center justify-end">
+            {canContribute && (
           <a
-            href={`${config.audioUrl}${item.source}`}
-            download
-            title="Ladda ner ljudfilen"
-            className="text-isof hover:text-darker-isof no-underline hover:cursor-pointer"
+            className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+            aria-expanded={openItems[item.source] ? "true" : "false"}
+            aria-controls={`descriptions-${item.source}`}
+            onClick={() => onToggle(item.source)}
           >
-            <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
-            <FontAwesomeIcon icon={faDownload} />
+            {openItems[item.source] ? (
+              <span className="whitespace-nowrap">
+            <span className="px-1">Stäng</span>{" "}
+            <FontAwesomeIcon icon={faCaretUp} />
+              </span>
+            ) : (
+              <span className="whitespace-nowrap">
+            <span className="px-1">
+              {descriptionsCount > 0
+                ? `Visa Innehåll (${descriptionsCount})`
+                : "Lägg till beskrivning"}
+            </span>
+            <FontAwesomeIcon icon={faCaretDown} />
+              </span>
+            )}
           </a>
-          {
+            )}
+            <a
+          href={`${config.audioUrl}${item.source}`}
+          download
+          title="Ladda ner ljudfilen"
+          className="text-isof hover:text-darker-isof no-underline hover:cursor-pointer"
+            >
+          <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
+          <FontAwesomeIcon icon={faDownload} />
+            </a>
+            {
             // Read-only mode: "canContribute" is not nessesary
             hasUtterances && (
               <Link
