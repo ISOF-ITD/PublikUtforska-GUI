@@ -6,7 +6,6 @@ const placeRoute = '(/transcribe)/places/:place_id(/record_ids/:record_ids)(/sea
 const recordRoute = '(/transcribe)/records/:record_id(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/recordtype/:recordtype)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)(/has_media/:has_media)(/has_transcribed_records/:has_transcribed_records)(/transcriptionstatus/:transcriptionstatus)(/page/:page)';
 const personRoute = '(/transcribe)/persons/:person_id(/record_ids/:record_ids)(/search/:search)(/search_field/:search_field)(/type/:type)(/category/:category)(/recordtype/:recordtype)(/year_from/:year_from)(/year_to/:year_to)(/person_relation/:person_relation)(/gender/:gender)(/person_landskap/:person_landskap)(/person_county/:person_county)(/person_harad/:person_harad)(/person_socken/:person_socken)(/filter/:filter)(/has_media/:has_media)(/has_transcribed_records/:has_transcribed_records)(/transcriptionstatus/:transcriptionstatus)(/page/:page)';
 
-// export default {
 export function createPlacePathFromPlaces(placeId, placesPath) {
   const [newPlacesPath] = placesPath.split('?');
   const router = new RouteParser(placesRoute);
@@ -132,9 +131,10 @@ export function createParamsFromSearchRoute(path) {
   let newPath = path?.startsWith('/') ? path : `/${path}`;
   [newPath] = newPath.split('?');
   const router = new RouteParser(searchRoute);
-  return router.match(newPath.replace(/\/$/, ''));
+  // router.match() is null when the path doesn’t fit the search-route pattern
+  return router.match(newPath.replace(/\/$/, '')) || {};
 }
-// };
+
 
 export default {
   createPlacePathFromPlaces,
