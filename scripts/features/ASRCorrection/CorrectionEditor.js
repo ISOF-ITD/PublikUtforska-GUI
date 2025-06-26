@@ -215,7 +215,7 @@ export default function CorrectionEditor({
 
   /* -------- render -------- */
 
-  if (!visibleUtterances?.length) {
+  if (!utterances?.length) {
     return (
       <div className="max-w-4xl mx-auto p-6 text-center text-gray-600">
         <p>Det finns ingen transkription för den här inspelningen ännu.</p>
@@ -239,18 +239,24 @@ export default function CorrectionEditor({
 
       <div className="bg-white shadow rounded-lg w-full">
         <UtterancesTableHeader readOnly={readOnly} />
-        <UtterancesList
-          rows={visibleUtterances}
-          editingId={editingId}
-          editedText={editedText}
-          listData={listData}
-          getActiveIndex={() =>
-            visibleUtterances.findIndex((u) => u.id === activeSegmentId)
-          }
-          followActive={followActive}
-          readOnly={readOnly}
-          activeId={activeSegmentId}
-        />
+        {visibleUtterances.length ? (
+          <UtterancesList
+            rows={visibleUtterances}
+            editingId={editingId}
+            editedText={editedText}
+            listData={listData}
+            getActiveIndex={() =>
+              visibleUtterances.findIndex((u) => u.id === activeSegmentId)
+            }
+            followActive={followActive}
+            readOnly={readOnly}
+            activeId={activeSegmentId}
+          />
+        ) : (
+          <p className="p-6 text-center text-gray-500">
+            Inga träffar – prova ett annat sökord eller justera filtret.
+          </p>
+        )}
       </div>
     </div>
   );
