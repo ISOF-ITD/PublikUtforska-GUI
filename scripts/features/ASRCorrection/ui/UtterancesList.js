@@ -3,7 +3,7 @@ import { VariableSizeList as List } from "react-window";
 import { ReadOnlyUtteranceRow, default as UtteranceRow } from "./UtteranceRow";
 import useIsMobile from "../hooks/useIsMobile";
 
-const BASE_ROW = 52;
+const BASE_ROW = 72;
 const EXTRA_LINE = 22;
 const AVG_CHARS_PER_LINE = 95;
 
@@ -27,20 +27,15 @@ export default function UtterancesList({
   const scrollingByUser = useRef(false);
 
   /* --- height calculator for react-window --- */
-  // 1. keep an up-to-date map with the real heights
-  const sizeMap = useRef({}); // { [index]: px }
-
-  const setSize = useCallback((index, size) => {
-    if (sizeMap.current[index] !== size) {
-      sizeMap.current[index] = size;
-      listRef.current?.resetAfterIndex(index); // tells react-window to re-layout
-    }
-  }, []);
-
-  // 2. let VariableSizeList ask that map
   const getItemSize = useCallback(
-    (i) => sizeMap.current[i] ?? BASE_ROW, // fall back to base height the first time
-    []
+    (i) => {
+      const txt = rows[i]?.text ?? "";
+      const hardBreaks = (txt.match(/\n/g) || []).length; // radbrytningar i texten
+      const softBreaks = Math.floor(txt.length / AVG_CHARS_PER_LINE);
+      const totalLines = 1 + hardBreaks + softBreaks; // minst 1 rad
+      return BASE_ROW + (totalLines - 1) * EXTRA_LINE;
+    },
+    [rows]
   );
 
   /* --- auto-scroll when active row changes --- */
@@ -61,10 +56,9 @@ export default function UtterancesList({
   /* --- keep row heights in sync when rows change (search / filter) --- */
   useEffect(() => {
     if (!listRef.current) return;
-    // Re-measure from row 0 – cheaper because it only recalculates sizes,
-    // it doesn’t re-render invisible rows.
-    listRef.current.resetAfterIndex(0, /* shouldForceUpdate */ false);
-  }, [rows.length, editingId, editedText]);
+    // Tell react-window to forget everything from index 0 onward and immediately re-render the visible items
+    listRef.current.resetAfterIndex(0, true);
+  }, [rows]);
 
   /* — stop auto-follow when the user manually scrolls — */
   useEffect(() => {
@@ -89,10 +83,7 @@ export default function UtterancesList({
     if (idx >= 0) listRef.current.scrollToItem(idx, "center");
   }, [activeId]);
 
-  const itemData = useMemo(
-    () => ({ ...baseData, setSize }),
-    [baseData, setSize]
-  );
+  const itemData = useMemo(() => baseData, [baseData]);
 
   /* --- always virtualised --- */
   return (

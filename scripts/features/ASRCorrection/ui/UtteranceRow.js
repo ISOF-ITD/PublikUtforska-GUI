@@ -29,7 +29,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
   style = {},
   data,
 }) {
-  const { rows, handlePlay, isPlaying, activeId, setSize } = data;
+  const { rows, handlePlay, isPlaying, activeId } = data;
   const u = rows[index];
   const isActive = activeId === u.id;
   const isCurrentPlaying = isPlaying && isActive;
@@ -43,10 +43,6 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
   const rowRef = useRef(null);
 
   // measure once the row is rendered (or when its text changes)
-  useLayoutEffect(() => {
-    const h = rowRef.current?.getBoundingClientRect().height;
-    if (h) setSize(index, h);
-  }, [index, u.text, setSize]);
 
   return (
     <div
@@ -60,7 +56,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
         [" ", "Enter"].includes(e.key) && handlePlay(u.start, u.id)
       }
       className={classNames(
-        "grid grid-cols-[auto_1fr] gap-4 px-4 py-3 rounded-md items-center",
+        "grid grid-cols-[auto_1fr] gap-4 px-4 !py-3 rounded-md items-center",
         "relative overflow-hidden min-w-0",
         "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-isof/70",
         isActive && "bg-isof/10 ring-2 ring-inset ring-isof"
@@ -69,7 +65,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
       <button
         aria-label={isCurrentPlaying ? "Pausa uppspelning" : "Spela upp"}
         aria-pressed={isCurrentPlaying}
-        className="inline-flex items-center justify-center w-9 h-9 rounded-full
+        className="inline-flex items-center justify-center !w-9 !h-9 rounded-full
                    text-isof focus-visible:ring-2
                    focus-visible:ring-isof"
         onClick={(e) => {
@@ -113,7 +109,6 @@ export default React.memo(function UtteranceRow({
     readOnly,
     activeId,
     query,
-    setSize,
   } = data;
 
   const utterance = rows[index];
@@ -124,10 +119,6 @@ export default React.memo(function UtteranceRow({
 
   /* ---------- dynamic height ---------- */
   const rowRef = useRef(null);
-  useLayoutEffect(() => {
-    const h = rowRef.current?.getBoundingClientRect().height;
-    if (h) setSize(index, h);
-  }, [index, utterance.text, editedText, isEditing, setSize]);
 
   /* ---------- MOBILE (“< sm”) – card ---------- */
   const mobileCard = (
