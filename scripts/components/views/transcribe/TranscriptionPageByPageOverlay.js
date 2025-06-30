@@ -10,6 +10,7 @@ import TranscribeButton from "./TranscribeButton";
 import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import { FocusTrap } from "@headlessui/react";
+import { toastOk } from "../../../utils/toast";
 
 export default function TranscriptionPageByPageOverlay() {
   /* visibility & record data */
@@ -246,6 +247,9 @@ export default function TranscriptionPageByPageOverlay() {
     const ok = await send(payload);
 
     if (ok) {
+      toastOk(
+        l(`Sida ${currentPageIndex + 1} sparad – tack!`, { duration: 8000 })
+      );
       /* mark page as sent + clean unsaved flags */
       setPages((prev) => {
         const next = [...prev];

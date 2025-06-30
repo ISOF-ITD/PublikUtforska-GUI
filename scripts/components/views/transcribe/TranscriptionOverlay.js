@@ -12,6 +12,7 @@ import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import ContributorInfoFields from "./transcriptionForms/ContributorInfoFields";
 import { FocusTrap } from "@headlessui/react";
+import { toastOk } from "../../../utils/toast";
 
 export default function TranscriptionOverlay(props) {
   const [visible, setVisible] = useState(false);
@@ -86,6 +87,7 @@ export default function TranscriptionOverlay(props) {
     }
     const ok = await send(buildPayload());
     if (ok) {
+      toastOk(l("Avskriften sparad – tack!", { duration: 8000 }));
       window.eventBus?.dispatch("overlay.transcribe.sent");
       setSent(true);
     }
@@ -93,7 +95,7 @@ export default function TranscriptionOverlay(props) {
   const closeBtnRef = useRef(null);
 
   if (!visible || !record) return null;
-  
+
   /* ------- success view ------------------------- */
   if (sent) {
     return (
