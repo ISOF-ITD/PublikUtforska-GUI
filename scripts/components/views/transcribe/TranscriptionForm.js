@@ -79,6 +79,11 @@ export default function TranscriptionForm({
 
   /* ─── Handlers ─────────────────────────────── */
   const handleEmailBlur = (e) => setEmailValid(validateEmail(e.target.value));
+  const wordCount = transcriptionText
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+  const formValid = wordCount >= 2 && emailValid;
 
   /* ─── UI ───────────────────────────────────── */
   return (
@@ -204,15 +209,22 @@ export default function TranscriptionForm({
             onClick={sendButtonClickHandler}
             data-gotonext="true"
             className={`
-              inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
-              font-semibold text-white shadow transition
-              ${
-                sending || disableInput
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof"
-              }
-            `}
-            disabled={disableInput || sending}
+          inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
+          font-semibold text-white shadow transition
+          ${
+            sending || disableInput || !formValid
+              ? "bg-gray-400 !cursor-not-allowed !hover:text-white"
+              : "!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof"
+          }
+        `}
+            disabled={disableInput || sending || !formValid}
+            title={
+              !formValid
+                ? l(
+                    "Knappen aktiveras när du har skrivit minst två ord i Text-fältet"
+                  )
+                : undefined
+            }
           >
             {sending ? l("Skickar…") : sendButtonLabel}
           </button>

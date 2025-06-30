@@ -119,6 +119,12 @@ export default function TranscriptionOverlay(props) {
     );
   }
 
+  const wordCount = fields.messageInput
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+  const formValid = wordCount >= 2 && emailValid;
+
   return (
     <div className="overlay-container visible">
       <div className="overlay-window large">
@@ -188,9 +194,18 @@ export default function TranscriptionOverlay(props) {
             />
             <button
               type="button"
-              className="button-primary"
+              className={`button-primary ${
+                sending || !formValid ? "opacity-50 !cursor-not-allowed !hover:text-white" : ""
+              }`}
               onClick={sendHandler}
-              disabled={sending}
+              disabled={sending || !formValid}
+              title={
+                !formValid
+                  ? l(
+                      "Knappen aktiveras när du har skrivit minst två ord i Text-fältet."
+                    )
+                  : undefined
+              }
             >
               {sending ? l("Skickar…") : l("Skicka")}
             </button>

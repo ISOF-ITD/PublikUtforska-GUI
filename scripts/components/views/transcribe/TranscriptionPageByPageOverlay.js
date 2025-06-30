@@ -290,6 +290,8 @@ export default function TranscriptionPageByPageOverlay() {
             recordDetails={recordDetails}
             handleHideOverlay={handleHideOverlay}
             transcribeCancel={transcribeCancel}
+            progressCurrent={currentPageIndex + 1}
+            progressTotal={pages.length}
           />
           {/* Stäng-knapp */}
           <button
