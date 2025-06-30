@@ -9,15 +9,11 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArchive,
-  faCalendar,
   faChevronRight,
-  faMapMarkedAlt,
   faPencil,
-  faUser,
-  faTag,
-  faCheckCircle,
   faFileLines,
   faVolumeHigh,
+  faClosedCaptioning,
 } from "@fortawesome/free-solid-svg-icons";
 import PdfGif from "../../../../img/pdf.gif";
 import config from "../../../config";
@@ -72,6 +68,9 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
     mode === "transcribe" ? "/transcribe" : ""
   }/records/${id}`;
   const audioItem = media.find((m) => m.type === "audio");
+  const hasTranscription = media.some(
+    (m) => m.type === "audio" && m.utterances?.utterances?.length > 0
+  );
   const showSummary =
     metadata?.some((m) => m.type === "summary") &&
     !!item.text &&
@@ -150,6 +149,18 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
             className="!text-isof focus:outline-none focus:ring-2 focus:ring-isof"
           >
             <span dangerouslySetInnerHTML={{ __html: displayTitle }} />
+            {hasTranscription && (
+              <span
+                className="inline-flex items-center gap-0.5 -!mb-0.5 px-1.5 text-[10px] font-medium text-lighter-isof"
+                title={l("Har avskrift")}
+              >
+                <FontAwesomeIcon
+                  icon={faClosedCaptioning}
+                  className="text-[16px] bg-isof rounded-sm"
+                />
+                <span className="sr-only">{l("Har avskrift")}</span>
+              </span>
+            )}
             <span className="ml-2 inline-block text-gray-400 transition-all group-hover:translate-x-1">
               <FontAwesomeIcon icon={faChevronRight} />
             </span>

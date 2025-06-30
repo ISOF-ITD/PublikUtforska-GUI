@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolder,
   faFolderOpen,
-  faCommentDots,
+  faClosedCaptioning,
 } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
 
@@ -97,9 +97,15 @@ export default function RecordListItem(props) {
         : text
       : "";
 
+  /* ----- audio & utterance helpers ----- */
   const audioItem =
     config.siteOptions.recordList?.displayPlayButton &&
     media.find((m) => m.type === "audio");
+
+  // does any audio file contain utterances?
+  const hasTranscription = media.some(
+    (m) => m.type === "audio" && m.utterances?.utterances?.length > 0
+  );
 
   /* ---------- #beskrivningar for AUDIO ---------- */
   /* ---------- helper to count beskrivningar ---------- */
@@ -174,6 +180,18 @@ export default function RecordListItem(props) {
               }}
             />
           </Link>
+          {hasTranscription && (
+            <span
+              className="inline-flex items-center gap-0.5 -!mb-0.5 px-1.5 text-[10px] font-medium text-lighter-isof"
+              title={l("Har avskrift")}
+            >
+              <FontAwesomeIcon
+                icon={faClosedCaptioning}
+                className="text-[16px] bg-isof rounded-sm"
+              />
+              <span className="sr-only">{l("Har avskrift")}</span>
+            </span>
+          )}
 
           {summary && (
             <div className="item-summary text-sm text-gray-600 mt-2">
@@ -182,37 +200,39 @@ export default function RecordListItem(props) {
           )}
 
           {/* Show hits for double nested hits with highlight for descriptions */}
-          {innerHits?.['media.description']?.hits?.hits.map((descHit) => (
+          {innerHits?.["media.description"]?.hits?.hits.map((descHit) => (
             <HighlightedText
               key={descHit._id}
-              text={
-                `Innehållsbeskriving: ${ 
-                  descHit._source?.start !== undefined
-                    ? `${descHit._source.start} `
-                    : ''
-                }${descHit.highlight?.['media.description.text']
-                  ? descHit.highlight['media.description.text'][0]
-                  : descHit._source?.text || ''}`
-              }
+              text={`Innehållsbeskriving: ${
+                descHit._source?.start !== undefined
+                  ? `${descHit._source.start} `
+                  : ""
+              }${
+                descHit.highlight?.["media.description.text"]
+                  ? descHit.highlight["media.description.text"][0]
+                  : descHit._source?.text || ""
+              }`}
               className="block mt-2"
             />
           ))}
           {/* Show hits for double nested hits with highlight for utterances */}
-          {innerHits?.['media.utterances.utterances']?.hits?.hits.map((descHit) => (
-            <HighlightedText
-              key={descHit._id}
-              text={
-                `Ljudavskrift: ${ 
+          {innerHits?.["media.utterances.utterances"]?.hits?.hits.map(
+            (descHit) => (
+              <HighlightedText
+                key={descHit._id}
+                text={`Ljudavskrift: ${
                   descHit._source?.start !== undefined
                     ? `${secondsToMMSS(descHit._source.start)} `
-                    : ''
-                }${descHit.highlight?.['media.utterances.utterances.text']
-                  ? descHit.highlight['media.utterances.utterances.text'][0]
-                  : descHit._source?.text || ''}`
-              }
-              className="block mt-2"
-            />
-          ))}
+                    : ""
+                }${
+                  descHit.highlight?.["media.utterances.utterances.text"]
+                    ? descHit.highlight["media.utterances.utterances.text"][0]
+                    : descHit._source?.text || ""
+                }`}
+                className="block mt-2"
+              />
+            )
+          )}
           {/* ES highlighted hits */}
 
           {highlight?.text?.[0] && (
