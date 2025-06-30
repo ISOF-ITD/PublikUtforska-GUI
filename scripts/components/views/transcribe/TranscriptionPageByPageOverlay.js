@@ -9,6 +9,7 @@ import OverlayHeader from "./OverlayHeader";
 import TranscribeButton from "./TranscribeButton";
 import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
+import { FocusTrap } from "@headlessui/react";
 
 export default function TranscriptionPageByPageOverlay() {
   /* visibility & record data */
@@ -261,6 +262,7 @@ export default function TranscriptionPageByPageOverlay() {
       if (goToNext) goToNextTranscribePage();
     }
   };
+  const closeBtnRef = useRef(null);
 
   /* ------------------------------------------------------------ */
   /* Render                                                       */
@@ -276,96 +278,100 @@ export default function TranscriptionPageByPageOverlay() {
         className="image-item"
         src={`${config.imageUrl}${p.source}`}
         alt=""
+        loading="lazy"
         onClick={() => navigatePages(idx)}
       />
     )
   );
 
   return (
-    <div className="overlay-container visible transcription-page-by-page-overlay">
-      <div className="overlay-window large">
-        {/* ── header ────────────────────────────────────────── */}
-        <div className="overlay-header">
-          <OverlayHeader
-            recordDetails={recordDetails}
-            handleHideOverlay={handleHideOverlay}
-            transcribeCancel={transcribeCancel}
-            progressCurrent={currentPageIndex + 1}
-            progressTotal={pages.length}
-          />
-          {/* Stäng-knapp */}
-          <button
-            type="button"
-            title="stäng"
-            className="close-button white"
-            onClick={handleHideOverlay}
-            aria-label="Stäng"
-          />
-          <div className="next-random-record-button-container">
-            <TranscribeButton
-              className="button button-primary next-random-record-button"
-              random
-              label="Skriv av annan slumpmässig uppteckning"
+    <FocusTrap initialFocus={closeBtnRef}>
+      <div className="overlay-container visible transcription-page-by-page-overlay">
+        <div className="overlay-window large">
+          {/* ── header ────────────────────────────────────────── */}
+          <div className="overlay-header">
+            <OverlayHeader
+              recordDetails={recordDetails}
+              handleHideOverlay={handleHideOverlay}
               transcribeCancel={transcribeCancel}
+              progressCurrent={currentPageIndex + 1}
+              progressTotal={pages.length}
             />
-          </div>
-        </div>
-
-        {/* ── content ───────────────────────────────────────── */}
-        <div className="row">
-          {/* -------- Left column: the form ---------- */}
-          <div className="four columns">
-            <TranscriptionForm
-              sending={sending}
-              recordDetails={{
-                ...recordDetails,
-                title: fields.titleInput || recordDetails.title,
-              }}
-              currentPageIndex={currentPageIndex}
-              pages={pages}
-              titleInput={fields.titleInput}
-              transcriptionText={fields.messageInput}
-              informantNameInput={fields.informantNameInput}
-              informantBirthDateInput={fields.informantBirthDateInput}
-              informantBirthPlaceInput={fields.informantBirthPlaceInput}
-              informantInformationInput={fields.informantInformationInput}
-              nameInput={fields.nameInput}
-              emailInput={fields.emailInput}
-              comment={fields.messageCommentInput}
-              inputChangeHandler={handleInputChange}
-              sendButtonClickHandler={sendButtonClickHandler}
+            {/* Stäng-knapp */}
+            <button
+              type="button"
+              title="stäng"
+              ref={closeBtnRef}
+              className="close-button white"
+              onClick={handleHideOverlay}
+              aria-label="Stäng"
             />
-          </div>
-
-          {/* -------- Right column: image + nav ------ */}
-          <div className="eight columns">
-            {pages.length > 0 && (
-              <ImageMap
-                image={`${config.imageUrl}${pages[currentPageIndex].source}`}
+            <div className="next-random-record-button-container">
+              <TranscribeButton
+                className="button button-primary next-random-record-button"
+                random
+                label="Skriv av annan slumpmässig uppteckning"
+                transcribeCancel={transcribeCancel}
               />
-            )}
+            </div>
+          </div>
 
-            <div className="row">
-              <NavigationPanel
+          {/* ── content ───────────────────────────────────────── */}
+          <div className="row">
+            {/* -------- Left column: the form ---------- */}
+            <div className="four columns">
+              <TranscriptionForm
+                sending={sending}
+                recordDetails={{
+                  ...recordDetails,
+                  title: fields.titleInput || recordDetails.title,
+                }}
                 currentPageIndex={currentPageIndex}
                 pages={pages}
-                goToPreviousPage={goToPreviousPage}
-                goToNextPage={goToNextPage}
-                goToNextTranscribePage={goToNextTranscribePage}
+                titleInput={fields.titleInput}
+                transcriptionText={fields.messageInput}
+                informantNameInput={fields.informantNameInput}
+                informantBirthDateInput={fields.informantBirthDateInput}
+                informantBirthPlaceInput={fields.informantBirthPlaceInput}
+                informantInformationInput={fields.informantInformationInput}
+                nameInput={fields.nameInput}
+                emailInput={fields.emailInput}
+                comment={fields.messageCommentInput}
+                inputChangeHandler={handleInputChange}
+                sendButtonClickHandler={sendButtonClickHandler}
               />
             </div>
 
-            <TranscriptionThumbnails
-              thumbnailContainerRef={thumbnailContainerRef}
-              pages={pages}
-              navigatePages={navigatePages}
-              currentPageIndex={currentPageIndex}
-            >
-              {thumbnails}
-            </TranscriptionThumbnails>
+            {/* -------- Right column: image + nav ------ */}
+            <div className="eight columns">
+              {pages.length > 0 && (
+                <ImageMap
+                  image={`${config.imageUrl}${pages[currentPageIndex].source}`}
+                />
+              )}
+
+              <div className="row">
+                <NavigationPanel
+                  currentPageIndex={currentPageIndex}
+                  pages={pages}
+                  goToPreviousPage={goToPreviousPage}
+                  goToNextPage={goToNextPage}
+                  goToNextTranscribePage={goToNextTranscribePage}
+                />
+              </div>
+
+              <TranscriptionThumbnails
+                thumbnailContainerRef={thumbnailContainerRef}
+                pages={pages}
+                navigatePages={navigatePages}
+                currentPageIndex={currentPageIndex}
+              >
+                {thumbnails}
+              </TranscriptionThumbnails>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </FocusTrap>
   );
 }

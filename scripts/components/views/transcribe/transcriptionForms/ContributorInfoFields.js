@@ -106,13 +106,13 @@ export default function ContributorInfoFields({
             }
           />
           {!emailValid && (
-            <p
+            <span
               id={`${emailId}-help`}
-              className="text-xs text-red-600"
+              className="text-red-600"
               aria-live="polite"
             >
               {l("Ogiltig e-postadress")}
-            </p>
+            </span>
           )}
         </div>
       </div>

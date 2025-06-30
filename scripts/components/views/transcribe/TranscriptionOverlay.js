@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import config from "../../../config";
 import { l } from "../../../lang/Lang";
 import ImageMap from "../ImageMap";
@@ -11,6 +11,7 @@ import Uppteckningsblankett from "./transcriptionForms/Uppteckningsblankett";
 import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import ContributorInfoFields from "./transcriptionForms/ContributorInfoFields";
+import { FocusTrap } from "@headlessui/react";
 
 export default function TranscriptionOverlay(props) {
   const [visible, setVisible] = useState(false);
@@ -89,9 +90,10 @@ export default function TranscriptionOverlay(props) {
       setSent(true);
     }
   };
+  const closeBtnRef = useRef(null);
 
   if (!visible || !record) return null;
-
+  
   /* ------- success view ------------------------- */
   if (sent) {
     return (
@@ -126,120 +128,128 @@ export default function TranscriptionOverlay(props) {
   const formValid = wordCount >= 2 && emailValid;
 
   return (
-    <div className="overlay-container visible">
-      <div className="overlay-window large">
-        {/* ── header ───────────────────────────────────────── */}
-        <div className="overlay-header">
-          {l("Skriv av")} {record.title ? <>“{record.title}”</> : "uppteckning"}
-          {record.archiveId && (
-            <small>
-              &nbsp;(ur {record.archiveId}
-              {record.placeString ? ` ${record.placeString}` : ""})
-            </small>
-          )}
-          {randomRecord && !sent && (
-            <div className="next-random-record-button-container">
-              <TranscribeButton
-                className="button button-primary next-random-record-button"
-                label={l("Skriv av annan slumpmässig uppteckning")}
-                random
-                /* when the user clicks, we first cancel the current session */
-                transcribeCancel={close}
-              />
-            </div>
-          )}
-          <button
-            className="close-button white"
-            title="stäng"
-            onClick={close}
-          />
-          {!config.siteOptions.hideContactButton && (
-            <>
-              <FeedbackButton
-                title={record.title}
-                type="Uppteckning"
-                {...props}
-              />
-              <ContributeInfoButton
-                title={record.title}
-                type="Uppteckning"
-                {...props}
-              />
-              <TranscriptionHelpButton
-                title={record.title}
-                type="Uppteckning"
-                {...props}
-              />
-            </>
-          )}
-        </div>
-
-        {/* ── content ─────────────────────────────────────── */}
-        <div className="row">
-          <div className="four columns space-y-4">
-            {record.transcriptionType === "fritext" ? (
-              <Fritext {...fields} inputChangeHandler={handleInputChange} />
-            ) : (
-              <Uppteckningsblankett
-                {...fields}
-                titleInput={fields.titleInput}
-                inputChangeHandler={handleInputChange}
-              />
+    <FocusTrap initialFocus={closeBtnRef}>
+      <div className="overlay-container visible">
+        <div className="overlay-window large">
+          {/* ── header ───────────────────────────────────────── */}
+          <div className="overlay-header">
+            {l("Skriv av")}{" "}
+            {record.title ? <>“{record.title}”</> : "uppteckning"}
+            {record.archiveId && (
+              <small>
+                &nbsp;(ur {record.archiveId}
+                {record.placeString ? ` ${record.placeString}` : ""})
+              </small>
             )}
-            <ContributorInfoFields
-              {...fields}
-              inputChangeHandler={handleInputChange}
-              emailValid={emailValid}
-              setEmailValid={setEmailValid}
-            />
-            <button
-              type="button"
-              className={`button-primary ${
-                sending || !formValid ? "opacity-50 !cursor-not-allowed !hover:text-white" : ""
-              }`}
-              onClick={sendHandler}
-              disabled={sending || !formValid}
-              title={
-                !formValid
-                  ? l(
-                      "Knappen aktiveras när du har skrivit minst två ord i Text-fältet."
-                    )
-                  : undefined
-              }
-            >
-              {sending ? l("Skickar…") : l("Skicka")}
-            </button>
-          </div>
-
-          <div className="eight columns">
-            {record.images?.length > 0 && (
-              <>
-                <ImageMap
-                  image={`${config.imageUrl}${record.images[imageIndex].source}`}
+            {randomRecord && !sent && (
+              <div className="next-random-record-button-container">
+                <TranscribeButton
+                  className="button button-primary next-random-record-button"
+                  label={l("Skriv av annan slumpmässig uppteckning")}
+                  random
+                  /* when the user clicks, we first cancel the current session */
+                  transcribeCancel={close}
                 />
-
-                {/* thumbnail strip */}
-                <div className="image-list">
-                  {record.images.map((img, idx) =>
-                    img.source && !img.source.toLowerCase().endsWith(".pdf") ? (
-                      <img
-                        key={idx}
-                        className={`image-item ${
-                          idx === imageIndex ? "selected" : ""
-                        }`}
-                        src={`${config.imageUrl}${img.source}`}
-                        alt=""
-                        data-index={idx}
-                        onClick={() => setImageIndex(idx)}
-                      />
-                    ) : null
-                  )}
-                </div>
+              </div>
+            )}
+            <button
+              className="close-button white"
+              ref={closeBtnRef}
+              title="Stäng"
+              onClick={close}
+            />
+            {!config.siteOptions.hideContactButton && (
+              <>
+                <FeedbackButton
+                  title={record.title}
+                  type="Uppteckning"
+                  {...props}
+                />
+                <ContributeInfoButton
+                  title={record.title}
+                  type="Uppteckning"
+                  {...props}
+                />
+                <TranscriptionHelpButton
+                  title={record.title}
+                  type="Uppteckning"
+                  {...props}
+                />
               </>
             )}
           </div>
+
+          {/* ── content ─────────────────────────────────────── */}
+          <div className="row">
+            <div className="four columns space-y-4">
+              {record.transcriptionType === "fritext" ? (
+                <Fritext {...fields} inputChangeHandler={handleInputChange} />
+              ) : (
+                <Uppteckningsblankett
+                  {...fields}
+                  titleInput={fields.titleInput}
+                  inputChangeHandler={handleInputChange}
+                />
+              )}
+              <ContributorInfoFields
+                {...fields}
+                inputChangeHandler={handleInputChange}
+                emailValid={emailValid}
+                setEmailValid={setEmailValid}
+              />
+              <button
+                type="button"
+                className={`button-primary ${
+                  sending || !formValid
+                    ? "opacity-50 !cursor-not-allowed !hover:text-white"
+                    : ""
+                }`}
+                onClick={sendHandler}
+                disabled={sending || !formValid}
+                title={
+                  !formValid
+                    ? l(
+                        "Knappen aktiveras när du har skrivit minst två ord i Text-fältet."
+                      )
+                    : undefined
+                }
+              >
+                {sending ? l("Skickar…") : l("Skicka")}
+              </button>
+            </div>
+
+            <div className="eight columns">
+              {record.images?.length > 0 && (
+                <>
+                  <ImageMap
+                    image={`${config.imageUrl}${record.images[imageIndex].source}`}
+                  />
+
+                  {/* thumbnail strip */}
+                  <div className="image-list">
+                    {record.images.map((img, idx) =>
+                      img.source &&
+                      !img.source.toLowerCase().endsWith(".pdf") ? (
+                        <img
+                          key={idx}
+                          className={`image-item ${
+                            idx === imageIndex ? "selected" : ""
+                          }`}
+                          src={`${config.imageUrl}${img.source}`}
+                          alt=""
+                          loading="lazy"
+                          data-index={idx}
+                          onClick={() => setImageIndex(idx)}
+                        />
+                      ) : null
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </FocusTrap>
   );
 }
