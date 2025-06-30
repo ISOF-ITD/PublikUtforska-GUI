@@ -238,7 +238,7 @@ export default function TranscriptionOverlay(props) {
                             idx === imageIndex ? "selected" : ""
                           }`}
                           src={`${config.imageUrl}${img.source}`}
-                          alt=""
+                          alt={`Uppteckning ${record.id} – ${l('sida')} ${idx + 1}`}
                           loading="lazy"
                           data-index={idx}
                           onClick={() => setImageIndex(idx)}
