@@ -92,7 +92,13 @@ export default function MapMenu({
   pictureRecordsData = { data: [], metadata: {} },
   loading,
 }) {
-  const isMobile = window.innerWidth < 700;
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 700);
+  useEffect(() => {
+  const onResize = () => setIsMobile(window.innerWidth < 700);
+  window.addEventListener('resize', onResize);
+  return () => window.removeEventListener('resize', onResize);
+}, []);
+
   const [menuExpanded, setMenuExpanded] = useState(!isMobile);
 
   const paramsLatest = {

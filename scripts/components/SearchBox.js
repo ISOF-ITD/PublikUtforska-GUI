@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faList } from '@fortawesome/free-solid-svg-icons';
-import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { l } from '../lang/Lang';
 
@@ -12,6 +12,14 @@ import { createParamsFromSearchRoute } from '../utils/routeHelper';
 import SearchSuggestions from './SearchSuggestions';
 import { getPersonFetchLocation, getPlaceFetchLocation, makeArchiveIdHumanReadable } from '../utils/helpers';
 import SearchFilterButton from './views/SearchFilterButton';
+
+function debounce(fn, delay = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(null, args), delay);
+  };
+}
 
 export default function SearchBox({
   mode, params, recordsData, audioRecordsData, pictureRecordsData, loading,
@@ -26,7 +34,8 @@ export default function SearchBox({
     loading: PropTypes.bool.isRequired,
   };
 
-  const searchInputRef = useRef();
+  const searchInputRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const suggestionsRef = useRef();
   const suggestionsCloseRef = useRef();
 
@@ -83,39 +92,43 @@ export default function SearchBox({
     return search;
   }
 
-  const executeSearch = (keywordParam, searchFieldValueParam = null, categoryToToggle = null) => {
-    // Initialize newCategories with the current categories
-    let newCategories = categories;
-    // If there's a category to toggle
-    if (categoryToToggle) {
-      // Check if the category is already in the list
-      newCategories = categories.includes(categoryToToggle)
-        // If it is, remove it from the list
-        ? categories.filter((f) => f !== categoryToToggle)
-        // If it's not, add it to the list
-        : [...categories, categoryToToggle];
-    }
-    // Update the categories state with the new list
-    setCategories(newCategories);
-    // Convert the list of categories into a string, with each category separated by a comma
-    const categoryValue = newCategories.join(',');
+  // 2. useSearchParams 
+  const executeSearch = (
+  keywordParam,
+  searchFieldValueParam = null,
+  categoryToToggle = null,
+) => {
+  // categories
+  let newCategories = categories;
+  if (categoryToToggle) {
+    newCategories = categories.includes(categoryToToggle)
+      ? categories.filter((c) => c !== categoryToToggle)
+      : [...categories, categoryToToggle];
+  }
+  setCategories(newCategories);
+  const categoryValue = newCategories.join(',');
 
-    // if keyword is a string, use it as search phrase
-    // otherwise use the value of the search input field
-    setKeyword(keywordParam); // keep track of the keyword
-    setSearchFieldValue(searchFieldValueParam); // keep track of the search field value
-    const searchPhrase = typeof keywordParam === 'string' ? encodeURIComponent(keywordParam) : encodeURIComponent(searchInputRef.current.value);
-    const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
-    const searchFieldPart = searchFieldValueParam ? `/search_field/${searchFieldValueParam}` : '';
-    // const categoryValue = categories.join(',');
-    const categoryPart = categoryValue ? `/category/${categoryValue}` : '';
-    const searchPart = searchPhrase
-      ? `search/${searchPhrase}${searchFieldPart}${categoryPart}?s=${searchFieldValueParam ? `${searchFieldValueParam}:` : ''}${searchPhrase}`
-      : categoryPart.replace(/^\//, '');
-    navigate(
-      `/${transcribePrefix}${searchPart}`,
-    );
-  };
+  // build search phrase
+  setKeyword(keywordParam);
+  setSearchFieldValue(searchFieldValueParam);
+  const searchPhrase =
+    typeof keywordParam === 'string'
+      ? encodeURIComponent(keywordParam)
+      : encodeURIComponent(searchInputRef.current.value);
+
+  const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
+  const searchFieldPart = searchFieldValueParam
+    ? `/search_field/${searchFieldValueParam}`
+    : '';
+  const categoryPart = categoryValue ? `/category/${categoryValue}` : '';
+
+  const searchPart = searchPhrase
+    ? `search/${searchPhrase}${searchFieldPart}${categoryPart}` +
+      `?s=${searchFieldValueParam ? `${searchFieldValueParam}:` : ''}${searchPhrase}`
+    : categoryPart.replace(/^\//, '');
+
+  navigate(`/${transcribePrefix}${searchPart}`);
+};
 
   const handleFilterChange = (e) => {
     const { filter: categoryToToggle } = e.target.dataset;
@@ -494,39 +507,38 @@ export default function SearchBox({
   };
 
   // ändrat värde i sökfältet
-  const searchValueChangeHandler = (e) => {
-    const { value } = e.target;
-    setSearch(value);
+  // 1. debounced fetches
+  const debouncedFetch = useCallback(
+   debounce((q) => {
+      getPersonAutocomplete(q);
+      getPlaceAutocomplete(q);
+      getProvinceAutocomplete(q);
+      getArchiveIdAutocomplete(q);
+    }, 300), // 300 ms delay
+    [] // stable forever
+  );
 
-    if (value.length > 1) {
-      // we use a promise because we want to wait for all the promises to resolve
-      Promise.all([
-        getPersonAutocomplete(value),
-        getPlaceAutocomplete(value),
-        getProvinceAutocomplete(value),
-        getArchiveIdAutocomplete(value),
-      ]);
-    } else {
-      setPersonSuggestions([]);
-      setPlaceSuggestions([]);
-      setProvinceSuggestions([]);
-      setArchiveIdSuggestions([]);
-    }
-  };
-
-  const clearSearch = () => {
+  const clearSuggestions = () => {
     setPersonSuggestions([]);
     setPlaceSuggestions([]);
     setProvinceSuggestions([]);
     setArchiveIdSuggestions([]);
+  };
+
+  const clearSearch = () => {
+    clearSuggestions();
     setPerson(null);
     setPlace(null);
-    setSearch(
-      '',
-    );
+    setSearch('');
     executeSearch('');
-    document.getElementById('searchInputMapMenu').value = '';
-    document.getElementById('searchInputMapMenu').focus();
+    // keep focus where it was
+    searchInputRef.current?.focus();
+  };
+
+  const searchValueChangeHandler = (e) => {
+    const { value } = e.target;
+    setSearch(value);
+    value.length > 1 ? debouncedFetch(value) : clearSuggestions();
   };
 
   const searchLabelText = () => {
@@ -637,8 +649,14 @@ export default function SearchBox({
           {
             // only show clear button when there is text to clear
             // or if there is text in the input field
-            (search || document.getElementById('searchInputMapMenu')?.value)
-            && <button className="clear-button" onClick={clearSearch} type="button" aria-label="Rensa sökning" />
+            search && (
+            <button
+            className="clear-button"
+            onClick={clearSearch}
+            type="button"
+            aria-label="Rensa sökning"
+            />
+            )
           }
           {
             !loading
