@@ -1,136 +1,146 @@
 /* eslint-disable react/require-default-props */
-import { forwardRef } from 'react';
-import PropTypes from 'prop-types';
-import config from '../config';
+import { forwardRef } from "react";
+import PropTypes from "prop-types";
+import config from "../config";
+
+// helper: make the search term bold inside any string
+const highlight = (text, needle = "") => {
+  if (!needle) return text;
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.split(new RegExp(`(${escaped})`, "gi")).map((part, i) => (
+    <span
+      key={i}
+      style={{
+        fontWeight:
+          part.toLowerCase() === needle.toLowerCase() ? "bold" : "normal",
+      }}
+    >
+      {part}
+    </span>
+  ));
+};
 
 const SearchSuggestions = forwardRef(
-  (
-    {
-      closeSuggestionsHandler,
-      filteredPersonSuggestions,
-      filteredPlaceSuggestions,
-      filteredSearchSuggestions,
-      filteredProvinceSuggestions,
-      filteredArchiveIdSuggestions,
-      inputKeyPressHandler,
-      search,
-      personClickHandler,
-      placeClickHandler,
-      provinceClickHandler,
-      archiveIdClickHandler,
-      suggestionClickHandler,
-    },
-    ref,
-  ) => {
-    const renderSuggestions = (title, label, suggestions, clickHandler, field, maxHeight) => {
-      const filteredSuggestions = config[`numberOf${title}Suggestions`]
-        ? suggestions().filter((suggestion, index) => index < config[`numberOf${title}Suggestions`])
-        : suggestions();
-      if (filteredSuggestions.length === 0) {
-        return null;
-      }
-      return (
-        <div style={{ maxHeight, overflowY: 'auto' }}>
-          <span className="suggestions-label">{label}</span>
-          {filteredSuggestions.map((item) => (
-            <li
-              className="suggestions-item"
-              key={item.value}
-              onClick={() => clickHandler({ [`${title.toLowerCase()}Label`]: item.label, [`${title.toLowerCase()}Value`]: item.value })}
-              tabIndex="0"
-              onKeyDown={inputKeyPressHandler}
-              data-value={item.value}
-              data-field={field}
-            >
-              {/* make matching characters bold */}
-              {
-                item.label.split(new RegExp(`(${search
-                  // put all special characters in a character class
-                  ? search.replace(/([.*+?^=!:${}()|[\\/\\])/g, '[$1]')
-                  : ''})`, 'gi')).map((part, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                      }}
-                    >
-                      {part}
-                    </span>
-                  ))
-              }
-              &nbsp;
-              {
-                item.secondaryLabel?.split(new RegExp(`(${search
-                  // put all special characters in a character class
-                  ? search.replace(/([.*+?^=!:${}()|[\\/\\])/g, '[$1]')
-                  : ''})`, 'gi')).map((part, i) => (
-                    <small
-                      key={i}
-                      style={{
-                        fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                      }}
-                    >
-                      {part}
-                    </small>
-                  ))
-              }
-              {/* make matching characters in item.comment bold. */}
-              <br />
-              {
-                // show comment if it exists and if it matches the search
-                search && item.comment?.toLowerCase().includes(search.toLowerCase())
-                && item.comment.split(new RegExp(`(${search})`, 'gi')).map((part, i) => (
-                  <small
-                    key={i}
-                    style={{
-                      fontWeight: part.toLowerCase() === (search ? search.toLowerCase() : '') ? 'bold' : 'normal',
-                    }}
-                  >
-                    {part}
-                  </small>
-                ))
-              }
-            </li>
-          ))}
-        </div>
-      );
-    };
+  ({ search, groups, activeIdx, onClose }, ref) => {
+    let runningIdx = -1;
 
     return (
-      <ul className="suggestions" ref={ref}>
+      <ul
+        className="suggestions"
+        ref={ref}
+        id="search-suggestions"
+        role="listbox"
+        aria-label="Sökförslag"
+        aria-live="polite"
+      >
         <span
+          type="button"
           className="suggestions-close"
-          onClick={closeSuggestionsHandler}
-          tabIndex="0"
+          onClick={onClose}
+          aria-label="Stäng förslag"
         >
           &times;
         </span>
-        {renderSuggestions('ArchiveId', 'Accessionsnummer', filteredArchiveIdSuggestions, archiveIdClickHandler, 'archiveId', 175)}
-        {renderSuggestions('Search', 'Vanligaste sökningar', filteredSearchSuggestions, suggestionClickHandler, 350)}
-        {renderSuggestions('Person', 'Personer', filteredPersonSuggestions, personClickHandler, 'person', 175)}
-        {renderSuggestions('Place', 'Orter', filteredPlaceSuggestions, placeClickHandler, 'place', 175)}
-        {renderSuggestions('Province', 'Landskap', filteredProvinceSuggestions, provinceClickHandler, 'place', 175)}
+
+        {groups.map(
+          ({
+            title, // 'Person', 'Place', …
+            label, // what we print above the list
+            items, // array of suggestions
+            click, // click-handler
+            field, // value for data-field (optional)
+            maxHeight = 175,
+          }) => {
+            const limit = config[`numberOf${title}Suggestions`];
+            const trimmed = limit ? items.slice(0, limit) : items;
+
+            if (!trimmed.length) return null;
+
+            return (
+              <div
+                key={title}
+                style={{ maxHeight, overflowY: "auto", listStyle: "none" }}
+              >
+                <span className="suggestions-label">{label}</span>
+
+                {trimmed.map((item) => {
+                  const currentIdx = ++runningIdx;
+                  return (
+                    <li
+                      key={item.value}
+                      id={`suggestion-${currentIdx}`}
+                      className={`suggestions-item${
+                        currentIdx === activeIdx ? " selected" : ""
+                      }`}
+                      tabIndex={0}
+                      data-value={item.value}
+                      data-field={field}
+                      onClick={() => {
+                        click(item);
+                        onClose(); // same handler used by the ×-button
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          click(item);
+                          onClose();
+                        }
+                      }}
+                    >
+                      {highlight(item.label, search)}
+                      &nbsp;
+                      {item.secondaryLabel && (
+                        <>
+                          &nbsp;
+                          <small>
+                            {highlight(item.secondaryLabel, search)}
+                          </small>
+                        </>
+                      )}
+                      {item.comment &&
+                        item.comment
+                          .toLowerCase()
+                          .includes(search.toLowerCase()) && (
+                          <>
+                            <br />
+                            <small>{highlight(item.comment, search)}</small>
+                          </>
+                        )}
+                    </li>
+                  );
+                })}
+              </div>
+            );
+          }
+        )}
       </ul>
     );
-  },
+  }
 );
 
-SearchSuggestions.displayName = 'SearchSuggestions';
-
-export default SearchSuggestions;
+SearchSuggestions.displayName = "SearchSuggestions";
 
 SearchSuggestions.propTypes = {
-  closeSuggestionsHandler: PropTypes.func.isRequired,
-  filteredPersonSuggestions: PropTypes.func.isRequired,
-  filteredPlaceSuggestions: PropTypes.func.isRequired,
-  filteredSearchSuggestions: PropTypes.func.isRequired,
-  filteredProvinceSuggestions: PropTypes.func.isRequired,
-  filteredArchiveIdSuggestions: PropTypes.func.isRequired,
-  inputKeyPressHandler: PropTypes.func.isRequired,
   search: PropTypes.string,
-  personClickHandler: PropTypes.func.isRequired,
-  placeClickHandler: PropTypes.func.isRequired,
-  provinceClickHandler: PropTypes.func.isRequired,
-  archiveIdClickHandler: PropTypes.func.isRequired,
-  suggestionClickHandler: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  groups: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      items: PropTypes.arrayOf(
+        PropTypes.shape({
+          value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+            .isRequired,
+          label: PropTypes.string.isRequired,
+          secondaryLabel: PropTypes.string,
+          comment: PropTypes.string,
+        })
+      ).isRequired,
+      click: PropTypes.func.isRequired,
+      field: PropTypes.string,
+      maxHeight: PropTypes.number,
+    })
+  ).isRequired,
+  activeIdx: PropTypes.number.isRequired,
 };
+
+export default SearchSuggestions;
