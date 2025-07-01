@@ -242,9 +242,7 @@ function AudioItemRow({
             // Read-only mode: "canContribute" is not nessesary
             hasUtterances && (
               <Link
-                to={`/records/${recordId}/audio/${encodeURIComponent(
-                  item.source
-                )}/transcribe`}
+                to={`/records/${recordId}/audio/${item.id}/transcribe`}
                 className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               >
                 <span className="px-1 underline underline-offset-2">

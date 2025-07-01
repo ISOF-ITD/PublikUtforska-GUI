@@ -101,7 +101,7 @@ function createPopupRoutes(prefix) {
       ),
       children: [
         {
-          path: 'audio/:source/transcribe',
+          path: 'audio/:id/transcribe',
           element: <CorrectionView />,
         }
       ],

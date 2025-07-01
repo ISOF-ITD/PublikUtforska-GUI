@@ -23,7 +23,7 @@ export default function CorrectionEditor({
   readOnly = true,
 }) {
   /* -------- routing / context -------- */
-  const { source } = useParams();
+  const { source, id: fileId } = useParams();
   // prefer an explicit prop, otherwise fall back to the outlet context
   const outletCtx = useOutletContext() || {};
   const data = propData ?? outletCtx.data;
@@ -38,19 +38,16 @@ export default function CorrectionEditor({
 
   /* -------- audio item & title -------- */
   const audioItem = useMemo(() => {
-    const sameSrc =
-      data?.media?.filter(
-        (m) =>
-          decodeURIComponent(m.source) === decodeURIComponent(source) ||
-          m.source === source
-      ) ?? [];
+    const sameFileId =
+      data?.media?.filter((m) => String(m.id) === String(fileId)) ?? [];
+
     return (
-      sameSrc.find(
+      sameFileId.find(
         (m) =>
           Array.isArray(m.utterances?.utterances) || Array.isArray(m.utterances)
-      ) || sameSrc[0]
+      ) || sameFileId [0]
     );
-  }, [data, source]);
+  }, [data, fileId]);
 
   const audioTitle = useMemo(
     () =>
