@@ -1,29 +1,35 @@
 /* eslint-disable react/require-default-props */
-import PropTypes from 'prop-types';
-import { useParams, Link } from 'react-router-dom';
-import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
-import { l } from '../lang/Lang';
+import { Link, useParams } from "react-router-dom";
+import PropTypes from "prop-types";
+import { l } from "../lang/Lang";
+import {
+  createParamsFromSearchRoute,
+  createSearchRoute,
+} from "../utils/routeHelper";
 
-export default function FilterSwitch({ mode = 'material' }) {
+export default function FilterSwitch({ mode = "material" }) {
   const params = useParams();
+  const sharedRoute = createSearchRoute(
+    createParamsFromSearchRoute(params["*"])
+  ).replace(/^\//, "");
 
   return (
-    <div className="nordic-switch-wrapper map-floating-control">
+    <div
+      className="nordic-switch-wrapper map-floating-control"
+      role="tablist"
+      aria-label="Växla mellan arkivmaterial och 'skriva av' läge"
+    >
       <Link
-        to={
-          `/${createSearchRoute(createParamsFromSearchRoute(params['*']))
-          // remove leading slash if it exists
-            .replace(/^\//, '')}`
-        }
-        className={mode === 'material' ? 'selected' : ''}
+        to={`/${sharedRoute}`}
+        className={mode === "material" ? "selected" : ""}
       >
-        {l('Arkivmaterial')}
+        {l("Arkivmaterial")}
       </Link>
       <Link
-        to={`/transcribe/${createSearchRoute(createParamsFromSearchRoute(params['*'])).replace(/^\//, '')}`}
-        className={mode === 'transcribe' ? 'selected' : ''}
+        to={`/transcribe/${sharedRoute}`}
+        className={mode === "transcribe" ? "selected" : ""}
       >
-        {l('Skriva av')}
+        {l("Skriva av")}
       </Link>
     </div>
   );
