@@ -204,6 +204,57 @@ export default {
         crossOrigin: true,
       },
     },
+    // Generalstabskartan Länsstyrelsen
+    {
+      isWms: true,
+      label: 'Generalstabskartan',
+      url: 'https://ext-geodata-raster.lansstyrelsen.se/arcgis/services/RasterNationellt/lst_ext_generalstabskartan/ImageServer/WMSServer',
+      layers: 'lst_ext_generalstabskartan',
+      //TILED: true,
+      //TILESORIGIN: '-2238400, 5287200',
+      ISBASELAYER: true,
+      hidden: true,
+      maxZoom: 17,
+      minZoom: 3,
+      options: {
+        attribution: '&copy;Länsstyrelsen Generalstabskartan',
+        crossOrigin: true,
+      },
+    },
+    // Häradsekonomiska kartan Länsstyrelsen
+    {
+      isWms: true,
+      label: 'Häradsekonomiska kartan',
+      url: 'https://ext-geodata-raster.lansstyrelsen.se/arcgis/services/RasterNationellt/lst_ext_haradsekonomiska_kartan_temp/ImageServer/WMSServer',
+      layers: 'lst_ext_haradsekonomiska_kartan_temp',
+      //TILED: true,
+      //TILESORIGIN: '-2238400, 5287200',
+      ISBASELAYER: true,
+      hidden: true,
+      maxZoom: 17,
+      minZoom: 6,
+      options: {
+        attribution: '&copy;Länsstyrelsen Häradsekonomiska kartan',
+        crossOrigin: true,
+      },
+    },
+    // Ekonomiska kartan Länsstyrelsen
+    {
+      isWms: true,
+      label: 'Ekonomiska kartan',
+      url: 'https://ext-geodata-raster.lansstyrelsen.se/arcgis/services/RasterNationellt/lst_ext_ekonomiska_kartan/ImageServer/WMSServer',
+      layers: 'lst_ext_ekonomiska_kartan',
+      //TILED: true,
+      //TILESORIGIN: '-2238400, 5287200',
+      ISBASELAYER: true,
+      hidden: true,
+      maxZoom: 17,
+      minZoom: 3,
+      options: {
+        attribution: '&copy;Länsstyrelsen Ekonomiska kartan',
+        crossOrigin: true,
+      },
+    },
   ],
 
   createLayers() {
