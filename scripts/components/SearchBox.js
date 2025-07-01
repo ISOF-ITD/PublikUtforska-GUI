@@ -245,12 +245,13 @@ export default function SearchBox({
       {
         title: "Search",
         label: l("Vanligaste sökningar"),
-        items:
-          search.trim() === ""
-            ? [...topSearches].sort(suggestionSort(search))
-            : [], // hide the group once the user types
+        items: topSearches
+          .filter(({ label }) =>
+            label.toLowerCase().includes(search.trim().toLowerCase())
+          )
+          .sort(suggestionSort(search)),
         click: (s) => executeSearch(s.value),
-        maxHeight: 250,
+        maxHeight: 240,
       },
       {
         // Personer
