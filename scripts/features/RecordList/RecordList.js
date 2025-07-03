@@ -89,8 +89,8 @@ export default function RecordList(props) {
   /* ------- side-effect: url hash “showlist” ------- */
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    if (searchParams.has('showlist')) {
-      window.eventBus?.dispatch('routePopup.show');
+    if (searchParams.has("showlist")) {
+      window.eventBus?.dispatch("routePopup.show");
     }
   }, [location]);
 
@@ -135,7 +135,14 @@ export default function RecordList(props) {
             />
           )}
 
-          <RecordCards records={records} params={params} mode={mode} />
+          <RecordCards
+            records={records}
+            params={params}
+            mode={mode}
+            highlightRecordsWithMetadataField={
+              highlightRecordsWithMetadataField
+            }
+          />
 
           <RecordTable
             records={records}

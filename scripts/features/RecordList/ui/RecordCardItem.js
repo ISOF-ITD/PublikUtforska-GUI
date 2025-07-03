@@ -11,8 +11,6 @@ import {
   faArchive,
   faChevronRight,
   faPencil,
-  faFileLines,
-  faVolumeHigh,
   faClosedCaptioning,
 } from "@fortawesome/free-solid-svg-icons";
 import PdfGif from "../../../../img/pdf.gif";
@@ -20,11 +18,20 @@ import config from "../../../config";
 import TranscribeButton from "../../../components/views/transcribe/TranscribeButton";
 import TranscriptionStatus from "./TranscriptionStatus";
 import useSubrecords from "../hooks/useSubrecords";
+import MediaIcons from "./MediaIcons";
+import HighlightedText from "./HighlightedText";
+import PropTypes from "prop-types";
+import { secondsToMMSS } from "../../../utils/timeHelper";
 
 const pill =
   "inline-flex items-center border rounded-full px-3 py-1 text-xs font-medium";
 
-export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
+export const RecordCardItem = ({
+  item,
+  searchParams,
+  mode = "material",
+  highlightRecordsWithMetadataField,
+}) => {
   const {
     _source: {
       archive,
@@ -71,6 +78,50 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
   const hasTranscription = media.some(
     (m) => m.type === "audio" && m.utterances?.utterances?.length > 0
   );
+
+  /* ─────── inner-hits (description + utterances) ─────── */
+  const descriptionHits =
+    item.inner_hits?.["media.description"]?.hits?.hits ?? [];
+
+  const utteranceHits =
+    item.inner_hits?.["media.utterances.utterances"]?.hits?.hits ?? [];
+
+  const innerHitsToShow = [
+    ...descriptionHits.map((h) => ({
+      key: h._id,
+      text: `Innehållsbeskrivning: ${
+        h._source?.start !== undefined ? `${h._source.start} ` : ""
+      }${
+        h.highlight?.["media.description.text"]
+          ? h.highlight["media.description.text"][0]
+          : h._source?.text || ""
+      }`,
+    })),
+    ...utteranceHits.map((h) => ({
+      key: h._id,
+      text: `Ljudavskrift: ${
+        h._source?.start !== undefined
+          ? `${secondsToMMSS(h._source.start)} `
+          : ""
+      }${
+        h.highlight?.["media.utterances.utterances.text"]
+          ? h.highlight["media.utterances.utterances.text"][0]
+          : h._source?.text || ""
+      }`,
+    })),
+  ].slice(0, 3); // max three snippets
+
+  /* ───────── highlight / summary ──────── */
+  const displayTextSummary =
+    highlightRecordsWithMetadataField &&
+    metadata?.some((m) => m.type === highlightRecordsWithMetadataField);
+
+  const summary =
+    displayTextSummary && item.text
+      ? item.text.length > 250
+        ? `${item.text.slice(0, 250)}…`
+        : item.text
+      : null;
   const showSummary =
     metadata?.some((m) => m.type === "summary") &&
     !!item.text &&
@@ -124,25 +175,7 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
     <article className="group relative rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md">
       {/* Header Section */}
       <header className="flex items-center gap-2">
-        {media?.some((m) => m.source?.toLowerCase().includes(".pdf")) && (
-          <sub>
-            <img src={PdfGif} alt="pdf" title="Accession" className="inline" />
-          </sub>
-        )}
-        {media?.some((m) => m.source?.toLowerCase().includes(".jpg")) && (
-          <FontAwesomeIcon
-            icon={faFileLines}
-            className="text-isof"
-            title="Uppteckning"
-          />
-        )}
-        {media?.some((m) => m.source?.toLowerCase().includes(".mp3")) && (
-          <FontAwesomeIcon
-            icon={faVolumeHigh}
-            className="text-isof"
-            title="Inspelning"
-          />
-        )}
+        <MediaIcons media={media} />
         <span className="flex-1 text-lg font-semibold leading-tight !text-isof">
           <Link
             to={recordUrl}
@@ -169,7 +202,7 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
       </header>
 
       {/* Metadata Grid */}
-      <div className="mt-3 flex flex-col gap-2 text-sm">
+      <div className="mt-3 flex flex-col gap-y-2 text-sm">
         <div className="flex items-center gap-1.5">
           <FontAwesomeIcon icon={faArchive} className="flex-shrink-0" />
           <span className="font-medium text-isof">
@@ -215,30 +248,35 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
               </div>
             </div>
           )}
-
-        <TranscriptionStatus
-          status={transcriptionstatus}
-          type={recordtype === "one_accession_row" ? "accession" : "record"}
-          transcriptiontype={
-            transcriptiontype === "audio" || descriptionCount > 0
-              ? "audio"
-              : transcriptiontype
-          }
-          done={done}
-          total={total}
-          pillClasses={`${pill} ml-auto`}
-        />
       </div>
 
-      {/* Summary Section */}
-      {showSummary && (
-        <div className="mt-3 relative">
-          <p className="text-sm text-gray-600 line-clamp-3 transition-all">
-            {item.text}
-          </p>
-          <div className="absolute bottom-0 h-6 w-full bg-gradient-to-t from-white via-white/80 pointer-events-none"></div>
-        </div>
+      {/* Summary first (if any) */}
+      {summary && (
+        <p className="mt-2 text-sm text-gray-600 line-clamp-4">{summary}</p>
       )}
+
+      {/* New: inner-hits for descriptions + utterances */}
+      {innerHitsToShow.map(({ key, text }) => (
+        <HighlightedText key={key} text={text} className="block mt-2 text-sm" />
+      ))}
+
+      {/* Fallback: ordinary ES text hit */}
+      {!summary && innerHitsToShow.length === 0 && highlight?.text?.[0] && (
+        <HighlightedText text={highlight.text[0]} className="block mt-2" />
+      )}
+
+      <TranscriptionStatus
+        status={transcriptionstatus}
+        type={recordtype === "one_accession_row" ? "accession" : "record"}
+        transcriptiontype={
+          transcriptiontype === "audio" || descriptionCount > 0
+            ? "audio"
+            : transcriptiontype
+        }
+        done={done}
+        total={total}
+        pillClasses={`${pill} mr-auto`}
+      />
 
       {/* Transcription CTA */}
       {transcriptionstatus === "readytotranscribe" && media.length > 0 && (
@@ -263,4 +301,11 @@ export const RecordCardItem = ({ item, searchParams, mode = "material" }) => {
       )}
     </article>
   );
+};
+
+RecordCardItem.propTypes = {
+  item: PropTypes.object.isRequired,
+  searchParams: PropTypes.object,
+  mode: PropTypes.string,
+  highlightRecordsWithMetadataField: PropTypes.string,
 };

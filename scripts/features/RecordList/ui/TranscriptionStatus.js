@@ -6,13 +6,14 @@ import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 
 /*  Swedish labels for page-/text-based material */
 const labels = {
-  readytotranscribe: "Nej",
+  readytotranscribe: "Redo för avskrivning",
   undertranscription: "Skrivs av",
   transcribed: "Granskas",
   reviewing: "Granskas",
   needsimprovement: "Granskas",
   approved: "Granskas",
   published: "Avskriven",
+  readytocontribute: "Redo att bidra",
 };
 
 export default function TranscriptionStatus({
@@ -26,7 +27,10 @@ export default function TranscriptionStatus({
   /* ─────────────────────────────────────────────────────────────
      AUDIO: show a passive counter
   ───────────────────────────────────────────────────────────── */
-  if (transcriptiontype === "audio") {
+  if (
+    transcriptiontype === "audio" &&
+    (status === "readytocontribute" || status === "readytotranscribe")
+  ) {
     const count = done ?? 0;
     const bg = count ? "!bg-lighter-isof" : "bg-white";
 
@@ -66,7 +70,7 @@ export default function TranscriptionStatus({
     const pct = Math.round((done / total) * 100);
     return (
       <div className="mr-2 space-y-1">
-        <span className="text-sm">{`${done} av ${total}`}</span>
+        <span className="text-sm">{`Avskrift klar: ${done} av ${total}`}</span>
         <div
           className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-isof border-solid bg-white"
           title={`${pct}%`}
