@@ -94,6 +94,14 @@ export default function RecordList(props) {
     }
   }, [location]);
 
+  useEffect(() => {
+    // scroll to the container top whenever page changes
+    window.scrollTo({
+      top: containerRef?.current?.offsetTop ?? 0,
+      behavior: "smooth",
+    });
+  }, [currentPage, containerRef]);
+
   /* ------- render ------- */
   return (
     <>
@@ -126,6 +134,9 @@ export default function RecordList(props) {
             records.length === 0 ? "min-h-[200px]" : ""
           }`}
         >
+          <div aria-live="polite" className="sr-only">
+            {l("Sida")} {currentPage} {l("av")} {maxPage}
+          </div>
           {!disableListPagination && (
             <Pagination
               currentPage={currentPage}

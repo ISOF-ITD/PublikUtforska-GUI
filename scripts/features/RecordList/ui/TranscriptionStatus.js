@@ -70,7 +70,7 @@ export default function TranscriptionStatus({
     const pct = Math.round((done / total) * 100);
     return (
       <div className="mr-2 space-y-1">
-        <span className="text-sm">{`Avskrift klar: ${done} av ${total}`}</span>
+        <span className="text-sm">{`${done} av ${total}`}</span>
         <div
           className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-isof border-solid bg-white"
           title={`${pct}%`}
