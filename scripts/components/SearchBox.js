@@ -354,6 +354,7 @@ export default function SearchBox({
   const handleGlobalKey = useCallback(
     (e) => {
       if (!suggestionsVisible) return;
+      if (!suggestionsVisible || flatSuggestions.length === 0) return;
       if (["ArrowDown", "ArrowUp"].includes(e.key)) {
         e.preventDefault();
         setActiveIdx((prev) =>
@@ -375,6 +376,14 @@ export default function SearchBox({
     window.addEventListener("keydown", handleGlobalKey);
     return () => window.removeEventListener("keydown", handleGlobalKey);
   }, [handleGlobalKey]);
+
+  const hasSuggestions = useMemo(() => {
+   return suggestionGroups.some(({ title, items }) => {
+     const limit = config[`numberOf${title}Suggestions`];
+     const trimmed = limit ? items.slice(0, limit) : items;
+     return trimmed.length > 0;
+   });
+ }, [suggestionGroups]);
 
   // JSX
   return (
@@ -436,7 +445,7 @@ export default function SearchBox({
             <strong>{labelValue}</strong>
           </div>
 
-          {suggestionsVisible && (
+          {suggestionsVisible && hasSuggestions && (
             <SearchSuggestions
               search={search}
               activeIdx={activeIdx}
