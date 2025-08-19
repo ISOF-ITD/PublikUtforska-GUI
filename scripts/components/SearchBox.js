@@ -289,6 +289,19 @@ export default function SearchBox({
     [topSearches, people, places, provinces, archives, executeSearch, search]
   );
 
+  // single source of truth for visible suggestions
+  const visibleSuggestionGroups = useMemo(() => suggestionGroups.map((g) => {
+    const limit = config[`numberOf${g.title}Suggestions`];
+    return { ...g, items: limit ? g.items.slice(0, limit) : g.items };
+  }), [suggestionGroups]);
+
+  const flatSuggestions = useMemo(
+    () => visibleSuggestionGroups.flatMap((g) => g.items.map((it) => ({ ...it, group: g }))),
+    [visibleSuggestionGroups],
+  );
+
+  const hasSuggestions = flatSuggestions.length > 0;
+
   const debouncedChange = useDebounce(setSearch);
 
   // effects
@@ -341,19 +354,11 @@ export default function SearchBox({
   };
 
   const [activeIdx, setActiveIdx] = useState(-1);
-  const flatSuggestions = useMemo(
-    () =>
-      suggestionGroups.flatMap((g) =>
-        g.items.map((it) => ({ ...it, group: g }))
-      ),
-    [suggestionGroups]
-  );
 
-  useEffect(() => setActiveIdx(-1), [suggestionsVisible, search]);
+  useEffect(() => setActiveIdx(-1), [suggestionsVisible, search, flatSuggestions.length]);
 
   const handleGlobalKey = useCallback(
     (e) => {
-      if (!suggestionsVisible) return;
       if (!suggestionsVisible || flatSuggestions.length === 0) return;
       if (["ArrowDown", "ArrowUp"].includes(e.key)) {
         e.preventDefault();
@@ -369,21 +374,13 @@ export default function SearchBox({
         setSuggestionsVisible(false);
       }
     },
-    [activeIdx, flatSuggestions, suggestionsVisible]
+    [activeIdx, flatSuggestions, suggestionsVisible],
   );
 
   useEffect(() => {
     window.addEventListener("keydown", handleGlobalKey);
     return () => window.removeEventListener("keydown", handleGlobalKey);
   }, [handleGlobalKey]);
-
-  const hasSuggestions = useMemo(() => {
-   return suggestionGroups.some(({ title, items }) => {
-     const limit = config[`numberOf${title}Suggestions`];
-     const trimmed = limit ? items.slice(0, limit) : items;
-     return trimmed.length > 0;
-   });
- }, [suggestionGroups]);
 
   // JSX
   return (
@@ -449,7 +446,7 @@ export default function SearchBox({
             <SearchSuggestions
               search={search}
               activeIdx={activeIdx}
-              groups={suggestionGroups}
+              groups={visibleSuggestionGroups}
               ref={suggestionsRef}
               onClose={() => setSuggestionsVisible(false)}
             />
