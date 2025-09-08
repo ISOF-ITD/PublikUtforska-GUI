@@ -112,7 +112,7 @@ export default function ContentsElement({ data }) {
         >
           <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
           {' '}
-          <span>Innehåll</span>
+          <span><b>Beskrivning av innehållet</b></span>
         </button>
         <div className={`record-text realkatalog-content display-line-breaks ${expanded ? 'show' : 'hide'}`}>
           {parseContentWithClickableTimeslots(contents)}
