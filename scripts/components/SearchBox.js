@@ -182,7 +182,7 @@ export default function SearchBox({
   // inside SearchBox, replace the whole executeSearch with:
   const executeSearch = useCallback(
     (
-      keywordOverwrite = search,
+      keywordOverwrite = inputValue,
       searchFieldOverwriteProp = search_field ?? null,
       toggleCategory = null
     ) => {
@@ -223,7 +223,15 @@ export default function SearchBox({
       navigate(`${pathname}${searchParam}`);
       setSuggestionsVisible(false);
     },
-    [categories, mode, navigate, search, search_field, setSuggestionsVisible]
+    [
+      categories,
+      mode,
+      navigate,
+      search,
+      inputValue,
+      search_field,
+      setSuggestionsVisible,
+    ]
   );
 
   const handleFilterChange = (e) => {
@@ -290,14 +298,21 @@ export default function SearchBox({
   );
 
   // single source of truth for visible suggestions
-  const visibleSuggestionGroups = useMemo(() => suggestionGroups.map((g) => {
-    const limit = config[`numberOf${g.title}Suggestions`];
-    return { ...g, items: limit ? g.items.slice(0, limit) : g.items };
-  }), [suggestionGroups]);
+  const visibleSuggestionGroups = useMemo(
+    () =>
+      suggestionGroups.map((g) => {
+        const limit = config[`numberOf${g.title}Suggestions`];
+        return { ...g, items: limit ? g.items.slice(0, limit) : g.items };
+      }),
+    [suggestionGroups]
+  );
 
   const flatSuggestions = useMemo(
-    () => visibleSuggestionGroups.flatMap((g) => g.items.map((it) => ({ ...it, group: g }))),
-    [visibleSuggestionGroups],
+    () =>
+      visibleSuggestionGroups.flatMap((g) =>
+        g.items.map((it) => ({ ...it, group: g }))
+      ),
+    [visibleSuggestionGroups]
   );
 
   const hasSuggestions = flatSuggestions.length > 0;
@@ -346,7 +361,7 @@ export default function SearchBox({
 
   const onKeyDown = (e) => {
     if (e.key === "Enter") {
-      executeSearch();
+      executeSearch(inputValue);
       setSuggestionsVisible(false);
     } else if (e.key === "Escape") {
       setSuggestionsVisible(false);
@@ -355,7 +370,10 @@ export default function SearchBox({
 
   const [activeIdx, setActiveIdx] = useState(-1);
 
-  useEffect(() => setActiveIdx(-1), [suggestionsVisible, search, flatSuggestions.length]);
+  useEffect(
+    () => setActiveIdx(-1),
+    [suggestionsVisible, search, flatSuggestions.length]
+  );
 
   const handleGlobalKey = useCallback(
     (e) => {
@@ -369,12 +387,13 @@ export default function SearchBox({
         );
       }
       if (e.key === "Enter" && activeIdx > -1) {
+        e.preventDefault();
         const { group, ...item } = flatSuggestions[activeIdx];
         group.click(item);
         setSuggestionsVisible(false);
       }
     },
-    [activeIdx, flatSuggestions, suggestionsVisible],
+    [activeIdx, flatSuggestions, suggestionsVisible]
   );
 
   useEffect(() => {
@@ -466,7 +485,7 @@ export default function SearchBox({
             <button
               type="button"
               className="search-button"
-              onClick={() => executeSearch()}
+              onClick={() => executeSearch(inputValue)}
               aria-label="Sök"
               style={{
                 visibility:
