@@ -1,164 +1,209 @@
 /* eslint-disable react/require-default-props */
-import { useEffect } from 'react';
-import { useLoaderData, useLocation, Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import ContributeInfoButton from './ContributeInfoButton';
-import SimpleMap from './SimpleMap';
-import FeedbackButton from './FeedbackButton';
-import { l } from '../../lang/Lang';
+import { useEffect, useMemo, useState } from "react";
+import { useLoaderData, useLocation, Link } from "react-router-dom";
+import PropTypes from "prop-types";
+import ContributeInfoButton from "./ContributeInfoButton";
+import SimpleMap from "./SimpleMap";
+import FeedbackButton from "./FeedbackButton";
+import { l } from "../../lang/Lang";
 
-import config from '../../config';
-import RecordList from '../../features/RecordList/RecordList';
+import config from "../../config";
+import RecordList from "../../features/RecordList/RecordList";
 
-export default function PersonView({ mode = 'material' }) {
+export default function PersonView({ mode = "material" }) {
   const {
-    biography,
+    biography = "",
     birthplace,
     birth_year: birthYear,
     id,
     imagepath,
-    name,
-    places,
-  } = useLoaderData();
+    name = "",
+    places = [],
+  } = useLoaderData() || {};
+
   const location = useLocation();
 
+  // Keep document title friendly & restore on unmount
   useEffect(() => {
-    document.title = `${name} - ${config.siteTitle}`;
+    const prevTitle = document.title;
+    document.title = name ? `${name} - ${config.siteTitle}` : config.siteTitle;
+    return () => {
+      document.title = prevTitle;
+    };
   }, [name]);
 
-  // on unnount, set the document title back to the site title
-  useEffect(() => () => {
-    document.title = config.siteTitle;
+  // First place (if any)
+  const personPlace = places?.[0];
+
+  // Human-friendly county/region label
+  const personCounty = useMemo(() => {
+    if (!personPlace) return "";
+    const parts = [personPlace.name];
+    if (personPlace.landskap) parts.push(personPlace.landskap);
+    if (personPlace.fylke) parts.push(personPlace.fylke); // backwards compat
+    return parts.filter(Boolean).join(", ");
+  }, [personPlace]);
+
+  // Optional Nordic suffix (kept compatible with existing setting)
+  const nordicSuffix = useMemo(() => {
+    try {
+      return window?.applicationSettings?.includeNordic ? "/nordic/true" : "";
+    } catch {
+      return "";
+    }
   }, []);
 
-  // Prepare person county/region:
-  let personCounty = '';
-  if (places) {
-    if (places[0]) {
-      const place = places[0];
-      if (place) {
-        personCounty = place.name;
-        if (place.landskap) {
-          personCounty = `${personCounty}, ${place.landskap}`;
-        }
-        // TODO: set landskap = fylke in database and remove this?
-        if (place.fylke) {
-          personCounty = `${personCounty}, ${place.fylke}`;
-        }
-      }
-    }
-  }
+  const hasCoords = Boolean(personPlace?.lat && personPlace?.lng);
 
-  // Prepare nordic:
-  // TODO Replace with "Application defined filter parameter" where it is used (Sägenkartan)
-  let nordic = '';
-  if (window.applicationSettings) {
-    if (window.applicationSettings.includeNordic) {
-      nordic = '/nordic/true';
-    }
-  }
+  // Biography teaser
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const bioText = (biography || "").trim();
+  const BIO_PREVIEW_CHARS = 420;
+  const needsTruncate = bioText.length > BIO_PREVIEW_CHARS;
+  const bioToShow =
+    bioExpanded || !needsTruncate
+      ? bioText
+      : `${bioText.slice(0, BIO_PREVIEW_CHARS)}…`;
+
+  const recordListParams = useMemo(
+    () => ({
+      person_id: id,
+      has_untranscribed_records: mode === "transcribe" ? "true" : null,
+      transcriptionstatus:
+        mode === "transcribe" ? null : "published,accession,readytocontribute",
+    }),
+    [id, mode]
+  );
 
   return (
-    <div className={`container${id ? '' : ' loading'}`}>
-
+    <div className={`container${id ? "" : " loading"}`}>
       <div className="container-header">
         <div className="row">
           <div className="twelve columns">
-            <h1>{name || ''}</h1>
-            <p>
-              {
-                ((birthYear && birthYear > 0) || (places?.length > 0) || birthplace)
-                && `${l('Föddes')}`
-              }
-              {
-                birthYear && birthYear > 0 ? ` ${birthYear}` : ''
-              }
-              {
-                ((places?.length > 0 || birthplace) ? ' i ' : '')
-              }
-              {
-                (
-                  places?.length > 0
-                  && <Link to={`/places/${places[0].id}${nordic}`}>{personCounty}</Link>
-                ) || birthplace
-              }
-            </p>
+            <h1 className="person-title">{name}</h1>
+
+            {(birthYear > 0 || personPlace || birthplace) && (
+              <p className="person-subtitle">
+                {l("Föddes")}
+                {birthYear > 0 && ` ${birthYear}`}
+                {(personPlace || birthplace) && " i "}
+                {personPlace ? (
+                  <Link to={`/places/${personPlace.id}${nordicSuffix}`}>
+                    {personCounty}
+                  </Link>
+                ) : (
+                  birthplace
+                )}
+              </p>
+            )}
           </div>
         </div>
 
-        {
-          !config.siteOptions.hideContactButton
-          && (
+        {!config.siteOptions.hideContactButton && (
+          <div
+            className="action-bar"
+            role="group"
+            aria-label={l("Hjälp oss förbättra sidan")}
+          >
             <FeedbackButton
-              title={name || ''}
+              title={name}
               type="Person"
               location={location}
               country="sweden"
             />
-          )
-        }
-        {
-          !config.siteOptions.hideContactButton
-          && <ContributeInfoButton title={name || ''} type="Person" location={location} />
-        }
+            <ContributeInfoButton
+              title={name}
+              type="Person"
+              location={location}
+            />
+          </div>
+        )}
       </div>
 
-      {
-        places?.length > 0 && places[0].lat && places[0].lng
-        && (
-          <div className="row">
-            <div className="twelve columns">
-              <SimpleMap
-                marker={{
-                  lat: places[0].lat,
-                  lng: places[0].lng,
-                  label: places[0].name,
-                }}
-              />
-            </div>
+      {hasCoords && (
+        <div className="row">
+          <div className="twelve columns">
+            <SimpleMap
+              marker={{
+                lat: personPlace.lat,
+                lng: personPlace.lng,
+                label: personPlace.name,
+              }}
+            />
           </div>
-        )
-      }
+        </div>
+      )}
 
       <div className="row">
-
-        <div className={`${imagepath ? 'eight' : 'twelve'} columns`}>
-          {
-            biography
-            && <p dangerouslySetInnerHTML={{ __html: biography.replace(/(?:\r\n|\r|\n)/g, '<br />') }} />
-          }
+        <div className={`${imagepath ? "eight" : "twelve"} columns`}>
+          {bioText && (
+            <>
+              <p
+                id="bio-text"
+                className="bio-text"
+                style={{ whiteSpace: "pre-line" }}
+              >
+                {bioToShow}
+              </p>
+              {needsTruncate && (
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => setBioExpanded((v) => !v)}
+                  aria-expanded={bioExpanded}
+                  aria-controls="bio-text"
+                >
+                  {bioExpanded ? l("Visa mindre") : l("Läs mer")}
+                </button>
+              )}
+            </>
+          )}
         </div>
-        {
-          imagepath
-          && (
-            <div className="four columns">
-              <img className="archive-image" src={(config.personImageUrl || config.imageUrl) + imagepath} alt="" />
-            </div>
-          )
-        }
 
+        {imagepath && (
+          <div className="four columns">
+            <figure>
+              <img
+                className="archive-image"
+                src={(config.personImageUrl || config.imageUrl) + imagepath}
+                alt={name || l("Porträtt")}
+                loading="lazy"
+                decoding="async"
+              />
+              {name && (
+                <figcaption className="image-caption">{name}</figcaption>
+              )}
+            </figure>
+          </div>
+        )}
       </div>
 
       <hr />
 
       <div className="row">
-
         <div className="twelve columns">
-          <h3>{l(`Arkivmaterial upptecknad av ${name}`)}</h3>
+          <div
+            className="record-header"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <h3 id="records">{l(`Arkivmaterial upptecknad av ${name}`)}</h3>
+          </div>
+
           <RecordList
             disableRouterPagination
             disableAutoFetch
-            params={{
-              person_id: id,
-              has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute',
-            }}
+            params={recordListParams}
             mode={mode}
-            hasFilter={mode !== 'transcribe'}
+            hasFilter={mode !== "transcribe"}
           />
         </div>
       </div>
-
     </div>
   );
 }
