@@ -94,14 +94,6 @@ export default function RecordList(props) {
     }
   }, [location]);
 
-  useEffect(() => {
-    // scroll to the container top whenever page changes
-    window.scrollTo({
-      top: containerRef?.current?.offsetTop ?? 0,
-      behavior: "smooth",
-    });
-  }, [currentPage, containerRef]);
-
   /* ------- render ------- */
   return (
     <>
