@@ -175,211 +175,208 @@ export function removeUnderscoresBeforeFirstNumber(input) {
   return input.replace(/^([^0-9]*)_+/g, '$1');
 }
 
-/**
- * Returns a parced audio title for an item.
- * 
- * Behavior is preserved from the legacy implementation:
- * 1) If `title` is provided, return it.
- * 2) Else attempt org-specific parsing using `contents` + `fileName`:
- *    - Uppsala: rows are pipe-separated, IDs like "Gr3703:b2".
- *    - Göteborg: rows start with an ID in () or [] that mirrors the filename.
- *    - Lund: segments separated by ":"; ID is the last word before ":".
- * 3) Else build a person-based title (informants only).
- * 4) Else return localized fallback l("Inspelning").
- *
- * NOTE: Relies on an existing helper: removeUnderscoresBeforeFirstNumber().
- */
+/* Funktion för att skapa titel för ljudfil
 
-export function getAudioTitle(
-  title,
-  contents,
-  archiveOrg,
-  archiveName,
-  fileName,
-  year,
-  persons
-) {
-  // ---------- Early exit when an explicit title already exists ----------
-  if (title) return title;
+Mediafil Titel
+1.	Registrerad titel (records_media.title)
+2.a	Om arkiv AFU: records.content (Bara om en fil på accessionsraden?)
+	Många eller alla?
+2.b	Om arkiv AFG: Rad i innehåll (records.content) med match på filnamn
+-	ca 900 med detta mönster
+-	Första “ordet” med mönster (### ? R) där
+	# = Accessionsnummer med (optional prefix?) och siffror
+	? = Bokstav, t.ex. sida
+	Valfri siffra oftast i romersk form (I, II, III)
+2.c Om arkiv DAL: Textsegment i innehåll (records.content) med match på filnamn
+ - Ca 6400?
+ - Tag bort " ", "_m" i filnamn
+ - Behåll bara två första ord om fler ord än 2 i filnamn
+ Annars:
+ a. informant?
+ b. titel = titel_allt[1-80]?
+ Exempel acc_nr_ny: "s00023 ; s00024 ;"
+ Exempel filnamn: "S 24A_m.MP3", "s 1000a ålem smål.mp3"
+ Exempel innehåll: S17A: Malt. Mara och varulv. S17B: Bäckahästen. Brygd. S18A: Brygd
+  3.	Om de finns: Informanter(er), insamlingsår
+4.	Text: "Inspelning"
 
-  // ---------- Helpers (pure, local) ----------
-  /** Accepts "Gr3702:a2", "Gr3703:b1", "Gr3711:A" etc. -> "Gr3702a2" */
+*/
+export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName, year, persons) {
   function normalizeUppsalaIdFromRowId(token) {
-    const m = token.trim().match(/^(Gr\d+)\s*:?([A-Za-z])(\d*)$/i);
-    if (!m) return null;
-    const [, base, letter, num] = m;
-    return `${base}${letter.toLowerCase()}${num || ""}`;
-  }
+  // accepts "Gr3702:a2", "Gr3703:b1", "Gr3711:A" etc.
+  const m = token.trim().match(/^(Gr\d+)\s*:?([A-Za-z])(\d*)$/i);
+  if (!m) return null;
+  const [, base, letter, num] = m;
+  return `${base}${letter.toLowerCase()}${num || ''}`;
+}
 
-  /** Pull "Gr3702A2" or "Gr_3702A2" out of filename -> "Gr3702a2" */
-  function extractUppsalaIdFromFilename(fname) {
-    const base = fname.split("/").pop().replace(/\.mp3$/i, "");
-    const noSpaces = base.replace(/\s+/g, "");
-    // Uses project-provided helper (kept as-is for compatibility)
-    const collapsed = removeUnderscoresBeforeFirstNumber(noSpaces);
-    const m = collapsed.match(/Gr_?(\d+)([A-Za-z])(\d*)/i);
-    if (!m) return null;
-    const [, nums, letter, num] = m;
-    return `Gr${nums}${letter.toLowerCase()}${num || ""}`;
-  }
+// helper: pull "Gr3702A2" out of the filename and normalize -> "Gr3702a2"
+function extractUppsalaIdFromFilename(fileName) {
+  const base = fileName.split('/').pop().replace(/\.mp3$/i, '');
+  // remove spaces and collapse the underscore before the first number (your existing logic)
+  const noSpaces = base.replace(/\s+/g, '');
+  const collapsed = removeUnderscoresBeforeFirstNumber(noSpaces);
+  // find "Gr_3702A2" or "Gr3702A2"
+  const m = collapsed.match(/Gr_?(\d+)([A-Za-z])(\d*)/i);
+  if (!m) return null;
+  const [, nums, letter, num] = m;
+  return `Gr${nums}${letter.toLowerCase()}${num || ''}`;
+}
+  // console.log(title);
+  switch (!!title) {
+    case true:
+      return title;
+    default:
+      if (contents) {
+        if (contents.length > 0) {
+          // If no archiveOrg use archive name 
+          if (!archiveOrg) {
+            if (archiveName.includes('AFG')) {
+              archiveOrg = 'Göteborg';
+            }
+            if (archiveName.includes('Lund') || archiveName.includes('DAL')) {
+              archiveOrg = 'Lund';
+            }
+            if (archiveName.includes('AFU')) {
+              archiveOrg = 'Uppsala';
+            }
+            if (archiveName.includes('Umeå')) {
+              archiveOrg = 'Umeå';
+            }
+          }
+          // Set audio title according to archive patterns using archiveOrg
+          if (archiveOrg === 'Uppsala') {
+  // Normalize line breaks and split on the Uppsala-specific pipe
+  const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n\n/g, '\n');
+  const contentRows = cleanContent.split('|');
 
-  /** If archiveOrg is missing, infer from archiveName. */
-  function deriveArchiveOrg(org, name) {
-    if (org) return org;
-    if (!name) return org;
-    if (name.includes("AFG")) return "Göteborg";
-    if (name.includes("Lund") || name.includes("DAL")) return "Lund";
-    if (name.includes("AFU")) return "Uppsala";
-    if (name.includes("Umeå")) return "Umeå";
-    return org; // unchanged if no match
-  }
+  const fileId = extractUppsalaIdFromFilename(fileName); // e.g. "Gr3703b2"
+  if (fileId) {
+    for (let i = 0; i < contentRows.length; i += 1) {
+      const row = contentRows[i].trim();
+      if (!row) continue;
 
-  /** Uppsala-specific parsing (returns string or null). */
-  function tryUppsalaTitle(rawContents, fname) {
-    const clean = rawContents
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
-      .replace(/\n\n/g, "\n");
+      // First token is the archive id, rest is the description
+      const parts = row.split(' ');
+      const rowToken = parts[0];                 // e.g. "Gr3703:b2"
+      const rowDesc  = parts.slice(1).join(' '); // "(00:00) Forts. …"
 
-    const rows = clean.split("|");
-    const fileId = extractUppsalaIdFromFilename(fname); // e.g. "Gr3703b2"
-
-    if (fileId) {
-      for (let i = 0; i < rows.length; i += 1) {
-        const row = rows[i].trim();
-        if (!row) continue;
-
-        const parts = row.split(" ");
-        const rowToken = parts[0]; // e.g. "Gr3703:b2"
-        const rowDesc = parts.slice(1).join(" "); // e.g. "(00:00) Forts. …"
-
-        const rowId = normalizeUppsalaIdFromRowId(rowToken);
-        if (rowId && rowId.toLowerCase() === fileId.toLowerCase()) {
-          const displayToken = rowToken.replace(/\s*/g, "");
-          return `${displayToken} ${rowDesc}`.trim();
-        }
+      const rowId = normalizeUppsalaIdFromRowId(rowToken);
+      if (rowId && rowId.toLowerCase() === fileId.toLowerCase()) {
+        // keep the human-friendly token with colon as shown in contents
+        const displayToken = rowToken.replace(/\s*/g, '');
+        return `${displayToken} ${rowDesc}`.trim();
       }
     }
-
-    // Fallbacks
-    if (rawContents.length > 100) {
-      const fallbackId = fileId
-        ? `${fileId.replace(/([A-Za-z])/, "$1:").toUpperCase()} `
-        : "";
-      return `[${fallbackId}${rawContents.substring(0, 84)} (FÖRKORTAD TITEL)]`;
-    }
-    return `[${rawContents}]`;
   }
 
-  /** Göteborg-specific parsing (returns string or null). */
-  function tryGoteborgTitle(rawContents, fname) {
-    const clean = rawContents
-      .replace(/\r\r/g, "\n")
-      .replace(/\r\n/g, "\n")
-      .replace(/\n\n/g, "\n");
+  // No exact match: fall back to a shortened, but still differentiable title
+  if (contents.length > 100) {
+    // try to add the file id from the filename to avoid duplicates
+    const fallbackId = (fileId ? `${fileId.replace(/([A-Za-z])/, '$1:').toUpperCase()} ` : '');
+    return `[${fallbackId}${contents.substring(0, 84)} (FÖRKORTAD TITEL)]`;
+  }
+  return `[${contents}]`;
+}
+          // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
+          // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
+          if (archiveOrg === 'Göteborg') {
+            // Clean different row breaks:
+            const cleanContent = contents.replace(/\r\r/g, '\n').replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const contentRows = cleanContent.split('\n');
+            for (let i = 0; i < contentRows.length; i++) {
+              // console.log(contentRows[i]);
+              // Get first element delineated by () or [] which is an archive id that often match the filename:
+              let elements = contentRows[i].split(')');
+              if (contentRows[i].charAt(0) === '[') {
+                elements = contentRows[i].split(']');
+              }
+              if (elements.length > 0) {
+                let fileId = elements[0];
+                if (fileId.length > 1) {
+                  // Clean unwanted characters:
+                  fileId = fileId.replaceAll('[', '').replaceAll('(', '').replaceAll(' ', '');
+                  // Clean filename accordning to pattern in content field:
+                  fileId = fileId.replace('III', '3').replace('II', '2').replace('I', '1');
+                  const filenameParts = fileName.split('/');
+                  if (filenameParts) {
+                    // Clean filename accordning to pattern in content field:
+                    let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '').replace('III', '3').replace('II', '2')
+                      .replace('I', '1');
+                    // Remove letter prefix and leading zeros
+                    // How to identify and remove other existing extensions?
+                    cleanFilename = cleanFilename.replace('SK', '').replace(/^0+/, "");
+                    // Match archive id with filename:
+                    if (fileId === cleanFilename) {
+                      return contentRows[i];
+                    }
+                  }
+                }
+              }
+            }
+          }
+          // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
+          // -- Find titel_allt types by DAL acc_nr_ny_prefix "s"+ one character (to compare hits with number as second character to letters as second character):
+          if (archiveOrg === 'Lund') {
+            // Clean different row breaks:
+            const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\n\n/g, '\n');
+            const contentRows = cleanContent.split(':');
 
-    const rows = clean.split("\n");
-    for (let i = 0; i < rows.length; i += 1) {
-      const row = rows[i];
-      let elements = row.split(")");
-      if (row.charAt(0) === "[") elements = row.split("]");
-
-      if (elements.length > 0) {
-        let id = elements[0];
-        if (id.length > 1) {
-          id = id.replaceAll("[", "").replaceAll("(", "").replaceAll(" ", "");
-          id = id.replace("III", "3").replace("II", "2").replace("I", "1");
-
-          const parts = fname.split("/");
-          if (parts) {
-            let cleanFilename = parts[parts.length - 1]
-              .replace(".mp3", "")
-              .replace(".MP3", "")
-              .replace("III", "3")
-              .replace("II", "2")
-              .replace("I", "1");
-
-            cleanFilename = cleanFilename.replace("SK", "").replace(/^0+/, "");
-
-            if (id === cleanFilename) return row;
+            // Loop until next last segment
+            for (let i = 0; i < contentRows.length - 1; i += 1) {
+              // Get all words from next element except first element delineated by " ":
+              const thisSegment = contentRows[i].split(' ');
+              const nextSegment = contentRows[i + 1].split(' ');
+              // Last word in segment + all but last word in next segment
+              const thisSegmentFileId = thisSegment[thisSegment.length - 1];
+              const thisSegmentContent = nextSegment.slice(0, -1).join(' ');
+              if (thisSegmentFileId.length > 0) {
+                const fileId = thisSegmentFileId;
+                // Clean unwanted characters:
+                const cleanFilename = fileName.replace(' ', '');
+                // Match archive id with filename:
+                if (cleanFilename.includes(fileId)) {
+                  const fileTitle = `${thisSegmentFileId}: ${thisSegmentContent}`;
+                  return fileTitle;
+                }
+              }
+            }
           }
         }
       }
-    }
-    return null;
-  }
-
-  /** Lund-specific parsing (returns string or null). */
-  function tryLundTitle(rawContents, fname) {
-    const clean = rawContents.replace(/\r\n/g, "\n").replace(/\n\n/g, "\n");
-    const segments = clean.split(":");
-
-    for (let i = 0; i < segments.length - 1; i += 1) {
-      const thisSeg = segments[i].split(" ");
-      const nextSeg = segments[i + 1].split(" ");
-      const id = thisSeg[thisSeg.length - 1];
-      const content = nextSeg.slice(0, -1).join(" ");
-      if (id && id.length > 0) {
-        const cleanFilename = fname.replace(" ", "");
-        if (cleanFilename.includes(id)) {
-          return `${id}: ${content}`;
+      if (persons) {
+        let personbasedTitle = '';
+        for (let i = 0; i < persons.length; i += 1) {
+          if (['i', 'informant'].includes(persons[i].relation)) {
+            let name = '';
+            let birthYear = '';
+            if (persons[i].name) {
+              name = persons[i].name;
+              if (persons[i].birthyear) {
+                birthYear = ` född ${persons[i].birthyear}`;
+              }
+              personbasedTitle = personbasedTitle + name + birthYear;
+              if (i < persons.length - 1) {
+                personbasedTitle = personbasedTitle + ', ';
+              }
+            }
+          }
+        }
+        if (personbasedTitle) {
+          if (personbasedTitle.length > 0) {
+            let yearString = '';
+            if (year) {
+              yearString = year.substring(0, 4);
+            }
+            personbasedTitle = `${personbasedTitle} intervju ${yearString}`;
+          }
+          if (personbasedTitle.length > 0) {
+            return personbasedTitle;
+          }
         }
       }
-    }
-    return null;
+      return l('Inspelning');
   }
-
-  /** Person-based fallback */
-  function buildPersonBasedTitle(people, y) {
-    if (!people || !people.length) return "";
-
-    let t = "";
-    for (let i = 0; i < people.length; i += 1) {
-      const p = people[i];
-      if (["i", "informant"].includes(p?.relation)) {
-        let name = "";
-        let birth = "";
-        if (p?.name) {
-          name = p.name;
-          if (p?.birthyear) birth = ` född ${p.birthyear}`;
-          t = t + name + birth;
-          if (i < people.length - 1) t = t + ", ";
-        }
-      }
-    }
-    if (!t) return "";
-
-    let yearStr = "";
-    if (y) yearStr = y.substring(0, 4);
-    return `${t} intervju ${yearStr}`.trim();
-  }
-
-  // ---------- Content-driven title attempts ----------
-  const hasContents = typeof contents === "string" && contents.length > 0;
-  if (hasContents) {
-    const org = deriveArchiveOrg(archiveOrg, archiveName);
-
-    if (org === "Uppsala") {
-      return tryUppsalaTitle(contents, fileName);
-    }
-
-    if (org === "Göteborg") {
-      const got = tryGoteborgTitle(contents, fileName);
-      if (got) return got;
-    }
-
-    if (org === "Lund") {
-      const lund = tryLundTitle(contents, fileName);
-      if (lund) return lund;
-    }
-  }
-
-  // ---------- Person-based fallback ----------
-  const personTitle = buildPersonBasedTitle(persons, year);
-  if (personTitle) return personTitle;
-
-  // ---------- Final fallback ----------
-  return l("Inspelning");
 }
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
