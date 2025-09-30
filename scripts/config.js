@@ -202,11 +202,24 @@ export default {
       </div>`,
       },
     },
-
     copyrightContent: {
-      'https://creativecommons.org/licenses/by-nd/2.5/se/': '<a rel="license" target="_blank" href="https://creativecommons.org/licenses/by-nd/2.5/se/"><img alt="Creative Commons-licens" style="border-width:0" src="https://i.creativecommons.org/l/by-nd/2.5/se/88x31.png" /></a>&nbsp;Detta verk är licensierat under en <a rel="license" target="_blank" href="https://creativecommons.org/licenses/by-nd/2.5/se/">Creative Commons Erkännande-IngaBearbetningar 2.5 Sverige Licens</a>.',
-      'https://creativecommons.org/licenses/by/2.5/se/': '<a rel="license" target="_blank" href="https://creativecommons.org/licenses/by/2.5/se/"><img alt="Creative Commons-licens" style="border-width:0" src="https://i.creativecommons.org/l/by/2.5/se/88x31.png" /></a>&nbsp;Detta verk är licensierat under en <a rel="license" target="_blank" href="https://creativecommons.org/licenses/by/2.5/se/">Creative Commons Erkännande 2.5 Sverige Licens</a>.',
+    'https://creativecommons.org/licenses/by-nd/2.5/se/': {
+      code: 'by-nd',
+      version: '2.5',
+      locale: 'se',
+      label: 'Creative Commons Erkännande–Inga bearbetningar 2.5 Sverige',
+      // optional override; if omitted, component builds the default CC badge URL:
+      // https://i.creativecommons.org/l/{code}/{version}/{locale}/88x31.png
+      badge: 'https://i.creativecommons.org/l/by-nd/2.5/se/88x31.png',
     },
+    'https://creativecommons.org/licenses/by/2.5/se/': {
+      code: 'by',
+      version: '2.5',
+      locale: 'se',
+      label: 'Creative Commons Erkännande 2.5 Sverige',
+      badge: 'https://i.creativecommons.org/l/by/2.5/se/88x31.png',
+    },
+  },
   },
 
   // use this to filter the random transcriptions by category

@@ -124,13 +124,9 @@ function RecordView({ mode = "material" }) {
                     highlightData={highlightData}
                     mediaImageClickHandler={mediaImageClickHandler}
                   />
-                  <div className="row">
-                    <div className="eight columns">
+                  <div className="flex lg:flex-row flex-col items-center gap-1">
                       <ReferenceLinks data={data} />
-                    </div>
-                    <div className="four columns">
                       <License data={data} />
-                    </div>
                   </div>
                   <SubrecordsElement
                     data={data}

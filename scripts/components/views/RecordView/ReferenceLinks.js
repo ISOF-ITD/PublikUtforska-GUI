@@ -1,33 +1,45 @@
-import PropTypes from 'prop-types';
-import ShareButtons from './ShareButtons';
-import config from '../../../config';
-import { l } from '../../../lang/Lang';
-import { makeArchiveIdHumanReadable, getPages, getArchiveName } from '../../../utils/helpers';
+import React from "react";
+import PropTypes from "prop-types";
+import ShareButtons from "./ShareButtons";
+import config from "../../../config";
+import { l } from "../../../lang/Lang";
+import {
+  makeArchiveIdHumanReadable,
+  getPages,
+  getArchiveName,
+} from "../../../utils/helpers";
+
+function buildCitation(data) {
+  const {
+    archive: { archive_id: archiveId, archive_org: archiveOrg },
+  } = data;
+
+  const pages = getPages(data);
+  const idHuman = makeArchiveIdHumanReadable(archiveId, archiveOrg);
+  const orgName = getArchiveName(archiveOrg);
+
+  // Example: "A123:45, s. 12–14, Arkivnamn"
+  return `${idHuman}${pages ? `, s. ${pages}` : ""}, ${orgName}`;
+}
 
 export default function ReferenceLinks({ data }) {
-  const {
-    id,
-    archive: {
-      archive_id: archiveId,
-      archive_org: archiveOrg,
-    },
-  } = data;
-  return (
-    <div className="row">
-      <div className="six columns">
-        <ShareButtons breakAll={false} path={`${config.siteUrl}/records/${id}`} title={l('Kopiera länk')} />
-      </div>
+  const { id } = data;
+  const recordUrl = `${config.siteUrl}/records/${id}`;
+  const citation = buildCitation(data);
 
-      <div className="six columns">
-        {/* copies the citation to the clipboard */}
-        <ShareButtons
-          breakAll={false}
-          path={(
-                `${makeArchiveIdHumanReadable(archiveId, archiveOrg)}, ${getPages(data) ? `s. ${getPages(data)}, ` : ''}${getArchiveName(archiveOrg)}`
-              )}
-          title={l('Källhänvisning')}
-        />
-      </div>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <ShareButtons
+        title={l("Kopiera länk")}
+        text={recordUrl}
+        breakAll={true}
+      />
+
+      <ShareButtons
+        title={l("Källhänvisning")}
+        text={citation}
+        breakAll={false}
+      />
     </div>
   );
 }
