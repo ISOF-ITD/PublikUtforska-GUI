@@ -68,12 +68,40 @@ export function AudioProvider({ children }) {
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
     const onLoaded = () => setDurationTime(player.duration * 1000);
+    const parseTimeString = (time = 0) => {
+      if (typeof time === "number" && Number.isFinite(time)) return time;
+      if (typeof time !== "string") return NaN;
+      const parts = time.split(":").map(Number).reverse();
+      if (parts.some((n) => Number.isNaN(n))) return NaN;
+      let s = 0;
+      if (parts[0]) s += parts[0]; // seconds
+      if (parts[1]) s += parts[1] * 60; // minutes
+      if (parts[2]) s += parts[2] * 3600; // hours
+      return s;
+    };
+
+    const normalizeSegments = (raw) => {
+      if (!raw) return [];
+      let arr = Array.isArray(raw)
+        ? raw
+        : typeof raw === "object"
+        ? Object.values(raw)
+        : [];
+      return arr
+        .map((u) => ({
+          ...u,
+          start: parseTimeString(u.start),
+          end: parseTimeString(u.end),
+        }))
+        .filter((u) => Number.isFinite(u.start) && Number.isFinite(u.end));
+    };
+
     const onTime = () => {
-      const pos = player.currentTime;
+      const pos = audioRef.current.currentTime; // seconds (float)
       setCurrentTime(pos * 1000);
 
-      // Update active segment
-      const segs = currentAudio?.audio?.utterances ?? [];
+      // Update active segment safely
+      const segs = normalizeSegments(currentAudio?.audio?.utterances);
       const active = segs.find((u) => pos >= u.start && pos < u.end);
       setActiveSegmentId(active?.id ?? null);
     };

@@ -2,7 +2,7 @@
 import {
   Suspense,
   useEffect, // useState,
-  useMemo
+  useMemo,
 } from "react";
 import {
   Await,
@@ -85,18 +85,20 @@ function RecordView({ mode = "material" }) {
             if (!data) return <div>Posten finns inte.</div>;
 
             /* ——— detect the transcribe child ——— */
-            const onlyTranscribe = matches.some(
-              (m) => m.pathname.endsWith("/transcribe")
+            const onlyTranscribe = matches.some((m) =>
+              m.pathname.endsWith("/transcribe")
             );
 
             /* ---------- show ONLY the editor ---------- */
             if (onlyTranscribe) {
               /* still pass the context for useOutletContext() */
-               return <Outlet context={{ data, subrecordsCount }} />;
+              return <Outlet context={{ data, subrecordsCount }} />;
             }
 
             /* ---------- normal record screen ---------- */
-            document.title = `${getTitleText(data,0,0)} – ${config.siteTitle}`;
+            document.title = `${getTitleText(data, 0, 0)} – ${
+              config.siteTitle
+            }`;
             return (
               <article>
                 <RecordViewHeader
@@ -112,9 +114,9 @@ function RecordView({ mode = "material" }) {
                     data={data}
                     mediaImageClickHandler={mediaImageClickHandler}
                   />
-                  <ContentsElement data={data} />
+                  <ContentsElement data={data} highlightData={highlightData?.["media.description"]?.hits?.hits ?? []} />
                   <HeadwordsElement data={data} />
-                  
+
                   <AudioItems data={data} highlightData={highlightData} />
                   <PdfElement data={data} />
                   <TextElement
