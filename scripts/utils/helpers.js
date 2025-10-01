@@ -202,6 +202,9 @@ Mediafil Titel
 
 */
 export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName, year, persons) {
+  function basenameNoExt(p) {
+  return p.split('/').pop().replace(/\.[^/.]+$/, '');
+}
   function normalizeUppsalaIdFromRowId(token) {
   // Accepts: "Gr3702:b2", "Gr3703:A", "Bd1222:b", "Bd1222b", "ULMA39081a2" etc.
   const t = token.trim().replace(/\s+/g, '');
@@ -218,14 +221,27 @@ export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName
 
 // helper: pull "Gr3702A2" out of the filename and normalize -> "Gr3702a2"
 function extractUppsalaIdFromFilename(fileName) {
-  const base = fileName.split('/').pop().replace(/\.[^/.]+$/,'');
-  // remove spaces and collapse underscore before first number; drop trailing part after first "_"
-  const collapsed = removeUnderscoresBeforeFirstNumber(base.replace(/\s+/g, '')).split('_')[0];
-  // Accept any letter prefix, optional underscore before digits
-  const m = collapsed.match(/^([A-Za-z]+)_?(\d+)([A-Za-z])(\d*)$/i);
-  if (!m) return null;
-  const [, letters, digits, letter, num] = m;
-  return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
+  const base = basenameNoExt(fileName).replace(/\s+/g, '');
+  // Normalize separators to underscores so we can split on them
+  const norm = base.replace(/[-:]/g, '_');
+
+  // Try token-by-token first
+  const toks = removeUnderscoresBeforeFirstNumber(norm).split('_');
+  for (const tk of toks) {
+    // “Gr3702a2” or “Gr3702:a2” already normalized by removing separators
+    let m = tk.match(/^([A-Za-z]+)(\d+)([A-Za-z])(\d*)$/i);
+    if (!m) m = tk.match(/^([A-Za-z]+)_?(\d+):?([A-Za-z])(\d*)$/i);
+    if (m) {
+      const [, letters, digits, letter, num] = m;
+      return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
+    }
+  }
+  const m = norm.match(/([A-Za-z]+)\s*_?(\d+)\s*:?([A-Za-z])(\d*)/i);
+  if (m) {
+    const [, letters, digits, letter, num] = m;
+    return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
+  }
+  return null;
 }
   // console.log(title);
   switch (!!title) {
@@ -250,66 +266,69 @@ function extractUppsalaIdFromFilename(fileName) {
             }
           }
           // Set audio title according to archive patterns using archiveOrg
-          if (archiveOrg === 'Uppsala') {
-  // Normalize line breaks and split on the Uppsala-specific pipe
-  const cleanContent = contents.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n\n/g, '\n');
-  const contentRows = cleanContent.split('|');
+          // --- inside getAudioTitle, in the Uppsala block, replace that whole section with: ---
+if (archiveOrg === 'Uppsala') {
+  // Normalize line breaks, allow both '|' and newline delims, and the '->' form.
+  const cleanContent = contents
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n\n+/g, '\n');
+
+  // Prefer pipe if present, else split on newlines, else treat as one row
+  const contentRows = cleanContent.includes('|')
+    ? cleanContent.split('|')
+    : (cleanContent.includes('\n') ? cleanContent.split('\n') : [cleanContent]);
 
   const fileId = extractUppsalaIdFromFilename(fileName); // e.g. "Gr3703b2"
-  if (fileId) {
-    for (let i = 0; i < contentRows.length; i += 1) {
-      const row = contentRows[i].trim();
-      if (!row) continue;
 
-      // First token is the archive id, rest is the description
-      const parts = row.split(' ');
-      const rowToken = parts[0];                 // e.g. "Gr3703:b2"
-      const rowDesc  = parts.slice(1).join(' '); // "(00:00) Forts. …"
+  // Try to find a matching row
+  for (let i = 0; i < contentRows.length; i += 1) {
+    const row = contentRows[i].trim();
+    if (!row) continue;
 
-      const rowId = normalizeUppsalaIdFromRowId(rowToken);
-      if (rowId && rowId.toLowerCase() === fileId.toLowerCase()) {
-        // keep the human-friendly token with colon as shown in contents
-        const displayToken = rowToken.replace(/\s*/g, '');
-        return `${displayToken}: ${rowDesc}`.trim(); 
+    // Support both formats:
+    //  a) "Gr3703:b2 (00:00) …"
+    //  b) "Tidsangivet innehåll -> Gr3703:b2 (00:00) …"
+    let rowToken = null;
+    let rowDesc = null;
+
+    // b) Arrow form
+    const arrow = row.match(/->\s*([A-Za-z]+)\s*:?(\d+)\s*([A-Za-z])(\d*)\s*(.*)$/i);
+    if (arrow) {
+      const [, letters, digits, letter, num, after] = arrow;
+      rowToken = `${letters}${digits}:${letter}${num || ''}`; // keep ':' for display
+      rowDesc = after?.trim() || '';
+    } else {
+      // a) First token is the id, rest is the description
+      const parts = row.split(/\s+/);
+      if (parts.length) {
+        rowToken = parts[0];
+        rowDesc = parts.slice(1).join(' ');
       }
     }
-  }
 
-  if (!fileId /* or no match found */) {
-  const base = fileName.split('/').pop().replace(/\.[^/.]+$/,'');
-  const legacyRows = cleanContent.split('|');
-  for (let i = 0; i < legacyRows.length; i += 1) {
-    const parts = legacyRows[i].trim().split(' ');
-    let token = parts[0];
-    let desc = parts.slice(1).join(' ');
-    if (!token) continue;
+    if (!rowToken) continue;
 
-    // If token has a colon, strip numerals/dash after colon and rebuild
-    const fileidElements = token.split(':');
-    if (fileidElements.length > 1) {
-      const cleanAfterColon = fileidElements[1].replace(/[0-9]/g, '').replaceAll(':','').replaceAll('-','');
-      token = fileidElements[0] + cleanAfterColon;
-    }
-    const candidate = token.replaceAll(':','');
+    // Normalize for comparison
+    const normRowId = (() => {
+      // accept "Gr3703:b2" or "Gr3703b2"
+      const t = rowToken.replace(/\s*/g, '');
+      let m = t.match(/^([A-Za-z]+)(\d+):?([A-Za-z])(\d*)$/i);
+      if (!m) return null;
+      const [, letters, digits, letter, num] = m;
+      return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
+    })();
 
-    // Clean filename similarly to the old code
-    let cleanFilename = base.replace(/\.mp3$/i,'').replace(' D ', '').replace('D ', '').replace(' ', '');
-    cleanFilename = removeUnderscoresBeforeFirstNumber(cleanFilename).split('_')[0];
-
-    if (cleanFilename.toUpperCase().includes(candidate.toUpperCase())) {
-      if (token.endsWith(':')) token = token.slice(0, -1);
-      return `${token}: ${desc}`;
+    if (fileId && normRowId && normRowId.toLowerCase() === fileId.toLowerCase()) {
+      // keep a human-friendly token with ':' if present
+      const displayToken = rowToken.replace(/\s*/g, '').replace(/^([A-Za-z]+\d+)([A-Za-z]\d*)$/i, '$1:$2');
+      return `${displayToken}: ${rowDesc}`.trim();
     }
   }
-}
 
-  // No exact match: fall back to a shortened, but still differentiable title
-  if (contents.length > 100) {
-    // try to add the file id from the filename to avoid duplicates
-    const fallbackId = (fileId ? `${fileId.replace(/([A-Za-z])/, '$1:').toUpperCase()} ` : '');
-    return `[${fallbackId}${contents.substring(0, 84)} (FÖRKORTAD TITEL)]`;
-  }
-  return `[${contents}]`;
+  // No exact row match (or no fileId). Use a collision-proof fallback:
+  const base = basenameNoExt(fileName);
+  const short = contents.length > 100 ? contents.substring(0, 84) + ' (FÖRKORTAD TITEL)' : contents;
+  return `[${base} → ${short}]`;
 }
           // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
           // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
