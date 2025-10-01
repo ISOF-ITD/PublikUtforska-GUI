@@ -153,10 +153,11 @@ function createTranscribeRoute() {
   return {
     path: '/transcribe/*?',
     loader: async ({ params }) => {
+      const base = createParamsFromSearchRoute(params['*']);
       const queryParams = {
-        ...createParamsFromSearchRoute(params['*']),
-        recordtype: 'one_accession_row',
-        has_untranscribed_records: true,
+        ...base,
+        recordtype: base.recordtype ?? 'one_accession_row',
+        has_untranscribed_records: base.has_untranscribed_records ?? true,
       };
       return defer({
         results: fetchMapAndCountRecords(queryParams),

@@ -19,7 +19,10 @@ export default class MapBase extends Component {
 
   componentWillUnmount() {
     // remove map container
-    this.map.remove();
+    if (this.map) {
+      this.map.off();
+      this.map.remove();
+    }
   }
 
   componentDidMount() {
@@ -63,7 +66,7 @@ export default class MapBase extends Component {
       // maxZoom: parseInt(this.props.maxZoom) || 13,
       layers: visibleLayers,
       // layers: [layers[Object.keys(layers)[0]]],
-      scrollWheelZoom: (!this.props.disableInteraction && this.props.scrollWheelZoom) || false,
+      scrollWheelZoom: false,
       zoomControl: false,
       dragging: !this.props.disableInteraction,
       touchZoom: !this.props.disableInteraction,
@@ -81,63 +84,87 @@ export default class MapBase extends Component {
     }
     // when initializing the map, set zoom and center, so that the bounds of the constant SWEDEN are visible. use fitTobounds or similar
     // use an offset of 360px to the left, so that the bounds are not hidden by the sidebar
-    this.map = map(this.mapView.current, mapOptions).fitBounds(SWEDEN, {
       // if in desktop mode, use a padding of 400px to the left, so that the bounds are not hidden by the sidebar,
       // but when in mobile mode, use a top padding of 60px, so that the bounds are not hidden by the top bar
-      paddingTopLeft: window.innerWidth >= 550 ? [400, 0] : [0, 100],
-    });
+    this.map = map(this.mapView.current, mapOptions);
+    // Set an explicit first view so Leaflet flips _loaded = true
+    this.map.setView(
+      this.props.center || SWEDEN.getCenter(),
+      parseInt(this.props.zoom, 10) || 5,
+      { animate: false }
+    );
 
-    if (this.props.disableInteraction && this.map.tap) {
-      this.map.tap.disable();
-    }
+    // Only after the map is ready, adjust to bounds and enable interactions/controls
+    this.map.whenReady(() => {
+      this.map.fitBounds(SWEDEN, {
+        paddingTopLeft: window.innerWidth >= 550 ? [400, 0] : [0, 100],
+      });
 
-    if (!this.props.disableInteraction) {
-      control.zoom({ position: this.props.zoomControlPosition || 'topright' }).addTo(this.map);
-    }
+      if (this.props.disableInteraction && this.map.tap) {
+        this.map.tap.disable();
+      }
 
-    // Dölja locateControl knappen (som visar var användaren är på kartan)
-    if (!this.props.disableInteraction && !this.props.disableLocateControl) {
-      control.locate({
-        showPopup: false,
-        icon: 'map-location-icon',
-        position: this.props.zoomControlPosition || 'topright',
-        locateOptions: { maxZoom: 9 },
-        markerStyle: { weight: 2, fillColor: '#ffffff', fillOpacity: 1 },
-        circleStyle: { weight: 1, color: '#a6192e' },
-      }).addTo(this.map);
-    }
-    if (!this.props.disableInteraction) {
-      this.layersControl = control.activeLayers(layers, overlayLayers, {
-        positiona: this.props.layersControlPosition || 'topright',
-      }).addTo(this.map);
-    }
+      if (!this.props.disableInteraction) {
+        // Re-enable wheel zoom now that the map is loaded
+        if (this.props.scrollWheelZoom) this.map.scrollWheelZoom.enable();
+        control
+          .zoom({ position: this.props.zoomControlPosition || "topright" })
+          .addTo(this.map);
+
+        if (!this.props.disableLocateControl) {
+          control
+            .locate({
+              showPopup: false,
+              icon: "map-location-icon",
+              position: this.props.zoomControlPosition || "topright",
+              locateOptions: { maxZoom: 9 },
+              markerStyle: { weight: 2, fillColor: "#ffffff", fillOpacity: 1 },
+              circleStyle: { weight: 1, color: "#a6192e" },
+            })
+            .addTo(this.map);
+        }
+
+        this.layersControl = control
+          .activeLayers(layers, overlayLayers, {
+            // NOTE: 'positiona' looked like a typo — use 'position'
+            position: this.props.layersControlPosition || "topright",
+          })
+          .addTo(this.map);
+      }
 
     // make sure that the layers control is
     //  -not opened on mouse over (only on click)
     //  -not closed on mouse out
     // - not visible on mount
-    select('.leaflet-control-layers-toggle').style('display', 'block').style('opacity', 1);
-    select('.leaflet-control-layers-list').style('display', 'none');
-    select('.leaflet-control-layers-toggle').on('click', () => {
-      select('.leaflet-control-layers-list').style('display', 'block');
-      select('.leaflet-control-layers-toggle').style('display', 'none');
-    });
-    select('.leaflet-control-layers-list').on('mouseleave', () => {
-      select('.leaflet-control-layers-list').style('display', 'none');
-      select('.leaflet-control-layers-toggle').style('display', 'block');
-    });
+        .style("display", "block")
+        .style("opacity", 1);
+      select(".leaflet-control-layers-list").style("display", "none");
+      select(".leaflet-control-layers-toggle").on("click", () => {
+        select(".leaflet-control-layers-list").style("display", "block");
+        select(".leaflet-control-layers-toggle").style("display", "none");
+      });
+      select(".leaflet-control-layers-list").on("mouseleave", () => {
+        select(".leaflet-control-layers-list").style("display", "none");
+        select(".leaflet-control-layers-toggle").style("display", "block");
+      });
 
-    this.map.on('baselayerchange', this.mapBaseLayerChangeHandler.bind(this));
-
-    if (window.eventBus) {
-      // Om kartan inkluderar nordiskt material, byt kartan till OpenStreetMap för Lantmäteriets karta visar bara Sverige
-      window.eventBus.addEventListener('nordicLegendsUpdate', this.nordicLegendsUpdateHandler);
-    }
+      this.map.on("baselayerchange", this.mapBaseLayerChangeHandler.bind(this));
+      if (window.eventBus) {
+        window.eventBus.addEventListener(
+          "nordicLegendsUpdate",
+          this.nordicLegendsUpdateHandler
+        );
+      }
+    });
   }
 
   nordicLegendsUpdateHandler(event, data) {
     // Byt karta till OpenStreetMap (index=2)
-    if (!this.props.disableSwedenMap && data.includeNordic && this.layersControl.getActiveBaseLayer().name.indexOf('Lantmäteriet') > -1) {
+    if (
+      !this.props.disableSwedenMap &&
+      data.includeNordic &&
+      this.layersControl.getActiveBaseLayer().name.indexOf("Lantmäteriet") > -1
+    ) {
       mapView.mapBase.layersControl._layers[2].layer.addTo(mapView.mapBase.map);
       mapView.mapBase.layersControl._onInputClick();
     }

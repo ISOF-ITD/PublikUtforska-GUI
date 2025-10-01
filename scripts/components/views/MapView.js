@@ -1,7 +1,7 @@
 /* eslint-disable react/require-default-props */
 import { useRef, useEffect, useState } from 'react';
 import {
-  marker, circleMarker, DivIcon, Point, markerClusterGroup,
+  marker, circleMarker, DivIcon, Point, markerClusterGroup, layerGroup,
 } from 'leaflet';
 import 'leaflet.markercluster';
 import '../../lib/leaflet-heat';
@@ -32,8 +32,12 @@ export default function MapView({
 
   const updateMap = () => {
     if (!mapView.current || !mapView.current.map) return;
-
-    const { map } = mapView.current;
+  const { map } = mapView.current;
+  // Wait until Leaflet has an initial view
+  if (!map._loaded) {
+    map.once('load', updateMap);
+    return;
+  }
 
     // Ta bort de tidigare överlagrarna
     if (clusterGroupRef.current) {
@@ -89,7 +93,7 @@ export default function MapView({
       }
     } else if (currentView === 'circles') {
       // Cirkel-lagret
-      const circleGroup = L.layerGroup();
+      const circleGroup = layerGroup();
 
       mapData?.data?.forEach((obj) => {
         const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count) ? obj.doc_count : 1; // Sätter standard till 1 om count inte finns.
@@ -120,7 +124,7 @@ export default function MapView({
 
   // Bind zoomend när map är tillgänglig och när currentView ändras
   useEffect(() => {
-    if (mapView.current && mapView.current.map) {
+    if (mapView.current && mapView.current.map && mapView.current.map._loaded) {
       const handleZoomEnd = () => {
         updateMap();
       };

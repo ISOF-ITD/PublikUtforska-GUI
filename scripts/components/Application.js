@@ -61,10 +61,10 @@ export default function Application({
   } = useContext(NavigationContext);
 
   const mapMarkerClick = (placeId) => {
-    let target = `/places/${(placeId)}${createSearchRoute(createParamsFromSearchRoute(params['*']))}`;
-    if (mode === 'transcribe') {
-      target = `/transcribe${target}`;
-    }
+    const current = createParamsFromSearchRoute(params['*']);
+    const query = { ...current, _advanced: true }; // keep advanced filters when rebuilding URLs
+    let target = `/places/${placeId}${createSearchRoute(query)}`;
+    if (mode === 'transcribe') target = `/transcribe${target}`;
     navigate(target);
   };
 
@@ -90,21 +90,14 @@ export default function Application({
   }, [pictureResults]);
 
   useEffect(() => {
-    // Listen for events when the audio player becomes visible
-    window.eventBus.addEventListener('audio.playervisible', () => {
-      // When GlobalAudioPlayer is visible, add class to document.body to make space for the audio player in the UI
-      document.body.classList.add('has-docked-control');
-    });
-    // Listen for when the audio player is hidden, remove .has-docked-control from body class
-    window.eventBus.addEventListener('audio.playerhidden', () => {
-      document.body.classList.remove('has-docked-control');
-    });
+    const onVisible = () => document.body.classList.add("has-docked-control");
+    const onHidden = () => document.body.classList.remove("has-docked-control");
+
+    window.eventBus.addEventListener("audio.playervisible", onVisible);
+    window.eventBus.addEventListener("audio.playerhidden", onHidden);
 
     document.title = config.siteTitle;
-
-    setTimeout(() => {
-      document.body.classList.add('app-initialized');
-    }, 1000);
+    setTimeout(() => document.body.classList.add("app-initialized"), 1000);
 
     results.then((data) => {
       setMapData(data[0]);
@@ -114,8 +107,8 @@ export default function Application({
 
     // Cleanup event listeners on unmount
     return () => {
-      window.eventBus.removeEventListener('audio.playervisible');
-      window.eventBus.removeEventListener('audio.playerhidden');
+      window.eventBus.removeEventListener("audio.playervisible", onVisible);
+      window.eventBus.removeEventListener("audio.playerhidden", onHidden);
     };
   }, [location.pathname, location.search, results]);
 
