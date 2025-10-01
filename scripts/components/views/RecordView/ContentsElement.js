@@ -412,8 +412,8 @@ function buildMediaIndex(media = []) {
   const map = new Map();
   for (const m of media) {
     const src = (m?.source || "").toLowerCase();
-    // Accept patterns like gr_3702a2, gr3702a2, ulm1234b, bd9999, etc.
-    const mm = src.match(/([a-zåäö]{1,6})_?(\d{2,6})([a-z])?([0-9]{0,2})?/i);
+    // Accept patterns like gr_3702a2, gr3702a2, ulm1234b, bd 9999, etc.
+    const mm = src.match(/([a-zåäö]{1,6})[\s_]?(\d{2,6})([a-z])?([0-9]{0,2})?/i);
     if (!mm) continue;
     const prefix = (mm[1] || "").toLowerCase();
     const num = mm[2] || "";
