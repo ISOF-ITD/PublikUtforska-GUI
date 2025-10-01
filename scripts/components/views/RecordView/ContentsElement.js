@@ -1,7 +1,10 @@
 import React, { useMemo, useState, useId } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronDown,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
 import { getAudioTitle } from "../../../utils/helpers";
 
@@ -27,12 +30,10 @@ export default function ContentsElement({ data, highlightData = [] }) {
   // Build a per-recording media index so rows can play the *right* file.
   const mediaIndex = useMemo(() => buildMediaIndex(media), [media]);
 
-  // Detect if the contents has *either* recording tags or timestamps.
+  // Detect if the contents has timestamps.
   const hasStructured = useMemo(() => {
     const text = contents || "";
-    const hasTag = REC_TAG_ANY_RE.test(text);
-    const hasTime = TIME_ANY_RE.test(text);
-    return hasTag || hasTime;
+    return TIME_ANY_RE.test(text);
   }, [contents]);
 
   const [expanded, setExpanded] = useState(false);
@@ -42,14 +43,23 @@ export default function ContentsElement({ data, highlightData = [] }) {
 
   const defaultAudio = useMemo(() => {
     return (
-      media.find((m) => (m?.type || "").toLowerCase().includes("audio")) || media[0]
+      media.find((m) => (m?.type || "").toLowerCase().includes("audio")) ||
+      media[0]
     );
   }, [media]);
 
   const audioTitle = useMemo(() => {
     // Keep title stable; using defaultAudio for the helper is fine.
     const src = defaultAudio?.source;
-    return getAudioTitle(title, contents, archiveOrg, archive, src, year, persons);
+    return getAudioTitle(
+      title,
+      contents,
+      archiveOrg,
+      archive,
+      src,
+      year,
+      persons
+    );
   }, [title, contents, archiveOrg, archive, defaultAudio, year, persons]);
 
   /** Parse legacy multi-recording text into rows */
@@ -75,7 +85,7 @@ export default function ContentsElement({ data, highlightData = [] }) {
 
   const RecordingBadge = ({ tag }) => (
     <span
-      className="ml-2 text-[11px] rounded bg-gray-100 px-1 py-[1px] text-gray-600 uppercase"
+      className="text-[11px] rounded bg-gray-100 px-1 text-gray-600 uppercase"
       title={`Inspelning ${tag.toUpperCase()}`}
       aria-label={`Inspelning ${tag.toUpperCase()}`}
     >
@@ -94,9 +104,13 @@ export default function ContentsElement({ data, highlightData = [] }) {
                 <HeaderBand />
               </th>
             </tr>
-            <tr className="border-b border-gray-300">
-              <th scope="col" className="py-3 px-4 w-56">Starttid</th>
-              <th scope="col" className="py-3 px-4">Beskrivning</th>
+            <tr className="border-b border-gray-300 flex">
+              <th scope="col" className="py-3 px-4 w-12">
+                Starttid
+              </th>
+              <th scope="col" className="py-3 px-4">
+                Beskrivning
+              </th>
               {/* spacer th for alignment parity with editable list */}
               <th scope="col" className="py-3 px-4 text-right w-10"></th>
             </tr>
@@ -112,9 +126,9 @@ export default function ContentsElement({ data, highlightData = [] }) {
               return (
                 <tr
                   key={`${row.tag || "_"}-${row.start}-${index}`}
-                  className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200"
+                  className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200 flex w-full"
                 >
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 w-12">
                     <div className="flex items-center">
                       {rowMedia ? (
                         <ListPlayButton
@@ -127,13 +141,24 @@ export default function ContentsElement({ data, highlightData = [] }) {
                       ) : (
                         <span className="w-3 h-3 inline-block" />
                       )}
-                      <span className="ml-2 font-mono tabular-nums">{row.start}</span>
-                      {row.tag && <RecordingBadge tag={row.tag} />}
+                      <span className="ml-2 font-mono tabular-nums">
+                        {row.start}
+                      </span>
                     </div>
                   </td>
-                  <td className={`py-3 px-4 ${isHighlighted ? "bg-yellow-200" : ""}`}>
-                    <span className="truncate block" title={row.text}>
-                      {row.text || <span className="text-gray-500 italic">—</span>}
+                  <td
+                    className={`py-3 px-4 ${
+                      isHighlighted ? "bg-yellow-200" : ""
+                    }`}
+                  >
+                    <span
+                      className="truncate block break-words"
+                      title={row.text}
+                    >
+                      {row.tag && <RecordingBadge tag={row.tag} />}{" "}
+                      {row.text || (
+                        <span className="text-gray-500 italic">—</span>
+                      )}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right" />
@@ -183,7 +208,9 @@ export default function ContentsElement({ data, highlightData = [] }) {
                   )}
                   <span className="font-mono tabular-nums">{row.start}</span>
                   {row.tag && <RecordingBadge tag={row.tag} />}
-                  <span className="text-gray-700 whitespace-nowrap">{row.text || "—"}</span>
+                  <span className="text-gray-700 whitespace-nowrap">
+                    {row.text || "—"}
+                  </span>
                 </div>
               );
             })}
@@ -195,7 +222,9 @@ export default function ContentsElement({ data, highlightData = [] }) {
 
   // Fallback renderer: the original preformatted text
   const RenderPlain = () => (
-    <div className="mt-2 whitespace-pre-line text-sm leading-relaxed">{contents}</div>
+    <div className="mt-2 whitespace-pre-line text-sm leading-relaxed">
+      {contents}
+    </div>
   );
 
   return (
@@ -219,8 +248,17 @@ export default function ContentsElement({ data, highlightData = [] }) {
         </span>
       </button>
 
-      <div id={contentId} className={`mt-2 ${expanded ? "" : "hidden"}`}>
-        {hasStructured ? (isCompact ? <RenderCompact /> : <RenderTable />) : (
+      <div
+        id={contentId}
+        className={`mt-2 p-4 shadow-lg rounded-md ${expanded ? "" : "hidden"}`}
+      >
+        {hasStructured ? (
+          isCompact ? (
+            <RenderCompact />
+          ) : (
+            <RenderTable />
+          )
+        ) : (
           <RenderPlain />
         )}
       </div>
@@ -233,7 +271,8 @@ export default function ContentsElement({ data, highlightData = [] }) {
  * -------------------------------*/
 
 // Match things like Gr3702:a2, BD1234:b, ulm12:a, etc. (prefix may be letters incl. nordic chars)
-const REC_TAG_ANY_RE = /\b([A-Za-zÅÄÖåäö]{1,6})\s?_?(\d{2,6})(?::([a-z])([0-9]{0,2}))?/;
+const REC_TAG_ANY_RE =
+  /\b([A-Za-zÅÄÖåäö]{1,6})\s?_?(\d{2,6})(?::([a-z])([0-9]{0,2}))?/;
 // Times like 00:57 or 1:02:03; also allow optional surrounding parentheses
 const TIME_ANY_RE = /\(?((?:\d{1,2}:)?\d{1,2}:\d{2})\)?/;
 
@@ -275,7 +314,10 @@ function extractRowsFromContents(contents, mediaIndex) {
   const text = (contents || "").replace(/\u00A0/g, " "); // NBSP -> space
 
   // Split candidate *recording* blocks primarily on "|". If there are no bars, treat the whole string as one block.
-  const blocks = text.split("|").map((b) => b.trim()).filter(Boolean);
+  const blocks = text
+    .split("|")
+    .map((b) => b.trim())
+    .filter(Boolean);
   const rows = [];
 
   let carryTag = null; // In case a block starts with time straight away (rare)
@@ -284,7 +326,11 @@ function extractRowsFromContents(contents, mediaIndex) {
     // Find a recording tag anywhere early in the block
     const tagParts = parseRecTag(block);
     let tag = tagParts ? formatTag(tagParts) : carryTag;
-    let key = tagParts ? tagKey(tagParts) : carryTag ? carryTag.replace(/[^a-z0-9]/gi, "").toLowerCase() : null;
+    let key = tagParts
+      ? tagKey(tagParts)
+      : carryTag
+      ? carryTag.replace(/[^a-z0-9]/gi, "").toLowerCase()
+      : null;
 
     // Remove the matched tag text from the block head for easier time parsing
     let rest = tagParts ? block.replace(REC_TAG_ANY_RE, "").trim() : block;
@@ -314,7 +360,8 @@ function extractRowsFromContents(contents, mediaIndex) {
       // Text between previous cursor and this time label is usually separators
       // Push entry using text until the next time
       const label = normalizeLabel(matchText);
-      const endIdx = i + 1 < timeMatches.length ? timeMatches[i + 1].index : rest.length;
+      const endIdx =
+        i + 1 < timeMatches.length ? timeMatches[i + 1].index : rest.length;
 
       // Description is everything after the matched time up to the next time
       const afterTimeIdx = startIdx + (m[0]?.length || matchText.length);
@@ -348,7 +395,8 @@ function normalizeLabel(label) {
   const clean = label.replace(/[()]/g, "");
   const parts = clean.split(":").map(Number);
   if (parts.length === 2) return `${parts[0]}:${pad2(parts[1])}`;
-  if (parts.length === 3) return `${parts[0]}:${pad2(parts[1])}:${pad2(parts[2])}`;
+  if (parts.length === 3)
+    return `${parts[0]}:${pad2(parts[1])}:${pad2(parts[2])}`;
   return clean;
 }
 
@@ -373,7 +421,8 @@ function buildMediaIndex(media = []) {
     const take = (mm[4] || "").toLowerCase();
 
     const keys = new Set();
-    if (prefix && num && side && take) keys.add(`${prefix}${num}${side}${take}`);
+    if (prefix && num && side && take)
+      keys.add(`${prefix}${num}${side}${take}`);
     if (prefix && num && side) keys.add(`${prefix}${num}${side}`);
     if (prefix && num) keys.add(`${prefix}${num}`);
 
