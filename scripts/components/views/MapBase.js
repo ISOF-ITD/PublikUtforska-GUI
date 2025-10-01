@@ -136,6 +136,7 @@ export default class MapBase extends Component {
     //  -not opened on mouse over (only on click)
     //  -not closed on mouse out
     // - not visible on mount
+      select(".leaflet-control-layers-toggle")
         .style("display", "block")
         .style("opacity", 1);
       select(".leaflet-control-layers-list").style("display", "none");
