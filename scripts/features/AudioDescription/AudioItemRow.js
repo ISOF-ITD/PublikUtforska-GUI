@@ -156,9 +156,11 @@ function AudioItemRow({
         </td>
         <td className="py-2 px-4">
           {audioTitle}
-          {item.source.match(/Gr_?(\d+[A-Za-z]\d?)/i)?.[1] && (
+          {item.source.match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0] && (
             <span className="ml-2 text-[11px] rounded bg-gray-100 px-1 py-[1px] text-gray-600">
-              {item.source.match(/Gr_?(\d+[A-Za-z]\d?)/i)?.[1]?.toUpperCase()}
+              {item.source
+                .match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0]
+                ?.toUpperCase()}
             </span>
           )}
           {<TimeChip seconds={durationSec} />}

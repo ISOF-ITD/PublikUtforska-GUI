@@ -203,24 +203,29 @@ Mediafil Titel
 */
 export function getAudioTitle(title, contents, archiveOrg, archiveName, fileName, year, persons) {
   function normalizeUppsalaIdFromRowId(token) {
-  // accepts "Gr3702:a2", "Gr3703:b1", "Gr3711:A" etc.
-  const m = token.trim().match(/^(Gr\d+)\s*:?([A-Za-z])(\d*)$/i);
+  // Accepts: "Gr3702:b2", "Gr3703:A", "Bd1222:b", "Bd1222b", "ULMA39081a2" etc.
+  const t = token.trim().replace(/\s+/g, '');
+  // Pattern with optional ":" before the trailing letter/number
+  let m = t.match(/^([A-Za-z]+)(\d+)\s*:?([A-Za-z])(\d*)$/i);
+  if (!m) {
+    // Already concatenated form like "Bd1222b"
+    m = t.match(/^([A-Za-z]+)(\d+)([A-Za-z])(\d*)$/i);
+  }
   if (!m) return null;
-  const [, base, letter, num] = m;
-  return `${base}${letter.toLowerCase()}${num || ''}`;
+  const [, letters, digits, letter, num] = m;
+  return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
 }
 
 // helper: pull "Gr3702A2" out of the filename and normalize -> "Gr3702a2"
 function extractUppsalaIdFromFilename(fileName) {
-  const base = fileName.split('/').pop().replace(/\.mp3$/i, '');
-  // remove spaces and collapse the underscore before the first number (your existing logic)
-  const noSpaces = base.replace(/\s+/g, '');
-  const collapsed = removeUnderscoresBeforeFirstNumber(noSpaces);
-  // find "Gr_3702A2" or "Gr3702A2"
-  const m = collapsed.match(/Gr_?(\d+)([A-Za-z])(\d*)/i);
+  const base = fileName.split('/').pop().replace(/\.[^/.]+$/,'');
+  // remove spaces and collapse underscore before first number; drop trailing part after first "_"
+  const collapsed = removeUnderscoresBeforeFirstNumber(base.replace(/\s+/g, '')).split('_')[0];
+  // Accept any letter prefix, optional underscore before digits
+  const m = collapsed.match(/^([A-Za-z]+)_?(\d+)([A-Za-z])(\d*)$/i);
   if (!m) return null;
-  const [, nums, letter, num] = m;
-  return `Gr${nums}${letter.toLowerCase()}${num || ''}`;
+  const [, letters, digits, letter, num] = m;
+  return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
 }
   // console.log(title);
   switch (!!title) {
@@ -265,10 +270,38 @@ function extractUppsalaIdFromFilename(fileName) {
       if (rowId && rowId.toLowerCase() === fileId.toLowerCase()) {
         // keep the human-friendly token with colon as shown in contents
         const displayToken = rowToken.replace(/\s*/g, '');
-        return `${displayToken} ${rowDesc}`.trim();
+        return `${displayToken}: ${rowDesc}`.trim(); 
       }
     }
   }
+
+  if (!fileId /* or no match found */) {
+  const base = fileName.split('/').pop().replace(/\.[^/.]+$/,'');
+  const legacyRows = cleanContent.split('|');
+  for (let i = 0; i < legacyRows.length; i += 1) {
+    const parts = legacyRows[i].trim().split(' ');
+    let token = parts[0];
+    let desc = parts.slice(1).join(' ');
+    if (!token) continue;
+
+    // If token has a colon, strip numerals/dash after colon and rebuild
+    const fileidElements = token.split(':');
+    if (fileidElements.length > 1) {
+      const cleanAfterColon = fileidElements[1].replace(/[0-9]/g, '').replaceAll(':','').replaceAll('-','');
+      token = fileidElements[0] + cleanAfterColon;
+    }
+    const candidate = token.replaceAll(':','');
+
+    // Clean filename similarly to the old code
+    let cleanFilename = base.replace(/\.mp3$/i,'').replace(' D ', '').replace('D ', '').replace(' ', '');
+    cleanFilename = removeUnderscoresBeforeFirstNumber(cleanFilename).split('_')[0];
+
+    if (cleanFilename.toUpperCase().includes(candidate.toUpperCase())) {
+      if (token.endsWith(':')) token = token.slice(0, -1);
+      return `${token}: ${desc}`;
+    }
+  }
+}
 
   // No exact match: fall back to a shortened, but still differentiable title
   if (contents.length > 100) {
