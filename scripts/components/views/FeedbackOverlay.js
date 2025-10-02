@@ -134,13 +134,6 @@ export default function FeedbackOverlay() {
     overlayContent = (
       <div>
         <p>{config.siteOptions.feedbackText || 'Har du frågor eller synpunkter på hur applikationen fungerar? Har du hittat fel, till exempel i avskrifterna? Kontakta oss gärna!'}</p>
-        <p>
-          Du är nu på sidan '
-          <Link to={location.pathname}>{location.pathname}</Link>
-          ' men kan också använda formuläret för mer generella förslag och synpunkter.
-          <br />
-          <br />
-        </p>
         <hr />
         <label htmlFor="feedback_name">Ditt namn:</label>
         <input id="feedback_name" autoComplete="name" className="u-full-width" type="text" value={nameInputValue} onChange={nameInputChangeHandler} />

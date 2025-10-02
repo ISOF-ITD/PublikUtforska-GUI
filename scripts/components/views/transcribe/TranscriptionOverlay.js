@@ -130,7 +130,6 @@ export default function TranscriptionOverlay(props) {
   const formValid = wordCount >= 2 && emailValid;
 
   return (
-    <FocusTrap initialFocus={closeBtnRef}>
       <div className="overlay-container visible">
         <div className="overlay-window large">
           {/* ── header ───────────────────────────────────────── */}
@@ -252,6 +251,5 @@ export default function TranscriptionOverlay(props) {
           </div>
         </div>
       </div>
-    </FocusTrap>
   );
 }

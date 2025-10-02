@@ -15,7 +15,7 @@
   // opacity: 0;
   display: none;
 
-  pointer-events: none;
+  pointer-events: auto;
 
   .transition(opacity 500ms ease-in-out);
 
@@ -24,7 +24,7 @@
   }
 
   &.visible {
-    pointer-events: all;
+    pointer-events: auto;
 
     // opacity: 1;
     display: block;
@@ -52,7 +52,7 @@
     .transform(translate(-50%, -50%));
   }
 
-  .close-button {
+  > .close-button {
     position: fixed;
 
     top: 30px;
@@ -110,10 +110,9 @@
   }
 
   .overlay-window {
-    position: absolute;
-
+    position: relative;
+    pointer-events: auto;
     left: 50%;
-
     width: 650px;
 
     margin: 20px 0;
@@ -354,80 +353,3 @@ Show instuction image with css hover over
   left: 2em;
   z-index: 4000;
 }
-
-/* 
-Show instuction "image" with css hover over
-
-Test with css hover over: show activated circles
-Fixed circle coordinates does not work well with changing screen size and image zoom!
-Even left position in percentage is difficult!
-
-jsx/html example:
-	<div className="mark-informant-name">
-	<input name="informantNameInput" className="six columns" type="text" value={this.state.informantNameInput} onChange={this.inputChangeHandler} />
-	<figure>
-		<div id="circle"></div>
-	</figure>
-	</div>
-
-
-#circle {
-    background: transparent;
-    width: 16em;
-    height: 2.5em;
-	border:4px solid red;
-    border-radius: 50%;
-}
-
-#circle2 {
-    background: transparent;
-    width: 6em;
-    height: 2.5em;
-	border:4px solid red;
-    border-radius: 50%;
-}
-
-#circle3 {
-    background: transparent;
-    width: 16em;
-    height: 2.5em;
-	border:4px solid red;
-    border-radius: 50%;
-}
-
-.mark-informant-name figure {
-  display: none;
-  position: absolute;
-  top: 11em;
-  left: 40%;
-  z-index: 4000;
-}
-
-.mark-informant-name:hover figure {
-  display: block;
-}
-
-.mark-informant-birthdate figure {
-  display: none;
-  position: absolute;
-  top: 11em;
-  left: 60em;
-  z-index: 4000;
-}
-
-.mark-informant-birthdate:hover figure {
-  display: block;
-}
-
-.mark-informant-birthplace figure {
-  display: none;
-  position: absolute;
-  top: 11em;
-  left: 65em;
-  z-index: 4000;
-}
-
-.mark-informant-birthplace:hover figure {
-  display: block;
-}
-*/
