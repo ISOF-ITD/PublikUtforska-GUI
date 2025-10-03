@@ -88,26 +88,27 @@
             _paq.push(['enableLinkTracking']);
         }
 
-        // Listen to popstate event for back/forward navigation
-        window.addEventListener('popstate', function () {
-            setTimeout(trackPageView, 1000);
-        });
-
         // Patch pushState and replaceState to detect navigation
         (function(history){
             const pushState = history.pushState;
             const replaceState = history.replaceState;
-            history.pushState = function(state) {
+            function onRouteChange() {
+                // Call tracker directly
+                setTimeout(trackPageView, 1000);
+            }
+            history.pushState = function () {
                 const result = pushState.apply(history, arguments);
-                window.dispatchEvent(new PopStateEvent('popstate', { state }));
+                onRouteChange();
                 return result;
             };
-            history.replaceState = function(state) {
+            history.replaceState = function () {
                 const result = replaceState.apply(history, arguments);
-                window.dispatchEvent(new PopStateEvent('popstate', { state }));
+                onRouteChange();
                 return result;
             };
         })(window.history);
+    // Listen to popstate event for back/forward navigation
+    window.addEventListener('popstate', function () {setTimeout(trackPageView, 1000);});
     </script>
      
     <!-- End Matomo Code -->
