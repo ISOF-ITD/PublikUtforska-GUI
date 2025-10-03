@@ -60,7 +60,7 @@ export default function MapView({
             ? (highlightedMarkerIcon || mapHelper.markerIconHighlighted)
             : (defaultMarkerIcon || mapHelper.markerIcon),
         });
-        newMarker.on('click', () => onMarkerClick(obj.id));
+        if (onMarkerClick) newMarker.on('click', () => onMarkerClick(obj.id));
         markers.push(newMarker);
       });
 
@@ -111,7 +111,7 @@ export default function MapView({
           direction: 'top', // Visar tooltip ovanför cirkeln
         });
 
-        circle.on('click', () => onMarkerClick(obj.id));
+        if (onMarkerClick) circle.on('click', () => onMarkerClick(obj.id));
         circleGroup.addLayer(circle);
       });
 

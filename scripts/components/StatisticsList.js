@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import config from '../config';
+import { l } from '../lang/Lang';
 
 export default function StatisticsList({
   params: rawParams = {},
@@ -20,11 +21,12 @@ export default function StatisticsList({
 
     let esApiEndpoint;
     switch (type) {
-      case 'topTranscribersByPages':
-        esApiEndpoint = 'statistics/get_top_transcribers_by_pages/';
+      case "topTranscribersByPages":
+        esApiEndpoint = "statistics/get_top_transcribers_by_pages/";
         break;
       default:
         setFetchError(`Unsupported type: ${type}`);
+        setLoading(false);
         return;
     }
 
@@ -40,8 +42,10 @@ export default function StatisticsList({
       setLoading(false);
       setFetchError(false);
     } catch (error) {
-      setLoading(false);
-      setFetchError(error.message);
+      if (error.name !== "AbortError") {
+        setLoading(false);
+        setFetchError(error.message);
+      }
     }
   };
 
@@ -53,7 +57,7 @@ export default function StatisticsList({
 
   return (
     <div className="statistics-list">
-      {loading && <div className="loading">Hämtar statistik...</div>}
+      {loading && <div className="loading" role="status" aria-live="polite">{l("Hämtar statistik...")}</div>}
       {fetchError && (
         <div className="error">
           Fel vid hämtning av statistik:

@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import {
   faChevronLeft,
@@ -50,6 +50,7 @@ function Warning() {
   }, []);
   return html ? (
     <div
+      role="alert"
       aria-label="Varning"
       style={{
         backgroundColor: "#ffc107",
@@ -74,12 +75,14 @@ export default function MapMenu({
   pictureRecordsData = { data: [], metadata: {} },
   loading,
 }) {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 700);
-  const [expanded, setExpanded] = useState(!isMobile);
+  const getIsMobile = () =>
+    typeof window !== "undefined" ? window.innerWidth < 700 : false;
+  const [isMobile, setIsMobile] = useState(getIsMobile());
+  const [expanded, setExpanded] = useState(!getIsMobile());
 
   useEffect(() => {
     const onResize = () => {
-      const mobile = window.innerWidth < 700;
+      const mobile = getIsMobile();
       setIsMobile(mobile);
       if (mobile) setExpanded(false);
     };
@@ -87,16 +90,21 @@ export default function MapMenu({
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  const latestParams = {
-    size: 20,
-    recordtype: "one_record",
-    transcriptionstatus: "published",
-    sort: "changedate",
-    order: "desc",
-  };
+  const latestParams = useMemo(
+    () => ({
+      size: 20,
+      recordtype: "one_record",
+      transcriptionstatus: "published",
+      sort: "changedate",
+      order: "desc",
+    }),
+    []
+  );
 
   return (
     <div
+     id="mapmenu-panel"
+     aria-hidden={!expanded}
       className={`menu-wrapper ${
         expanded ? "menu-expanded" : "menu-collapsed"
       }`}
@@ -136,7 +144,14 @@ export default function MapMenu({
         />
       </div>
       <div className="mapmenu-trigger-button">
-        <button onClick={() => setExpanded((e) => !e)} type="button">
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          type="button"
+          aria-expanded={expanded}
+          aria-controls="mapmenu-panel"
+          aria-label={expanded ? l("Dölj meny") : l("Visa meny")}
+          title={expanded ? l("Dölj meny") : l("Visa meny")}
+        >
           <FontAwesomeIcon icon={expanded ? faChevronLeft : faChevronRight} />
         </button>
       </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import ShortStatistics from './ShortStatistics';
 import StatisticsList from './StatisticsList';
 import config from '../config';
+import { l } from '../lang/Lang';
 
 export default function StatisticsContainer() {
   const firstStatValueRef = useRef(null);
@@ -48,7 +49,7 @@ export default function StatisticsContainer() {
           transcriptionstatus: 'published',
           range: 'transcriptiondate,now/M,now+2h',
         }}
-        label={`avskrivna uppteckningar i ${currentMonth}`}
+        label={`avskrivna uppteckningar i ${currentMonth || l("denna månad")}`}
         shouldFetch={dataChanged}
       />
 

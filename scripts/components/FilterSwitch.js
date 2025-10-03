@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, NavLink } from "react-router-dom";
 import PropTypes from "prop-types";
 import { l } from "../lang/Lang";
 import {
@@ -14,27 +14,30 @@ export default function FilterSwitch({ mode = "material" }) {
   ).replace(/^\//, "");
 
   return (
-    <div
+    <nav
       className="nordic-switch-wrapper map-floating-control"
-      role="tablist"
-      aria-label="Växla mellan arkivmaterial och 'skriva av' läge"
+      aria-label={l("Växla mellan arkivmaterial och 'skriva av' läge")}
     >
-      <Link
+      <NavLink
         to={`/${sharedRoute}`}
-        className={mode === "material" ? "selected" : ""}
+        className={({ isActive }) =>
+          isActive || mode === "material" ? "selected" : ""
+        }
+        end
       >
         {l("Arkivmaterial")}
-      </Link>
-      <Link
+      </NavLink>
+      <NavLink
         to={`/transcribe/${sharedRoute}`}
-        className={mode === "transcribe" ? "selected" : ""}
+        className={({ isActive }) =>
+          isActive || mode === "transcribe" ? "selected" : ""
+        }
       >
         {l("Skriva av")}
-      </Link>
-    </div>
+      </NavLink>
+    </nav>
   );
 }
-
 FilterSwitch.propTypes = {
   mode: PropTypes.string,
 };

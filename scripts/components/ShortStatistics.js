@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import PropTypes from 'prop-types';
 import config from '../config';
+import { l } from '../lang/Lang';
 
 export default function ShortStatistics({
   params,
@@ -10,7 +11,7 @@ export default function ShortStatistics({
   shouldFetch = false,
 }) {
   const [value, setValue] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!compareAndUpdateStat);
   const [error, setError] = useState(false);
 
   const animatedValue = useSpring({
@@ -18,6 +19,8 @@ export default function ShortStatistics({
     number: value,
     config: { duration: 1000 },
   });
+
+  const controllerRef = useRef(null);
 
   const fetchStatistics = () => {
     // console.log("hämtar shortStatistics")
@@ -63,7 +66,7 @@ export default function ShortStatistics({
 
   return (
     <div className="short-statistics">
-      {loading && <div className="loading">Hämtar statistik...</div>}
+      {loading && <div className="loading" role="status" aria-live="polite">{l("Hämtar statistik...")}</div>}
       {error && <div className="error">Fel vid hämtning av statistik</div>}
       {!loading && !error && (
         <animated.div className="value">
