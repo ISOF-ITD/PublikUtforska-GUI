@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useId } from "react";
+import React, { useMemo, useState, useId, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -76,6 +76,12 @@ export default function ContentsElement({ data, highlightData = [] }) {
     return rows.length <= 50 && avgLen <= 18;
   }, [rows]);
 
+  const rowCount = useMemo(() => {
+    if (hasStructured) return rows.length;
+    // rough line count fallback for plain text
+    return (contents || "").trim().split(/\n+/).filter(Boolean).length;
+  }, [hasStructured, rows, contents]);
+
   /** Renderers */
   const HeaderBand = () => (
     <div className="flex items-center justify-between bg-gray-200 rounded-t-md px-4 py-3">
@@ -134,6 +140,7 @@ export default function ContentsElement({ data, highlightData = [] }) {
                         <ListPlayButton
                           media={rowMedia}
                           recordId={id}
+                          ariaLabel={`${audioTitle} – spela från ${row.start}`}
                           recordTitle={audioTitle}
                           startTime={row.seconds}
                           isSubList
@@ -227,30 +234,40 @@ export default function ContentsElement({ data, highlightData = [] }) {
     </div>
   );
 
+  const storageKey = `rv:${data?.id || "unknown"}:contents:expanded`;
+  // persist expanded state per record/section
+  useEffect(() => {
+    const saved = sessionStorage.getItem(storageKey);
+    if (saved !== null) setExpanded(saved === "1");
+    return () => {}; // no-op
+  }, []); // run once
+
+  useEffect(() => {
+    sessionStorage.setItem(storageKey, expanded ? "1" : "0");
+  }, [expanded, storageKey]);
+
   return (
     <section className="mb-4">
       <button
         type="button"
+        title={expanded ? "Dölj" : "Visa"}
         aria-expanded={expanded}
         aria-controls={contentId}
         className="flex items-center gap-2 underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
         onClick={() => setExpanded((v) => !v)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded((v) => !v);
-          }
-        }}
       >
         <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
         <span>
-          <b>Beskrivning av innehållet</b>
+          <b>Beskrivning av innehållet</b>{" "}
+          <span className="text-gray-500">({rowCount})</span>
         </span>
       </button>
 
       <div
         id={contentId}
         className={`mt-2 p-4 shadow-lg rounded-md ${expanded ? "" : "hidden"}`}
+        hidden={!expanded}
+        aria-hidden={!expanded}
       >
         {hasStructured ? (
           isCompact ? (
@@ -413,7 +430,9 @@ function buildMediaIndex(media = []) {
   for (const m of media) {
     const src = (m?.source || "").toLowerCase();
     // Accept patterns like gr_3702a2, gr3702a2, ulm1234b, bd 9999, etc.
-    const mm = src.match(/([a-zåäö]{1,6})[\s_]?(\d{2,6})([a-z])?([0-9]{0,2})?/i);
+    const mm = src.match(
+      /([a-zåäö]{1,6})[\s_]?(\d{2,6})([a-z])?([0-9]{0,2})?/i
+    );
     if (!mm) continue;
     const prefix = (mm[1] || "").toLowerCase();
     const num = mm[2] || "";

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useId } from "react";
+import React, { useState, useMemo, useId, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -58,31 +58,52 @@ export default function HeadwordsElement({ data }) {
     () => toSafeHtml(headwords, archiveOrg),
     [headwords, archiveOrg]
   );
+  const headwordBadge = useMemo(() => {
+    const linkCount = (headwords.match(/\[\[(.+?)\]\]/g) || []).length;
+    if (linkCount > 0) return String(linkCount);
+
+    // Rough fallback: number of page refs ("Sida"/"Sidor") or line groups, capped.
+    const pageRefs = (headwords.match(/\bSidor?\b/gi) || []).length;
+    const rough =
+      pageRefs ||
+      formatHeadwords(headwords).split(/\n+/).filter(Boolean).length;
+    return rough > 25 ? "25+" : String(rough);
+  }, [headwords]);
+
+  // persist expanded state per record/section
+  const storageKey = `rv:${data?.id || "unknown"}:headwords:expanded`;
+  useEffect(() => {
+    const saved = sessionStorage.getItem(storageKey);
+    if (saved !== null) setExpanded(saved === "1");
+    return () => {}; // no-op
+  }, []); // run once
+
+  useEffect(() => {
+    sessionStorage.setItem(storageKey, expanded ? "1" : "0");
+  }, [expanded, storageKey]);
 
   return (
     <section className="mb-4">
       <button
         type="button"
+        title={expanded ? "Dölj" : "Visa"}
         aria-expanded={expanded}
         aria-controls={contentId}
         className="flex items-center gap-2 underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
         onClick={() => setExpanded((v) => !v)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded((v) => !v);
-          }
-        }}
       >
         <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
         <span>
-          <b>Uppgifter från äldre innehållsregister</b>
+          <b>Uppgifter från äldre innehållsregister</b>{" "}
+          <span className="text-gray-500">({headwordBadge})</span>
         </span>
       </button>
 
       <div
         id={contentId}
         className={`mt-2 p-4 shadow-lg rounded-md ${expanded ? "" : "hidden"}`}
+        hidden={!expanded}
+        aria-hidden={!expanded}
       >
         <div className="rounded-md border border-gray-200">
           <div className="p-3 text-sm leading-relaxed">

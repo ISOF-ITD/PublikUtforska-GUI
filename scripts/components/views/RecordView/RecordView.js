@@ -1,6 +1,7 @@
 /* eslint-disable react/require-default-props */
 import {
   Suspense,
+  useCallback,
   useEffect, // useState,
   useMemo,
 } from "react";
@@ -50,7 +51,7 @@ function RecordView({ mode = "material" }) {
     match.pathname.includes("/transcribe")
   );
 
-  const mediaImageClickHandler = (mediaItem, mediaList, currentIndex) => {
+  const mediaImageClickHandler = useCallback((mediaItem, mediaList, currentIndex) => {
     if (window.eventBus) {
       window.eventBus.dispatch("overlay.viewimage", {
         imageUrl: mediaItem.source,
@@ -59,7 +60,7 @@ function RecordView({ mode = "material" }) {
         currentIndex, // Skicka index för aktuell bild
       });
     }
-  };
+  }, []);
 
   useEffect(() => {
     document.title = config.siteTitle; // Justera efter datan om så behövs
@@ -109,6 +110,7 @@ function RecordView({ mode = "material" }) {
                 <div>
                   <Disclaimer />
                   <TranscriptionPrompt data={data} />
+                  <div role="group" aria-label="Snabböversikt" className="space-y-0">
                   <RequestToTranscribePrompt data={data} />
                   <RecordViewThumbnails
                     data={data}
@@ -116,6 +118,7 @@ function RecordView({ mode = "material" }) {
                   />
                   <ContentsElement data={data} highlightData={highlightData?.["media.description"]?.hits?.hits ?? []} />
                   <HeadwordsElement data={data} />
+                  </div>
 
                   <AudioItems data={data} highlightData={highlightData} />
                   <PdfElement data={data} />
