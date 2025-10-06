@@ -238,11 +238,9 @@ function extractUppsalaIdFromFilename(fileName) {
   }
   return null;
 }
-  // console.log(title);
-  switch (!!title) {
-    case true:
-      return title;
-    default:
+  if (title?.trim()) {
+    return title;
+  }
       if (contents) {
         if (contents.length > 0) {
           // If no archiveOrg use archive name 
@@ -260,8 +258,8 @@ function extractUppsalaIdFromFilename(fileName) {
               archiveOrg = 'Umeå';
             }
           }
-          // Set audio title according to archive patterns using archiveOrg
-          // --- inside getAudioTitle, in the Uppsala block, replace that whole section with: ---
+// Set audio title according to archive patterns using archiveOrg
+// --- inside getAudioTitle, in the Uppsala block, replace that whole section with: ---
 if (archiveOrg === 'Uppsala') {
   // Normalize line breaks, allow both '|' and newline delims, and the '->' form.
   const cleanContent = contents
@@ -325,7 +323,7 @@ if (archiveOrg === 'Uppsala') {
   }
 
   // No exact row match (or no fileId). Use a collision-proof fallback:
-  const base = basenameNoExt(fileName);
+  const base = basenameNoExt(fileName || '');
   const short = contents.length > 100 ? contents.substring(0, 84) + ' (FÖRKORTAD TITEL)' : contents;
   return `[${base} → ${short}]`;
 }
@@ -349,7 +347,7 @@ if (archiveOrg === 'Uppsala') {
                   fileId = fileId.replace(/\[/g, '').replace(/\(/g, '').replace(/ /g, '');
                   // Clean filename accordning to pattern in content field:
                   fileId = fileId.replace('III', '3').replace('II', '2').replace('I', '1');
-                  const filenameParts = fileName.split('/');
+                  const filenameParts = fileName?.split('/');
                   if (filenameParts) {
                     // Clean filename accordning to pattern in content field:
                     let cleanFilename = filenameParts[filenameParts.length - 1].replace('.mp3', '').replace('.MP3', '').replace('III', '3').replace('II', '2')
@@ -384,7 +382,7 @@ if (archiveOrg === 'Uppsala') {
               if (thisSegmentFileId.length > 0) {
                 const fileId = thisSegmentFileId;
                 // Clean unwanted characters:
-                const cleanFilename = fileName.replace(' ', '');
+                const cleanFilename = (fileName || '').replace(/\s+/g, '');
                 // Match archive id with filename:
                 if (cleanFilename.includes(fileId)) {
                   const fileTitle = `${thisSegmentFileId}: ${thisSegmentContent}`;
@@ -428,7 +426,7 @@ if (archiveOrg === 'Uppsala') {
       }
       return l('Inspelning');
   }
-}
+
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
 // OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
@@ -627,21 +625,22 @@ export const getPlaceString = (places) => {
 // it is normally called in the useEffect hook
 export const fetchRecordMediaCount = async (functionScopeParams, setValue, setValueTranscribed) => {
   try {
-    const queryParams = { ...functionScopeParams };
-    const queryParamsString = Object.entries(queryParams)
+    const qp = Object.entries(functionScopeParams)
       .filter(([, v]) => v !== null && v !== undefined && v !== '')
       .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
       .join('&');
-    const response = await fetch(`${config.apiUrl}mediacount/?${queryParamsString}`);
-    if (response.ok) {
-      const json = await response.json();
-      setValueTranscribed(json.data.value);
-      setValue(json.aggregations.media_count.doc_count);
-    } else {
-      throw new Error('Fel vid hämtning av antal sidor/filer');
-    }
-  } catch (error) {
-    console.error(error);
+    const res = await fetch(`${config.apiUrl}mediacount/?${qp}`);
+    if (!res.ok) throw new Error('Fel vid hämtning av antal sidor/filer');
+
+    const json = await res.json();
+    // Be resilient to shape changes
+    const transcribed = Number(json?.data?.value ?? 0);
+    const total = Number(json?.aggregations?.media_count?.doc_count ?? 0);
+
+    setValueTranscribed(transcribed);
+    setValue(total);
+  } catch (err) {
+    console.error(err);
   }
 };
 
@@ -678,18 +677,18 @@ export function getPages(data) {
     pages = data.archive.page;
 
     // Kontrollera om 'pages' inte är ett intervall och hantera det
-    if (pages && pages.indexOf('-') === -1) {
+    if (pages && String(pages).indexOf('-') === -1) {
       if (data.archive.total_pages) {
         // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
         if (typeof pages === 'string') {
-          pages = pages.replace(/\D/g, '');
-          pages = parseInt(pages, 10);
+          const m = pages.match(/\d+/); // take the first number only (e.g. "10a" -> 10)
+          pages = m ? parseInt(m[0], 10) : NaN;
         }
 
         const totalPages = parseInt(data.archive.total_pages, 10);
 
         // Om det finns fler än en sida, skapa intervall
-        if (totalPages > 1) {
+        if (Number.isFinite(pages) && Number.isFinite(totalPages) && totalPages > 1) {
           const endPage = pages + totalPages - 1;
           pages = `${pages}-${endPage}`;
         }
