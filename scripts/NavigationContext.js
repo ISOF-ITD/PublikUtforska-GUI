@@ -21,11 +21,11 @@ function NavigationContextProvider({ children }) {
     : null;
 
   const addToNavigationHistory = (path) => {
-    setNavigationHistory([...navigationHistory, path]);
+    setNavigationHistory((prev) => [...prev, path]);
   };
 
   const removeLatestFromNavigationHistory = () => {
-    setNavigationHistory(navigationHistory.slice(0, -2));
+    setNavigationHistory((prev) => prev.slice(0, -2));
   };
 
   const clearNavigationHistory = () => {

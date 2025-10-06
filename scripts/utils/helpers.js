@@ -67,10 +67,10 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
     // ULMA -> 39080
     // SOFI 39081 – 39383
     // DFU 39384 ->
-    prefix = 'ULMA';
-    i = str.length
-    // getFirstNonAlpha(str) {
-    for (var i = 0; i<str.length;i++) {
+    prefix = "ULMA";
+    // getFirstNonAlpha(str)
+    let i = 0;
+    for (; i < str.length; i += 1) {
       if (!isNaN(str[i])) {
         break;
       }
@@ -252,7 +252,7 @@ function extractUppsalaIdFromFilename(fileName) {
       if (contents) {
         if (contents.length > 0) {
           // If no archiveOrg use archive name 
-          if (!archiveOrg) {
+          if (!archiveOrg && archiveName) {
             if (archiveName.includes('AFG')) {
               archiveOrg = 'Göteborg';
             }
@@ -512,8 +512,9 @@ export function getRecordsFetchLocation(params = {}) {
     }
 
     Object.keys(queryParams).forEach((key) => {
-      if (queryParams[key]) {
-        paramStrings.push(`${key}=${queryParams[key]}`);
+      const val = queryParams[key];
+      if (val !== null && val !== undefined && val !== '') {
+        paramStrings.push(`${key}=${val}`);
       }
     });
   }
@@ -549,8 +550,9 @@ export function getRecordsCountLocation(params = {}) {
     }
 
     Object.keys(queryParams).forEach((key) => {
-      if (queryParams[key]) {
-        paramStrings.push(`${key}=${queryParams[key]}`);
+      const val = queryParams[key];
+      if (val !== null && val !== undefined && val !== '') {
+        paramStrings.push(`${key}=${val}`);
       }
     });
   }
@@ -601,8 +603,9 @@ export function getMapFetchLocation(params = {}) {
     }
 
     Object.keys(newParams).forEach((key) => {
-      if (newParams[key]) {
-        paramStrings.push(`${key}=${newParams[key]}`);
+      const val = newParams[key];
+      if (val !== null && val !== undefined && val !== '') {
+        paramStrings.push(`${key}=${val}`);
       }
     });
   }

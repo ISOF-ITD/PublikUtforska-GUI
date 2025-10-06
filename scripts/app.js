@@ -1,4 +1,4 @@
-import Client from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, defer } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
@@ -25,7 +25,7 @@ import { createParamsFromSearchRoute } from './utils/routeHelper';
 import NavigationContextProvider from './NavigationContext';
 
 const container = document.getElementById('app');
-const root = Client.createRoot(container);
+const root = createRoot(container);
 
 window.eventBus = EventBus;
 
@@ -64,7 +64,7 @@ function fetchRecordAndCountSubrecords(recordId, searchValue = null) {
 }
 
 function fetchPerson(personId) {
-  return fetch(getPersonFetchLocation(personId));
+  return fetch(getPersonFetchLocation(personId)).then((resp) => resp.json());
 }
 
 // prefix is either 'transcribe' or '' for respectively Application mode trnascribe or material
