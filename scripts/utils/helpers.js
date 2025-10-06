@@ -3,16 +3,21 @@ import { l } from '../lang/Lang';
 import archiveLogoIsof from '../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../img/archive-logo-ikos.png';
 
-export function pageFromTo({ _source: { archive: { page, total_pages: totalPages } } }) {
-  let text = ``;
-  if (page) {
-    text = `${page}`;
-    if (totalPages > 1) {
-      const toPage = parseInt(page, 10) + (totalPages - 1);
-      text += `-${toPage}`;
-    }
+export function pageFromTo(input = {}) {
+  const page = input?._source?.archive?.page;
+  const totalPages = input?._source?.archive?.total_pages;
+
+  if (page == null) return "";
+
+  const start = parseInt(page, 10);
+  // If start isn't a number (e.g. "A10"), just return the original page.
+  if (Number.isNaN(start)) return String(page);
+
+  if (parseInt(totalPages, 10) > 1) {
+    const toPage = start + (parseInt(totalPages, 10) - 1);
+    return `${start}-${toPage}`;
   }
-  return text;
+  return `${start}`;
 }
 
 // Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
@@ -21,6 +26,7 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   // Matcha första delen av strängen som inte är en siffra (bokstäver)
   // och andra delen som är minst en siffra (0 eller flera siffror)
   // och behåll alla tecken efter siffran/siffrorna i andra delen
+  if (!str) return '';
   const match = str.match(/^(\D*)([0-9:]+.*)?/);
 
   // Om ingen matchning hittades, returnera en tom sträng
@@ -52,7 +58,7 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
       }
     }
     // return false;
-    if ((i - 1) < str.length) {
+    if (i < str.length) {
       // Non numeric exists
       var numericPart = str.substring(i);
       var numericId = parseInt(numericPart)
@@ -76,7 +82,7 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
       }
     }
     // return false;
-    if ((i - 1) < str.length) {
+    if (i < str.length) {
       // Non numeric exists
       var numericPart = str.substring(i);
       var numericId = parseInt(numericPart)
@@ -101,7 +107,7 @@ export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
   const parts = [
     prefix,
     letterPart.toUpperCase(),
-    numberPart.replace(/^0+/, ''),
+    String(numberPart || '').replace(/^0+/, ''),
   ];
 
   // Returnera en sträng med båda delarna separerade med ett mellanslag
@@ -115,23 +121,11 @@ export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
   if (!str) return '';
 
   // Loopa över alla accessionsnummer utifall det finns flera accessionsnummer med separator semikolon ';'
-  let idparts = str.split(';');
-  let match = false;
-  idparts.forEach((part, index) => {
-    let trimmedPart = part.trim();
-    // console.log("Part " + (index + 1) + ": " + trimmedPart);
-    // Matcha första delen av strängen som inte är en siffra (bokstäver)
-    // och andra delen som är minst en siffra (0 eller flera siffror)
-    // och behåll alla tecken efter siffran/siffrorna i andra delen
-    let matchpart = makeArchiveIdElementHumanReadable(trimmedPart, archiveOrg);
-    if (match) {
-      match = match + ';' + matchpart;
-    } else {
-      match = matchpart;
-    }
-  });
-  // Returnera en sträng med alla delar
-  return match;
+  return str
+    .split(';')
+    .map(p => makeArchiveIdElementHumanReadable(p.trim(), archiveOrg))
+    .filter(Boolean)
+    .join('; ');
 }
 
 // OBS: om `highlight` skickas medså innehåller return-strängen HTML-taggar
@@ -170,7 +164,7 @@ export function getTitle(title, contents, archive, highlight) {
 }
 
 
-export function removeUnderscoresBeforeFirstNumber(input) {
+export function removeUnderscoresBeforeFirstNumber(input = ''){
   // Replace all underscores before the first number
   return input.replace(/^([^0-9]*)_+/g, '$1');
 }
@@ -352,7 +346,7 @@ if (archiveOrg === 'Uppsala') {
                 let fileId = elements[0];
                 if (fileId.length > 1) {
                   // Clean unwanted characters:
-                  fileId = fileId.replaceAll('[', '').replaceAll('(', '').replaceAll(' ', '');
+                  fileId = fileId.replace(/\[/g, '').replace(/\(/g, '').replace(/ /g, '');
                   // Clean filename accordning to pattern in content field:
                   fileId = fileId.replace('III', '3').replace('II', '2').replace('I', '1');
                   const filenameParts = fileName.split('/');
@@ -491,7 +485,7 @@ export function getArchiveLogo(archive) {
 // i loaders på routen
 export function getRecordsFetchLocation(params = {}) {
   const url = `${config.apiUrl}documents/`;
-  const paramStrings = [];
+  let paramStrings = [];
   if (params.record_ids) { // Hämtar bara vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
@@ -510,23 +504,16 @@ export function getRecordsFetchLocation(params = {}) {
       delete queryParams.search_field;
       queryParams.search = queryParams.search ? encodeURIComponent(queryParams.search) : undefined;
     }
-
-    Object.keys(queryParams).forEach((key) => {
-      const val = queryParams[key];
-      if (val !== null && val !== undefined && val !== '') {
-        paramStrings.push(`${key}=${val}`);
-      }
-    });
+    paramStrings = toQueryString(queryParams);
   }
 
-  const paramString = paramStrings.join('&');
-
+  const paramString = Array.isArray(paramStrings) ? paramStrings.join('&') : paramStrings;
   return `${url}?${paramString}`;
 }
 
 export function getRecordsCountLocation(params = {}) {
   const url = `${config.apiUrl}count/`;
-  const paramStrings = [];
+  let paramStrings = [];
   if (params.record_ids) { // Hämtar bara vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
@@ -548,17 +535,10 @@ export function getRecordsCountLocation(params = {}) {
       delete queryParams.search_field;
       queryParams.search = queryParams.search ? encodeURIComponent(queryParams.search) : undefined;
     }
-
-    Object.keys(queryParams).forEach((key) => {
-      const val = queryParams[key];
-      if (val !== null && val !== undefined && val !== '') {
-        paramStrings.push(`${key}=${val}`);
-      }
-    });
+    paramStrings = toQueryString(queryParams);
   }
 
-  const paramString = paramStrings.join('&');
-
+  const paramString = Array.isArray(paramStrings) ? paramStrings.join('&') : paramStrings;
   return `${url}?${paramString}`;
 }
 
@@ -579,9 +559,19 @@ function cleanParams(params) {
   return validParams;
 }
 
+function toQueryString(params) {
+  return Object.entries(params)
+    .filter(([, v]) => v !== null && v !== undefined && v !== '')
+    .map(([k, v]) => {
+      const val = k === 'search' ? v : encodeURIComponent(v);
+      return `${k}=${val}`;
+    })
+    .join('&');
+}
+
 export function getMapFetchLocation(params = {}) {
   const url = `${config.apiUrl}socken/`;
-  const paramStrings = [];
+  let paramStrings = [];
 
   if (params.record_ids) { // Hämtar bara platser för vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
@@ -601,17 +591,10 @@ export function getMapFetchLocation(params = {}) {
       delete newParams.search_field;
       newParams.search = newParams.search ? encodeURIComponent(newParams.search) : undefined;
     }
-
-    Object.keys(newParams).forEach((key) => {
-      const val = newParams[key];
-      if (val !== null && val !== undefined && val !== '') {
-        paramStrings.push(`${key}=${val}`);
-      }
-    });
+    paramStrings = toQueryString(newParams);
   }
 
-  const paramString = paramStrings.join('&');
-
+  const paramString = Array.isArray(paramStrings) ? paramStrings.join('&') : paramStrings;
   return `${url}?${paramString}`;
 }
 
@@ -646,7 +629,8 @@ export const fetchRecordMediaCount = async (functionScopeParams, setValue, setVa
   try {
     const queryParams = { ...functionScopeParams };
     const queryParamsString = Object.entries(queryParams)
-      .map(([key, value]) => `${key}=${value}`)
+      .filter(([, v]) => v !== null && v !== undefined && v !== '')
+      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
       .join('&');
     const response = await fetch(`${config.apiUrl}mediacount/?${queryParamsString}`);
     if (response.ok) {
