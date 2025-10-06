@@ -46,6 +46,11 @@ export default function useRecords(params, mode) {
     []
   );
 
+  // Abort any in-flight fetch if this hook unmounts (or if RecordsCollection ever re-memoizes)
+  useEffect(() => {
+    return () => collections.abort();
+  }, [collections]);
+
   const getFetchParams = useCallback(
     () => ({
       from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),

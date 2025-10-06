@@ -80,6 +80,12 @@ export default function useSubrecords({
     }
   }, [recordtype, transcriptiontype, loaded, loadList]);
 
+  // Abort if this container unmounts during a fetch
+  useEffect(() => {
+    const coll = new RecordsCollection(() => {});
+    return () => coll.abort();
+  }, []);
+
   const toggle = () => {
     setVisible((v) => !v);
     if (!loaded) loadList();
