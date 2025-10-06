@@ -6,7 +6,6 @@ import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './components/views/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
-import CorrectionEditor from './features/ASRCorrection/CorrectionEditor';
 import CorrectionView from './features/ASRCorrection/CorrectionView';
 import "../tw.css";
 import { Toaster } from "react-hot-toast";
@@ -29,43 +28,42 @@ const root = createRoot(container);
 
 window.eventBus = EventBus;
 
-function fetchMapAndCountRecords(params) {
-  const mapPromise = fetch(getMapFetchLocation(params)).then((resp) => resp.json());
-  const recordsPromise = fetch(getRecordsCountLocation(params)).then((resp) => resp.json());
+function fetchMapAndCountRecords(params, signal) {
+  const mapPromise = fetch(getMapFetchLocation(params), { signal }).then((r) => r.json());
+  const recordsPromise = fetch(getRecordsCountLocation(params), { signal }).then((r) => r.json());
   return Promise.all([mapPromise, recordsPromise]);
 }
 
-function countRecords(params) {
-  return fetch(getRecordsCountLocation(params)).then((resp) => resp.json());
+function countRecords(params, signal) {
+  return fetch(getRecordsCountLocation(params), { signal }).then((r) => r.json());
 }
 
-function fetchPlace(placeId) {
-  return fetch(getPlaceFetchLocation(placeId)).then((resp) => resp.json());
+function fetchPlace(placeId, signal) {
+  return fetch(getPlaceFetchLocation(placeId), { signal }).then((r) => r.json());
 }
 
-function fetchRecordAndCountSubrecords(recordId, searchValue = null) {
+function fetchRecordAndCountSubrecords(recordId, searchValue = null, signal) {
   // if there is a search value, we use both the search and the document endpoint because
   // the search endpoint will return highlighted text also
   // making sure to use the same search and highlight logic including stemmers
   const recordsPromise = searchValue
-    ? fetch(
-      getRecordsFetchLocation({ search: searchValue, id: recordId }),
-    ).then((resp) => resp.json())
+    ? fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }), { signal }).then((r) => r.json())
     : Promise.resolve(null);
 
   // Hämta huvudposten direkt
-  const recordPromise = fetch(getRecordFetchLocation(recordId)).then((resp) => resp.json());
+  const recordPromise = fetch(getRecordFetchLocation(recordId), { signal }).then((r) => r.json());
 
   // Hämta subrecords count
-  const subrecordsCountPromise = fetch(getRecordsCountLocation({ search: recordId, recordtype: 'one_record' }))
-    .then((resp) => resp.json());
-
+  const subrecordsCountPromise = fetch(
+    getRecordsCountLocation({ search: recordId, recordtype: 'one_record' }),
+    { signal }
+  ).then((r) => r.json());
   return Promise.all([recordsPromise, recordPromise, subrecordsCountPromise]);
 }
 
-function fetchPerson(personId) {
-  return fetch(getPersonFetchLocation(personId)).then((resp) => resp.json());
-}
+function fetchPerson(personId, signal) {
+  return fetch(getPersonFetchLocation(personId), { signal }).then((r) => r.json());
+ }
 
 // prefix is either 'transcribe' or '' for respectively Application mode trnascribe or material
 function createPopupRoutes(prefix) {
@@ -73,49 +71,48 @@ function createPopupRoutes(prefix) {
     {
       path: 'places/:placeId/*?',
       id: `${prefix}place`,
-      loader: ({ params }) => defer({ results: fetchPlace(params.placeId) }),
+      loader: ({ params, request }) =>
+        defer({ results: fetchPlace(params.placeId, request.signal) }),
       element: (
-        <RoutePopupWindow
-          manuallyOpen={false}
-          routeId={`${prefix}place`}
-        >
-          <PlaceView mode={prefix.slice(0, -1) || 'material'} />
+        <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}place`}>
+          <PlaceView mode={prefix.slice(0, -1) || "material"} />
         </RoutePopupWindow>
       ),
     },
     {
       path: 'records/:recordId/*?',
       id: `${prefix}record`,
-      loader: ({ params: { recordId, '*': star } }) => {
-   const cleaned = star?.startsWith('audio/') ? '' : star;
-   const { search } = createParamsFromSearchRoute(cleaned);
-   return defer({ results: fetchRecordAndCountSubrecords(recordId, search) });
- },
+      loader: ({ params: { recordId, "*": star }, request }) => {
+        const cleaned = star?.startsWith("audio/") ? "" : star;
+        const { search } = createParamsFromSearchRoute(cleaned);
+        return defer({
+          results: fetchRecordAndCountSubrecords(
+            recordId,
+            search,
+            request.signal
+          ),
+        });
+      },
       element: (
-        <RoutePopupWindow
-          manuallyOpen={false}
-          routeId={`${prefix}record`}
-        >
-          <RecordView mode={prefix.slice(0, -1) || 'material'} />
+        <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}record`}>
+          <RecordView mode={prefix.slice(0, -1) || "material"} />
         </RoutePopupWindow>
       ),
       children: [
         {
           path: 'audio/:id/transcribe',
           element: <CorrectionView />,
-        }
+        },
       ],
     },
     {
       path: 'persons/:personId/*?',
       id: `${prefix}person`,
-      loader: async ({ params: { personId } }) => fetchPerson(personId),
+      loader: async ({ params: { personId }, request }) =>
+        fetchPerson(personId, request.signal),
       element: (
-        <RoutePopupWindow
-          manuallyOpen={false}
-          routeId={`${prefix}person`}
-        >
-          <PersonView mode={prefix.slice(0, -1) || 'material'} />
+        <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}person`}>
+          <PersonView mode={prefix.slice(0, -1) || "material"} />
         </RoutePopupWindow>
       ),
     },
@@ -126,15 +123,21 @@ function createPopupRoutes(prefix) {
 function createRootRoute() {
   return {
     path: '/*?',
-    loader: ({ params }) => {
+    loader: ({ params, request }) => {
       const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
         transcriptionstatus: 'published,accession,readytocontribute',
       };
       return defer({
-        results: fetchMapAndCountRecords(queryParams),
-        audioResults: countRecords({ ...queryParams, category: 'contentG5' }),
-        pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
+        results: fetchMapAndCountRecords(queryParams, request.signal),
+        audioResults: countRecords(
+          { ...queryParams, category: "contentG5" },
+          request.signal
+        ),
+        pictureResults: countRecords(
+          { ...queryParams, category: "contentG2" },
+          request.signal
+        ),
       });
     },
     shouldRevalidate: ({ currentParams, nextParams }) => {
@@ -152,7 +155,7 @@ function createRootRoute() {
 function createTranscribeRoute() {
   return {
     path: '/transcribe/*?',
-    loader: async ({ params }) => {
+    loader: async ({ params, request }) => {
       const base = createParamsFromSearchRoute(params['*']);
       const queryParams = {
         ...base,
@@ -160,9 +163,9 @@ function createTranscribeRoute() {
         has_untranscribed_records: base.has_untranscribed_records ?? true,
       };
       return defer({
-        results: fetchMapAndCountRecords(queryParams),
-        audioResults: countRecords({ ...queryParams, category: 'contentG5' }),
-        pictureResults: countRecords({ ...queryParams, category: 'contentG2' }),
+        results: fetchMapAndCountRecords(queryParams, request.signal),
+        audioResults: countRecords({ ...queryParams, category: 'contentG5' }, request.signal),
+        pictureResults: countRecords({ ...queryParams, category: 'contentG2' }, request.signal),
       });
     },
     shouldRevalidate: ({ currentParams, nextParams }) => {

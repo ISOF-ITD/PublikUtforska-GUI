@@ -31,6 +31,7 @@ import Footer from './Footer';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import config from '../config';
+import { toastError, toastOk } from '../utils/toast';
 
 
 export default function Application({
@@ -69,25 +70,54 @@ export default function Application({
   };
 
   useEffect(() => {
+    let alive = true;
     setLoading(true);
-    results.then((data) => {
-      setMapData(data[0]);
-      setRecordsData(data[1]);
-      setLoading(false);
-    });
+    results
+      .then(([map, recs]) => {
+        if (!alive) return;
+        setMapData(map);
+        setRecordsData(recs);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return; // silent on navigation
+        console.error(err);
+        setLoading(false);
+        toastError("Kunde inte läsa in sökresultat. Försök igen.");
+      });
+    return () => {
+      alive = false;
+    };
   }, [results]);
 
-  useEffect(() => {
-    audioResults.then((data) => {
-      setAudioRecordsData(data);
+useEffect(() => {
+  let alive = true;
+  audioResults
+    .then((data) => {
+      if (alive) setAudioRecordsData(data);
+    })
+    .catch((err) => {
+      if (err?.name !== "AbortError") console.error(err);
     });
-  }, [audioResults]);
+  return () => {
+    alive = false;
+  };
+}, [audioResults]);
 
-  useEffect(() => {
-    pictureResults.then((data) => {
-      setPictureRecordsData(data);
+useEffect(() => {
+  let alive = true;
+  pictureResults
+    .then((data) => {
+      if (alive) setPictureRecordsData(data);
+    })
+    .catch((err) => {
+      if (err?.name !== "AbortError") console.error(err);
     });
-  }, [pictureResults]);
+  return () => {
+    alive = false;
+  };
+}, [pictureResults]);
+
 
   useEffect(() => {
     const onVisible = () => document.body.classList.add("has-docked-control");
@@ -98,13 +128,6 @@ export default function Application({
 
     document.title = config.siteTitle;
     setTimeout(() => document.body.classList.add("app-initialized"), 1000);
-
-    results.then((data) => {
-      setMapData(data[0]);
-      setRecordsData(data[1]);
-      setLoading(false);
-    });
-
     // Cleanup event listeners on unmount
     return () => {
       window.eventBus.removeEventListener("audio.playervisible", onVisible);
@@ -119,7 +142,7 @@ export default function Application({
 
   return (
     <AudioProvider>
-      <div className="app" id="app">
+      <div className="app">
         <RoutePopupWindow manuallyOpenPopup>
           <RecordListWrapper
             openButtonLabel="Visa sökträffar som lista"
