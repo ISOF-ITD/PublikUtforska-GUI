@@ -236,7 +236,8 @@ function extractUppsalaIdFromFilename(fileName) {
       return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
     }
   }
-  const m = norm.match(/([A-Za-z]+)\s*_?(\d+)\s*:?([A-Za-z])(\d*)/i);
+  let m = norm.match(/([A-Za-z]+)_?(\d+)[:_]?([A-Za-z])(\d*)/i)
+       || norm.replace(/_/g, '').match(/([A-Za-z]+)(\d+)([A-Za-z])(\d*)/i);
   if (m) {
     const [, letters, digits, letter, num] = m;
     return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
@@ -312,7 +313,8 @@ if (archiveOrg === 'Uppsala') {
     const normRowId = (() => {
       // accept "Gr3703:b2" or "Gr3703b2"
       const t = rowToken.replace(/\s*/g, '');
-      let m = t.match(/^([A-Za-z]+)(\d+):?([A-Za-z])(\d*)$/i);
+      const collapsed = t.replace(/[_:]/g, '');
+      const m = collapsed.match(/^([A-Za-z]+)(\d+)([A-Za-z])(\d*)$/i);
       if (!m) return null;
       const [, letters, digits, letter, num] = m;
       return `${letters}${digits}${letter.toLowerCase()}${num || ''}`;
@@ -320,7 +322,10 @@ if (archiveOrg === 'Uppsala') {
 
     if (fileId && normRowId && normRowId.toLowerCase() === fileId.toLowerCase()) {
       // keep a human-friendly token with ':' if present
-      const displayToken = rowToken.replace(/\s*/g, '').replace(/^([A-Za-z]+\d+)([A-Za-z]\d*)$/i, '$1:$2');
+      const displayToken = rowToken
+        .replace(/\s*/g, '')
+        .replace(/[_:]/g, '')
+        .replace(/^([A-Za-z]+\d+)([A-Za-z]\d*)$/i, '$1:$2');
       return `${displayToken}: ${rowDesc}`.trim();
     }
   }
