@@ -1,10 +1,5 @@
 // import turfInside from '@turf/boolean-point-in-polygon';
-
-import { icon, tileLayer, bounds, Proj } from 'leaflet'; // Import only what's needed
-// import Proj from 'proj4leaflet';
-
-// import config from '../config';
-
+import L, { icon, tileLayer, bounds } from 'leaflet';
 import mapMarkerBlueLocation from '../../img/map-marker-blue-location.png';
 import mapMarkerBlueHighlighted from '../../img/map-marker-blue-highlighted.png';
 import mapMarkerShadow from '../../img/map-marker-shadow.png';
@@ -318,7 +313,7 @@ export default {
 	},
 */
   getSweref99crs() {
-    const crs = new Proj.CRS(
+    const crs = new L.Proj.CRS(
       'EPSG:3006',
       '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
       {
@@ -326,7 +321,7 @@ export default {
           4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5,
         ],
         origin: [-1200000.000000, 8500000.000000],
-        bounds: bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000]),
+        bounds: bounds([-1200000.0, 8500000.0], [4305696.0, 2994304.0]),
       },
     );
     return crs;

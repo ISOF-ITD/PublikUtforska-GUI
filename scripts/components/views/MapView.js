@@ -1,8 +1,6 @@
 /* eslint-disable react/require-default-props */
 import { useRef, useEffect, useState } from 'react';
-import {
-  marker, circleMarker, DivIcon, Point, markerClusterGroup, layerGroup,
-} from 'leaflet';
+import L, { marker, circleMarker, DivIcon, Point, layerGroup } from 'leaflet';
 import 'leaflet.markercluster';
 import '../../lib/leaflet-heat';
 import PropTypes from 'prop-types';
@@ -64,7 +62,7 @@ export default function MapView({
         markers.push(newMarker);
       });
 
-      const clusterGroup = markerClusterGroup({
+      const clusterGroup = L.markerClusterGroup({
         showCoverageOnHover: false,
         maxClusterRadius: 45,
         iconCreateFunction(cluster) {
@@ -106,7 +104,7 @@ export default function MapView({
           weight: 1,
           radius: Math.max(count / 14, 2), // Anpassa radien efter antal träffar och zoomnivå
           interactive: true,
-        }).bindTooltip(`${obj.name.replace(/ sn$/, ' socken')}: ${obj.doc_count} träffar`, {
+        }).bindTooltip(`${obj.name?.replace?.(/ sn$/, ' socken') || ''}: ${count} träffar`, {
           permanent: false, // Tooltip visas när man hovrar
           direction: 'top', // Visar tooltip ovanför cirkeln
         });
@@ -153,7 +151,8 @@ export default function MapView({
       <button
         type="button"
         tabIndex={0}
-        onClick={() => setCurrentView(currentView === 'clusters' ? 'circles' : 'clusters')}
+        onClick={() => setCurrentView(v => (v === 'clusters' ? 'circles' : 'clusters'))}
+        aria-pressed={currentView === 'circles'}
         style={{
           position: 'fixed',
           bottom: 274,
@@ -194,8 +193,9 @@ export default function MapView({
 
 MapView.propTypes = {
   onMarkerClick: PropTypes.func,
-  highlightedMarkerIcon: PropTypes.string,
-  defaultMarkerIcon: PropTypes.string,
+  // Leaflet Icon or plain object
+  highlightedMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
+  defaultMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
   layersControlPosition: PropTypes.string,
   zoomControlPosition: PropTypes.string,
   zoom: PropTypes.number,

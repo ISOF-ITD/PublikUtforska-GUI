@@ -13,17 +13,6 @@ export default function MapWrapper({
   audioRecordsData,
   pictureRecordsData,
 }) {
-  MapWrapper.propTypes = {
-    mapMarkerClick: PropTypes.func.isRequired,
-    mode: PropTypes.string.isRequired,
-    params: PropTypes.object.isRequired,
-    mapData: PropTypes.object,
-    loading: PropTypes.bool,
-    recordsData: PropTypes.object.isRequired,
-    audioRecordsData: PropTypes.object.isRequired,
-    pictureRecordsData: PropTypes.object.isRequired,
-  };
-
   return (
     <div className="map-wrapper">
       <MapMenu
@@ -35,9 +24,11 @@ export default function MapWrapper({
         loading={loading}
       />
 
-      <div className="map-progress">
-        <div className="indicator" />
-      </div>
+      {loading && (
+        <div className="map-progress" aria-busy="true" aria-live="polite">
+          <div className="indicator" />
+        </div>
+      )}
 
       <MapView
         onMarkerClick={mapMarkerClick}
@@ -49,3 +40,15 @@ export default function MapWrapper({
     </div>
   );
 }
+
+MapWrapper.propTypes = {
+  mapMarkerClick: PropTypes.func.isRequired,
+  mode: PropTypes.string.isRequired,
+  params: PropTypes.object.isRequired,
+  mapData: PropTypes.object,
+  loading: PropTypes.bool,
+  recordsData: PropTypes.object.isRequired,
+  audioRecordsData: PropTypes.object.isRequired,
+  pictureRecordsData: PropTypes.object.isRequired,
+};
+
