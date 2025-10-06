@@ -15,9 +15,12 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   const {
     transcriptionstatus,
     transcriptiontype,
-    media = [],
+    media,
     id: recordId,
   } = data || {};
+
+  // Normalize inputs
+  const mediaList = Array.isArray(media) ? media : [];
 
   const [expanded, setExpanded] = useState(false);
   const [hasLoadedImages, setHasLoadedImages] = useState(false);
@@ -25,9 +28,8 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
 
   // Filter only image media once
   const images = useMemo(
-    () =>
-      (media || []).filter((m) => (m?.type || "").toLowerCase() === "image"),
-    [media]
+    () => mediaList.filter((m) => (m?.type || "").toLowerCase() === "image"),
+    [mediaList]
   );
 
   const hasImages = images.length > 0;
@@ -70,9 +72,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   }, [expanded, storageKey]);
 
   // Kontrollera om det finns några bilder
-  if (!hasImages) {
-    return null;
-  }
+  
   // Toggle + lazy-load once
   const toggle = useCallback(() => {
     setExpanded((prev) => {
@@ -81,6 +81,10 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
       return next;
     });
   }, [hasLoadedImages]);
+
+  if (!hasImages) {
+    return null;
+  }
 
   return (
     <section className="mb-4">
@@ -118,13 +122,13 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
               imageUrl={config.imageUrl}
               loading="lazy"
               decoding="async"
-              onMediaClick={(item, idx) =>
-                mediaImageClickHandler(item, images, idx)
+               onMediaClick={(item, idx) =>
+                mediaImageClickHandler?.(item, images, idx)
               }
               onKeyDown={(e, item, idx) => {
                 if (e.key === " " || e.key === "Enter") {
                   e.preventDefault();
-                  mediaImageClickHandler(item, images, idx);
+                  mediaImageClickHandler?.(item, images, idx);
                 }
               }}
               renderIndicator={renderIndicator}

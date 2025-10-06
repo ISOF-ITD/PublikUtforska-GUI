@@ -1,10 +1,12 @@
 /* eslint-disable react/prop-types */
-export default function HighlightSwitcher({ highlight, setHighlight }) {
+import PropTypes from 'prop-types';
+
+export default function HighlightSwitcher({ highlight, setHighlight, id = 'highlight' }) {
   return (
-    <label htmlFor="highlight">
+    <label htmlFor={id}>
       <input
         type="checkbox"
-        id="highlight"
+        id={id}
         checked={highlight}
         onChange={() => setHighlight(!highlight)}
       />
@@ -13,3 +15,9 @@ export default function HighlightSwitcher({ highlight, setHighlight }) {
 
   );
 }
+
+HighlightSwitcher.propTypes = {
+  highlight: PropTypes.bool.isRequired,
+  setHighlight: PropTypes.func.isRequired,
+  id: PropTypes.string,
+};

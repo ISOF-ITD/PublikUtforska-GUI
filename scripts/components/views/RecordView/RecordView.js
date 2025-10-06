@@ -52,7 +52,7 @@ function RecordView({ mode = "material" }) {
   );
 
   const mediaImageClickHandler = useCallback((mediaItem, mediaList, currentIndex) => {
-    if (window.eventBus) {
+    if (typeof window !== "undefined" && window.eventBus) {
       window.eventBus.dispatch("overlay.viewimage", {
         imageUrl: mediaItem.source,
         type: mediaItem.type,

@@ -1,14 +1,19 @@
 /* eslint-disable react/require-default-props */
-import PropTypes from 'prop-types';
-import { useState, useMemo, useCallback } from 'react';
-import config from '../../../config';
-import HighlightSwitcher from './HighlightSwitcher';
-import { l } from '../../../lang/Lang';
-import TranscribeButton from '../transcribe/TranscribeButton';
-import ArchiveImage from './ArchiveImage';
-import ContributorInfo from './ContributorInfo';
+import PropTypes from "prop-types";
+import { useState, useMemo, useCallback } from "react";
+import config from "../../../config";
+import HighlightSwitcher from "./HighlightSwitcher";
+import { l } from "../../../lang/Lang";
+import TranscribeButton from "../transcribe/TranscribeButton";
+import ArchiveImage from "./ArchiveImage";
+import ContributorInfo from "./ContributorInfo";
+import sanitizeHtml from "../../../utils/sanitizeHtml";
 
-function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
+export default function TextElement({
+  data,
+  highlightData = null,
+  mediaImageClickHandler,
+}) {
   const {
     id: recordId,
     title,
@@ -18,147 +23,194 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
     transcribedby,
     transcriptiontype,
     transcriptionstatus,
-    media,
+    media = [],
     recordtype,
   } = data;
+
   const { imageUrl } = config;
   const [highlight, setHighlight] = useState(true);
 
-  // Händelsehanterare för bildklick
+  // RETURN null if not relevant for display
+  if (
+    recordtype === "accession_row" ||
+    (transcriptionstatus !== "published" && transcriptiontype !== "sida")
+  ) {
+    return null;
+  }
+
   const handleMediaClick = useCallback(
     (mediaItem, index) => {
       mediaImageClickHandler(mediaItem, media, index);
     },
-    [mediaImageClickHandler, media],
+    [mediaImageClickHandler, media]
   );
 
-  // Händelsehanterare för keydown
   const handleKeyDown = useCallback(
     (e, mediaItem, index) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      // Support both modern and legacy values for Space
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
         mediaImageClickHandler(mediaItem, media, index);
       }
     },
-    [mediaImageClickHandler, media],
+    [mediaImageClickHandler, media]
   );
 
-  const renderMedia = (mediaItem, index) => (
-    <div className="four columns" key={mediaItem.source || index}>
-      <ArchiveImage
-        mediaItem={mediaItem}
-        index={index}
-        onMediaClick={handleMediaClick}
-        onKeyDown={handleKeyDown}
-        imageUrl={imageUrl}
-        renderMagnifyingGlass
-      />
-    </div>
+  const renderMedia = useCallback(
+    (mediaItem, index) => (
+      <div
+        className="four columns"
+        key={`${mediaItem.source ?? "img"}-${index}`}
+      >
+        <ArchiveImage
+          mediaItem={mediaItem}
+          index={index}
+          onMediaClick={handleMediaClick}
+          onKeyDown={handleKeyDown}
+          imageUrl={imageUrl}
+          renderMagnifyingGlass
+        />
+      </div>
+    ),
+    [handleKeyDown, handleMediaClick, imageUrl]
   );
 
-  // RETURN null if
-  // Also for: mediaItem.type === 'audio'?
-  if (recordtype === 'accession_row' || (transcriptionstatus !== 'published' && transcriptiontype !== 'sida')) {
-    return null;
-  }
+  if (transcriptiontype === "sida") {
+    // Precompute highlighted media text by inner_hits offset
+    const innerHits =
+      highlightData?.data?.[0]?.inner_hits?.media?.hits?.hits ?? [];
 
-  if (transcriptiontype === 'sida') {
-    const innerHits = highlightData?.data?.[0]?.inner_hits?.media?.hits?.hits || [];
-    const highlightedMediaTexts = useMemo(() => innerHits.reduce((acc, hit) => {
-      const innerHitHighlightedText = hit?.highlight?.['media.text']?.[0];
-
-      if (innerHitHighlightedText) {
+    const highlightedMediaTexts = useMemo(() => {
+      if (transcriptiontype !== "sida") return {};
+      return innerHits.reduce((acc, hit) => {
+        const innerHitHighlightedText = hit?.highlight?.["media.text"]?.[0];
         // eslint-disable-next-line no-underscore-dangle
-        acc[`${hit?._nested?.offset}`] = innerHitHighlightedText;
-      }
+        const offset = `${hit?._nested?.offset}`;
+        if (innerHitHighlightedText && offset)
+          acc[offset] = innerHitHighlightedText;
+        return acc;
+      }, {});
+    }, [innerHits, transcriptiontype]);
 
-      return acc;
-    }, {}), [innerHits]);
-    // RETURN if transcriptiontype = 'sida'
     return (
       <main>
-        {
-      innerHits.length > 0
-      && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
-      }
-        {media.map((mediaItem, index) => (
-          // Only show if type is 'image'
-          mediaItem.type === 'image' && (
-          <div
-            className="row record-text-and-image"
-            key={mediaItem.source || index}
-          >
-            <div className="eight columns">
-              {(() => {
-                // Visa text den finns och om transcriptionstatus är readytotranscribe annars transcribe-knapp
-                if (mediaItem.text && mediaItem.transcriptionstatus !== 'readytotranscribe') {
-                  return (
-                    <p
-                      className="display-line-breaks"
-                      dangerouslySetInnerHTML={{
-                        __html: (highlight && highlightedMediaTexts[`${index}`])
+        {innerHits.length > 0 && (
+          <HighlightSwitcher
+            highlight={highlight}
+            setHighlight={setHighlight}
+            id={`highlight-${recordId}`}
+          />
+        )}
+
+        {media?.map(
+          (mediaItem, index) =>
+            mediaItem.type === "image" && (
+              <div
+                className="row record-text-and-image"
+                key={`${mediaItem.source ?? "img"}-${index}`}
+              >
+                <div className="eight columns">
+                  {(() => {
+                    // Visa text om den finns och inte är readytotranscribe
+                    if (
+                      mediaItem.text &&
+                      mediaItem.transcriptionstatus !== "readytotranscribe"
+                    ) {
+                      const html =
+                        highlight && highlightedMediaTexts[`${index}`]
                           ? highlightedMediaTexts[`${index}`]
-                          : mediaItem.text,
-                      }}
-                    />
-                  );
-                } if (transcriptionstatus === 'readytotranscribe') {
-                  return (
-                    <TranscribeButton
-                      className="button button-primary"
-                      label={l('Skriv av')}
-                      title={title}
-                      recordId={recordId}
-                      archiveId={archive.archive_id}
-                      places={places}
-                      images={media}
-                      transcriptionType={transcriptiontype}
-                      random={false}
-                    />
-                  );
-                }
-                // Visa tomt fält:
-                // return <div style={{ height: '0px' }} className="button button-primary" />;
-                return <p>{l('Denna text håller på att skrivas av, av en användare eller är under behandling.')}</p>;
-              })()}
-            </div>
-            {renderMedia(mediaItem, index)}
-          </div>
-          )
-        ))}
+                          : mediaItem.text;
+
+                      return (
+                        <p
+                          className="display-line-breaks"
+                          dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml(html),
+                          }}
+                        />
+                      );
+                    }
+
+                    if (transcriptionstatus === "readytotranscribe") {
+                      return (
+                        <TranscribeButton
+                          className="button button-primary"
+                          label={l("Skriv av")}
+                          title={title}
+                          recordId={recordId}
+                          archiveId={archive.archive_id}
+                          places={places}
+                          images={media}
+                          transcriptionType={transcriptiontype}
+                          random={false}
+                        />
+                      );
+                    }
+
+                    // Visa tomt fält / statusmeddelande
+                    return (
+                      <p>
+                        {l(
+                          "Denna text håller på att skrivas av, av en användare eller är under behandling."
+                        )}
+                      </p>
+                    );
+                  })()}
+                </div>
+                {renderMedia(mediaItem, index)}
+              </div>
+            )
+        )}
       </main>
     );
   }
 
-  // if transcriptiontype !== 'sida'
-  const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || '';
+  // Use ES highlight when available, otherwise original text
+  const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || "";
 
-  // Use highlighted text if active, otherwise fallback to the original text
-  const sourceText = highlight && highlightedText ? highlightedText : text;
+  const sourceText = useMemo(
+    () => (highlight && highlightedText ? highlightedText : text),
+    [highlight, highlightedText, text]
+  );
 
-  // Split the text by '/' and remove leading newlines from each part
-  const textParts = sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, ''));
+  // Split the text by '/' at EOL and remove leading newlines from each part (keep original behavior)
+  const textParts = useMemo(
+    () => sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, "")),
+    [sourceText]
+  );
 
-  // RETURN if transcriptiontype !== 'sida'
   return (
     <main>
-      {
-        highlightedText
-        && <HighlightSwitcher highlight={highlight} setHighlight={setHighlight} />
-      }
-      {media.map((mediaItem, index) => (
-        mediaItem.type === 'image' && (
-        <div className="row record-text-and-image" key={mediaItem.source || index}>
-          <div className="eight columns">
-            <p
-              className="display-line-breaks"
-              dangerouslySetInnerHTML={{
-                __html: textParts ? textParts[index] : '&nbsp;',
-              }}
-            />
-          </div>
-          {renderMedia(mediaItem, index)}
-        </div>
-        )))}
+      {highlightedText && (
+        <HighlightSwitcher
+          highlight={highlight}
+          setHighlight={setHighlight}
+          id={`highlight-${recordId}`}
+        />
+      )}
+
+      {media?.map(
+        (mediaItem, index) =>
+          mediaItem.type === "image" && (
+            <div
+              className="row record-text-and-image"
+              key={`${mediaItem.source ?? "img"}-${index}`}
+            >
+              <div className="eight columns">
+                <p
+                  className="display-line-breaks"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(
+                      textParts ? textParts[index] : "&nbsp;"
+                    ),
+                  }}
+                />
+              </div>
+              {renderMedia(mediaItem, index)}
+            </div>
+          )
+      )}
+
       <ContributorInfo
         transcribedby={transcribedby}
         comment={data.comment}
@@ -167,8 +219,6 @@ function TextElement({ data, highlightData = null, mediaImageClickHandler }) {
     </main>
   );
 }
-
-export default TextElement;
 
 TextElement.propTypes = {
   data: PropTypes.object.isRequired,

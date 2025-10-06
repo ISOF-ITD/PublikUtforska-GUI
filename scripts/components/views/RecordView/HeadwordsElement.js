@@ -16,13 +16,15 @@ const SANITIZE_CFG = {
   allowedAttributes: { a: ["href", "target", "rel"] },
 };
 
-function formatHeadwords(text = "") {
-  // Insert line breaks before "Sida/Sidor" blocks for readability
-  return text.trim().replace(/( Sida| Sidor)/g, "\n$1");
-}
+function formatHeadwords(text) {
+   // Ensure we always operate on a string
+   const s = (text ?? "").toString().trim();
+   // Insert line breaks before "Sida/Sidor" blocks for readability
+   return s.replace(/( Sida| Sidor)/g, "\n$1");
+ }
 
-function toSafeHtml(headwords = "", archiveOrg) {
-  let out = formatHeadwords(headwords);
+function toSafeHtml(headwords, archiveOrg) {
+   let out = formatHeadwords(headwords ?? "");
 
   // Just nu är kontroll på arkiv egentligen onödig, då bara Uppsala har länkar, 
   // markerade med [[]], till publika inskannande kort
@@ -40,35 +42,32 @@ function toSafeHtml(headwords = "", archiveOrg) {
 
   // Om arkivet inte är 'Uppsala', returnera den formaterade strängen oförändrad
   // Preserve newlines when injecting as HTML
-  out = out.replace(/\n/g, "<br />");
-
+  out = (out ?? "").replace(/\n/g, "<br />");
   return sanitizeHtml(out, SANITIZE_CFG);
 }
 
 //Component
 export default function HeadwordsElement({ data }) {
-  const { headwords = "", archive: { archive_org: archiveOrg } = {} } =
-    data || {};
+  const archiveOrg = data?.archive?.archive_org;
+  const safeHeadwords = data?.headwords ?? "";
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
 
-  if (!headwords) return null;
-
   const cleanHTML = useMemo(
-    () => toSafeHtml(headwords, archiveOrg),
-    [headwords, archiveOrg]
+    () => toSafeHtml(safeHeadwords, archiveOrg),
+    [safeHeadwords, archiveOrg]
   );
   const headwordBadge = useMemo(() => {
-    const linkCount = (headwords.match(/\[\[(.+?)\]\]/g) || []).length;
+    const linkCount = (safeHeadwords.match(/\[\[(.+?)\]\]/g) || []).length;
     if (linkCount > 0) return String(linkCount);
 
     // Rough fallback: number of page refs ("Sida"/"Sidor") or line groups, capped.
-    const pageRefs = (headwords.match(/\bSidor?\b/gi) || []).length;
+    const pageRefs = (safeHeadwords.match(/\bSidor?\b/gi) || []).length;
     const rough =
       pageRefs ||
-      formatHeadwords(headwords).split(/\n+/).filter(Boolean).length;
+      formatHeadwords(safeHeadwords).split(/\n+/).filter(Boolean).length;
     return rough > 25 ? "25+" : String(rough);
-  }, [headwords]);
+  }, [safeHeadwords]);
 
   // persist expanded state per record/section
   const storageKey = `rv:${data?.id || "unknown"}:headwords:expanded`;
@@ -81,6 +80,8 @@ export default function HeadwordsElement({ data }) {
   useEffect(() => {
     sessionStorage.setItem(storageKey, expanded ? "1" : "0");
   }, [expanded, storageKey]);
+
+  if (!safeHeadwords) return null;
 
   return (
     <section className="mb-4">
@@ -120,7 +121,7 @@ export default function HeadwordsElement({ data }) {
 
 HeadwordsElement.propTypes = {
   data: PropTypes.shape({
-    headwords: PropTypes.string,
+    safeHeadwords: PropTypes.string,
     archive: PropTypes.shape({
       archive_org: PropTypes.string,
     }),

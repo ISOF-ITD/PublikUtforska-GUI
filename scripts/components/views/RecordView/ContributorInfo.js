@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPen, faCommentDots } from "@fortawesome/free-solid-svg-icons";
+import sanitizeHtml from "../../../utils/sanitizeHtml";
 
 function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
   const hasContributor = !!transcribedby;
@@ -26,7 +27,7 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
               <p className="m-0 text-gray-800">{transcribedby}</p>
               {transcriptiondate && (
                 <p className="m-0 text-sm text-gray-600">
-                  {new Date(transcriptiondate).toLocaleDateString()}
+                  {new Date(transcriptiondate).toLocaleDateString("sv-SE")}
                 </p>
               )}
             </div>
@@ -45,7 +46,7 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
             <div
               className="ml-6 prose prose-sm text-gray-800"
               dangerouslySetInnerHTML={{
-                __html: comment.split(";").join("<br/>"),
+                __html: sanitizeHtml(comment.split(";").join("<br/>")),
               }}
             />
           </div>

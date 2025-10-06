@@ -27,18 +27,16 @@ export default function TranscribeButton({
   onClick,
   label,
   helptext = null,
-  transcribeCancel = false,
-  disabled,
+  transcribeCancel,
+  disabled = false,
 }) {
   // This function handles button clicks. If a custom onClick handler is provided, it uses that;
   // otherwise, it defaults to dispatching an 'overlay.transcribe' event.
   const transcribeButtonClick = () => {
-    if (transcribeCancel) {
-      // den funktionen ska då köras
+    if (typeof transcribeCancel === 'function') {
       transcribeCancel();
-      // return;
     }
-    if (window.eventBus) {
+    if (typeof window !== "undefined" && window.eventBus) {
       if (random) {
         // 1.Hämta dokument innan overlayen tas fram
         fetch(`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`)
@@ -149,4 +147,6 @@ TranscribeButton.propTypes = {
   onClick: PropTypes.func,
   label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   helptext: PropTypes.string,
+  transcribeCancel: PropTypes.func,
+  disabled: PropTypes.bool,
 };

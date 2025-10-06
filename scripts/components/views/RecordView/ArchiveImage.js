@@ -90,8 +90,8 @@ function ArchiveImage({
     <div
       className="archive-image"
       role="button"
-      tabIndex="0"
-      data-type="image"
+      tabIndex={0}
+      aria-label={mediaItem.title || 'Visa bild'}
       data-image={mediaItem.source}
       onClick={() => onMediaClick(mediaItem, index)}
       onKeyDown={(e) => onKeyDown(e, mediaItem, index)}

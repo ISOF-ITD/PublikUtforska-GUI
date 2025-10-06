@@ -39,7 +39,7 @@ export default function ContentsElement({ data, highlightData = [] }) {
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
 
-  if (!contents) return null;
+  
 
   const defaultAudio = useMemo(() => {
     return (
@@ -245,6 +245,8 @@ export default function ContentsElement({ data, highlightData = [] }) {
   useEffect(() => {
     sessionStorage.setItem(storageKey, expanded ? "1" : "0");
   }, [expanded, storageKey]);
+
+  if (!contents) return null;
 
   return (
     <section className="mb-4">
