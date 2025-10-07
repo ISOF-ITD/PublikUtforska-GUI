@@ -5,35 +5,47 @@ import config from '../../../config';
 import PdfThumbnail from './PdfThumbnail';
 
 export function useMediaQuery(query) {
-  if (typeof window === 'undefined') return false;
-  const getMatch = () => typeof window !== 'undefined' && window.matchMedia(query).matches;
-  const [matches, setMatches] = useState(getMatch);
+  const [matches, setMatches] = useState(false); // safe default for SSR
 
   useEffect(() => {
+    if (typeof window === "undefined" || !query) return;
+
     const mql = window.matchMedia(query);
+
+    // set initial value on mount (client only)
+    setMatches(mql.matches);
+
     const handler = (e) => setMatches(e.matches);
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
+
+    // Feature-detect modern vs legacy API (Safari < 14)
+    if (typeof mql.addEventListener === "function") {
+      mql.addEventListener("change", handler);
+      return () => mql.removeEventListener("change", handler);
+    } else {
+      mql.addListener(handler);
+      return () => mql.removeListener(handler);
+    }
   }, [query]);
 
   return matches;
 }
 
 export default function PdfElement({ data }) {
-  const { media = [] } = data;
+  const { media = [] } = data ?? {};
+  const pdfObjects = Array.isArray(media)
+    ? media.filter((i) => i?.type === "pdf")
+    : [];
 
-  const pdfObjects = media.filter((item) => item.type === 'pdf');
-  if (pdfObjects.length === 0) {
-    return null;
-  }
+  if (pdfObjects.length === 0) return null;
 
-  const isAtLeastMediumScreen = useMediaQuery('(min-width: 768px)');
-  const buildPdfUrl = (src) => `${config.pdfUrl ?? config.imageUrl ?? ''}${src}`;
+  const isAtLeastMediumScreen = useMediaQuery("(min-width: 768px)");
+  const buildPdfUrl = (src) =>
+    `${config.pdfUrl ?? config.imageUrl ?? ""}${src ?? ""}`;
 
   return (
     <>
-      {isAtLeastMediumScreen
-        && pdfObjects.map((pdfObject) => (
+      {isAtLeastMediumScreen &&
+        pdfObjects.map((pdfObject) => (
           <PdfViewer
             height="100%"
             url={buildPdfUrl(pdfObject.source)}
@@ -57,10 +69,12 @@ export default function PdfElement({ data }) {
 
 PdfElement.propTypes = {
   data: PropTypes.shape({
-    media: PropTypes.arrayOf(PropTypes.shape({
-      type: PropTypes.string.isRequired,
-      source: PropTypes.string.isRequired,
-      title: PropTypes.string,
-    })),
+    media: PropTypes.arrayOf(
+      PropTypes.shape({
+        type: PropTypes.string.isRequired,
+        source: PropTypes.string.isRequired,
+        title: PropTypes.string,
+      })
+    ),
   }).isRequired,
 };

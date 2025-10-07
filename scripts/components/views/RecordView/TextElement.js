@@ -29,14 +29,6 @@ export default function TextElement({
 
   const { imageUrl } = config;
 
-  // ---- EARLY GUARD (before any hooks) ----
-  if (
-    recordtype === "accession_row" ||
-    (transcriptionstatus !== "published" && transcriptiontype !== "sida")
-  ) {
-    return null;
-  }
-
   // ---- HOOKS (always in the same order) ----
   const [highlight, setHighlight] = useState(true);
 

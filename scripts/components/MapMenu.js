@@ -110,7 +110,7 @@ export default function MapMenu({
       }`}
     >
       {/* <SurveyLink />  enable when needed */}
-      <Warning />
+      {/*<Warning /> */}
 
       <img
         src={Folkelogga}
