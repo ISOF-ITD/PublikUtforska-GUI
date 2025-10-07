@@ -28,15 +28,17 @@ export default function TextElement({
   } = data;
 
   const { imageUrl } = config;
-  const [highlight, setHighlight] = useState(true);
 
-  // RETURN null if not relevant for display
+  // ---- EARLY GUARD (before any hooks) ----
   if (
     recordtype === "accession_row" ||
     (transcriptionstatus !== "published" && transcriptiontype !== "sida")
   ) {
     return null;
   }
+
+  // ---- HOOKS (always in the same order) ----
+  const [highlight, setHighlight] = useState(true);
 
   const handleMediaClick = useCallback(
     (mediaItem, index) => {
@@ -47,7 +49,6 @@ export default function TextElement({
 
   const handleKeyDown = useCallback(
     (e, mediaItem, index) => {
-      // Support both modern and legacy values for Space
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
         e.preventDefault();
         mediaImageClickHandler(mediaItem, media, index);
@@ -75,23 +76,36 @@ export default function TextElement({
     [handleKeyDown, handleMediaClick, imageUrl]
   );
 
-  if (transcriptiontype === "sida") {
-    // Precompute highlighted media text by inner_hits offset
-    const innerHits =
-      highlightData?.data?.[0]?.inner_hits?.media?.hits?.hits ?? [];
+  const isSida = transcriptiontype === "sida";
 
-    const highlightedMediaTexts = useMemo(() => {
-      if (transcriptiontype !== "sida") return {};
-      return innerHits.reduce((acc, hit) => {
-        const innerHitHighlightedText = hit?.highlight?.["media.text"]?.[0];
-        // eslint-disable-next-line no-underscore-dangle
-        const offset = `${hit?._nested?.offset}`;
-        if (innerHitHighlightedText && offset)
-          acc[offset] = innerHitHighlightedText;
-        return acc;
-      }, {});
-    }, [innerHits, transcriptiontype]);
+  // Data used by the "sida" path (compute unconditionally, return empty defaults when not sida)
+  const innerHits =
+    highlightData?.data?.[0]?.inner_hits?.media?.hits?.hits ?? [];
+  const highlightedMediaTexts = useMemo(() => {
+    if (!isSida) return {};
+    return innerHits.reduce((acc, hit) => {
+      const innerHitHighlightedText = hit?.highlight?.["media.text"]?.[0];
+      // eslint-disable-next-line no-underscore-dangle
+      const offset = `${hit?._nested?.offset}`;
+      if (innerHitHighlightedText && offset)
+        acc[offset] = innerHitHighlightedText;
+      return acc;
+    }, {});
+  }, [isSida, innerHits]);
 
+  // Data used by the non-"sida" path (also safe to compute always)
+  const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || "";
+  const sourceText = useMemo(
+    () => (highlight && highlightedText ? highlightedText : text),
+    [highlight, highlightedText, text]
+  );
+  const textParts = useMemo(
+    () => sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, "")),
+    [sourceText]
+  );
+
+  // ---- RENDER ----
+  if (isSida) {
     return (
       <main>
         {innerHits.length > 0 && (
@@ -111,7 +125,6 @@ export default function TextElement({
               >
                 <div className="eight columns">
                   {(() => {
-                    // Visa text om den finns och inte är readytotranscribe
                     if (
                       mediaItem.text &&
                       mediaItem.transcriptionstatus !== "readytotranscribe"
@@ -138,7 +151,7 @@ export default function TextElement({
                           label={l("Skriv av")}
                           title={title}
                           recordId={recordId}
-                          archiveId={archive.archive_id}
+                          archiveId={archive?.archive_id}
                           places={places}
                           images={media}
                           transcriptionType={transcriptiontype}
@@ -147,7 +160,6 @@ export default function TextElement({
                       );
                     }
 
-                    // Visa tomt fält / statusmeddelande
                     return (
                       <p>
                         {l(
@@ -165,20 +177,7 @@ export default function TextElement({
     );
   }
 
-  // Use ES highlight when available, otherwise original text
-  const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || "";
-
-  const sourceText = useMemo(
-    () => (highlight && highlightedText ? highlightedText : text),
-    [highlight, highlightedText, text]
-  );
-
-  // Split the text by '/' at EOL and remove leading newlines from each part (keep original behavior)
-  const textParts = useMemo(
-    () => sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, "")),
-    [sourceText]
-  );
-
+  // Non-"sida"
   return (
     <main>
       {highlightedText && (
