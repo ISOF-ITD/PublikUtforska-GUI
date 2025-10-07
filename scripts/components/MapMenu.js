@@ -164,6 +164,7 @@ export default function MapMenu({
           <div className="statistics-table">
             <RecordList
               key="latest-RecordList"
+              showViewToggle={false}
               disableRouterPagination
               disableListPagination
               disableListDownload

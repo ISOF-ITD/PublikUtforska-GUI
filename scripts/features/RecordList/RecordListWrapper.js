@@ -51,6 +51,7 @@ export default function RecordListWrapper({
             mode={mode}
             hasFilter={mode !== 'transcribe'}
             hasTimeline
+            showViewToggle={true}
             openSwitcherHelptext={openSwitcherHelptext}
             containerRef={containerRef}
           />

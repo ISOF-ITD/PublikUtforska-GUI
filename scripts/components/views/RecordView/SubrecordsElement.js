@@ -24,6 +24,7 @@ export default function SubrecordsElement({ data, subrecordsCount, mode = 'mater
           useRouteParams
           mode={mode}
           hasFilter={false}
+          showViewToggle={false}
         />
       </div>
     </div>

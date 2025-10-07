@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { l } from "../../lang/Lang";
@@ -7,6 +7,7 @@ import Timeline from "./ui/Timeline.js";
 import Pagination from "./ui/Pagination";
 import RecordCards from "./ui/RecordCards";
 import RecordTable from "./ui/RecordTable";
+import RecordViewToggle from "./ui/RecordViewToggle";
 import { createSearchRoute } from "../../utils/routeHelper";
 import useRecords from "./hooks/useRecords";
 import config from "../../config";
@@ -29,6 +30,7 @@ export default function RecordList(props) {
     containerRef,
     useRouteParams,
     smallTitle,
+    showViewToggle,
   } = props;
 
   const navigate = useNavigate();
@@ -52,6 +54,48 @@ export default function RecordList(props) {
     setYearFilter,
   } = useRecords(params, mode);
 
+  /* ------- desktop view mode (table|cards) ------- */
+  const [view, setView] = useState("table"); // desktop default remains table
+
+  // initialize from URL or localStorage on mount
+  useEffect(() => {
+    const sp = new URLSearchParams(location.search);
+    const v = sp.get("view");
+    if (v === "table" || v === "cards") {
+      setView(v);
+      return;
+    }
+    try {
+      const saved = localStorage.getItem("recordListView");
+      if (saved === "table" || saved === "cards") setView(saved);
+    } catch {
+      /* ignore */
+    }
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // keep state in sync if user navigates to a URL with ?view=
+  useEffect(() => {
+    const sp = new URLSearchParams(location.search);
+    const v = sp.get("view");
+    if (v === "table" || v === "cards") setView(v);
+  }, [location.search]);
+
+  const handleViewChange = (next) => {
+    setView(next);
+    try {
+      localStorage.setItem("recordListView", next);
+    } catch {}
+    if (!disableRouterPagination) {
+      const newParams = { ...params, view: next };
+      // stay on same path; replace history entry to avoid back-button noise
+      navigate(`${location.pathname}${createSearchRoute(newParams)}`, {
+        replace: true,
+      });
+    }
+  };
+
   /* ------- UI helpers ------- */
   const shouldRenderColumn = useCallback(
     (name) => (columns ? columns.includes(name) : true),
@@ -66,7 +110,7 @@ export default function RecordList(props) {
       setCurrentPage(newPage);
     } else {
       const newParams = { ...params, page: newPage };
-      navigate(`/places${createSearchRoute(newParams)}`);
+      navigate(`${location.pathname}${createSearchRoute(newParams)}`);
     }
   };
 
@@ -138,6 +182,7 @@ export default function RecordList(props) {
             />
           )}
 
+          {/* Mobile: always cards */}
           <RecordCards
             records={records}
             params={params}
@@ -145,26 +190,48 @@ export default function RecordList(props) {
             highlightRecordsWithMetadataField={
               highlightRecordsWithMetadataField
             }
+            layout="mobile-only"
           />
 
-          <RecordTable
-            records={records}
-            uniqueId={uniqueId}
-            params={params}
-            highlightRecordsWithMetadataField={
-              highlightRecordsWithMetadataField
-            }
-            shouldRenderColumn={shouldRenderColumn}
-            archiveIdClick={archiveIdClick}
-            sort={sort}
-            order={order}
-            handleSort={handleSort}
-            mode={mode}
-            useRouteParams={useRouteParams}
-            smallTitle={smallTitle}
-            columns={columns}
-            tableClass={tableClass}
-          />
+          {/* Desktop: view toggle + chosen view */}
+          <div className="hidden md:block">
+            {showViewToggle && (
+              <div className="flex justify-end mb-3">
+                <RecordViewToggle value={view} onChange={handleViewChange} />
+              </div>
+            )}
+
+            {showViewToggle && view === "cards" ? (
+              <RecordCards
+                records={records}
+                params={params}
+                mode={mode}
+                highlightRecordsWithMetadataField={
+                  highlightRecordsWithMetadataField
+                }
+                layout="desktop-grid"
+              />
+            ) : (
+              <RecordTable
+                records={records}
+                uniqueId={uniqueId}
+                params={params}
+                highlightRecordsWithMetadataField={
+                  highlightRecordsWithMetadataField
+                }
+                shouldRenderColumn={shouldRenderColumn}
+                archiveIdClick={archiveIdClick}
+                sort={sort}
+                order={order}
+                handleSort={handleSort}
+                mode={mode}
+                useRouteParams={useRouteParams}
+                smallTitle={smallTitle}
+                columns={columns}
+                tableClass={tableClass}
+              />
+            )}
+          </div>
 
           {!disableListPagination && (
             <Pagination

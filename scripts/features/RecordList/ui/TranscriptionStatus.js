@@ -27,10 +27,7 @@ export default function TranscriptionStatus({
   /* ─────────────────────────────────────────────────────────────
      AUDIO: show a passive counter
   ───────────────────────────────────────────────────────────── */
-  if (
-    transcriptiontype === "audio" &&
-    (status === "readytocontribute" || status === "readytotranscribe")
-  ) {
+  if (transcriptiontype === "audio" && status === "readytocontribute") {
     const count = done ?? 0;
     const bg = count ? "!bg-lighter-isof" : "bg-white";
 
@@ -42,7 +39,6 @@ export default function TranscriptionStatus({
       >
         <FontAwesomeIcon icon={faCommentDots} />
         {count}
-        {/* visually-hidden word for screen readers only */}
         <span className="sr-only"> {l("beskrivningar")}</span>
       </span>
     );
@@ -67,7 +63,8 @@ export default function TranscriptionStatus({
      ACCESSION progress bar for scanned pages 
   ───────────────────────────────────────────────────────────── */
   if (type === "accession" && total && transcriptiontype !== "audio") {
-    const pct = Math.round((done / total) * 100);
+    const safeTotal = total > 0 ? total : 1;
+    const pct = Math.round(((done || 0) / safeTotal) * 100);
     return (
       <div className="mr-2 space-y-1">
         <span className="text-sm">{`${done} av ${total}`}</span>

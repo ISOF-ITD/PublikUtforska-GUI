@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 import { l } from "../../../lang/Lang";
 import {
   getTitle,
@@ -184,7 +185,7 @@ export const RecordCardItem = ({
       : null;
 
   return (
-    <article className="group relative rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md">
+    <article className="group relative rounded-lg !border !border-gray-200 bg-white p-4 shadow transition-all hover:shadow-md">
       {/* Header Section */}
       <header className="flex items-center gap-2">
         <MediaIcons media={media || []} />
@@ -305,18 +306,24 @@ export const RecordCardItem = ({
 
       {/* Summary first (if any) */}
       {summary && (
-        <p className="mt-2 text-sm text-gray-600 line-clamp-4">{summary}</p>
+        <span className="mt-2 text-sm text-gray-600 line-clamp-4">
+          {summary}
+        </span>
       )}
 
-      {/* New: inner-hits for descriptions + utterances */}
-      {innerHitsToShow.map(({ key, text }) => (
-        <HighlightedText key={key} text={text} className="block mt-2 text-sm" />
-      ))}
+      <div className="flex flex-col">
+        {innerHitsToShow.map(({ key, text }) => (
+          <HighlightedText key={key} text={text} className="mt-2 text-sm" />
+        ))}
 
-      {/* Fallback: ordinary ES text hit */}
-      {!summary && innerHitsToShow.length === 0 && highlight?.text?.[0] && (
-        <HighlightedText text={highlight.text[0]} className="block mt-2" />
-      )}
+        {/* Fallback: ordinary ES text hit */}
+        {(() => {
+          const fallback = toText(highlight?.text?.[0]);
+          return !summary && innerHitsToShow.length === 0 && fallback ? (
+            <HighlightedText text={fallback} className="mt-2" />
+          ) : null;
+        })()}
+      </div>
 
       <TranscriptionStatus
         status={transcriptionstatus}
@@ -328,7 +335,7 @@ export const RecordCardItem = ({
         }
         done={done}
         total={total}
-        pillClasses={`${pill} mr-auto`}
+        pillClasses={`${pill} mr-auto block`}
       />
 
       {/* Transcription CTA */}

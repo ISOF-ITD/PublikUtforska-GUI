@@ -14,12 +14,11 @@ The highlighted text is kept within a span with the class 'highlight'.
 function HighlightedText({
   text,
   surroundingCharsForHighlights = 60,
+  className = "",
 }) {
-  if (!text) {
-    return null;
-  }
+  const str = typeof text === "string" ? text : String(text ?? "");
+  if (!str) return null;
 
-  const str = text;
   const spanStart = '<span class="highlight">';
   const spanEnd = '</span>';
   const highlights = [];
@@ -29,27 +28,27 @@ function HighlightedText({
   while (startPos !== -1) {
     const endPos = str.indexOf(spanEnd, startPos);
     if (endPos === -1) break;
-    highlights.push(
-      [
-        Math.max(0, startPos - surroundingCharsForHighlights),
-        endPos + spanEnd.length + surroundingCharsForHighlights,
-      ],
-    );
+    highlights.push([
+      Math.max(0, startPos - surroundingCharsForHighlights),
+      endPos + spanEnd.length + surroundingCharsForHighlights,
+    ]);
     startPos = str.indexOf(spanStart, endPos + spanEnd.length);
   }
 
   if (highlights.length === 0) {
     return (
-      <div className="item-summary record-text small">
-        {str}
-      </div>
+      <div
+        className={`item-summary record-text small ${className}`}
+        dangerouslySetInnerHTML={{ __html: str }}
+      />
     );
   }
 
   // Merge close highlights
   highlights.sort((a, b) => a[0] - b[0]);
   const mergedHighlights = [highlights[0]];
-  for (let i = 1; i < highlights.length; i += 1) { // Changed i++ to i += 1
+  for (let i = 1; i < highlights.length; i += 1) {
+    // Changed i++ to i += 1
     const lastHighlight = mergedHighlights[mergedHighlights.length - 1];
     const highlight = highlights[i];
     if (highlight[0] <= lastHighlight[1]) {
@@ -96,8 +95,9 @@ function HighlightedText({
 }
 
 HighlightedText.propTypes = {
-  text: PropTypes.string.isRequired,
+  text: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   surroundingCharsForHighlights: PropTypes.number,
+  className: PropTypes.string,
 };
 
 export default HighlightedText;
