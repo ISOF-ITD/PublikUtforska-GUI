@@ -78,13 +78,13 @@ export default function MapMenu({
   const getIsMobile = () =>
     typeof window !== "undefined" ? window.innerWidth < 700 : false;
   const [isMobile, setIsMobile] = useState(getIsMobile());
-  const [expanded, setExpanded] = useState(!getIsMobile());
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     const onResize = () => {
       const mobile = getIsMobile();
       setIsMobile(mobile);
-      if (mobile) setExpanded(false);
+      if (mobile) setExpanded(true);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -103,8 +103,8 @@ export default function MapMenu({
 
   return (
     <div
-     id="mapmenu-panel"
-     aria-hidden={!expanded}
+      id="mapmenu-panel"
+      aria-hidden={!expanded}
       className={`menu-wrapper ${
         expanded ? "menu-expanded" : "menu-collapsed"
       }`}
