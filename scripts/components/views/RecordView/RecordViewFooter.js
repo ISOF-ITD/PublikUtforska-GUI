@@ -1,72 +1,112 @@
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import archiveLogoIsof from '../../../../img/archive-logo-isof.png';
-import archiveLogoIkos from '../../../../img/archive-logo-ikos.png';
-import logotypSprakbanken from '../../../../img/logotyp_sprakbanken.svg';
-import config from '../../../config';
+import React, { memo, useMemo } from "react";
+import PropTypes from "prop-types";
+import archiveLogoIsof from "../../../../img/archive-logo-isof.png";
+import archiveLogoIkos from "../../../../img/archive-logo-ikos.png";
+import logotypSprakbanken from "../../../../img/logotyp_sprakbanken.svg";
 
-const getArchiveLogo = (archive) => {
-  const archiveLogos = {};
+// Normalize: lowercase, strip diacritics, collapse punctuation/whitespace
+const normalize = (s) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // strip diacritics
+    .replace(/[^\w\s]/g, " ") // punctuation -> space
+    .replace(/\s+/g, " ")
+    .trim();
 
-  archiveLogos['Dialekt-, namn- och folkminnesarkivet i Göteborg'] = archiveLogoIsof;
-  archiveLogos['Dialekt- och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
-  archiveLogos['Dialekt och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
-  archiveLogos.DAG = 'img/archive-logo-isof.png';
-  // Needs to be shrinked. By css?
-  // archiveLogos['Norsk folkeminnesamling'] = 'img/UiO_Segl_A.png';
-  archiveLogos['Norsk folkeminnesamling'] = archiveLogoIkos;
-  archiveLogos.NFS = archiveLogoIkos;
-  archiveLogos.DFU = archiveLogoIkos;
-  // archiveLogos['SLS'] = SlsLogga;
-  // archiveLogos['Svenska litteratursällskapet i Finland (SLS)'] = SlsLogga;
-
-  return (
-    archiveLogos[archive]
-      ? config.appUrl + archiveLogos[archive]
-      : config.appUrl + archiveLogos.DAG
-  );
+// Aliases grouped by brand
+const NAME_ALIASES = {
+  isof: [
+    "dialekt-, namn- och folkminnesarkivet i göteborg",
+    "dialekt- och folkminnesarkivet i uppsala",
+    "dialekt och folkminnesarkivet i uppsala",
+    "dag",
+    "dfu",
+    "isof",
+  ],
+  ikos: ["norsk folkeminnesamling", "nfs", "ikos"],
 };
 
-export default function RecordViewFooter({ data }) {
-  const {
-    archive: {
-      archive = '',
-    },
-  } = data;
+function buildAliasMap() {
+  const map = new Map();
+  for (const [brand, aliases] of Object.entries(NAME_ALIASES)) {
+    const logo = brand === "ikos" ? archiveLogoIkos : archiveLogoIsof;
+    aliases.forEach((a) => map.set(normalize(a), logo));
+  }
+  return map;
+}
+
+const aliasMap = buildAliasMap();
+
+const getArchiveLogo = (name) => {
+  const key = normalize(name);
+  return aliasMap.get(key) || archiveLogoIsof; // default: ISOF
+};
+
+function RecordViewFooter({ data }) {
+  // Safe nested destructuring (won’t crash if archive is missing)
+  const { archive: { archive: archiveName = "" } = {} } = data || {};
+
+  const logoSrc = useMemo(() => getArchiveLogo(archiveName), [archiveName]);
 
   return (
     <div className="row">
       <div
         className="twelve columns"
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
         }}
       >
-        <Link to="https://isof.se" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://isof.se"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Öppna Isof i ny flik"
+        >
           <img
-            src={getArchiveLogo(archive)}
-            width="150"
-            height="auto"
-            alt="Logga för arkiv"
+            src={logoSrc}
+            alt={archiveName ? `Logga för ${archiveName}` : "Logga för arkiv"}
+            style={{ height: "auto", width: 150 }}
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              // If a custom mapping ever points to a broken logo,
+              // guarantee we still show something.
+              if (e.currentTarget.src !== archiveLogoIsof) {
+                e.currentTarget.src = archiveLogoIsof;
+              }
+            }}
           />
-        </Link>
-        <Link to="https://sprakbanken.se/" target="_blank" rel="noopener noreferrer">
+        </a>
+
+        <a
+          href="https://sprakbanken.se/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Öppna Språkbanken i ny flik"
+        >
           <img
             src={logotypSprakbanken}
-            height="auto"
-            width="150"
             alt="Logga för Språkbanken"
+            style={{ height: "auto", width: 150 }}
+            loading="lazy"
+            decoding="async"
           />
-        </Link>
+        </a>
       </div>
     </div>
   );
 }
+
 RecordViewFooter.propTypes = {
   data: PropTypes.shape({
     archive: PropTypes.shape({
-      archive: PropTypes.string, // Typ för `archive`, som är en sträng
-    }).isRequired, // Kräver att `archive`-objektet finns
-  }).isRequired, // Kräver att `data`-objektet finns
+      archive: PropTypes.string,
+    }),
+  }).isRequired,
 };
+
+export default memo(RecordViewFooter);
