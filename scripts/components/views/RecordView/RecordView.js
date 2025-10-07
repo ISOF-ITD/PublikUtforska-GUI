@@ -109,7 +109,6 @@ function RecordView({ mode = "material" }) {
                 />
                 <div>
                   <Disclaimer />
-                  <TranscriptionPrompt data={data} />
                   <div role="group" aria-label="Snabböversikt" className="space-y-0">
                   <RequestToTranscribePrompt data={data} />
                   <RecordViewThumbnails
@@ -119,6 +118,7 @@ function RecordView({ mode = "material" }) {
                   <ContentsElement data={data} highlightData={highlightData?.["media.description"]?.hits?.hits ?? []} />
                   <HeadwordsElement data={data} />
                   </div>
+                  <TranscriptionPrompt data={data} />
 
                   <AudioItems data={data} highlightData={highlightData} />
                   <PdfElement data={data} />
