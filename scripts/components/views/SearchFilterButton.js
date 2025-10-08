@@ -12,7 +12,6 @@ export default function SearchFilterButton({
 }) {
   return (
     <>
-      <span>&nbsp;</span>
       <div className={`search-filter${checked ? " checked" : ""}`}>
         <div className="input-wrapper">
           <input

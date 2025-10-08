@@ -505,22 +505,30 @@ export default function SearchBox({
         </div>
       </div>
 
-      <div className={`totals${loading ? " visible" : " visible"}`}>
-        {l("Begränsa sökningen till: ")}
-        <SearchFilterButton
-          handleFilterChange={handleFilterChange}
-          label="Ljud"
-          categoryId="contentG5"
-          total={audioTotal}
-          checked={categories.includes("contentG5")}
-        />
-        <SearchFilterButton
-          handleFilterChange={handleFilterChange}
-          label="Bild"
-          categoryId="contentG2"
-          total={pictureTotal}
-          checked={categories.includes("contentG2")}
-        />
+      <div
+        className={`totals${
+          loading ? " visible" : " visible"
+        } text-white pb-8 flex gap-3 flex-wrap p-2`}
+      >
+        <span className="whitespace-nowrap">
+          {l("Begränsa sökningen till: ")}
+        </span>
+        <div className="flex items-center gap-2">
+          <SearchFilterButton
+            handleFilterChange={handleFilterChange}
+            label="Ljud"
+            categoryId="contentG5"
+            total={audioTotal}
+            checked={categories.includes("contentG5")}
+          />
+          <SearchFilterButton
+            handleFilterChange={handleFilterChange}
+            label="Bild"
+            categoryId="contentG2"
+            total={pictureTotal}
+            checked={categories.includes("contentG2")}
+          />
+        </div>
       </div>
 
       {total && (

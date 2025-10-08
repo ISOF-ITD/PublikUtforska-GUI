@@ -410,7 +410,7 @@ function Timeline({
   }, [containerRef]);
 
   return (
-    <>
+    <div className='lg:visible hidden'>
       {!data.length && (
         <p className="text-center text-gray-500">Laddar tidslinje…</p>
       )}
@@ -418,7 +418,7 @@ function Timeline({
       <span role="status" aria-live="polite" className="sr-only">
         {filter?.from && `Visar ${filter.from}–${filter.to}`}
       </span>
-    </>
+    </div>
   );
 }
 

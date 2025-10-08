@@ -1,7 +1,7 @@
-import PropTypes from 'prop-types';
-import React, { useMemo } from 'react';
-import TranscribeButton from '../transcribe/TranscribeButton';
-import { l } from '../../../lang/Lang';
+import PropTypes from "prop-types";
+import React, { useMemo } from "react";
+import TranscribeButton from "../transcribe/TranscribeButton";
+import { l } from "../../../lang/Lang";
 
 // short keys; wrap with l()
 const STRINGS = {
@@ -180,11 +180,7 @@ export default function TranscriptionPrompt({ data }) {
         >
           {l(pill.label)}
         </span>
-        <span
-          id={statusId}
-          className="text-gray-600 dark:text-gray-300"
-          aria-live="polite"
-        >
+        <span id={statusId} className="text-gray-900" aria-live="polite">
           {statusLine}
         </span>
       </div>
@@ -194,7 +190,7 @@ export default function TranscriptionPrompt({ data }) {
         <div className="mt-3" aria-live="polite">
           <div
             id={progressId}
-            className="h-2 w-full lg:w-1/2 overflow-hidden rounded bg-gray-200 dark:bg-white/10"
+            className="h-2 w-full lg:w-1/2 overflow-hidden rounded bg-gray-200"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={totalPages}
@@ -217,7 +213,7 @@ export default function TranscriptionPrompt({ data }) {
       {/* Copy & CTAs */}
       <div className="mt-4 space-y-2">
         {/* State text (compact) */}
-        <span className="text-gray-700 dark:text-gray-200">
+        <span className="text-gray-900">
           {statusNorm === "undertranscription"
             ? l(STRINGS.underTranscription)
             : isUnderReview
@@ -250,32 +246,13 @@ export default function TranscriptionPrompt({ data }) {
                 : undefined
             }
           />
-
-          {/* Secondary: random record (visible when primary is blocked) */}
-          {showRandom && (
-            <TranscribeButton
-              className="button inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-              label={l(STRINGS.randomCta)}
-              title={l(STRINGS.randomCta)}
-              recordId={id}
-              archiveId={archive?.archive_id}
-              places={places}
-              images={media}
-              transcriptionType={transcriptiontype}
-              random
-            />
-          )}
-
           {/* Helpful note for disabled state (only when relevant) */}
           {!primaryEnabled &&
             statusNorm !== "undertranscription" &&
             transcriptiontype === "sida" &&
             totalPages > 0 &&
             readyCount === 0 && (
-              <span
-                className="ml-1 text-gray-600 dark:text-gray-300"
-                role="note"
-              >
+              <span className="ml-1 text-gray-900" role="note">
                 {l(STRINGS.lockedInfo)}
               </span>
             )}
@@ -283,9 +260,7 @@ export default function TranscriptionPrompt({ data }) {
 
         {/* Ready pages tip */}
         {transcriptiontype === "sida" && nextReadyText && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {l(STRINGS.tipStartFirstFree)}
-          </span>
+          <span className="text-gray-700">{l(STRINGS.tipStartFirstFree)}</span>
         )}
       </div>
     </section>
