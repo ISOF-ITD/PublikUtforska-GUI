@@ -51,7 +51,7 @@ export default function TranscriptionStatus({
     return (
       <span
         className={`${
-          status === "published" ? "!bg-lighter-isof" : "bg-white"
+          status === "published" ? "!bg-lighter-isof" : "bg-gray-300 mt-1"
         } ${pillClasses}`}
       >
         {labels[status] ?? ""}

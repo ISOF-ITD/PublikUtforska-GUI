@@ -1,7 +1,8 @@
 /* eslint-disable react/require-default-props */
-import PropTypes from 'prop-types';
-import config from '../../../config';
-import { getPlaceString } from '../../../utils/helpers';
+import PropTypes from "prop-types";
+import { useCallback, useMemo, useState } from "react";
+import config from "../../../config";
+import { getPlaceString } from "../../../utils/helpers";
 
 // The TranscribeButton component is a functional component that, when clicked, dispatches
 // a 'overlay.transcribe' event via the global eventBus object. The event data contains
@@ -14,119 +15,180 @@ export default function TranscribeButton({
   title = '',
   type = '',
   images = [],
-  transcriptionType = '',
-  places = '',
-  className = '',
-  // NOTE: We're intentionally not setting a prop for `onClick`.
-  // The default behavior for the `onClick` action is encapsulated within
-  // the `transcribeButtonClick` function inside the component.
-  // If we set it as a default, the function would be bound during its declaration
-  // and wouldn't have access to the component's most recent props.
-  // By handling the default onClick directly in the component's render logic,
-  // we ensure that the function always has the latest props available to it.
+  transcriptionType = "",
+  places = [],
+  className = "",
   onClick,
   label,
   helptext = null,
   transcribeCancel,
   disabled = false,
 }) {
-  // This function handles button clicks. If a custom onClick handler is provided, it uses that;
-  // otherwise, it defaults to dispatching an 'overlay.transcribe' event.
-  const transcribeButtonClick = () => {
-    if (typeof transcribeCancel === 'function') {
+  const [busy, setBusy] = useState(false);
+
+  const helpTextId = useMemo(
+    () =>
+      helptext
+        ? `transcribe-help-${Math.random().toString(36).slice(2)}`
+        : undefined,
+    [helptext]
+  );
+
+  const dispatchOverlay = useCallback((payload, eventName) => {
+    if (typeof window !== "undefined" && window.eventBus) {
+      window.eventBus.dispatch(eventName, payload);
+    } else {
+      // Keep silent in UI; useful for debugging non-browser contexts.
+      // eslint-disable-next-line no-console
+      console.warn("eventBus is not available on window.");
+    }
+  }, []);
+
+  const buildPayload = useCallback(
+    (opts) => ({
+      url: `${config.siteUrl}/records/${opts.id}`,
+      id: String(opts.id ?? ""),
+      archiveId: opts.archiveId ?? "",
+      title: opts.title ?? "",
+      type: opts.type ?? "", // record type (domain term), not the <button type>
+      images: Array.isArray(opts.images) ? opts.images : [],
+      transcriptionType: opts.transcriptionType ?? "",
+      placeString: getPlaceString(opts.places || []),
+      random: !!opts.random,
+    }),
+    []
+  );
+
+  const eventFor = useCallback(
+    (tType) =>
+      tType === "sida" ? "overlay.transcribePageByPage" : "overlay.transcribe",
+    []
+  );
+
+  const startTranscription = useCallback(
+    (opts) => {
+      const payload = buildPayload(opts);
+      dispatchOverlay(payload, eventFor(opts.transcriptionType));
+    },
+    [buildPayload, dispatchOverlay, eventFor]
+  );
+
+  const fetchRandomAndStart = useCallback(async () => {
+    try {
+      setBusy(true);
+
+      // Build a robust URL regardless of how specialEventTranscriptionCategory is formatted.
+      const url = new URL(`${config.apiUrl}random_document/`);
+      const params = new URLSearchParams({
+        type: "arkiv",
+        recordtype: "one_record",
+        transcriptionstatus: "readytotranscribe",
+        categorytypes: "tradark",
+        publishstatus: "published",
+      });
+
+      const extra = (config.specialEventTranscriptionCategory || "")
+        .toString()
+        .replace(/^[&?]/, "")
+        .split("&")
+        .filter(Boolean);
+
+      for (const kv of extra) {
+        const [k, v = ""] = kv.split("=");
+        if (k) params.append(k, v);
+      }
+
+      url.search = params.toString();
+
+      const response = await fetch(url.toString());
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const json = await response.json();
+      const hit = json?.hits?.hits?.[0]?._source;
+
+      if (!hit) {
+        // eslint-disable-next-line no-console
+        console.warn("No random document found.");
+        return;
+      }
+
+      startTranscription({
+        id: hit.id,
+        archiveId: hit?.archive?.archive_id,
+        title: hit?.title,
+        type: hit?.type ?? hit?.recordtype,
+        images: hit?.media,
+        transcriptionType: hit?.transcriptiontype,
+        places: hit?.places,
+        random: true,
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Error fetching random document:", error);
+    } finally {
+      setBusy(false);
+    }
+  }, [startTranscription]);
+
+  const defaultOnClick = useCallback(() => {
+    if (typeof transcribeCancel === "function") {
       transcribeCancel();
     }
-    if (typeof window !== "undefined" && window.eventBus) {
-      if (random) {
-        // 1.Hämta dokument innan overlayen tas fram
-        fetch(`${config.apiUrl}random_document/?type=arkiv&recordtype=one_record&transcriptionstatus=readytotranscribe&categorytypes=tradark&publishstatus=published${config.specialEventTranscriptionCategory || ''}`)
-          .then((response) => response.json())
-          .then((json) => {
-            const randomDocument = json.hits.hits[0]._source;
-            if (randomDocument?.transcriptiontype === 'sida') {
-              window.eventBus.dispatch('overlay.transcribePageByPage', {
-                url: `${config.siteUrl}/records/${randomDocument.id}`,
-                id: randomDocument.id,
-                archiveId: randomDocument.archive.archive_id,
-                title: randomDocument.title,
-                type: randomDocument.type,
-                images: randomDocument.media,
-                transcriptionType: randomDocument.transcriptiontype,
-                placeString: getPlaceString(randomDocument.places),
-                random: true,
-              });
-            } else {
-              window.eventBus.dispatch('overlay.transcribe', {
-                url: `${config.siteUrl}/records/${randomDocument.id}`,
-                id: randomDocument.id,
-                archiveId: randomDocument.archive.archive_id,
-                title: randomDocument.title,
-                type: randomDocument.type,
-                images: randomDocument.media,
-                transcriptionType: randomDocument.transcriptiontype,
-                placeString: getPlaceString(randomDocument.places),
-                random: true,
-              });
-            }
-          })
-          .catch((error) => {
-            console.error('Error fetching random document:', error);
-          });
-
-        // 2.Kolla transcriptionType
-        // 3.Utifrån transcriptionType, hämta rätt overlay
-        // window.eventBus.dispatch('overlay.transcribe', {
-        //   random: true,
-        // });
-      } else if (transcriptionType === 'sida') {
-        window.eventBus.dispatch('overlay.transcribePageByPage', {
-          url: `${config.siteUrl}/records/${recordId}`,
-          id: recordId,
-          archiveId,
-          title,
-          type,
-          images,
-          transcriptionType,
-          placeString: getPlaceString(places),
-        });
-      } else {
-        window.eventBus.dispatch('overlay.transcribe', {
-          url: `${config.siteUrl}/records/${recordId}`,
-          id: recordId,
-          archiveId,
-          title,
-          type,
-          images,
-          transcriptionType,
-          placeString: getPlaceString(places),
-        });
-      }
+    if (random) {
+      if (!busy) fetchRandomAndStart();
+      return;
     }
-  };
+    startTranscription({
+      id: recordId,
+      archiveId,
+      title,
+      type,
+      images,
+      transcriptionType,
+      places,
+      random: false,
+    });
+  }, [
+    archiveId,
+    busy,
+    fetchRandomAndStart,
+    images,
+    places,
+    random,
+    recordId,
+    startTranscription,
+    title,
+    transcriptionType,
+    type,
+    transcribeCancel,
+  ]);
 
-  const effectiveOnClick = onClick || transcribeButtonClick;
+  const effectiveOnClick = onClick || defaultOnClick;
 
   if (!config.activateTranscription) {
     // Ingen knapp
     return null;
   }
   // else visa knapp
+  const isDisabled = disabled || busy;
+
   return (
-    // Render a button with a dynamic class name based on the passed-in props.
-    // The button's click event is tied to the transcribeButtonClick function,
-    // or to the onClick prop if it's provided.
     <div>
-      {/* Conditionally render the help text if it's provided */}
       {helptext && (
-        <div className="help-text">
+        <div id={helpTextId} className="help-text">
           {helptext}
         </div>
       )}
       <button
-        className={`transcribe-button${className ? ` ${className}` : ''}`}
+        className={`transcribe-button${className ? ` ${className}` : ""}`}
         onClick={effectiveOnClick}
         type="button"
-        disabled={disabled}
+        disabled={isDisabled}
+        aria-disabled={isDisabled}
+        aria-describedby={helpTextId}
+        data-random={random ? "true" : "false"}
+        data-busy={busy ? "true" : "false"}
+        title={typeof label === "string" ? label : undefined}
       >
         {label}
       </button>
@@ -136,17 +198,17 @@ export default function TranscribeButton({
 
 TranscribeButton.propTypes = {
   random: PropTypes.bool,
-  recordId: PropTypes.string,
+  recordId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   archiveId: PropTypes.string,
   title: PropTypes.string,
-  type: PropTypes.string,
-  images: PropTypes.array,
+  type: PropTypes.string, // domain "record type", not <button type>
+  images: PropTypes.arrayOf(PropTypes.object),
   transcriptionType: PropTypes.string,
-  places: PropTypes.array,
+  places: PropTypes.arrayOf(PropTypes.object),
   className: PropTypes.string,
   onClick: PropTypes.func,
-  label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-  helptext: PropTypes.string,
+  label: PropTypes.node,
+  helptext: PropTypes.node,
   transcribeCancel: PropTypes.func,
   disabled: PropTypes.bool,
 };

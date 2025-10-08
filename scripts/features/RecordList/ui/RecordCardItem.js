@@ -68,21 +68,32 @@ export const RecordCardItem = ({
   });
 
   // helpers
-  const displayTitle = getTitle(title, contents, archive, highlight);
-  const archiveId =
-    makeArchiveIdHumanReadable(archive?.archive_id, archive?.archive_org) || "";
-  const placeString = getPlaceString(places || []);
+  const displayTitle = useMemo(
+    () => getTitle(title, contents, archive, highlight),
+    [title, contents, archive, highlight]
+  );
+  const archiveId = useMemo(
+    () =>
+      makeArchiveIdHumanReadable(archive?.archive_id, archive?.archive_org) ||
+      "",
+    [archive?.archive_id, archive?.archive_org]
+  );
+  const placeString = useMemo(() => getPlaceString(places || []), [places]);
 
   // guard record id; keep link stable even if id missing
-  const recordUrl =
-    id != null
-      ? `${
-          mode === "transcribe" ? "/transcribe" : ""
-        }/records/${encodeURIComponent(String(id))}`
-      : null;
-  // guard array methods
-  const hasTranscription = !!media?.some?.(
-    (m) => m?.type === "audio" && m?.utterances?.utterances?.length > 0
+  const recordUrl = useMemo(() => {
+    if (id == null) return null;
+    return `${
+      mode === "transcribe" ? "/transcribe" : ""
+    }/records/${encodeURIComponent(String(id))}`;
+  }, [id, mode]);
+
+  const hasTranscription = useMemo(
+    () =>
+      !!media?.some?.(
+        (m) => m?.type === "audio" && m?.utterances?.utterances?.length > 0
+      ),
+    [media]
   );
 
   const toText = (v) => {
@@ -95,25 +106,34 @@ export const RecordCardItem = ({
   const utteranceHits =
     inner_hits?.["media.utterances.utterances"]?.hits?.hits ?? [];
 
-  const innerHitsToShow = [
-    ...descriptionHits.map((h, i) => {
-      const pre = h?._source?.start != null ? `${h._source.start} ` : "";
-      const hi = h?.highlight?.["media.description.text"]?.[0];
-      const body = toText(hi ?? h?._source?.text);
-      const text = body ? `Innehållsbeskrivning: ${pre}${body}` : "";
-      return { key: `${h?._index || "desc"}:${h?._id || i}`, text };
-    }),
-    ...utteranceHits.map((h, i) => {
-      const pre =
-        h?._source?.start != null ? `${secondsToMMSS(h._source.start)} ` : "";
-      const hi = h?.highlight?.["media.utterances.utterances.text"]?.[0];
-      const body = toText(hi ?? h?._source?.text);
-      const text = body ? `Ljudavskrift: ${pre}${body}` : "";
-      return { key: `${h?._index || "utt"}:${h?._id || i}`, text };
-    }),
-  ]
-    .filter((x) => x.text) // drop empties
-    .slice(0, 3);
+  // inner hits -> show up to 3; memoize to avoid work each render
+  const innerHitsToShow = useMemo(() => {
+    const descriptionHits = inner_hits?.["media.description"]?.hits?.hits ?? [];
+    const utteranceHits =
+      inner_hits?.["media.utterances.utterances"]?.hits?.hits ?? [];
+
+    const rows = [
+      ...descriptionHits.map((h, i) => {
+        const pre = h?._source?.start != null ? `${h._source.start} ` : "";
+        const hi = h?.highlight?.["media.description.text"]?.[0];
+        const body = toText(hi ?? h?._source?.text);
+        const text = body ? `Innehållsbeskrivning: ${pre}${body}` : "";
+        return { key: `${h?._index || "desc"}:${h?._id || i}`, text };
+      }),
+      ...utteranceHits.map((h, i) => {
+        const pre =
+          h?._source?.start != null ? `${secondsToMMSS(h._source.start)} ` : "";
+        const hi = h?.highlight?.["media.utterances.utterances.text"]?.[0];
+        const body = toText(hi ?? h?._source?.text);
+        const text = body ? `Ljudavskrift: ${pre}${body}` : "";
+        return { key: `${h?._index || "utt"}:${h?._id || i}`, text };
+      }),
+    ]
+      .filter((x) => x.text)
+      .slice(0, 3);
+
+    return rows;
+  }, [inner_hits]);
 
   // ───────── highlight / summary
   const displayTextSummary =
@@ -194,10 +214,6 @@ export const RecordCardItem = ({
             <Link
               to={recordUrl}
               className="!text-isof focus:outline-none focus:ring-2 focus:ring-isof"
-              // prevent navigation when id is missing
-              onClick={(e) => {
-                if (!id) e.preventDefault();
-              }}
             >
               <span
                 // ensure string
@@ -207,6 +223,7 @@ export const RecordCardItem = ({
                 <span
                   className="inline-flex items-center gap-0.5 mb-0.5 px-1.5 text-[10px] font-medium text-lighter-isof"
                   title={l("Har avskrift")}
+                  aria-label={l("Har avskrift")}
                 >
                   <FontAwesomeIcon
                     icon={faClosedCaptioning}
@@ -343,10 +360,10 @@ export const RecordCardItem = ({
         (media?.length ?? 0) > 0 && (
           <div className="mt-4 border-t border-gray-100 pt-3">
             <TranscribeButton
-              className="w-full justify-center bg-isof hover:bg-darker-isof text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              className="w-full justify-center bg-isof hover:bg-darker-isof !text-white font-medium rounded-lg transition-colors"
               label={
                 <>
-                  <FontAwesomeIcon icon={faPencil} />
+                  <FontAwesomeIcon icon={faPencil} />{" "}
                   {l("Skriv av")}
                 </>
               }
