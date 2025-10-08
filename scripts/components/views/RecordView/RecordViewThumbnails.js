@@ -110,8 +110,8 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
       {hasLoadedImages && (
         <div
           id={contentId}
-          className={`record-view-thumbnails ${expanded ? "show" : "hide"}`}
-          hidden={!expanded}
+          className="record-view-thumbnails"
+          style={{ display: expanded ? undefined : "none" }}
           aria-hidden={!expanded}
         >
           {images.map((mediaItem, index) => (
@@ -122,7 +122,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
               imageUrl={config.imageUrl}
               loading="lazy"
               decoding="async"
-               onMediaClick={(item, idx) =>
+              onMediaClick={(item, idx) =>
                 mediaImageClickHandler?.(item, images, idx)
               }
               onKeyDown={(e, item, idx) => {

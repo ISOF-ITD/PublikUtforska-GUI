@@ -51,8 +51,8 @@ export default function TranscriptionStatus({
     return (
       <span
         className={`${
-          status === "published" ? "!bg-lighter-isof" : "bg-gray-300 mt-1"
-        } ${pillClasses}`}
+          status === "published" ? "bg-gray-300" : "!bg-lighter-isof"
+        } ${pillClasses} mt-1`}
       >
         {labels[status] ??
           String(status).charAt(0).toUpperCase() + String(status).slice(1)}
