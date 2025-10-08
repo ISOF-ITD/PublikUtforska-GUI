@@ -16,7 +16,7 @@ import config from "../../../config";
 const renderArchiveName = (archive) => {
   if (!archive?.archive_org) return null;
   return (
-    <span className="mr-10">
+    <span className="mr-2.5">
       <strong>{l("Arkiv")}</strong>
       {`: ${getArchiveName(archive.archive_org)}`}
     </span>
@@ -26,14 +26,14 @@ const renderArchiveName = (archive) => {
 const renderSubrecordCount = (recordtype, subrecordsCount) =>
   recordtype === "one_accession_row" &&
   (subrecordsCount?.value ?? subrecordsCount) ? (
-    <span className="mr-10">
+    <span className="mr-2.5">
       <strong>{l("Antal uppteckningar")}</strong>
       {`: ${subrecordsCount?.value ?? subrecordsCount}`}
     </span>
   ) : null;
 
 const renderAccessionsNumber = (recordtype, archive) => (
-  <span className="mr-10">
+  <span className="mr-2.5">
     <strong>{l("Accessionsnummer")}</strong>
     :&nbsp;
     {recordtype === "one_record" ? (
@@ -56,7 +56,7 @@ const renderAccessionsNumber = (recordtype, archive) => (
 const renderYear = (year) => {
   if (!year) return null;
   return (
-    <span className="mr-10">
+    <span className="mr-2.5">
       <strong>{l("År")}</strong>
       {`: ${String(year).padStart(4, "0").slice(0, 4)}`}
     </span>
@@ -65,7 +65,7 @@ const renderYear = (year) => {
 
 const renderPageCount = (pages) =>
   pages ? (
-    <span className="mr-10">
+    <span className="mr-2.5">
       <strong>{l("Sidnummer")}</strong>
       {`: ${pages}`}
     </span>
@@ -100,7 +100,7 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
           <h1>
             {titleText && titleText !== "[]" ? titleText : l("(Utan titel)")}
           </h1>
-          <p className="mr-10">
+          <p className="mr-2.5">
             {recordTypeLabel}
             <span
               className="switcher-help-button"
@@ -122,7 +122,7 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
             {renderSubrecordCount(recordtype, subrecordsCount)}
             {renderPageCount(pages)}
             {shouldShowMaterialType && (
-              <span className="mr-10">
+              <span className="mr-2.5">
                 <strong>Materialtyp</strong>
                 {": "}
                 {materialtype}
