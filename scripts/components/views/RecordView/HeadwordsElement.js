@@ -109,7 +109,6 @@ export default function HeadwordsElement({ data }) {
         <div className="rounded-md border border-gray-200">
           <div className="p-3 text-sm leading-relaxed">
             <div
-              className="realkatalog-content"
               dangerouslySetInnerHTML={{ __html: cleanHTML }}
             />
           </div>
