@@ -101,11 +101,6 @@ export const RecordCardItem = ({
     return s.trim();
   };
 
-  // ─────── inner-hits (description + utterances)
-  const descriptionHits = inner_hits?.["media.description"]?.hits?.hits ?? [];
-  const utteranceHits =
-    inner_hits?.["media.utterances.utterances"]?.hits?.hits ?? [];
-
   // inner hits -> show up to 3; memoize to avoid work each render
   const innerHitsToShow = useMemo(() => {
     const descriptionHits = inner_hits?.["media.description"]?.hits?.hits ?? [];
@@ -148,11 +143,6 @@ export const RecordCardItem = ({
         ? `${itemText.slice(0, 250)}…`
         : itemText
       : null;
-
-  const showSummary =
-    metadata?.some?.((m) => m?.type === "summary") &&
-    !!item?.text &&
-    item.text.length > 0;
 
   // Collector filtering
   const collectorPersons =
@@ -233,7 +223,7 @@ export const RecordCardItem = ({
                 </span>
               )}
               <span className="ml-2 inline-block text-gray-400 transition-all group-hover:translate-x-1">
-                <FontAwesomeIcon icon={faChevronRight} />
+                <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />
               </span>
             </Link>
           ) : (
@@ -264,10 +254,9 @@ export const RecordCardItem = ({
                 try {
                   // If pageFromTo expects the ES hit or just the archive/page shape,
                   // try the narrowest input first; fall back to the whole hit.
-                  const val =
-                    typeof pageFromTo === "function"
-                      ? pageFromTo(src?.archive ?? src ?? item)
-                      : null;
+                  typeof pageFromTo === "function"
+                    ? pageFromTo({ archive })
+                    : null;
                   return val ? (
                     <span className="text-gray-500">:{val}</span>
                   ) : null;
@@ -363,8 +352,7 @@ export const RecordCardItem = ({
               className="w-full justify-center bg-isof hover:bg-darker-isof !text-white font-medium rounded-lg transition-colors"
               label={
                 <>
-                  <FontAwesomeIcon icon={faPencil} />{" "}
-                  {l("Skriv av")}
+                  <FontAwesomeIcon icon={faPencil} /> {l("Skriv av")}
                 </>
               }
               title={title}

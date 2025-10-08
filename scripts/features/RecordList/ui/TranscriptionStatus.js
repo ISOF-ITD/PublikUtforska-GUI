@@ -54,7 +54,8 @@ export default function TranscriptionStatus({
           status === "published" ? "!bg-lighter-isof" : "bg-gray-300 mt-1"
         } ${pillClasses}`}
       >
-        {labels[status] ?? ""}
+        {labels[status] ??
+          String(status).charAt(0).toUpperCase() + String(status).slice(1)}
       </span>
     );
   }
@@ -66,14 +67,19 @@ export default function TranscriptionStatus({
     const safeTotal = total > 0 ? total : 1;
     const pct = Math.round(((done || 0) / safeTotal) * 100);
     return (
-      <div className="mr-2 space-y-1">
+      <div className="mr-2 space-y-1" role="group" aria-label={l("Förlopp")}>
         <span className="text-sm">{`${done} av ${total}`}</span>
         <div
           className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-isof border-solid bg-white"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={safeTotal}
+          aria-valuenow={done || 0}
+          aria-label={l("Avskrivna sidor")}
           title={`${pct}%`}
         >
           <span
-            className="absolute inset-0 h-full bg-isof rounded-l"
+            className="absolute inset-0 h-full bg-lighter-isof rounded-l"
             style={{ width: `${pct}%` }}
           />
         </div>

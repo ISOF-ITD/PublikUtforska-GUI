@@ -188,6 +188,7 @@ export default function RecordListItem(props) {
               <FontAwesomeIcon
                 icon={faClosedCaptioning}
                 className="text-[16px] bg-isof rounded-sm"
+                aria-hidden="true"
               />
               <span className="sr-only">{l("Har avskrift")}</span>
             </span>
@@ -273,11 +274,14 @@ export default function RecordListItem(props) {
               {visible && (
                 <ul className="ml-2 mt-1 list-disc text-sm">
                   {subrecords
-                    .sort(
-                      (a, b) =>
-                        parseInt(a._source.archive.page, 10) -
-                        parseInt(b._source.archive.page, 10)
-                    )
+                    .sort((a, b) => {
+                      const pa = Number(a?._source?.archive?.page);
+                      const pb = Number(b?._source?.archive?.page);
+                      return (
+                        (isFinite(pa) ? pa : Infinity) -
+                        (isFinite(pb) ? pb : Infinity)
+                      );
+                    })
                     .map((s) => {
                       const pub = s._source.transcriptionstatus === "published";
                       return (
@@ -391,11 +395,17 @@ export default function RecordListItem(props) {
 
       {shouldRenderColumn("year", columns) && (
         <td data-title={`${l("År")}:`} className="py-2">
-          {year && (
-            <span className={`${pillClasses} bg-white`}>
-              {year.split("-")[0]}
-            </span>
-          )}
+          {(() => {
+            const displayYear =
+              typeof year === "string"
+                ? year.split("-")[0]
+                : typeof year === "number"
+                ? String(year)
+                : null;
+            return displayYear ? (
+              <span className={`${pillClasses} bg-white`}>{displayYear}</span>
+            ) : null;
+          })()}
         </td>
       )}
 
@@ -435,7 +445,7 @@ export default function RecordListItem(props) {
         </td>
       )}
 
-      {columns?.includes("transcribedby") && (
+      {shouldRenderColumn("transcribedby", columns) && (
         <td data-title={`${l("Transkriberad av")}:`} className="py-2">
           {transcribedby && <span className="text-sm">{transcribedby}</span>}
         </td>

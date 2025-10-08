@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from "prop-types";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useId } from "react";
 import config from "../../../config";
 import { getPlaceString } from "../../../utils/helpers";
 
@@ -10,10 +10,10 @@ import { getPlaceString } from "../../../utils/helpers";
 // The component can take in several props to customize its appearance and behavior.
 export default function TranscribeButton({
   random = false,
-  recordId = '',
-  archiveId = '',
-  title = '',
-  type = '',
+  recordId = "",
+  archiveId = "",
+  title = "",
+  type = "",
   images = [],
   transcriptionType = "",
   places = [],
@@ -26,13 +26,8 @@ export default function TranscribeButton({
 }) {
   const [busy, setBusy] = useState(false);
 
-  const helpTextId = useMemo(
-    () =>
-      helptext
-        ? `transcribe-help-${Math.random().toString(36).slice(2)}`
-        : undefined,
-    [helptext]
-  );
+  const autoId = useId();
+  const helpTextId = helptext ? `transcribe-help-${autoId}` : undefined;
 
   const dispatchOverlay = useCallback((payload, eventName) => {
     if (typeof window !== "undefined" && window.eventBus) {
