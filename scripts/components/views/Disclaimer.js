@@ -9,7 +9,7 @@ export default function Disclaimer() {
       className="w-full max-w-3xl"
     >
       <div className="rounded-md px-4 py-3">
-        <div className="border-0 border-l-4 border-l-lighter-isof border-solid pl-3">
+        <div className="border-0 border-l-4 border-l-lighter-isof border-solid pl-3 mb-3">
           <p className="text-sm leading-6 text-darker-isof italic">
             <strong className="not-italic font-semibold">
               Information till läsaren:
