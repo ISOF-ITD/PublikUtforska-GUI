@@ -508,7 +508,7 @@ export default function SearchBox({
       <div
         className={`totals${
           loading ? " visible" : " visible"
-        } text-white pb-8 flex gap-3 flex-wrap p-2`}
+        } text-white pb-8 flex gap-3 lg:flex-nowrap flex-wrap p-2`}
       >
         <span className="whitespace-nowrap">
           {l("Begränsa sökningen till: ")}
