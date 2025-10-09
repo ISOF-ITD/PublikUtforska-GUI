@@ -60,7 +60,13 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     }
 
     // Add first baselayer to map
-    const visibleLayers = [layers[Object.keys(layers)[0]]];
+    //const visibleLayers = [layers[Object.keys(layers)[0]]];
+    
+    // Prefer OSM as default while Lantmäteriet is down
+    const DEFAULT_BASE = "Open Street Map Mapnik";
+    const visibleLayers = [
+      layers[DEFAULT_BASE] ?? layers[Object.keys(layers)[0]],
+    ];
 
     // Add first overlay layer if it’s explicitly not hidden
     if (overlayLayers) {
