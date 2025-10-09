@@ -36,7 +36,7 @@ function HelpTextOverlay() {
   const overlayTitle = config.siteOptions.helpTexts[kind].title;
 
   return (
-    <div className={`overlay-container feedback-overlay-container${visible ? ' visible' : ''}`}>
+    <div className={`overlay-container z-[3100] ${visible ? ' visible' : ''}`}>
       <div className="overlay-window">
         <div className="overlay-header">
           {overlayTitle}

@@ -151,7 +151,7 @@ function TranscriptionHelpOverlay() {
   }
 
   return (
-    <div className={`overlay-container feedback-overlay-container${state.visible ? ' visible' : ''}`}>
+    <div className={`overlay-container z-[3100] ${state.visible ? ' visible' : ''}`}>
       <div className="overlay-window">
         <div className="overlay-header">
           {l('Instruktioner')}

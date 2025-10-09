@@ -1,10 +1,5 @@
 /* eslint-disable react/require-default-props */
-import {
-  Suspense,
-  useCallback,
-  useEffect, // useState,
-  useMemo,
-} from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
 import {
   Await,
   useLoaderData,
@@ -42,28 +37,28 @@ function RecordView({ mode = "material" }) {
   const { results: resultsPromise } = useLoaderData();
   const location = useLocation();
   const matches = useMatches();
-  const routeParams = createSearchRoute(
-    createParamsFromRecordRoute(location.pathname)
+  const routeParams = useMemo(
+    () => createSearchRoute(createParamsFromRecordRoute(location.pathname)),
+    [location.pathname]
   );
 
-  // Check if we're on the transcribe route
-  const isTranscribeRoute = matches.some((match) =>
-    match.pathname.includes("/transcribe")
+  const mediaImageClickHandler = useCallback(
+    (mediaItem, mediaList, currentIndex) => {
+      if (typeof window !== "undefined" && window.eventBus) {
+        window.eventBus.dispatch("overlay.viewimage", {
+          imageUrl: mediaItem.source,
+          type: mediaItem.type,
+          mediaList, // Skicka hela listan
+          currentIndex, // Skicka index för aktuell bild
+        });
+      }
+    },
+    []
   );
-
-  const mediaImageClickHandler = useCallback((mediaItem, mediaList, currentIndex) => {
-    if (typeof window !== "undefined" && window.eventBus) {
-      window.eventBus.dispatch("overlay.viewimage", {
-        imageUrl: mediaItem.source,
-        type: mediaItem.type,
-        mediaList, // Skicka hela listan
-        currentIndex, // Skicka index för aktuell bild
-      });
-    }
-  }, []);
 
   useEffect(() => {
-    document.title = config.siteTitle; // Justera efter datan om så behövs
+    // Set a neutral title while loading; updated once data arrives below
+    document.title = config.siteTitle;
   }, []);
 
   return (
@@ -71,7 +66,11 @@ function RecordView({ mode = "material" }) {
       <Suspense
         fallback={
           <>
-            <div className="container-header" style={{ height: 130 }} />
+            <div
+              className="container-header"
+              aria-live="polite"
+              style={{ height: 130 }}
+            />
             <div className="">
               <img src={loaderSpinner} alt="Hämtar data" />
             </div>
@@ -97,9 +96,11 @@ function RecordView({ mode = "material" }) {
             }
 
             /* ---------- normal record screen ---------- */
-            document.title = `${getTitleText(data, 0, 0)} – ${
-              config.siteTitle
-            }`;
+            useEffect(() => {
+              document.title = `${getTitleText(data, 0, 0)} – ${
+                config.siteTitle
+              }`;
+            }, [data]);
             return (
               <article>
                 <RecordViewHeader
@@ -109,14 +110,23 @@ function RecordView({ mode = "material" }) {
                 />
                 <div>
                   <Disclaimer />
-                  <div role="group" aria-label="Snabböversikt" className="space-y-0">
-                  <RequestToTranscribePrompt data={data} />
-                  <RecordViewThumbnails
-                    data={data}
-                    mediaImageClickHandler={mediaImageClickHandler}
-                  />
-                  <ContentsElement data={data} highlightData={highlightData?.["media.description"]?.hits?.hits ?? []} />
-                  <HeadwordsElement data={data} />
+                  <div
+                    role="group"
+                    aria-label="Snabböversikt"
+                    className="space-y-0"
+                  >
+                    <RequestToTranscribePrompt data={data} />
+                    <RecordViewThumbnails
+                      data={data}
+                      mediaImageClickHandler={mediaImageClickHandler}
+                    />
+                    <ContentsElement
+                      data={data}
+                      highlightData={
+                        highlightData?.["media.description"]?.hits?.hits ?? []
+                      }
+                    />
+                    <HeadwordsElement data={data} />
                   </div>
                   <TranscriptionPrompt data={data} />
 

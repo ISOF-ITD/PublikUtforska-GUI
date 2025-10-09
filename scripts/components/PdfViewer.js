@@ -1,27 +1,24 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-export default function PdfViewer({ url = null, height = '500' }) {
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [pdfHeight, setPdfHeight] = useState('500');
-
-  useEffect(() => {
-    if (url) {
-      // ladda alltid pdf:en direkt
-      setPdfUrl(url);
-      setPdfHeight(height || '500');
-    }
-  }, [url, height]);
+export default function PdfViewer({ url = null, height = '80vh' }) {
+  const styleHeight =
+    typeof height === 'number' ? `${height}px` : height ?? '80vh';
 
   return (
-    <div className="hidden md:block w-full pdf-viewer">
-      {pdfUrl ? (
-        <object data={pdfUrl} width="100%" height={pdfHeight} type="application/pdf">
-          <a href={pdfUrl}>Öppna Pdf</a>
+    <div className="w-full mb-8">
+      {url ? (
+        <object
+          data={url}
+          type="application/pdf"
+          className="w-full bg-white bg-center bg-no-repeat"
+          style={{ height: styleHeight }}
+          aria-label="PDF-visning"
+        >
+          <a href={url}>Öppna PDF</a>
         </object>
       ) : (
-        <p>Laddar pdf ...</p>
+        <p>Laddar PDF …</p>
       )}
     </div>
   );
@@ -29,5 +26,5 @@ export default function PdfViewer({ url = null, height = '500' }) {
 
 PdfViewer.propTypes = {
   url: PropTypes.string,
-  height: PropTypes.string,
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };

@@ -155,7 +155,7 @@ export default function FeedbackOverlay() {
   }
 
   return (
-    <div className={`overlay-container feedback-overlay-container${visible ? ' visible' : ''}`}>
+    <div className={`overlay-container !z-[4100] ${visible ? ' visible' : ''}`}>
       <div className="overlay-window">
         <div className="overlay-header">
           {l('Frågor och synpunkter')}
