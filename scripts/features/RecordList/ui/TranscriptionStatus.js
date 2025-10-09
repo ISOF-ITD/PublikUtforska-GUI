@@ -54,8 +54,7 @@ export default function TranscriptionStatus({
           status === "published" ? "bg-gray-300" : "!bg-lighter-isof"
         } ${pillClasses} mt-1`}
       >
-        {labels[status] ??
-          String(status).charAt(0).toUpperCase() + String(status).slice(1)}
+        {labels[status]}
       </span>
     );
   }
