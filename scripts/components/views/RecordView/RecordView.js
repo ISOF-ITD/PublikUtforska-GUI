@@ -5,7 +5,9 @@ import {
   useLoaderData,
   useLocation,
   Outlet,
-  useMatches, // useNavigate, //useParams,
+  useMatches,
+  useAsyncError,
+  useRevalidator,
 } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -37,6 +39,7 @@ function RecordView({ mode = "material" }) {
   const { results: resultsPromise } = useLoaderData();
   const location = useLocation();
   const matches = useMatches();
+
   const routeParams = useMemo(
     () => createSearchRoute(createParamsFromRecordRoute(location.pathname)),
     [location.pathname]
@@ -48,128 +51,190 @@ function RecordView({ mode = "material" }) {
         window.eventBus.dispatch("overlay.viewimage", {
           imageUrl: mediaItem.source,
           type: mediaItem.type,
-          mediaList, // Skicka hela listan
-          currentIndex, // Skicka index för aktuell bild
+          mediaList,
+          currentIndex,
         });
       }
     },
     []
   );
 
+  // Neutral title while the data is loading or if promise is pending
   useEffect(() => {
-    // Set a neutral title while loading; updated once data arrives below
     document.title = config.siteTitle;
-  }, []);
+  }, [location.pathname]);
 
   return (
-    <div className="container">
-      <Suspense
-        fallback={
-          <>
-            <div
-              className="container-header"
-              aria-live="polite"
-              style={{ height: 130 }}
+    <div className="container" aria-busy="true">
+      <Suspense fallback={<LoadingFallback />}>
+        <Await resolve={resultsPromise} errorElement={<LoadError />}>
+          {(value) => (
+            <ResolvedRecord
+              value={value}
+              matches={matches}
+              location={location}
+              mode={mode}
+              routeParams={routeParams}
+              mediaImageClickHandler={mediaImageClickHandler}
             />
-            <div className="">
-              <img src={loaderSpinner} alt="Hämtar data" />
-            </div>
-          </>
-        }
-      >
-        <Await
-          resolve={resultsPromise}
-          errorElement={<div>Det uppstod ett fel vid laddning av posten.</div>}
-        >
-          {([highlightData, { _source: data }, { data: subrecordsCount }]) => {
-            if (!data) return <div>Posten finns inte.</div>;
-
-            /* ——— detect the transcribe child ——— */
-            const onlyTranscribe = matches.some((m) =>
-              m.pathname.endsWith("/transcribe")
-            );
-
-            /* ---------- show ONLY the editor ---------- */
-            if (onlyTranscribe) {
-              /* still pass the context for useOutletContext() */
-              return <Outlet context={{ data, subrecordsCount }} />;
-            }
-
-            /* ---------- normal record screen ---------- */
-            useEffect(() => {
-              document.title = `${getTitleText(data, 0, 0)} – ${
-                config.siteTitle
-              }`;
-            }, [data]);
-            return (
-              <article>
-                <RecordViewHeader
-                  data={data}
-                  subrecordsCount={subrecordsCount}
-                  location={location}
-                />
-                <div>
-                  <Disclaimer />
-                  <div
-                    role="group"
-                    aria-label="Snabböversikt"
-                    className="space-y-0"
-                  >
-                    <RequestToTranscribePrompt data={data} />
-                    <RecordViewThumbnails
-                      data={data}
-                      mediaImageClickHandler={mediaImageClickHandler}
-                    />
-                    <ContentsElement
-                      data={data}
-                      highlightData={
-                        highlightData?.["media.description"]?.hits?.hits ?? []
-                      }
-                    />
-                    <HeadwordsElement data={data} />
-                  </div>
-                  <TranscriptionPrompt data={data} />
-
-                  <AudioItems data={data} highlightData={highlightData} />
-                  <PdfElement data={data} />
-                  <TextElement
-                    data={data}
-                    highlightData={highlightData}
-                    mediaImageClickHandler={mediaImageClickHandler}
-                  />
-                  <div className="flex flex-col lg:flex-row items-stretch gap-1">
-                    <div className="w-full lg:w-2/3 min-w-0">
-                      <ReferenceLinks data={data} />
-                    </div>
-                    <div className="w-full lg:w-1/3">
-                      <License data={data} />
-                    </div>
-                  </div>
-
-                  <SubrecordsElement
-                    data={data}
-                    subrecordsCount={subrecordsCount}
-                    mode={mode}
-                  />
-                  <PersonItems data={data} routeParams={routeParams} />
-                  <PlaceItems data={data} routeParams={routeParams} />
-                  <hr />
-                  <SimilarRecords data={data} />
-                  <hr />
-                  <RecordViewFooter data={data} />
-                </div>
-                <Outlet context={{ data }} />
-              </article>
-            );
-          }}
+          )}
         </Await>
       </Suspense>
     </div>
   );
 }
 
-export default RecordView;
+function LoadingFallback() {
+  return (
+    <>
+      <div
+        className="container-header"
+        aria-live="polite"
+        aria-busy="true"
+        style={{ height: 130 }}
+      />
+      <div className="flex items-center gap-2" role="status" aria-live="polite">
+        <img src={loaderSpinner} alt="" aria-hidden="true" />
+        <span className="sr-only">Hämtar data…</span>
+      </div>
+    </>
+  );
+}
+
+function LoadError() {
+  const error = useAsyncError();
+  const { revalidate, state } = useRevalidator();
+
+  // Optional: map HTTP-ish errors to friendly copy
+  const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
+
+  return (
+    <div role="alert" className="p-3 rounded border border-red-300 bg-red-50">
+      <p className="font-semibold">Det gick inte att ladda posten.</p>
+      {isOffline ? (
+        <p>
+          Du verkar vara offline. Kontrollera din uppkoppling och försök igen.
+        </p>
+      ) : (
+        <p>Prova igen. Om felet kvarstår, kontakta supporten.</p>
+      )}
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => revalidate()}
+          disabled={state === "loading"}
+        >
+          {state === "loading" ? "Försöker…" : "Försök igen"}
+        </button>
+        <a href="/" className="btn btn-secondary">
+          Till startsidan
+        </a>
+      </div>
+      {process.env.NODE_ENV === "development" && error && (
+        <pre className="mt-3 text-xs overflow-auto max-h-40">
+          {String(error?.status || "")} {error?.statusText || ""}
+          {"\n"}
+          {error?.message || ""}
+        </pre>
+      )}
+    </div>
+  );
+}
+
+function ResolvedRecord({
+  value,
+  matches,
+  location,
+  mode,
+  routeParams,
+  mediaImageClickHandler,
+}) {
+  const [highlightData, raw, sub] = value || [];
+  const data = raw?._source;
+  const subrecordsCount = sub?.data;
+
+  // Set the final title when data is available
+  useEffect(() => {
+    if (data) {
+      document.title = `${getTitleText(data, 0, 0)} – ${config.siteTitle}`;
+      return () => {
+        // Optional clean-up: reset to site title when leaving the page
+        document.title = config.siteTitle;
+      };
+    }
+  }, [data]);
+
+  if (!data) return <div>Posten finns inte.</div>;
+
+  const onlyTranscribe = matches.some((m) =>
+    m.pathname.endsWith("/transcribe")
+  );
+  if (onlyTranscribe) {
+    return <Outlet context={{ data, subrecordsCount }} />;
+  }
+
+  return (
+    <article>
+      <RecordViewHeader
+        data={data}
+        subrecordsCount={subrecordsCount}
+        location={location}
+      />
+      <div>
+        <Disclaimer />
+        <div role="group" aria-label="Snabböversikt" className="space-y-0">
+          <RequestToTranscribePrompt data={data} />
+          <RecordViewThumbnails
+            data={data}
+            mediaImageClickHandler={mediaImageClickHandler}
+          />
+          <ContentsElement
+            data={data}
+            highlightData={
+              highlightData?.["media.description"]?.hits?.hits ?? []
+            }
+          />
+          <HeadwordsElement data={data} />
+        </div>
+
+        <TranscriptionPrompt data={data} />
+        <AudioItems data={data} highlightData={highlightData} />
+        <PdfElement data={data} />
+        <TextElement
+          data={data}
+          highlightData={highlightData}
+          mediaImageClickHandler={mediaImageClickHandler}
+        />
+
+        <div className="flex flex-col lg:flex-row items-stretch gap-1">
+          <div className="w-full lg:w-2/3 min-w-0">
+            <ReferenceLinks data={data} />
+          </div>
+          <div className="w-full lg:w-1/3">
+            <License data={data} />
+          </div>
+        </div>
+
+        <SubrecordsElement
+          data={data}
+          subrecordsCount={subrecordsCount}
+          mode={mode}
+        />
+        <PersonItems data={data} routeParams={routeParams} />
+        <PlaceItems data={data} routeParams={routeParams} />
+        <hr />
+        <SimilarRecords data={data} />
+        <hr />
+        <RecordViewFooter data={data} />
+      </div>
+      <Outlet context={{ data }} />
+    </article>
+  );
+}
 
 RecordView.propTypes = {
   mode: PropTypes.string,
 };
+
+export default RecordView;
