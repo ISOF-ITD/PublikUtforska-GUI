@@ -13,7 +13,7 @@ const labels = {
   needsimprovement: "Granskas",
   approved: "Granskas",
   published: "Avskriven",
-  readytocontribute: "Redo att bidra",
+  // readytocontribute: "Redo att bidra",
 };
 
 export default function TranscriptionStatus({
