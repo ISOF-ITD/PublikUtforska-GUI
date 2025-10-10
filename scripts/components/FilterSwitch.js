@@ -36,15 +36,20 @@ export default function FilterSwitch({ mode = "material" }) {
   ].join(" ");
 
   const unselected = "bg-neutral-300 text-black hover:bg-neutral-400 ";
-  const selected   = "bg-neutral-100 text-black hover:bg-neutral-150";
+  const selected = "bg-neutral-100 text-black hover:bg-neutral-150";
 
   return (
-    <nav aria-label={l("Växla mellan arkivmaterial och 'skriva av' läge")} className={container}>
+    <nav
+      aria-label={l("Växla mellan arkivmaterial och 'skriva av' läge")}
+      className={container}
+    >
       <NavLink
         to={`/${sharedRoute}`}
         end
         className={({ isActive }) =>
-          [base, (isActive || mode === "material") ? selected : unselected].join(" ")
+          [base, isActive || mode === "material" ? selected : unselected].join(
+            " "
+          )
         }
       >
         {l("Arkivmaterial")}
@@ -53,7 +58,10 @@ export default function FilterSwitch({ mode = "material" }) {
       <NavLink
         to={`/transcribe/${sharedRoute}`}
         className={({ isActive }) =>
-          [base, (isActive || mode === "transcribe") ? selected : unselected].join(" ")
+          [
+            base,
+            isActive || mode === "transcribe" ? selected : unselected,
+          ].join(" ")
         }
       >
         {l("Skriva av")}

@@ -100,6 +100,13 @@ export default function MapMenu({
     }),
     []
   );
+  const PANEL_WIDTH = 422;
+  const panelWidth = isMobile
+    ? typeof window !== "undefined"
+      ? window.innerWidth
+      : PANEL_WIDTH // full width on mobile
+    : PANEL_WIDTH;
+  const TOGGLE_W = 28;
 
   return (
     <div
@@ -142,6 +149,36 @@ export default function MapMenu({
           }
           random
         />
+      </div>
+      <div
+        className="fixed z-[1999] pointer-events-none will-change-[left,transform] transition-[left,transform] duration-300 ease-in-out"
+        style={
+          isMobile
+            ? {
+                left: expanded ? Math.max((panelWidth ?? 0) - TOGGLE_W, 0) : 0,
+                top: 8,
+                transform: "none",
+              }
+            : {
+                left: expanded ? PANEL_WIDTH : 0,
+                top: "30%",
+                transform: "translateY(-50%)",
+              }
+        }
+      >
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          type="button"
+          aria-expanded={expanded}
+          aria-controls="mapmenu-panel"
+          aria-label={expanded ? l("Dölj meny") : l("Visa meny")}
+          title={expanded ? l("Dölj meny") : l("Visa meny")}
+          className={`pointer-events-auto shadow-md p-0 bg-white w-7 h-12 flex justify-center items-center border-0 focus:outline-none focus-visible:ring focus-visible:lighter-isof ${
+            isMobile ? (expanded ? "rounded-r" : "rounded-l") : "rounded-r"
+          }`}
+        >
+          <FontAwesomeIcon icon={expanded ? faChevronLeft : faChevronRight} />
+        </button>
       </div>
 
       <div className="puffar">
