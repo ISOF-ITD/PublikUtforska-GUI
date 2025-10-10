@@ -127,98 +127,6 @@
 	>* {
 		pointer-events: all;
 	}
-
-	.nordic-switch-wrapper {
-		// background: #f5f5f5;
-		background: transparent;
-		position: relative;
-		height: 48px;
-
-		padding: 0 12px 0 12px;
-
-		border-bottom-left-radius: 0;
-		border-bottom-right-radius: 0;
-
-		// overflow: hidden;
-
-		z-index: 1400;
-
-		opacity: 0;
-
-		.app-initialized & {
-			opacity: 1;
-
-			// .transform(translateY(0));
-
-			// .transition-delay(900ms);
-		}
-
-
-		a {
-			display: block;
-			float: left;
-			height: 48px;
-			// width: 37.5%; //38%; //44%; //50%;
-			// width: 133px;
-			width: 178px;
-
-			@media screen and (max-width: 550px) {
-				// the with is 100% - 80 px, divided by two
-				// width: calc(50% - 40px);
-				width: 50%;
-			}
-
-			// margin-right: 0.5%;
-			// make so that the border is inside the element
-
-
-
-
-			padding: 12px;
-
-			box-sizing: border-box;
-			border: 2px solid @color-darkgray;
-
-			text-decoration: none;
-			text-align: center;
-
-			background: @color-darkgray;
-
-			cursor: pointer;
-
-			.transition(all 200ms ease-in-out);
-
-			body.tab-navigation &:focus {
-				outline: none !important;
-				border: 2px solid black !important;
-			}
-
-			&.selected {
-				color: #000;
-
-				background: @color-gray;
-				border: 2px solid @color-gray;
-			}
-
-			&:hover {
-				text-decoration: underline;
-			}
-
-			&:visited,
-			&:active,
-			&:focus,
-			&:hover,
-			&:link {
-				color: #000 !important;
-			}
-
-			// do not change text color to blue while clicking
-			&:active {
-				color: #000;
-			}
-		}
-	}
-
 	.search-box {
 		// position: relative;
 		// position: relative;
@@ -687,26 +595,5 @@
 	.menu-wrapper.menu-collapsed {
 		position: relative;
 		left: -500px;
-
-		.nordic-switch-wrapper,
-		.search-box {
-			position: fixed;
-			left: 0;
-			right: 0;
-			z-index: 1000;
-			/* eller ett annat passande z-index-värde */
-			width: 100%;
-		}
-
-		.search-box {
-			top: 48px;
-		}
-
-
-		.nordic-switch-wrapper {
-			left: 15px;
-			top: 0;
-		}
-
 	}
 }
