@@ -131,7 +131,7 @@ export default function MapMenu({
 
       <div className="popup-wrapper">
         <TranscribeButton
-          className="popup-open-button visible ignore-expand-menu"
+          className="visible popup-open-button"
           label={
             <>
               <FontAwesomeIcon icon={faPen} />{" "}
@@ -142,18 +142,6 @@ export default function MapMenu({
           }
           random
         />
-      </div>
-      <div className="mapmenu-trigger-button">
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          type="button"
-          aria-expanded={expanded}
-          aria-controls="mapmenu-panel"
-          aria-label={expanded ? l("Dölj meny") : l("Visa meny")}
-          title={expanded ? l("Dölj meny") : l("Visa meny")}
-        >
-          <FontAwesomeIcon icon={expanded ? faChevronLeft : faChevronRight} />
-        </button>
       </div>
 
       <div className="puffar">
