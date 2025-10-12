@@ -508,12 +508,12 @@ export default function SearchBox({
       <div
         className={`totals${
           loading ? " visible" : " visible"
-        } text-white pb-8 flex gap-3 lg:flex-nowrap flex-wrap p-2`}
+        } text-white lg:ml-0 lg:text-base text-lg ml-4 pb-6 flex gap-2 lg:flex-nowrap flex-wrap p-2`}
       >
         <span className="whitespace-nowrap">
           {l("Begränsa sökningen till: ")}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <SearchFilterButton
             handleFilterChange={handleFilterChange}
             label="Ljud"

@@ -35,6 +35,27 @@ export default function useUtterances(audioItem, activeId) {
   const [queryRaw, setQueryRaw] = useState("");
   const query = useDebounce(queryRaw, 200);
 
+  const [showOnlyMatches, setShowOnlyMatches] = useState(true); // "show in text" mode
+
+  const norm = useCallback(
+    (s) => (s ?? "").toLocaleLowerCase("sv").normalize("NFC"),
+    []
+  );
+  const tokens = useMemo(() => {
+    const q = norm(query).trim();
+    // match "quoted phrases" or single words
+    const parts = q.match(/"[^"]+"|\S+/g) || [];
+    return parts.map((p) => p.replace(/^"|"$/g, ""));
+  }, [query, norm]);
+  const matches = useCallback(
+    (u) => {
+      if (!tokens.length) return false;
+      const t = norm(u.text);
+      return tokens.every((tok) => t.includes(tok));
+    },
+    [tokens, norm]
+  );
+
   const filteredUtterances = useMemo(() => {
     switch (filter) {
       case "needs-work":
@@ -48,26 +69,35 @@ export default function useUtterances(audioItem, activeId) {
     }
   }, [filter, utterances]);
 
-  const visibleUtterances = useMemo(() => {
-    const list = query.trim()
-      ? filteredUtterances.filter(
-          (u) =>
-            u.text.localeCompare(query, "sv", { sensitivity: "base" }) === 0 ||
-            u.text
-              .toLocaleLowerCase("sv")
-              .includes(query.toLocaleLowerCase("sv"))
-        )
-      : filteredUtterances;
+  const {
+    list: visibleUtterances,
+    hits: searchHits,
+    matchIds,
+  } = useMemo(() => {
+    const matched = tokens.length ? filteredUtterances.filter(matches) : [];
+    const matchIds = matched.map((u) => u.id);
+
+    const baseList =
+      tokens.length && showOnlyMatches ? matched : filteredUtterances;
+
+    const hits = matched.length; // number of rows that match (fast + useful)
 
     // Ensure active utterance is always in the list
-    if (activeId) {
+    if (activeId && baseList !== matched) {
       const activeUtterance = utterances.find((u) => u.id === activeId);
-      if (activeUtterance && !list.some((u) => u.id === activeId)) {
-        return [...list, activeUtterance];
+      if (activeUtterance && !baseList.some((u) => u.id === activeId)) {
+        return { list: [...baseList, activeUtterance], hits, matchIds };
       }
     }
-    return list;
-  }, [filteredUtterances, query, utterances, activeId]);
+    return { list: baseList, hits, matchIds };
+  }, [
+    filteredUtterances,
+    tokens,
+    matches,
+    utterances,
+    activeId,
+    showOnlyMatches,
+  ]);
 
   /* ---- counters ---- */
   const counts = useMemo(
@@ -94,8 +124,16 @@ export default function useUtterances(audioItem, activeId) {
     utterances,
     setUtterances,
     filterState: { filter, setFilter },
-    searchState: { queryRaw, setQueryRaw, query },
+    searchState: {
+      queryRaw,
+      setQueryRaw,
+      query,
+      showOnlyMatches,
+      setShowOnlyMatches,
+      matchIds, // ordered list of utterance IDs that match
+    },
     visibleUtterances,
+    searchHits,
     counts,
     progress,
   };

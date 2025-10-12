@@ -29,7 +29,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
   style = {},
   data,
 }) {
-  const { rows, handlePlay, isPlaying, activeId } = data;
+  const { rows, handlePlay, isPlaying, activeId, query } = data;
   const u = rows[index];
   const isActive = activeId === u.id;
   const isCurrentPlaying = isPlaying && isActive;
@@ -83,7 +83,9 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
         >
           {ts(u.start)}
         </time>
-        <p className="whitespace-pre-wrap break-words !mr-2">{u.text}</p>
+        <p className="whitespace-pre-wrap break-words !mr-2">
+          {highlight(u.text, query)}
+        </p>
       </div>
     </div>
   );
@@ -199,7 +201,7 @@ export default React.memo(function UtteranceRow({
                 title="Spara (⌘/Ctrl + Enter)"
                 className="text-green-600 disabled:opacity-50"
                 disabled={disabledSave}
-                onClick={() => saveEdit(u)}
+                onClick={() => saveEdit(utterance)}
               >
                 <FontAwesomeIcon icon={faCheck} />
               </button>

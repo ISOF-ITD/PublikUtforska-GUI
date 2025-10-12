@@ -49,7 +49,7 @@ export default function UtterancesList({
     if (!isMobile || !followActive) return;
     const el = document.querySelector(`[data-utt="${activeId}"]`);
     if (el) {
-      el.scrollIntoView({ behaviour: "smooth", block: "center" });
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [activeId, followActive, isMobile]);
 

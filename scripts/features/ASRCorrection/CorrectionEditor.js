@@ -45,7 +45,7 @@ export default function CorrectionEditor({
       sameFileId.find(
         (m) =>
           Array.isArray(m.utterances?.utterances) || Array.isArray(m.utterances)
-      ) || sameFileId [0]
+      ) || sameFileId[0]
     );
   }, [data, fileId]);
 
@@ -74,6 +74,7 @@ export default function CorrectionEditor({
     visibleUtterances,
     counts,
     progress,
+    searchHits,
   } = useUtterances(audioItem, activeSegmentId);
 
   // Editing state, only needed when *not* read-only
@@ -93,31 +94,48 @@ export default function CorrectionEditor({
   );
 
   /* -- keyboard shortcuts -- */
-  !readOnly &&
-    useEditorShortcuts({
-      enabled: !!editingId && !readOnly,
-      onDiscard: () => setEditingId(null),
-      onSaveCurrent: () => {
-        const utt = utterances.find((u) => u.id === editingId);
-        if (utt) {
-          setUtterances((prev) =>
-            prev.map((u) =>
-              u.id === utt.id ? { ...u, text: editedText, status: "edited" } : u
-            )
-          );
-          setEditingId(null);
-        }
-      },
-      onPrev: () => {
-        const idx = visibleUtterances.findIndex((u) => u.id === editingId);
-        if (idx > 0) beginEdit(visibleUtterances[idx - 1]);
-      },
-      onNext: () => {
-        const idx = visibleUtterances.findIndex((u) => u.id === editingId);
-        if (idx < visibleUtterances.length - 1)
-          beginEdit(visibleUtterances[idx + 1]);
-      },
-    });
+  const saveCurrentEdit = useCallback(() => {
+    const utt = utterances.find((u) => u.id === editingId);
+    if (!utt) return;
+    setUtterances((prev) =>
+      prev.map((u) =>
+        u.id === utt.id ? { ...u, text: editedText, status: "edited" } : u
+      )
+    );
+    setEditingId(null);
+  }, [editingId, editedText, utterances, setUtterances]);
+
+  useEditorShortcuts({
+    enabled: !!editingId && !readOnly,
+    onDiscard: () => setEditingId(null),
+    onSaveCurrent: saveCurrentEdit,
+    onPrev: () => {
+      const idx = visibleUtterances.findIndex((u) => u.id === editingId);
+      if (idx > 0) beginEdit(visibleUtterances[idx - 1]);
+    },
+    onNext: () => {
+      const idx = visibleUtterances.findIndex((u) => u.id === editingId);
+      if (idx < visibleUtterances.length - 1)
+        beginEdit(visibleUtterances[idx + 1]);
+    },
+  });
+
+  /* -- search navigation (prev/next match) -- */
+  const goToMatch = useCallback(
+    (dir) => {
+      const ids = searchState.matchIds || [];
+      if (!ids.length) return;
+      const curr = ids.indexOf(activeSegmentId);
+      let nextIdx;
+      if (dir > 0) {
+        nextIdx = curr >= 0 ? (curr + 1) % ids.length : 0;
+      } else {
+        nextIdx = curr > 0 ? curr - 1 : ids.length - 1;
+      }
+      setActiveSegmentId(ids[nextIdx]);
+    },
+    [searchState.matchIds, activeSegmentId, setActiveSegmentId]
+  );
 
   /**
    * Play-/pause-toggle, same everywhere:
@@ -184,7 +202,7 @@ export default function CorrectionEditor({
       isPlaying,
       beginEdit,
       discardEdit: () => setEditingId(null),
-      saveEdit: () => {}, // real API call extracted elsewhere
+      saveEdit: () => saveCurrentEdit(), // real API call extracted elsewhere
       gotoPrev: () => {}, // handled by shortcut hook
       gotoNext: () => {},
       readOnly,
@@ -194,6 +212,7 @@ export default function CorrectionEditor({
       activeId: activeSegmentId,
       query: searchState.query,
       followActive,
+      saveCurrentEdit,
     }),
     [
       visibleUtterances,
@@ -229,9 +248,12 @@ export default function CorrectionEditor({
         counts={counts}
         filterState={filterState}
         searchState={searchState}
+        searchHits={searchHits}
         visibleUtterances={visibleUtterances}
         followActive={followActive}
         setFollowActive={setFollowActive}
+        onSearchPrev={() => goToMatch(-1)}
+        onSearchNext={() => goToMatch(1)}
       />
 
       <div className="bg-white shadow rounded-lg w-full">

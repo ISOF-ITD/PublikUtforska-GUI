@@ -5,6 +5,9 @@ import {
   faDownload,
   faInfoCircle,
   faSearch,
+  faChevronDown,
+  faChevronUp,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import FilterButton from "./FilterButton";
 import { toastError, toastOk } from "../../../utils/toast";
@@ -18,11 +21,15 @@ export default function EditorHeader({
   filterState,
   searchState,
   visibleUtterances,
+  searchHits,
   followActive,
   setFollowActive,
+  onSearchPrev,
+  onSearchNext,
 }) {
   const { filter, setFilter } = filterState;
-  const { queryRaw, setQueryRaw } = searchState;
+  const { queryRaw, setQueryRaw, showOnlyMatches, setShowOnlyMatches } =
+    searchState;
 
   return (
     <header
@@ -53,15 +60,18 @@ export default function EditorHeader({
               Färdigt&nbsp;{progress.complete}/{progress.total}
               <span className="sr-only"> rader</span> ({progress.percent}%)
             </span>
-            <progress
-              className="block w-full h-2 rounded-full overflow-hidden !bg-gray-200"
-              value={progress.percent}
-              max={100}
-            />
             <div
-              className="h-full bg-gradient-to-r from-isof to-isof/60 transition-[width] duration-300"
-              style={{ width: `${progress.percent}%` }}
-            />
+              className="w-full h-2 bg-gray-200 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress.percent}
+            >
+              <div
+                className="h-full bg-gradient-to-r from-isof to-isof/60 transition-[width] duration-300"
+                style={{ width: `${progress.percent}%` }}
+              />
+            </div>
           </section>
         )
       }
@@ -99,7 +109,8 @@ export default function EditorHeader({
         )}
 
         {/* Search */}
-        <div className="relative flex-1 min-w-0">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 min-w-0">
           <span className="hidden sm:block text-xs font-semibold text-gray-500 uppercase mb-1">
             Sök
           </span>
@@ -117,20 +128,47 @@ export default function EditorHeader({
             aria-label="Sök i transkriptionen"
             value={queryRaw}
             onChange={(e) => setQueryRaw(e.target.value)}
-            className="w-full pl-10 pr-14 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-isof"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onSearchNext?.();
+              } else if (e.key === "Enter" && e.shiftKey) {
+                e.preventDefault();
+                onSearchPrev?.();
+              } else if (e.key === "Escape") {
+                setQueryRaw("");
+              }
+            }}
+            className="w-full pl-10 pr-28 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-isof"
           />
 
-          {/* hit-count pill */}
+          {/* hit-count pill (kept clear of the ✕ button) */}
           {queryRaw && (
             <span
-              className="absolute right-3 top-1/2 -translate-y-1/2
+              aria-live="polite"
+              className="absolute right-16 top-1/2 -translate-y-1/2
                          text-xs px-1.5 py-0.5 rounded-full
-                         bg-gray-200 text-gray-600"
+                         bg-gray-200 text-gray-600 select-none"
+              title="Antal rader med träffar"
             >
-              {visibleUtterances.length}
+              {searchHits}
             </span>
           )}
+          
         </div>
+        {/* clear button */}
+          {queryRaw && (
+            <button
+              type="button"
+              aria-label="Rensa sökning"
+              onClick={() => setQueryRaw("")}
+              className="text-gray-500 hover:text-gray-700 focus:outline-none !-mb-4"
+            >
+              Rensa sökningen <FontAwesomeIcon icon={faTimes} />
+            </button>
+          )}
+          </div>
+        
       </section>
 
       {/* ─── Actions ───────────────────────────────── */}
@@ -147,6 +185,38 @@ export default function EditorHeader({
           />
           Följ texten
         </label>
+
+        <label className="flex items-center gap-2 select-none">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-isof"
+            checked={showOnlyMatches}
+            onChange={(e) => setShowOnlyMatches(e.target.checked)}
+            disabled={!queryRaw}
+          />
+          Visa endast träffar
+        </label>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="px-4 py-1 rounded border hover:bg-gray-50 disabled:opacity-50"
+            onClick={onSearchPrev}
+            disabled={!queryRaw || searchHits === 0}
+            title="Föregående träff"
+          >
+            <FontAwesomeIcon icon={faChevronUp} />
+          </button>
+          <button
+            type="button"
+            className="px-4 py-1 rounded border hover:bg-gray-50 disabled:opacity-50"
+            onClick={onSearchNext}
+            disabled={!queryRaw || searchHits === 0}
+            title="Nästa träff"
+          >
+            <FontAwesomeIcon icon={faChevronDown} />
+          </button>
+        </div>
 
         <TextActions {...{ visibleUtterances, audioTitle }} />
       </section>
