@@ -1,5 +1,19 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight, faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronLeft,
+  faChevronRight,
+  faAngleDoubleRight,
+} from "@fortawesome/free-solid-svg-icons";
+
+const Btn = ({ children, ...props }) => (
+  <button
+    className="inline-flex items-center gap-2 hover:cursor-pointer disabled:hover:cursor-not-allowed disabled:opacity-60"
+    type="button"
+    {...props}
+  >
+    {children}
+  </button>
+);
 
 const NavigationPanel = ({
   currentPageIndex,
@@ -8,34 +22,35 @@ const NavigationPanel = ({
   goToNextPage,
   goToNextTranscribePage,
 }) => (
-  <div className="navigation-panel">
-    <button
-      className="button"
+  <div className="flex gap-2 items-center">
+    <Btn
       onClick={goToPreviousPage}
       disabled={currentPageIndex === 0}
-      type="button"
+      aria-label="Föregående sida"
     >
-      <FontAwesomeIcon icon={faChevronLeft} style={{ marginRight: '5px' }} />
+      <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
       Föregående sida
-    </button>
-    <button
-      className="button"
+    </Btn>
+
+    <Btn
       onClick={goToNextPage}
       disabled={currentPageIndex === pages.length - 1}
-      type="button"
+      aria-label="Nästa sida"
     >
       Nästa sida
-      <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: '5px' }} />
-    </button>
-    <button
-      className="button"
+      <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />
+    </Btn>
+
+    <Btn
       onClick={goToNextTranscribePage}
-      disabled={pages.slice(currentPageIndex + 1).every((page) => page.transcriptionstatus !== 'readytotranscribe')}
-      type="button"
+      disabled={pages
+        .slice(currentPageIndex + 1)
+        .every((p) => p.transcriptionstatus !== "readytotranscribe")}
+      aria-label="Nästa sida att skriva av"
     >
-      <FontAwesomeIcon icon={faAngleDoubleRight} style={{ marginRight: '5px' }} />
+      <FontAwesomeIcon icon={faAngleDoubleRight} aria-hidden="true" />
       Nästa sida att skriva av
-    </button>
+    </Btn>
   </div>
 );
 

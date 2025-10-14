@@ -41,17 +41,15 @@ export default function TranscriptionPageByPageOverlay() {
   /* Scroll helper: ensure active thumbnail stays in view         */
   /* ------------------------------------------------------------ */
   const scrollToActiveThumbnail = (index) => {
-    const thumbs = thumbnailContainerRef.current;
-    if (!thumbs) return;
-    const thumbRect = thumbs.children[index].getBoundingClientRect();
-    const contRect = thumbs.getBoundingClientRect();
-    if (thumbRect.left < contRect.left || thumbRect.right > contRect.right) {
-      thumbs.scrollLeft =
-        thumbRect.left -
-        contRect.left +
-        thumbs.scrollLeft -
-        thumbRect.width / 2;
-    }
+    const cont = thumbnailContainerRef.current;
+    if (!cont) return;
+    const el = cont.querySelector(`#thumb-${index}`);
+    if (!el) return;
+    el.scrollIntoView({
+      block: "nearest",
+      inline: "center",
+      behavior: "smooth",
+    });
   };
 
   /* ------------------------------------------------------------ */
@@ -224,7 +222,7 @@ export default function TranscriptionPageByPageOverlay() {
   };
 
   const sendButtonClickHandler = async (e) => {
-    if (fields.messageInput.trim().indexOf(" ") === -1) {
+    if (fields.messageInput.trim().length === 0) {
       alert(
         l(
           'Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'
@@ -247,10 +245,10 @@ export default function TranscriptionPageByPageOverlay() {
     const ok = await send(payload);
 
     if (ok) {
-      toastOk(
-        l(`Sida ${currentPageIndex + 1} sparad – tack!`, { duration: 8000 })
-      );
-      /* mark page as sent + clean unsaved flags */
+      toastOk(l(`Sida ${currentPageIndex + 1} sparad – tack!`), {
+        duration: 8000,
+      });
+
       setPages((prev) => {
         const next = [...prev];
         next[currentPageIndex] = {

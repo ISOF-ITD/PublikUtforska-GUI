@@ -1,9 +1,78 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faAsterisk, faCheck, faLock, faNewspaper,
-} from '@fortawesome/free-solid-svg-icons'; // Importera faNewspaper ikonen
-import config from '../../../config';
+  faAsterisk,
+  faCheck,
+  faLock,
+  faNewspaper,
+  faPen,
+} from "@fortawesome/free-solid-svg-icons";
+import config from "../../../config";
+import classNames from "classnames";
+
+const getStatus = (page) => {
+  if (!page.isSent && page.unsavedChanges) {
+    return {
+      key: "unsaved",
+      label: "Sidan har redigerats",
+      color: "bg-orange-500",
+      icon: faAsterisk,
+    };
+  }
+  if (page.isSent) {
+    return {
+      key: "sent",
+      label: "Sidan har skickats",
+      color: "bg-green-600",
+      icon: faCheck,
+    };
+  }
+  if (!page.isSent && page.transcriptionstatus === "transcribed") {
+    return {
+      key: "transcribed",
+      label: "Sidan kontrolleras",
+      color: "bg-gray-400",
+      icon: faLock,
+    };
+  }
+  if (!page.isSent && page.transcriptionstatus === "published") {
+    return {
+      key: "published",
+      label: "Sidan har publicerats",
+      color: "bg-isof",
+      icon: faNewspaper,
+    };
+  }
+  if (page.transcriptionstatus === "readytotranscribe") {
+    return {
+      key: "ready",
+      label: "Sidan kan skrivas av",
+      color: "bg-lighter-isof",
+      icon: faPen,
+    };
+  }
+  return null;
+};
+
+// Small that carries an icon and accessible label
+const StatusDot = ({ status }) => {
+  if (!status) return null;
+  return (
+    <div
+      className={classNames(
+        "absolute top-2 right-2 h-8 w-8 rounded-full",
+        "flex items-center justify-center text-white shadow",
+        "border-2 border-solid border-white",
+        status.color
+      )}
+      title={status.label}
+      aria-label={status.label}
+    >
+      {status.icon && <FontAwesomeIcon className="h-5" icon={status.icon} />}
+      <span className="sr-only">{status.label}</span>
+    </div>
+  );
+};
 
 export default function TranscriptionThumbnails({
   thumbnailContainerRef,
@@ -11,70 +80,56 @@ export default function TranscriptionThumbnails({
   navigatePages,
   currentPageIndex,
 }) {
-  const thumbnailTitleAttribute = (page) => {
-    if (!page.isSent && page.unsavedChanges) {
-      return 'Sidan har redigerats';
-    }
-
-    if (page.isSent) {
-      return 'Sidan har skickats';
-    }
-
-    if (page.transcriptionstatus === 'transcribed') {
-      return 'Sidan kontrolleras';
-    }
-
-    if (page.transcriptionstatus === 'published') {
-      return 'Sidan har publicerats';
-    }
-    if (page.transcriptionstatus === 'readytotranscribe') {
-      return 'Sidan kan skrivas av';
-    }
-    return null;
-  };
-
   return (
-    <div className="image-thumbnails" ref={thumbnailContainerRef}>
-      {pages.map((page, index) => (
-        page.source && page.source.indexOf('.pdf') === -1 && (
+    <div
+      className="flex gap-2 py-2 overflow-x-auto"
+      ref={thumbnailContainerRef}
+      aria-label="Bildminiatyrer"
+      role="listbox"
+      aria-activedescendant={`thumb-${currentPageIndex}`}
+    >
+      {pages.map((page, index) => {
+        if (!page?.source || page.source.includes(".pdf")) return null;
+
+        const selected = index === currentPageIndex;
+        const status = getStatus(page);
+
+        return (
           <div
-            className="thumbnail-container"
             key={index}
+            id={`thumb-${index}`}
+            type="button"
             onClick={() => navigatePages(index)}
-            title={thumbnailTitleAttribute(page)}
-          // title={`${JSON.stringify(page, null, 2)}`}
+            className="relative cursor-pointer select-none outline-none scroll-m-2"
+            role="option"
+            aria-selected={selected}
+            title={status?.label || undefined}
           >
-            <img
-              className={`thumbnail ${index === currentPageIndex ? 'active' : ''}`}
-              src={`${config.imageUrl}${page.source}`}
-              alt={`Thumbnail ${index + 1}`}
-            />
-            {!page.isSent && page.unsavedChanges && (
-              <div className="thumbnail-indicator unsaved-indicator">
-                <FontAwesomeIcon icon={faAsterisk} />
-              </div>
-            )}
-            {page.isSent && (
-              <div className="thumbnail-indicator sent-indicator">
-                <FontAwesomeIcon icon={faCheck} />
-              </div>
-            )}
-            {!page.isSent && ['transcribed'].includes(page.transcriptionstatus) && (
-              <div className="thumbnail-indicator transcribed-indicator">
-                <FontAwesomeIcon icon={faLock} />
-              </div>
-            )}
-            {!page.isSent && ['published'].includes(page.transcriptionstatus) && (
-              <div className="thumbnail-indicator published-indicator">
-                <FontAwesomeIcon icon={faNewspaper} />
-              </div>
-            )}
-            <div className="page-number">
+            <div
+              className={classNames(
+                "relative rounded-md overflow-hidden border-solid border-3",
+                selected
+                  ? "border-isof"
+                  : "border-transparent hover:border-blue-500 focus-visible:border-blue-500",
+                "transition-shadow"
+              )}
+            >
+              <StatusDot status={status} />
+
+              <img
+                src={`${config.imageUrl}${page.source}`}
+                alt={`Miniatyr ${index + 1}`}
+                className="block w-36 object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <div className="mt-2 text-center text-gray-600">
               {`${index + 1} av ${pages.length}`}
             </div>
           </div>
-        )
-      ))}
+        );
+      })}
     </div>
   );
 }
