@@ -401,10 +401,9 @@ export default function SearchBox({
     return () => window.removeEventListener("keydown", handleGlobalKey);
   }, [handleGlobalKey]);
 
-  // JSX
   return (
     <>
-      <div className="search-box map-floating-control expanded">
+      <div className="search-box expanded lg:p-3 p-1 text-color-gray-700 text-base bg-neutral-100 rounded">
         <div>
           <input
             ref={inputRef}
