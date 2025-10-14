@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import config from "../../../config";
 import { l } from "../../../lang/Lang";
 import TranscriptionForm from "./TranscriptionForm";
@@ -124,7 +124,11 @@ export default function TranscriptionPageByPageOverlay() {
   };
 
   const transcribeCancel = async () => {
-    await cancel(recordDetails?.id);
+    if (recordDetails?.id) {
+      try {
+        await cancel(recordDetails.id);
+      } catch {}
+    }
     resetEverything();
   };
 
@@ -141,46 +145,41 @@ export default function TranscriptionPageByPageOverlay() {
   /* ------------------------------------------------------------ */
   /* Page navigation helpers                                      */
   /* ------------------------------------------------------------ */
-  const saveCurrentPageDraft = () => {
+  const saveCurrentPageDraft = useCallback(() => {
     setPages((prev) => {
       const next = [...prev];
       next[currentPageIndex].text = fields.messageInput;
       next[currentPageIndex].comment = fields.messageCommentInput;
       return next;
     });
-  };
+  }, [currentPageIndex, fields.messageInput, fields.messageCommentInput]);
 
-  const navigatePages = (index) => {
-    saveCurrentPageDraft();
-    setCurrentPageIndex(index);
+  // index setter
+  const navigatePages = useCallback(
+    (index) => {
+      saveCurrentPageDraft();
+      setCurrentPageIndex(index);
+    },
+    [saveCurrentPageDraft]
+  );
 
-    /* fill form with existing page data (if any) */
-    const page = pages[index];
-    if (
-      page.transcriptionstatus &&
-      page.transcriptionstatus !== "readytotranscribe"
-    ) {
-      setFields((prev) => ({
-        ...prev,
-        messageInput: page.text || "",
-        messageCommentInput: page.comment || "",
-      }));
-    } else if (page.unsavedChanges) {
-      setFields((prev) => ({
-        ...prev,
-        messageInput: page.text || "",
-        messageCommentInput: page.comment || "",
-      }));
-    } else {
-      setFields((prev) => ({
-        ...prev,
-        messageInput: "",
-        messageCommentInput: "",
-      }));
-    }
+  // whenever index changes, (re)hydrate the form from pages[index]
+  useEffect(() => {
+    if (!pages.length) return;
+    const page = pages[currentPageIndex];
 
-    scrollToActiveThumbnail(index);
-  };
+    const shouldPrefill =
+      (page.transcriptionstatus &&
+        page.transcriptionstatus !== "readytotranscribe") ||
+      page.unsavedChanges;
+
+    setFields((prev) => ({
+      ...prev,
+      messageInput: shouldPrefill ? page.text || "" : "",
+      messageCommentInput: shouldPrefill ? page.comment || "" : "",
+    }));
+    requestAnimationFrame(() => scrollToActiveThumbnail(currentPageIndex));
+  }, [currentPageIndex, pages, setFields]);
 
   const goToPreviousPage = () => {
     if (currentPageIndex > 0) navigatePages(currentPageIndex - 1);
@@ -222,7 +221,7 @@ export default function TranscriptionPageByPageOverlay() {
   };
 
   const sendButtonClickHandler = async (e) => {
-    if (fields.messageInput.trim().length === 0) {
+    if ((fields.messageInput || "").trim().length === 0) {
       alert(
         l(
           'Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'
@@ -230,12 +229,14 @@ export default function TranscriptionPageByPageOverlay() {
       );
       return;
     }
-    const goToNext = e.currentTarget.dataset.gotonext === "true";
+    saveCurrentPageDraft();
+    if (!pages.length) return;
 
+    const goToNext = e.currentTarget.dataset.gotonext === "true";
     const payload = buildPayload();
 
     // If the string is empty after .trim(), it results false
-    if (!fields.informantNameInput.trim()) {
+    if (!fields.informantNameInput?.trim()) {
       delete payload.informantName;
       delete payload.informantBirthDate;
       delete payload.informantBirthPlace;
@@ -243,26 +244,26 @@ export default function TranscriptionPageByPageOverlay() {
     }
 
     const ok = await send(payload);
+    if (!ok) return;
 
-    if (ok) {
-      toastOk(l(`Sida ${currentPageIndex + 1} sparad – tack!`), {
-        duration: 8000,
-      });
+    toastOk(l(`Sida ${currentPageIndex + 1} sparad – tack!`), {
+      duration: 8000,
+    });
 
-      setPages((prev) => {
-        const next = [...prev];
-        next[currentPageIndex] = {
-          ...next[currentPageIndex],
-          isSent: true,
-          unsavedChanges: false,
-          transcriptionstatus: "transcribed",
-        };
-        return next;
-      });
+    setPages((prev) => {
+      const next = [...prev];
+      next[currentPageIndex] = {
+        ...next[currentPageIndex],
+        isSent: true,
+        unsavedChanges: false,
+        transcriptionstatus: "transcribed",
+        text: fields.messageInput ?? "",
+        comment: fields.messageCommentInput ?? "",
+      };
+      return next;
+    });
 
-      /* optional auto-advance */
-      if (goToNext) goToNextTranscribePage();
-    }
+    if (goToNext) goToNextTranscribePage();
   };
   const closeBtnRef = useRef(null);
 
@@ -276,10 +277,11 @@ export default function TranscriptionPageByPageOverlay() {
     p?.source?.toLowerCase().endsWith(".pdf") ? null : (
       <img
         key={idx}
+        id={`thumb-${idx}`}
         data-index={idx}
         className="image-item"
         src={`${config.imageUrl}${p.source}`}
-        alt={`Uppteckning ${recordDetails.id} – ${l('sida')} ${idx + 1}`}
+        alt={`Uppteckning ${recordDetails.id} – ${l("sida")} ${idx + 1}`}
         loading="lazy"
         onClick={() => navigatePages(idx)}
       />
