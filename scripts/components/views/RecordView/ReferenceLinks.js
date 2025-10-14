@@ -28,7 +28,10 @@ export default function ReferenceLinks({ data }) {
   const citation = buildCitation(data);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+    <div
+      className="w-full lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-2 h-full
++                  [grid-auto-rows:1fr]"
+    >
       <ShareButtons
         title={l("Kopiera länk")}
         text={recordUrl}

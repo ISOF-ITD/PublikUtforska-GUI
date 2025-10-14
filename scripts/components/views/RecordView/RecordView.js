@@ -207,13 +207,9 @@ function ResolvedRecord({
           mediaImageClickHandler={mediaImageClickHandler}
         />
 
-        <div className="flex flex-col lg:flex-row items-stretch gap-1">
-          <div className="w-full lg:w-2/3 min-w-0">
+        <div className="flex flex-col lg:flex-row gap-2 my-6 items-stretch">
             <ReferenceLinks data={data} />
-          </div>
-          <div className="w-full lg:w-1/3">
             <License data={data} />
-          </div>
         </div>
 
         <SubrecordsElement

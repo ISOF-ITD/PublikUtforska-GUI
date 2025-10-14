@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
@@ -10,7 +16,6 @@ export default function ShareButtons({
   text,
   title = "",
   hideLink = false,
-  className = "",
   onCopied,
 }) {
   const [copied, setCopied] = useState(false);
@@ -88,11 +93,14 @@ export default function ShareButtons({
 
   return (
     <section
-      className={`mt-6 rounded border border-solid border-gray-300 px-3 bg-white ${className}`}
+      className="rounded border border-solid border-gray-300 px-3 !py-2 bg-white"
       aria-labelledby={title ? titleId : undefined}
     >
       {title ? (
-        <h3 id={titleId} className="mb-2 font-semibold text-sm text-gray-700">
+        <h3
+          id={titleId}
+          className="!my-1 font-semibold text-base text-gray-700"
+        >
           {title}
         </h3>
       ) : null}
@@ -109,11 +117,10 @@ export default function ShareButtons({
             onKeyDown={onFieldKeyDown}
             aria-readonly="true"
             aria-describedby={`${helpId} ${statusId}`}
-            className={`w-full rounded border border-gray-300 px-2 py-1 text-sm text-gray-800 resize-none ${
+            className={`w-full rounded border border-gray-300 px-2 py-1 !my-0 text-sm text-gray-800 resize-none ${
               breakAll ? "break-all" : "break-words"
             }`}
             title="Klicka eller fokusera för att markera texten"
-            
           />
         ) : null}
 
@@ -135,13 +142,15 @@ export default function ShareButtons({
             type="button"
             onClick={copyToClipboard}
             disabled={!hasTarget}
-            className={`inline-flex items-center gap-2 px-2 py-1 rounded border text-sm transition-colors
+            className={`inline-flex items-center gap-2 px-2 py-1 !my-0 rounded border text-sm transition-colors
               ${
                 hasTarget
                   ? "border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900"
                   : "border-gray-200 text-gray-400 cursor-not-allowed"
               }`}
-            aria-label={hasTarget ? "Kopiera till urklipp" : "Inget att kopiera"}
+            aria-label={
+              hasTarget ? "Kopiera till urklipp" : "Inget att kopiera"
+            }
             aria-describedby={helpId}
             title={hasTarget ? "Kopiera till urklipp" : "Inget att kopiera"}
           >
@@ -152,7 +161,8 @@ export default function ShareButtons({
 
         {/* Visually hidden helper */}
         <p id={helpId} className="sr-only">
-          Klicka i fältet för att markera texten, eller använd knappen för att kopiera.
+          Klicka i fältet för att markera texten, eller använd knappen för att
+          kopiera.
         </p>
       </div>
     </section>
@@ -165,6 +175,5 @@ ShareButtons.propTypes = {
   text: PropTypes.string,
   title: PropTypes.string,
   hideLink: PropTypes.bool,
-  className: PropTypes.string,
   onCopied: PropTypes.func,
 };

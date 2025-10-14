@@ -38,21 +38,17 @@ export default function License({ data, className = "" }) {
   const licenseUrl = data?.copyrightlicense || DEFAULT_LICENSE;
   const cfg = config.siteOptions?.copyrightContent?.[licenseUrl];
 
-  // ── Legacy HTML support (during migration) ───────────────────────────────
   if (typeof cfg === "string" && cfg.trim().startsWith("<")) {
     return (
-      <div className={className}>
+      <div className={`h-full ${className}`}>
         <div
-          className="flex items-start gap-3 bg-gray-50 rounded p-3 text-sm text-gray-700"
-          // NOTE: Safe only if you trust config source. Prefer structured objects.
+          className="flex h-full items-start gap-3 bg-gray-50 rounded p-3 text-sm text-gray-700"
           dangerouslySetInnerHTML={{ __html: cfg }}
         />
       </div>
     );
   }
 
-  // ── Structured rendering ────────────────────────────────────────────────
-  // Prefer structured object from config; otherwise derive from URL.
   const metaFromCfg = typeof cfg === "object" && cfg;
   const parsed = parseCcUrl(licenseUrl);
 
@@ -62,50 +58,42 @@ export default function License({ data, className = "" }) {
   const label =
     metaFromCfg?.label ||
     (code && version
-      ? `Creative Commons ${CC_NAMES_SV[code] || code.toUpperCase()} ${version}${
-          locale === "se" ? " Sverige" : ""
-        }`
+      ? `Creative Commons ${
+          CC_NAMES_SV[code] || code.toUpperCase()
+        } ${version}${locale === "se" ? " Sverige" : ""}`
       : "Creative Commons-licens");
 
-  const badgeSrc = metaFromCfg?.badge || (parsed && defaultBadge({ code, version, locale }));
+  const badgeSrc =
+    metaFromCfg?.badge || (parsed && defaultBadge({ code, version, locale }));
 
   return (
-    <div className="self-center mt-3">
-      <div className="flex flex-col items-start gap-3 bg-gray-50 text-gray-700 rounded p-3">
-        {/* Badge (optional) */}
-        {badgeSrc ? (
-          <a
-            href={licenseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0"
-            aria-label="Öppna licens i nytt fönster"
-          >
-            <img
-              src={badgeSrc}
-              alt="Creative Commons-licens"
-              width={88}
-              height={31}
-              className="block"
-              loading="lazy"
-            />
-          </a>
-        ) : null}
+    <div className="flex flex-col items-start justify-center gap-2 bg-gray-50 text-gray-700 rounded max-w-fit p-3 w-full lg:w-1/3 border border-solid border-gray-300">
+      {badgeSrc ? (
+        <a
+          href={licenseUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0"
+          aria-label="Öppna licens i nytt fönster"
+        >
+          <img
+            src={badgeSrc}
+            alt="Creative Commons-licens"
+            className="w-28"
+            loading="lazy"
+          />
+        </a>
+      ) : null}
 
-        {/* Text */}
-        <p className="m-0 text-sm text-gray-700">
-          Detta verk är licensierat under en{" "}
-          <a
-            href={licenseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:no-underline"
-          >
-            {label}
-          </a>
-          .
-        </p>
-      </div>
+      <span className="text-gray-700">Detta verk är licensierat under:</span>
+      <a
+        href={licenseUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline hover:no-underline"
+      >
+        {label}
+      </a>
     </div>
   );
 }
