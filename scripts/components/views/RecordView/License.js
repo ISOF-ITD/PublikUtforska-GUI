@@ -67,7 +67,7 @@ export default function License({ data, className = "" }) {
     metaFromCfg?.badge || (parsed && defaultBadge({ code, version, locale }));
 
   return (
-    <div className="flex flex-col items-start justify-center gap-2 bg-gray-50 text-gray-700 rounded max-w-fit p-3 w-full lg:w-1/3 border border-solid border-gray-300">
+    <div className="flex flex-col items-start justify-center gap-2 bg-gray-50 text-gray-700 rounded max-w-full p-3 w-full lg:w-1/3 border border-solid border-gray-300">
       {badgeSrc ? (
         <a
           href={licenseUrl}
