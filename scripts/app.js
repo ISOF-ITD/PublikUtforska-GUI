@@ -98,6 +98,7 @@ function createPopupRoutes(prefix) {
           <RecordView mode={prefix.slice(0, -1) || "material"} />
         </RoutePopupWindow>
       ),
+      // This was added to point to the exact audio file, not used for text transcriptions yet
       children: [
         {
           path: 'audio/:id/transcribe',

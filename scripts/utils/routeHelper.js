@@ -5,6 +5,9 @@ import RouteParser from "route-parser";
  * Keys listed here are the "first-class" params that get their own path segments.
  * Anything NOT in this list will be packed into the existing `/filter/:filter` segment
  * as a base64url-encoded JSON payload (forward-compatible envelope).
+ * route-parser: https://www.npmjs.com/package/route-parser
+ * the utility has not been updated for over 10 years but it works for the functionality that we have now,
+ * so we keep it for now
  */
 const SCHEMA = {
   // order matters for reverse() determinism
