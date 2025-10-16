@@ -1,65 +1,72 @@
-import { useEffect, useRef, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
-import { useLocation } from 'react-router-dom';
-import IntroOverlay from './views/IntroOverlay';
-import { l } from '../lang/Lang';
-import config from '../config';
+import { useEffect, useRef, useState, useCallback } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWindowMaximize } from "@fortawesome/free-regular-svg-icons";
+import { useLocation } from "react-router-dom";
+import IntroOverlay from "./views/IntroOverlay";
+import { l } from "../lang/Lang";
+import config from "../config";
 
 export default function Header() {
-  if (!config.activateIntroOverlay) return null;
-
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
-  const location = useLocation(); // Använd useLocation för att få tillgång till current route
-  const initialLoad = useRef(true); // En ref som håller koll på om appen precis laddats
+  const location = useLocation();
+  const initialLoad = useRef(true);
 
-  // Kontrollera om användaren är på root-routen och uppdatera state.
+  const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
+
   useEffect(() => {
-    const isRoot = location.pathname === '/';
-    const noHash = !location.hash || location.hash === '#/';
+    if (!activateIntroOverlay) return;
+
+    const isRoot = location.pathname === "/";
+    const noHash = !location.hash || location.hash === "#/";
 
     if (initialLoad.current && isRoot && noHash) {
       setShowIntroOverlay(true);
     }
     initialLoad.current = false;
-  }, [location]);
+  }, [location, activateIntroOverlay]);
 
-  // Handle showing the overlay
-  const handleShowIntro = () => {
-    setShowIntroOverlay(true);
-  };
+  const handleShowIntro = useCallback(() => {
+    if (activateIntroOverlay) setShowIntroOverlay(true);
+  }, [activateIntroOverlay]);
 
-  const handleCloseOverlay = () => {
+  const handleCloseOverlay = useCallback(() => {
     setShowIntroOverlay(false);
-  };
+  }, []);
 
-  // Handle keyboard interaction (Enter key)
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      handleShowIntro();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e) => {
+      // Prevent page scroll when "activating" with Space
+      if (e.key === " ") e.preventDefault();
+      if (e.key === "Enter" || e.key === " ") {
+        handleShowIntro();
+      }
+    },
+    [handleShowIntro]
+  );
+
+  if (!activateIntroOverlay) return null;
 
   return (
     <>
       <header>
-        <div className="isof-app-header">
-          <div
+          <button
+            type="button"
             onClick={handleShowIntro}
-            onKeyDown={handleKeyDown} // Add key event listener
-            role="button" // Set role to button for accessibility
-            tabIndex={0} // Make it focusable via keyboard
-            style={{
-              cursor: 'pointer',
-            }}
+            onKeyDown={handleKeyDown}
+            className="bg-isof rounded !text-white text-xl px-2.5 py-1.5 pointer-events-auto absolute right-5 top-5 visible z-[1000]"
+            aria-pressed={showIntroOverlay}
+            aria-controls="intro-overlay"
           >
             <FontAwesomeIcon icon={faWindowMaximize} />
-            &nbsp;
-            {l('Meny')}
-          </div>
-        </div>
+            &nbsp;{l("Meny")}
+          </button>
       </header>
-      <IntroOverlay show={showIntroOverlay} onClose={handleCloseOverlay} />
+
+      <IntroOverlay
+        id="intro-overlay"
+        show={showIntroOverlay}
+        onClose={handleCloseOverlay}
+      />
     </>
   );
 }
