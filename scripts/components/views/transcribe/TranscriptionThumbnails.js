@@ -1,78 +1,9 @@
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faAsterisk,
-  faCheck,
-  faLock,
-  faNewspaper,
-  faPen,
-} from "@fortawesome/free-solid-svg-icons";
-import config from "../../../config";
 import classNames from "classnames";
-
-const getStatus = (page) => {
-  if (!page.isSent && page.unsavedChanges) {
-    return {
-      key: "unsaved",
-      label: "Sidan har redigerats",
-      color: "bg-orange-500",
-      icon: faAsterisk,
-    };
-  }
-  if (page.isSent) {
-    return {
-      key: "sent",
-      label: "Sidan har skickats",
-      color: "bg-green-600",
-      icon: faCheck,
-    };
-  }
-  if (!page.isSent && page.transcriptionstatus === "transcribed") {
-    return {
-      key: "transcribed",
-      label: "Sidan kontrolleras",
-      color: "bg-gray-400",
-      icon: faLock,
-    };
-  }
-  if (!page.isSent && page.transcriptionstatus === "published") {
-    return {
-      key: "published",
-      label: "Sidan har publicerats",
-      color: "bg-isof",
-      icon: faNewspaper,
-    };
-  }
-  if (page.transcriptionstatus === "readytotranscribe") {
-    return {
-      key: "ready",
-      label: "Sidan kan skrivas av",
-      color: "bg-lighter-isof",
-      icon: faPen,
-    };
-  }
-  return null;
-};
-
-// Small that carries an icon and accessible label
-const StatusDot = ({ status }) => {
-  if (!status) return null;
-  return (
-    <div
-      className={classNames(
-        "absolute top-2 right-2 h-8 w-8 rounded-full",
-        "flex items-center justify-center text-white shadow",
-        "border-2 border-solid border-white",
-        status.color
-      )}
-      title={status.label}
-      aria-label={status.label}
-    >
-      {status.icon && <FontAwesomeIcon className="h-5" icon={status.icon} />}
-      <span className="sr-only">{status.label}</span>
-    </div>
-  );
-};
+import config from "../../../config";
+import {
+  computeStatus,
+  StatusIndicator,
+} from "../transcribe/TranscriptionStatusIndicator";
 
 export default function TranscriptionThumbnails({
   thumbnailContainerRef,
@@ -92,7 +23,7 @@ export default function TranscriptionThumbnails({
         if (!page?.source || page.source.includes(".pdf")) return null;
 
         const selected = index === currentPageIndex;
-        const status = getStatus(page);
+        const status = computeStatus(page);
 
         return (
           <div
@@ -114,7 +45,7 @@ export default function TranscriptionThumbnails({
                 "transition-shadow"
               )}
             >
-              <StatusDot status={status} />
+              <StatusIndicator status={status} />
 
               <img
                 src={`${config.imageUrl}${page.source}`}
