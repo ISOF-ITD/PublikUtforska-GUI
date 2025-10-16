@@ -6,10 +6,59 @@ import {
   faChevronRight,
   faLock,
   faNewspaper,
+  faPen,
   faTh,
 } from "@fortawesome/free-solid-svg-icons";
 import config from "../../../config";
 import ArchiveImage from "./ArchiveImage";
+
+const getThumbStatus = (item) => {
+  if (!item) return null;
+
+  if (item.transcriptionstatus === "transcribed") {
+    return {
+      label: "Sidan kontrolleras",
+      color: "bg-gray-400",
+      icon: faLock,
+    };
+  }
+  if (item.transcriptionstatus === "published") {
+    return {
+      label: "Sidan har publicerats",
+      color: "bg-isof",
+      icon: faNewspaper,
+    };
+  }
+  if (item.transcriptionstatus === "readytotranscribe") {
+    return {
+      key: "ready",
+      label: "Sidan kan skrivas av",
+      color: "bg-lighter-isof",
+      icon: faPen,
+    };
+  }
+  return null;
+};
+
+// Small, accessible dot
+const ThumbStatusDot = ({ status }) => {
+  if (!status) return null;
+  return (
+    <div
+      className={[
+        "absolute top-2 right-2 h-6 w-6 rounded-full",
+        "flex items-center justify-center text-white shadow",
+        "border-2 border-solid border-white",
+        status.color,
+      ].join(" ")}
+      title={status.label}
+      aria-label={status.label}
+    >
+      {status.icon && <FontAwesomeIcon className="h-4" icon={status.icon} />}
+      <span className="sr-only">{status.label}</span>
+    </div>
+  );
+};
 
 export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   const {
@@ -36,21 +85,8 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
 
   // Indicator renderer (stable reference for ArchiveImage to avoid re-renders)
   const renderIndicator = useCallback((item) => {
-    if (item?.transcriptionstatus === "transcribed") {
-      return (
-        <div className="thumbnail-indicator transcribed-indicator">
-          <FontAwesomeIcon icon={faLock} />
-        </div>
-      );
-    }
-    if (item?.transcriptionstatus === "published") {
-      return (
-        <div className="thumbnail-indicator published-indicator">
-          <FontAwesomeIcon icon={faNewspaper} />
-        </div>
-      );
-    }
-    return null;
+    const status = getThumbStatus(item);
+    return <ThumbStatusDot status={status} />;
   }, []);
 
   const storageKey = `rv:${recordId || "unknown"}:thumbnails:expanded`;
@@ -72,7 +108,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   }, [expanded, storageKey]);
 
   // Kontrollera om det finns några bilder
-  
+
   // Toggle + lazy-load once
   const toggle = useCallback(() => {
     setExpanded((prev) => {
@@ -110,7 +146,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
       {hasLoadedImages && (
         <div
           id={contentId}
-          className="record-view-thumbnails"
+          className="inline-block bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full py-5 px-8"
           style={{ display: expanded ? undefined : "none" }}
           aria-hidden={!expanded}
         >

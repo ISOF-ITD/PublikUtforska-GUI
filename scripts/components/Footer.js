@@ -9,6 +9,7 @@ export default function Footer() {
             href="https://www.isof.se/"
             aria-label="Institutet för språk och folkminnen – hemsida"
             rel="noopener noreferrer"
+            title="Institutet för språk och folkminnen – hemsida"
             target="_blank"
           >
             <img

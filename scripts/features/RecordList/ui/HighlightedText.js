@@ -7,7 +7,6 @@ This component extracts text surrounding a highlighted <span> element.
 It looks for a <span> with the class 'highlight' and extracts the span
 plus a certain number of chars before and after it (defined by 'surroundingCharsForHighlights').
 If two highlights are close to each other, they are included in the same div.
-The result is inserted into a <div> element with the class 'item-summary record-text small'.
 Ellipsis are only added if characters were removed.
 The highlighted text is kept within a span with the class 'highlight'.
 */
@@ -38,7 +37,7 @@ function HighlightedText({
   if (highlights.length === 0) {
     return (
       <div
-        className={`item-summary record-text small ${className}`}
+        className={`item-summary inline-block bg-white rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight my-2 mb-0 ${className}`}
         dangerouslySetInnerHTML={{ __html: str }}
       />
     );
@@ -85,7 +84,7 @@ function HighlightedText({
         return (
           <div
             key={key}
-            className="item-summary record-text small"
+            className="item-summary inline-block bg-white rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight !my-2 mb-0"
             dangerouslySetInnerHTML={{ __html: beforeText + html + afterText }}
           />
         );

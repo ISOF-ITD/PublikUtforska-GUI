@@ -112,7 +112,7 @@ export default function TextElement({
           (mediaItem, index) =>
             mediaItem.type === "image" && (
               <div
-                className="row record-text-and-image"
+                className="row bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full py-5 px-8"
                 key={`${mediaItem.source ?? "img"}-${index}`}
               >
                 <div className="eight columns">
@@ -128,7 +128,7 @@ export default function TextElement({
 
                       return (
                         <p
-                          className="display-line-breaks"
+                          className="whitespace-pre-wrap break-words"
                           dangerouslySetInnerHTML={{
                             __html: sanitizeHtml(html),
                           }}
@@ -184,12 +184,12 @@ export default function TextElement({
         (mediaItem, index) =>
           mediaItem.type === "image" && (
             <div
-              className="row record-text-and-image"
+              className="row bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full py-5 px-8"
               key={`${mediaItem.source ?? "img"}-${index}`}
             >
               <div className="eight columns">
                 <p
-                  className="display-line-breaks"
+                  className="whitespace-pre-wrap break-words"
                   dangerouslySetInnerHTML={{
                     __html: sanitizeHtml(
                       textParts ? textParts[index] : "&nbsp;"
