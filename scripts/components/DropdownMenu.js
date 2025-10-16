@@ -71,7 +71,7 @@ function DropdownMenu({
         {
           headerText
           && (
-          <div className="panel-heading dropdown-heading">
+          <div className="h-16 pt-6 pr-12 pb-0 pl-6 text-gray-700 bg-slate-100 rounded-t-sm border-b border-neutral-300 shadow-none transition-all duration-300 ease-in-out dropdown-heading">
             <span className="heading-label">{headerText}</span>
           </div>
           )
