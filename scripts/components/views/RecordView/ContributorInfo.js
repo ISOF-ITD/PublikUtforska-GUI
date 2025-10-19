@@ -11,6 +11,12 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
 
   if (!hasContributor && !hasComments) return null;
 
+  // Split on semicolons OR line breaks, trim empties
+  const commentItems = (comment || "")
+    .split(/;|\r?\n/g)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   return (
     <div className="bg-gray-50 rounded-lg p-4 mt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -43,12 +49,19 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
                 {l("Kommentarer")}
               </h3>
             </div>
-            <div
-              className="ml-6 prose prose-sm text-gray-800"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(comment.split(";").join("<br/>")),
-              }}
-            />
+
+            {commentItems.length > 0 ? (
+              <ul className="ml-6 list-disc text-sm text-gray-800 space-y-1">
+                {commentItems.map((item, i) => (
+                  <li
+                    key={i}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(item) }}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <span className="ml-6 m-0 text-gray-800">{l("Inga kommentarer.")}</span>
+            )}
           </div>
         )}
       </div>
