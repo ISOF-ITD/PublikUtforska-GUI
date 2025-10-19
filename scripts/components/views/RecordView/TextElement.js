@@ -1,6 +1,5 @@
-/* eslint-disable react/require-default-props */
 import PropTypes from "prop-types";
-import { useState, useMemo, useCallback } from "react";
+import { memo, useState, useMemo, useCallback, useId } from "react";
 import config from "../../../config";
 import HighlightSwitcher from "./HighlightSwitcher";
 import { l } from "../../../lang/Lang";
@@ -8,7 +7,106 @@ import TranscribeButton from "../transcribe/TranscribeButton";
 import ArchiveImage from "./ArchiveImage";
 import ContributorInfo from "./ContributorInfo";
 import sanitizeHtml from "../../../utils/sanitizeHtml";
+import {
+  computeStatus,
+  StatusIndicator,
+} from "../transcribe/TranscriptionStatusIndicator";
 
+const Card = memo(function Card({ children }) {
+  return (
+    <section className="bg-white rounded-xl shadow-sm border-1 border-solid border-black/5 overflow-hidden">
+      <div className="lg:p-2 p-4">{children}</div>
+    </section>
+  );
+});
+Card.propTypes = { children: PropTypes.node.isRequired };
+
+//Shows sanitized HTML
+
+function TranscribedText ({ html, expanded, onToggle, contentId }) {
+  return (
+    <div className="relative">
+      <div
+        id={contentId}
+        aria-expanded={expanded}
+        className={
+          "text-pretty prose prose-sm max-w-none text-gray-800 whitespace-pre-wrap break-words " +
+          (expanded ? "" : "overflow-hidden")
+        }
+        // Sanitization happens upstream; guard against empty HTML
+        dangerouslySetInnerHTML={{ __html: html || "&nbsp;" }}
+      />
+    </div>
+  );
+}
+TranscribedText.propTypes = {
+  html: PropTypes.string,
+  expanded: PropTypes.bool,
+  onToggle: PropTypes.func.isRequired,
+  contentId: PropTypes.string.isRequired,
+};
+
+const MediaCard = memo(function MediaCard({
+  mediaItem,
+  index,
+  imageUrl,
+  renderIndicator,
+  onMediaClick,
+  onKeyDown,
+  right,
+}) {
+  return (
+    <Card>
+      <div className="md:grid md:grid-cols-5 md:gap-1  items-center">
+        {/* IMAGE */}
+        <figure className="relative col-span-3 md:sticky md:top-2">
+          <ArchiveImage
+            mediaItem={mediaItem}
+            index={index}
+            onMediaClick={onMediaClick}
+            onKeyDown={onKeyDown}
+            imageUrl={imageUrl}
+            renderIndicator={renderIndicator}
+            renderMagnifyingGlass
+            className=""
+            imgClassName="w-full"
+            imgProps={{
+              loading: "lazy",
+              decoding: "async",
+              sizes: "(min-width: 640px) 320px, 100vw",
+            }}
+          />
+          <figcaption className="sr-only">
+            {(mediaItem.title || l("Sida")) + " " + (index + 1)}
+          </figcaption>
+        </figure>
+
+        {/* RIGHT CONTENT */}
+        <div className="col-span-2">{right}</div>
+      </div>
+    </Card>
+  );
+});
+MediaCard.propTypes = {
+  mediaItem: PropTypes.object.isRequired,
+  index: PropTypes.number.isRequired,
+  imageUrl: PropTypes.string.isRequired,
+  renderIndicator: PropTypes.func.isRequired,
+  onMediaClick: PropTypes.func.isRequired,
+  onKeyDown: PropTypes.func.isRequired,
+  right: PropTypes.node.isRequired,
+};
+
+// ---------- Helpers ----------
+const splitPages = (t) => {
+  if (!t) return [];
+  return t
+    .replace(/\r\n/g, "\n")
+    .split(/\n\/\s*\n?/g)
+    .map((part) => part.replace(/^\n+/, "").trim());
+};
+
+// ---------- Component ----------
 export default function TextElement({
   data,
   highlightData = null,
@@ -24,18 +122,25 @@ export default function TextElement({
     transcriptiontype,
     transcriptionstatus,
     media = [],
-    recordtype,
   } = data;
 
   const { imageUrl } = config;
 
-  // ---- HOOKS (always in the same order) ----
+  // local state
   const [highlight, setHighlight] = useState(true);
+  const [expanded, setExpanded] = useState({});
+  const toggleExpanded = useCallback(
+    (i) => setExpanded((prev) => ({ ...prev, [i]: !prev[i] })),
+    []
+  );
 
+  // a11y ids
+  const switchId = useId();
+  const headingId = `text-${recordId}`;
+
+  // event handlers
   const handleMediaClick = useCallback(
-    (mediaItem, index) => {
-      mediaImageClickHandler(mediaItem, media, index);
-    },
+    (mediaItem, index) => mediaImageClickHandler(mediaItem, media, index),
     [mediaImageClickHandler, media]
   );
 
@@ -49,32 +154,32 @@ export default function TextElement({
     [mediaImageClickHandler, media]
   );
 
-  const renderMedia = useCallback(
-    (mediaItem, index) => (
-      <div
-        className="four columns"
-        key={`${mediaItem.source ?? "img"}-${index}`}
-      >
-        <ArchiveImage
-          mediaItem={mediaItem}
-          index={index}
-          onMediaClick={handleMediaClick}
-          onKeyDown={handleKeyDown}
-          imageUrl={imageUrl}
-          renderMagnifyingGlass
-        />
-      </div>
-    ),
-    [handleKeyDown, handleMediaClick, imageUrl]
+  // status indicator overlay
+  const renderIndicator = useCallback(
+    (mediaItem) => {
+      const tx =
+        (transcriptiontype === "sida"
+          ? mediaItem?.transcriptionstatus
+          : transcriptionstatus) || null;
+      const status = tx ? computeStatus({ transcriptionstatus: tx }) : null;
+      return <StatusIndicator status={status} size="md" />;
+    },
+    [transcriptionstatus, transcriptiontype]
   );
 
-  const isSida = transcriptiontype === "sida";
+  // highlight data
+  const isPageByPage = transcriptiontype === "sida";
+  const mediaImages = useMemo(
+    () => media.filter((m) => m?.type === "image"),
+    [media]
+  );
 
-  // Data used by the "sida" path (compute unconditionally, return empty defaults when not sida)
+  // "page-by-page" inner hits + count of <em> tags
   const innerHits =
     highlightData?.data?.[0]?.inner_hits?.media?.hits?.hits ?? [];
+
   const highlightedMediaTexts = useMemo(() => {
-    if (!isSida) return {};
+    if (!isPageByPage) return {};
     return innerHits.reduce((acc, hit) => {
       const innerHitHighlightedText = hit?.highlight?.["media.text"]?.[0];
       // eslint-disable-next-line no-underscore-dangle
@@ -83,131 +188,177 @@ export default function TextElement({
         acc[offset] = innerHitHighlightedText;
       return acc;
     }, {});
-  }, [isSida, innerHits]);
+  }, [isPageByPage, innerHits]);
 
-  // Data used by the non-"sida" path (also safe to compute always)
+  const pageByPageHitCount = useMemo(
+    () =>
+      innerHits.reduce((sum, h) => {
+        const str = h?.highlight?.["media.text"]?.[0] || "";
+        return sum + (str.match(/<em>/g) || []).length;
+      }, 0),
+    [innerHits]
+  );
+
+  // Non-"page-by-page" highlight text + count
   const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || "";
+  const highlightCount = useMemo(
+    () => (highlightedText.match(/<em>/g) || []).length,
+    [highlightedText]
+  );
+
+  // Prepare text to display for non-"page-by-page"
   const sourceText = useMemo(
     () => (highlight && highlightedText ? highlightedText : text),
     [highlight, highlightedText, text]
   );
-  const textParts = useMemo(
-    () => sourceText?.split(/\/\s*$/m).map((part) => part.replace(/^\n+/, "")),
-    [sourceText]
+  const textParts = useMemo(() => splitPages(sourceText), [sourceText]);
+
+  const hasHighlights = isPageByPage
+    ? innerHits.length > 0
+    : Boolean(highlightedText);
+  const totalHits = isPageByPage ? pageByPageHitCount : highlightCount;
+
+  // Header (shared)
+  const Header = (
+    <header className="flex items-center justify-between mb-1">
+      <h2 id={headingId} className="sr-only">
+        {l("Text och bild")}
+      </h2>
+
+      {hasHighlights && (
+        <HighlightSwitcher
+          id={switchId}
+          highlight={highlight}
+          setHighlight={setHighlight}
+          count={totalHits}
+          ariaLabel={l("Markera träffar")}
+        />
+      )}
+    </header>
   );
 
-  // ---- RENDER ----
-  if (isSida) {
-    return (
-      <main>
-        {innerHits.length > 0 && (
-          <HighlightSwitcher
-            highlight={highlight}
-            setHighlight={setHighlight}
-            id={`highlight-${recordId}`}
+  // Side with text builder
+  const buildTextSide = useCallback(
+    (mediaItem, index) => {
+      // If page has text and isn't awaiting transcription, show HTML (with optional highlight)
+      if (
+        mediaItem.text &&
+        mediaItem.transcriptionstatus !== "readytotranscribe"
+      ) {
+        const html =
+          highlight && highlightedMediaTexts[String(index)]
+            ? highlightedMediaTexts[String(index)]
+            : mediaItem.text;
+
+        return (
+          <TranscribedText
+            html={sanitizeHtml(html)}
+            expanded={!!expanded[index]}
+            onToggle={() => toggleExpanded(index)}
+            contentId={`page-by-page-text-${recordId}-${index}`}
           />
-        )}
+        );
+      }
 
-        {media?.map(
-          (mediaItem, index) =>
-            mediaItem.type === "image" && (
-              <div
-                className="row bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full py-5 px-8"
-                key={`${mediaItem.source ?? "img"}-${index}`}
-              >
-                <div className="eight columns">
-                  {(() => {
-                    if (
-                      mediaItem.text &&
-                      mediaItem.transcriptionstatus !== "readytotranscribe"
-                    ) {
-                      const html =
-                        highlight && highlightedMediaTexts[`${index}`]
-                          ? highlightedMediaTexts[`${index}`]
-                          : mediaItem.text;
+      // If record is ready to be transcribed, show CTA
+      if (transcriptionstatus === "readytotranscribe") {
+        return (
+          <div className="flex flex-col items-center justify-between gap-2 p-2 rounded-lg bg-gray-50">
+            <span className="text-gray-700">
+              {l("Den här sidan kan skrivas av.")}
+            </span>
+            <TranscribeButton
+              className="button button-primary"
+              label={l("Skriv av")}
+              title={title}
+              recordId={recordId}
+              archiveId={archive?.archive_id}
+              places={places}
+              images={media}
+              transcriptionType={transcriptiontype}
+              random={false}
+            />
+          </div>
+        );
+      }
 
-                      return (
-                        <p
-                          className="whitespace-pre-wrap break-words"
-                          dangerouslySetInnerHTML={{
-                            __html: sanitizeHtml(html),
-                          }}
-                        />
-                      );
-                    }
+      // Otherwise, it's being processed
+      return (
+        <p className="text-gray-700">
+          {l(
+            "Texten är ännu inte färdig – transkribering eller granskning pågår."
+          )}
+        </p>
+      );
+    },
+    [
+      archive?.archive_id,
+      expanded,
+      highlightedMediaTexts,
+      l,
+      media,
+      places,
+      recordId,
+      title,
+      transcriptionstatus,
+      transcriptiontype,
+      highlight,
+      toggleExpanded,
+    ]
+  );
 
-                    if (transcriptionstatus === "readytotranscribe") {
-                      return (
-                        <TranscribeButton
-                          className="button button-primary"
-                          label={l("Skriv av")}
-                          title={title}
-                          recordId={recordId}
-                          archiveId={archive?.archive_id}
-                          places={places}
-                          images={media}
-                          transcriptionType={transcriptiontype}
-                          random={false}
-                        />
-                      );
-                    }
+  // ---------- Render ----------
+  if (isPageByPage) {
+    return (
+      <section aria-labelledby={headingId} className="space-y-3">
+        {Header}
 
-                    return (
-                      <p>
-                        {l(
-                          "Denna text håller på att skrivas av, av en användare eller är under behandling."
-                        )}
-                      </p>
-                    );
-                  })()}
-                </div>
-                {renderMedia(mediaItem, index)}
-              </div>
-            )
-        )}
-      </main>
+        {mediaImages.map((mediaItem, index) => (
+          <MediaCard
+            key={`${mediaItem.source ?? "img"}-${index}`}
+            mediaItem={mediaItem}
+            index={index}
+            imageUrl={imageUrl}
+            renderIndicator={renderIndicator}
+            onMediaClick={handleMediaClick}
+            onKeyDown={handleKeyDown}
+            right={buildTextSide(mediaItem, index)}
+          />
+        ))}
+      </section>
     );
   }
 
-  // Non-"sida"
+  // Non-"page-by-page"
   return (
-    <main>
-      {highlightedText && (
-        <HighlightSwitcher
-          highlight={highlight}
-          setHighlight={setHighlight}
-          id={`highlight-${recordId}`}
-        />
-      )}
+    <section aria-labelledby={headingId} className="space-y-3">
+      {Header}
 
-      {media?.map(
-        (mediaItem, index) =>
-          mediaItem.type === "image" && (
-            <div
-              className="row bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full py-5 px-8"
-              key={`${mediaItem.source ?? "img"}-${index}`}
-            >
-              <div className="eight columns">
-                <p
-                  className="whitespace-pre-wrap break-words"
-                  dangerouslySetInnerHTML={{
-                    __html: sanitizeHtml(
-                      textParts ? textParts[index] : "&nbsp;"
-                    ),
-                  }}
-                />
-              </div>
-              {renderMedia(mediaItem, index)}
-            </div>
-          )
-      )}
+      {mediaImages.map((mediaItem, index) => (
+        <MediaCard
+          key={`${mediaItem.source ?? "img"}-${index}`}
+          mediaItem={mediaItem}
+          index={index}
+          imageUrl={imageUrl}
+          renderIndicator={renderIndicator}
+          onMediaClick={handleMediaClick}
+          onKeyDown={handleKeyDown}
+          right={
+            <TranscribedText
+              html={sanitizeHtml(textParts?.[index] || "")}
+              onToggle={() => toggleExpanded(index)}
+              contentId={`non-page-by-page-text-${recordId}-${index}`}
+            />
+          }
+        />
+      ))}
 
       <ContributorInfo
         transcribedby={transcribedby}
         comment={data.comment}
         transcriptiondate={data.transcriptiondate}
       />
-    </main>
+    </section>
   );
 }
 

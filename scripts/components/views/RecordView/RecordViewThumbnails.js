@@ -36,11 +36,15 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   // Provide a stable indicator renderer for ArchiveImage
   const renderIndicator = useCallback(
     (item) => {
-      // Merge record-level + item-level in case transcriptionstatus lives only on one of them
-      const status = computeStatus({ ...data, ...item });
+      const isSida = (data?.transcriptiontype || "").toLowerCase() === "sida";
+      const tx =
+        (isSida ? item?.transcriptionstatus : data?.transcriptionstatus) ||
+        null;
+
+      const status = computeStatus({ transcriptionstatus: tx });
       return <StatusIndicator status={status} />;
     },
-    [data]
+    [data?.transcriptiontype, data?.transcriptionstatus]
   );
 
   const storageKey = `rv:${recordId || "unknown"}:thumbnails:expanded`;
@@ -95,7 +99,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
         <div
           id={contentId}
           className={classNames(
-            "inline-block bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full py-5 px-8",
+            "flex flex-wrap gap-2 bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full p-5",
             !expanded && "hidden"
           )}
           aria-hidden={!expanded}
@@ -106,8 +110,16 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
               mediaItem={mediaItem}
               index={index}
               imageUrl={config.imageUrl}
-              loading="lazy"
-              decoding="async"
+              variant="thumbnail"
+              showCaption={false}
+              renderMagnifyingGlass={false}
+              className="mr-4 w-28 hover:cursor-pointer sm:w-32 md:w-36"
+              imgClassName="h-28 sm:h-32 md:h-36"
+              imgProps={{
+                loading: "lazy",
+                decoding: "async",
+                sizes: "(max-width: 800px) 33vw, 160px",
+              }}
               onMediaClick={(item, idx) =>
                 mediaImageClickHandler?.(item, images, idx)
               }
