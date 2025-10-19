@@ -31,7 +31,7 @@ export default function ImageOverlay() {
   const hasNext = currentIndex < total - 1;
   const current = mediaList?.[currentIndex] ?? {};
 
-  const altText = useMemo(() => current?.text || current?.title || "Bild i overlay", [current]);
+  const altText = useMemo(() => current?.text || current?.title || "", [current]);
 
   const assetUrl = useCallback((item) => {
     if (!item) return null;

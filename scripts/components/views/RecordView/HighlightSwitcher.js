@@ -10,7 +10,7 @@ export default function HighlightSwitcher({ highlight, setHighlight, id = 'highl
         checked={highlight}
         onChange={() => setHighlight(!highlight)}
       />
-      <span style={{ marginLeft: 10, userSelect: 'none' }}>Markera sökord</span>
+      <span className='ml-3 select-none'>Markera träffar</span>
     </label>
 
   );
