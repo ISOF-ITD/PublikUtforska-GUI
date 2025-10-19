@@ -79,27 +79,6 @@
     }
   }
 
-  .overlay-image {
-    position: absolute;
-
-    left: 50%;
-
-    max-width: 80%;
-
-    margin: 20px 0;
-
-    border-radius: 3px;
-    box-shadow: 0 2px 6px #000;
-
-    .transform(translate(-50%));
-
-    @media (max-width: 750px) {
-      max-width: 100%;
-
-      margin: 0;
-    }
-  }
-
   .overlay-window {
     position: relative;
     pointer-events: auto;
@@ -278,57 +257,4 @@
     }
   }
 
-}
-
-/* 
-Show instuction image with css hover over
-
-	<div className="mark-below-img">
-	<input name="informantNameInput" className="six columns" type="text" value={this.state.informantNameInput} onChange={this.inputChangeHandler} />
-	<figure>
-	    <img src="img/ifgh-card-upperpart-name.png" width="400" height="100" alt="photo"></img> 
-		<img src="http://localhost:8080/PublikUtforska-GUI/www/img/ifgh-card-upperpart-birthplace.png" width="400" height="100" 	</figure>
-	</div>
-	<figure>
-	</figure>
-
-*/
-
-.mark-below-img img {
-  display: block;
-  border-radius: 0.8em;
-  max-width: 100%;
-  height: auto;
-}
-
-.mark-below-img:hover figure {
-  display: block;
-}
-
-.mark-below-img figure {
-  display: none;
-  position: absolute;
-  top: 15em;
-  left: 2em;
-  z-index: 4000;
-}
-
-
-.mark-above-img img {
-  display: block;
-  border-radius: 0.8em;
-  max-width: 100%;
-  height: auto;
-}
-
-.mark-above-img:hover figure {
-  display: block;
-}
-
-.mark-above-img figure {
-  display: none;
-  position: absolute;
-  top: 5em;
-  left: 2em;
-  z-index: 4000;
 }
