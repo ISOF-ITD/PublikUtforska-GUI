@@ -15,28 +15,36 @@ const MediaCard = memo(function MediaCard({
 }) {
   return (
     <Card>
-      <div className="md:grid md:grid-cols-5 md:gap-1 items-center">
-        <figure className="relative col-span-3 md:sticky md:top-2">
-          <ArchiveImage
-            mediaItem={mediaItem}
-            index={index}
-            onMediaClick={onMediaClick}
-            onKeyDown={onKeyDown}
-            imageUrl={imageUrl}
-            renderIndicator={renderIndicator}
-            renderMagnifyingGlass
-            imgClassName="w-full"
-            imgProps={{
-              loading: "lazy",
-              decoding: "async",
-              sizes: "(min-width: 640px) 320px, 100vw",
-            }}
-          />
+      <div className="md:grid items-start md:gap-6 md:[grid-template-columns:minmax(18rem,1.15fr)_minmax(18rem,1fr)]">
+        <figure className="relative md:sticky md:top-2 md:self-start">
+          {/* Cap figure height and scroll the image inside if it’s very tall */}
+          <div className="md:max-h-[calc(100vh-1rem)] md:overflow-auto md:pr-1">
+            <ArchiveImage
+              mediaItem={mediaItem}
+              index={index}
+              onMediaClick={onMediaClick}
+              onKeyDown={onKeyDown}
+              imageUrl={imageUrl}
+              renderIndicator={renderIndicator}
+              renderMagnifyingGlass
+              // Make the image fit width but never exceed viewport height
+              imgClassName="w-full h-auto max-h-[80vh] object-contain"
+              imgProps={{
+                loading: "lazy",
+                decoding: "async",
+                sizes:
+                  "(min-width:1280px) 640px, (min-width:1024px) 55vw, (min-width:768px) 60vw, 100vw",
+              }}
+            />
+          </div>
+
           <figcaption className="sr-only">
             {(mediaItem.title || l("Sida")) + " " + (index + 1)}
           </figcaption>
         </figure>
-        <div className="col-span-2">{right}</div>
+
+        {/* Ensure the text column never collapses to something unreadable */}
+        <div className="min-w-[18rem]">{right}</div>
       </div>
     </Card>
   );
