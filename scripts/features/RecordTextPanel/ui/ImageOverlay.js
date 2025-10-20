@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useRef, useId, useMemo } from 
 import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faChevronRight, faClose } from "@fortawesome/free-solid-svg-icons";
-import config from "../../config";
-import PdfViewer from "../PdfViewer";
+import config from "../../../config";
+import PdfViewer from "../../../components/PdfViewer";
 
 export default function ImageOverlay() {
   const [imageUrl, setImageUrl] = useState(null);

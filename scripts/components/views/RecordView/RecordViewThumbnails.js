@@ -8,11 +8,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import config from "../../../config";
-import ArchiveImage from "./ArchiveImage";
+import ArchiveImage from "../../../features/RecordTextPanel/ui/ArchiveImage";
 import {
   computeStatus,
   StatusIndicator,
-} from "../transcribe/TranscriptionStatusIndicator";
+} from "../../../features/RecordTextPanel/ui/TranscriptionStatusIndicator";
 
 export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   const {

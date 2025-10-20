@@ -13,7 +13,6 @@ import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
 import RecordListWrapper from '../features/RecordList/RecordListWrapper';
-import ImageOverlay from './views/ImageOverlay';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/transcribe/TranscriptionHelpOverlay';
@@ -32,6 +31,7 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 
 import config from '../config';
 import { toastError, toastOk } from '../utils/toast';
+import ImageOverlay from '../features/RecordTextPanel/ui/ImageOverlay';
 
 
 export default function Application({

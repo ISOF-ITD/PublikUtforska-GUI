@@ -27,7 +27,7 @@ import RecordViewHeader from "./RecordViewHeader";
 import RecordViewThumbnails from "./RecordViewThumbnails";
 import ReferenceLinks from "./ReferenceLinks";
 import SubrecordsElement from "./SubrecordsElement";
-import TextElement from "./TextElement";
+import TextElement from "../../../features/RecordTextPanel/RecordTextPanel";
 import RequestToTranscribePrompt from "./RequestToTranscribePrompt";
 import TranscriptionPrompt from "./TranscriptionPrompt";
 import SimilarRecords from "./SimilarRecords";

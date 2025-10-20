@@ -3,7 +3,7 @@ import config from "../../../config";
 import {
   computeStatus,
   StatusIndicator,
-} from "../transcribe/TranscriptionStatusIndicator";
+} from "../../../features/RecordTextPanel/ui/TranscriptionStatusIndicator";
 
 export default function TranscriptionThumbnails({
   thumbnailContainerRef,

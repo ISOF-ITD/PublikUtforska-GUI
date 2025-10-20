@@ -1,16 +1,16 @@
 import PropTypes from "prop-types";
 import { memo, useState, useMemo, useCallback, useId } from "react";
-import config from "../../../config";
-import HighlightSwitcher from "./HighlightSwitcher";
-import { l } from "../../../lang/Lang";
-import TranscribeButton from "../transcribe/TranscribeButton";
-import ArchiveImage from "./ArchiveImage";
-import ContributorInfo from "./ContributorInfo";
-import sanitizeHtml from "../../../utils/sanitizeHtml";
+import config from "../../config";
+import HighlightSwitcher from "./ui/HighlightSwitcher";
+import { l } from "../../lang/Lang";
+import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import ArchiveImage from "./ui/ArchiveImage";
+import ContributorInfo from "./ui/ContributorInfo";
+import sanitizeHtml from "../../utils/sanitizeHtml";
 import {
   computeStatus,
   StatusIndicator,
-} from "../transcribe/TranscriptionStatusIndicator";
+} from "./ui/TranscriptionStatusIndicator";
 
 const Card = memo(function Card({ children }) {
   return (
