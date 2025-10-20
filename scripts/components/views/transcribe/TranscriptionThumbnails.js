@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import config from "../../../config";
 import { StatusIndicator } from "../../../features/RecordTextPanel/ui/TranscriptionStatusIndicator";
-import { computeStatus } from "../../../features/RecordTextPanel/utils/computeStatus,js";
+import { computeStatus } from "../../../features/RecordTextPanel/utils/computeStatus.js";
 
 export default function TranscriptionThumbnails({
   thumbnailContainerRef,

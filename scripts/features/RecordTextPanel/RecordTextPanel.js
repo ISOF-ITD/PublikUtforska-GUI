@@ -4,7 +4,7 @@ import config from "../../config";
 import { l } from "../../lang/Lang";
 import sanitizeHtml from "../../utils/sanitizeHtml";
 import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
-import { computeStatus } from "./utils/computeStatus,js";
+import { computeStatus } from "./utils/computeStatus.js";
 import MediaCard from "./ui/MediaCard";
 import ContributorInfo from "./ui/ContributorInfo";
 import TranscribedText from "./ui/TranscribedText";
