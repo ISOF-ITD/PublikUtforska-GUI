@@ -44,7 +44,7 @@ const MediaCard = memo(function MediaCard({
         </figure>
 
         {/* Ensure the text column never collapses to something unreadable */}
-        <div className="min-w-[18rem]">{right}</div>
+        <div className="min-w-[18rem] self-center">{right}</div>
       </div>
     </Card>
   );
