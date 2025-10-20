@@ -12,7 +12,7 @@ export default function TranscribedText({
         id={contentId}
         aria-expanded={expanded}
         className={
-          "text-pretty prose prose-sm max-w-none text-gray-800 whitespace-pre-wrap break-words " +
+          "text-pretty prose text-sm prose-sm max-w-none text-gray-800 whitespace-pre-wrap break-words " +
           (expanded ? "" : "overflow-hidden")
         }
         dangerouslySetInnerHTML={{ __html: html || "&nbsp;" }}
