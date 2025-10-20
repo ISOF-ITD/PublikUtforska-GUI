@@ -1,113 +1,17 @@
 import PropTypes from "prop-types";
 import { memo, useState, useMemo, useCallback, useId } from "react";
 import config from "../../config";
-import HighlightSwitcher from "./ui/HighlightSwitcher";
 import { l } from "../../lang/Lang";
-import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
-import ArchiveImage from "./ui/ArchiveImage";
-import ContributorInfo from "./ui/ContributorInfo";
 import sanitizeHtml from "../../utils/sanitizeHtml";
-import {
-  computeStatus,
-  StatusIndicator,
-} from "./ui/TranscriptionStatusIndicator";
+import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import { computeStatus } from "./utils/computeStatus,js";
+import MediaCard from "./ui/MediaCard";
+import ContributorInfo from "./ui/ContributorInfo";
+import TranscribedText from "./ui/TranscribedText";
+import { splitPages } from "./utils/splitPages";
+import { StatusIndicator } from "./ui/TranscriptionStatusIndicator";
 
-const Card = memo(function Card({ children }) {
-  return (
-    <section className="bg-white rounded-xl shadow-sm border-1 border-solid border-black/5 overflow-hidden">
-      <div className="lg:p-2 p-4">{children}</div>
-    </section>
-  );
-});
-Card.propTypes = { children: PropTypes.node.isRequired };
-
-//Shows sanitized HTML
-
-function TranscribedText ({ html, expanded, onToggle, contentId }) {
-  return (
-    <div className="relative">
-      <div
-        id={contentId}
-        aria-expanded={expanded}
-        className={
-          "text-pretty prose prose-sm max-w-none text-gray-800 whitespace-pre-wrap break-words " +
-          (expanded ? "" : "overflow-hidden")
-        }
-        // Sanitization happens upstream; guard against empty HTML
-        dangerouslySetInnerHTML={{ __html: html || "&nbsp;" }}
-      />
-    </div>
-  );
-}
-TranscribedText.propTypes = {
-  html: PropTypes.string,
-  expanded: PropTypes.bool,
-  onToggle: PropTypes.func.isRequired,
-  contentId: PropTypes.string.isRequired,
-};
-
-const MediaCard = memo(function MediaCard({
-  mediaItem,
-  index,
-  imageUrl,
-  renderIndicator,
-  onMediaClick,
-  onKeyDown,
-  right,
-}) {
-  return (
-    <Card>
-      <div className="md:grid md:grid-cols-5 md:gap-1  items-center">
-        {/* IMAGE */}
-        <figure className="relative col-span-3 md:sticky md:top-2">
-          <ArchiveImage
-            mediaItem={mediaItem}
-            index={index}
-            onMediaClick={onMediaClick}
-            onKeyDown={onKeyDown}
-            imageUrl={imageUrl}
-            renderIndicator={renderIndicator}
-            renderMagnifyingGlass
-            className=""
-            imgClassName="w-full"
-            imgProps={{
-              loading: "lazy",
-              decoding: "async",
-              sizes: "(min-width: 640px) 320px, 100vw",
-            }}
-          />
-          <figcaption className="sr-only">
-            {(mediaItem.title || l("Sida")) + " " + (index + 1)}
-          </figcaption>
-        </figure>
-
-        {/* RIGHT CONTENT */}
-        <div className="col-span-2">{right}</div>
-      </div>
-    </Card>
-  );
-});
-MediaCard.propTypes = {
-  mediaItem: PropTypes.object.isRequired,
-  index: PropTypes.number.isRequired,
-  imageUrl: PropTypes.string.isRequired,
-  renderIndicator: PropTypes.func.isRequired,
-  onMediaClick: PropTypes.func.isRequired,
-  onKeyDown: PropTypes.func.isRequired,
-  right: PropTypes.node.isRequired,
-};
-
-// ---------- Helpers ----------
-const splitPages = (t) => {
-  if (!t) return [];
-  return t
-    .replace(/\r\n/g, "\n")
-    .split(/\n\/\s*\n?/g)
-    .map((part) => part.replace(/^\n+/, "").trim());
-};
-
-// ---------- Component ----------
-export default function TextElement({
+export default function RecordTextPanel({
   data,
   highlightData = null,
   mediaImageClickHandler,
@@ -362,7 +266,7 @@ export default function TextElement({
   );
 }
 
-TextElement.propTypes = {
+RecordTextPanel.propTypes = {
   data: PropTypes.object.isRequired,
   highlightData: PropTypes.object,
   mediaImageClickHandler: PropTypes.func.isRequired,

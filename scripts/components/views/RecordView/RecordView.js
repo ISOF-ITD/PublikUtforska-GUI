@@ -27,7 +27,7 @@ import RecordViewHeader from "./RecordViewHeader";
 import RecordViewThumbnails from "./RecordViewThumbnails";
 import ReferenceLinks from "./ReferenceLinks";
 import SubrecordsElement from "./SubrecordsElement";
-import TextElement from "../../../features/RecordTextPanel/RecordTextPanel";
+import RecordTextPanel from "../../../features/RecordTextPanel/RecordTextPanel";
 import RequestToTranscribePrompt from "./RequestToTranscribePrompt";
 import TranscriptionPrompt from "./TranscriptionPrompt";
 import SimilarRecords from "./SimilarRecords";
@@ -201,7 +201,7 @@ function ResolvedRecord({
         <TranscriptionPrompt data={data} />
         <AudioItems data={data} highlightData={highlightData} />
         <PdfElement data={data} />
-        <TextElement
+        <RecordTextPanel
           data={data}
           highlightData={highlightData}
           mediaImageClickHandler={mediaImageClickHandler}

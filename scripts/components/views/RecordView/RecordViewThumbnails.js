@@ -9,10 +9,8 @@ import {
 import classNames from "classnames";
 import config from "../../../config";
 import ArchiveImage from "../../../features/RecordTextPanel/ui/ArchiveImage";
-import {
-  computeStatus,
-  StatusIndicator,
-} from "../../../features/RecordTextPanel/ui/TranscriptionStatusIndicator";
+import { computeStatus } from "../../../features/RecordTextPanel/utils/computeStatus,js";
+import { StatusIndicator } from "../../../features/RecordTextPanel/ui/TranscriptionStatusIndicator";
 
 export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   const {
