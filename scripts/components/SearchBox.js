@@ -256,8 +256,7 @@ export default function SearchBox({
         items: topSearches
           .filter(({ label }) =>
             label.toLowerCase().includes(search.trim().toLowerCase())
-          )
-          .sort(suggestionSort(search)),
+          ),
         click: (s) => executeSearch(s.value),
         maxHeight: 240,
       },
