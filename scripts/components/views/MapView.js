@@ -84,8 +84,6 @@ export default function MapView({
 
             // Choose inner circle color by size bucket 
             const innerBg = childCount < 20 ? "bg-isof" : "bg-darker-isof";
-
-            // Outer dark translucent ring + subtle shadow, inner solid teal circle with centered count
             const html = `
               <div class="w-8 h-8 rounded-full  bg-clip-padding">
                 <div class="m-px w-6 h-6 rounded-full ${innerBg} text-white shadow-sm border-1 border-solid border-darker-isof text-xs font-bold flex items-center justify-center">
@@ -96,7 +94,6 @@ export default function MapView({
 
             return new DivIcon({
               html,
-              // No legacy classes; keep Leaflet's default container class
               className: "",
               iconSize: new Point(28, 28),
             });

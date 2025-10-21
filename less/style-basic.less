@@ -289,31 +289,6 @@ audio::-webkit-media-controls-enclosure {
 	vertical-align: middle;
 }
 
-.open-sidemenu-button {
-	background: @color-lighter-isof;
-	color: white;
-	cursor: pointer;
-	font-weight: bold;
-	// height: 45px;
-	padding: 0; //13px 0 0;
-	// position: absolute;
-	// text-align: center;
-	height: 48px;
-	width: 80px;
-	display: block;
-	float: left;
-	box-sizing: border-box;
-	border: 2px solid @color-lighter-isof;
-	// on hover, the image in the div zooms in a bit
-	// and the background color changes to a darker shade
-	// of green.
-	transition: border-color 0.1s ease-in-out;
-	&:hover {
-		border: 2px solid white;
-		// animate the border color change
-	}	
-}
-
 .next-random-record-button-container {
 	position: relative;
 	height: 6px;
@@ -359,13 +334,7 @@ audio::-webkit-media-controls-enclosure {
 	top: 348px !important;
 }
 
-footer .logo {
-	bottom: 20px;
-	right: 10px;
-	@media screen and (max-width: 550px) {
-		right: 0;
-	}
-}
+
 
 header .logo {
 	top: 5px;
@@ -375,7 +344,7 @@ header .logo {
 	}
 }
 
-header .logo, footer .logo {
+header .logo {
 	@media (max-width: 550px) {
 		// display: none;
 		top: unset;
@@ -384,32 +353,8 @@ header .logo, footer .logo {
 
 footer {
 	visibility: hidden;
-
 	background: transparent !important;
-
 	pointer-events: none;
-
-	.logo {
-		visibility: visible;
-
-		position: absolute;
-
-		pointer-events: all;
-
-		z-index: 1000;
-
-		.transition(top 300ms ease-in-out);
-
-		@media print {
-			top: 0;
-			left: 0;
-		}
-
-
-		.has-docked-control & {
-			bottom: 65px;
-		}
-	}
 
 	.lp-nav-bar {
 		background: transparent;
