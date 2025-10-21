@@ -197,7 +197,7 @@ export default function MapView({
         aria-label={`Byt till ${
           currentView === "clusters" ? "cirkel-vy" : "kluster-vy"
         }`}
-        className="!fixed !bottom-72 right-7 z-[500] bg-white border-2 border-solid border-black/20 p-1.5 h-auto leading-normal"
+        className="!fixed lg:!bottom-72 bottom-96 right-7 z-[500] bg-white border-2 border-solid border-black/20 p-1.5 h-auto leading-normal"
       >
         <img
           alt={`Byt till ${
