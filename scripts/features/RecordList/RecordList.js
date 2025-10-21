@@ -248,7 +248,7 @@ export default function RecordList(props) {
         </p>
       )}
       {!fetching && records.length === 0 && (
-        <div className="table-wrapper list-container text-center py-10">
+        <div className="block h-64 text-center py-10">
           <h3>{l("Inga sökträffar.")}</h3>
         </div>
       )}

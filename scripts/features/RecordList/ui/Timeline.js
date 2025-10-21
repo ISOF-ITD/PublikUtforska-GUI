@@ -410,7 +410,7 @@ function Timeline({
   }, [containerRef]);
 
   return (
-    <div className='lg:visible hidden'>
+    <div className='lg:visible max-sm:hidden'>
       {!data.length && (
         <p className="text-center text-gray-500">Laddar tidslinje…</p>
       )}

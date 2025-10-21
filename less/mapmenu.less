@@ -310,25 +310,6 @@
 			}
 		}
 
-		.expanded-content {
-			margin: 0;
-
-			max-height: 0;
-
-			display: none;
-
-			pointer-events: none;
-
-			.transition(all 300ms ease-in-out);
-			.transition-delay(120ms);
-
-			a {
-				text-decoration: none;
-				color: @color-red;
-			}
-
-		}
-
 		hr {
 			margin: 10px -12px;
 
@@ -337,38 +318,6 @@
 
 		hr+button {
 			margin-top: 5px;
-		}
-
-		.advanced-button {
-			display: block;
-
-			margin: 0 -12px -25px -12px;
-			padding: 10px 10px 10px 15px;
-
-			border-top: 1px solid #c6c7c8;
-
-			cursor: pointer;
-
-			&:hover {
-				background: rgba(255, 255, 255, 0.35);
-			}
-		}
-
-		.advanced-content {
-			display: none;
-			margin: 0;
-
-			// max-height: 0;
-
-			pointer-events: none;
-
-			.transition(all 300ms ease-in-out);
-
-			>* {
-				opacity: 0;
-
-				.transition(opacity 150ms ease-in-out);
-			}
 		}
 
 		button {
@@ -410,135 +359,7 @@
 				// 	top: 23px;
 				// }
 			}
-
-			.expanded-content {
-				max-height: 800px;
-
-				margin: 15px 0 5px 0;
-
-				display: block;
-
-				pointer-events: all;
-
-				.transition-delay(0ms);
-			}
 		}
-
-		&.advanced {
-			.advanced-button {
-				background: rgba(255, 255, 255, 0.55);
-			}
-
-			.advanced-content {
-				// max-height: 800px;
-
-				margin: 25px 0 5px 0;
-
-				opacity: 1;
-
-				pointer-events: all;
-
-				display: block;
-
-
-				>* {
-					opacity: 1;
-				}
-			}
-		}
-	}
-
-
-	.radio-group {
-		margin-bottom: 10px;
-
-		label {
-			display: inline-block;
-
-			margin-right: 10px;
-
-			input {
-				margin-bottom: 0;
-			}
-		}
-	}
-
-	.advanced-content .list-container {
-		display: block;
-
-		// top: 66px;
-		// bottom: 0;
-
-		width: 100%;
-		min-height: 60px;
-		max-height: 450px;
-
-		background: #fff;
-
-		border: 1px solid #ccc;
-		border-radius: 2px;
-		//box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-
-		overflow-y: auto;
-
-		.transition(all 300ms ease-in-out);
-
-		@media (max-width: 550px) {
-			top: 50px;
-		}
-
-		.item {
-			display: block;
-
-			padding: 10px 15px;
-
-			color: #333;
-			text-decoration: none;
-
-			border-bottom: 1px solid #ccc;
-			box-sizing: border-box;
-
-			cursor: pointer;
-
-			&:hover {
-				text-decoration: underline;
-			}
-
-			&.selected {
-				color: #fff;
-
-				background-color: @color-red-lighter;
-			}
-		}
-
-		.grid-list {
-			.item {
-				float: left;
-
-				width: 50%;
-
-				&:nth-child(2n) {
-					border-left: 1px solid #ccc;
-				}
-			}
-		}
-
-		.list-subheading {
-			display: block;
-
-			padding: 10px 15px;
-
-			color: #333;
-			text-decoration: none;
-			font-weight: bold;
-
-			border-bottom: 1px solid #ccc;
-		}
-	}
-
-	.list-container {
-		display: block;
-		height: 250px;
 	}
 
 	.has-docked-control & {
