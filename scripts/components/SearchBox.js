@@ -144,57 +144,25 @@ export default function SearchBox({
   const [topSearches, setTopSearches] = useState([]);
 
   useEffect(() => {
-    if (topSearches.length) return; // already cached
-
-    const controller = new AbortController();
-    const { signal } = controller;
+    if (!suggestionsVisible || topSearches.length) return;
 
     const url = new URL(config.matomoApiUrl);
     Object.entries(config.searchSuggestionsParams).forEach(([k, v]) =>
       url.searchParams.append(k, v)
     );
 
-    fetch(url, { mode: "cors", signal })
+    fetch(url, { mode: "cors" })
       .then((r) => r.json())
       .then((json) => {
         if (!Array.isArray(json)) return;
-        // Keep counts if Matomo sends them (nb_hits/nb_visits)
         setTopSearches(
           json
             .filter((row) => !/^start/i.test(row.label))
-            .map((row) => ({
-              value: row.label,
-              label: row.label,
-              count: row.nb_hits ?? row.nb_visits ?? 0,
-            }))
+            .map((row) => ({ value: row.label, label: row.label }))
         );
       })
-      .catch((e) => {
-        if (e?.name !== "AbortError") console.error(e);
-      });
-
-    return () => controller.abort();
-  }, [topSearches.length]);
-
-  const popularSearches = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-
-    // If nothing typed: show true top searches by popularity (desc)
-    if (!needle) {
-      return [...topSearches].sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
-    }
-
-    // If typed: filter, then prioritize startsWith, then popularity
-    return topSearches
-      .filter(({ label }) => label.toLowerCase().includes(needle))
-      .sort((a, b) => {
-        const aStarts = a.label.toLowerCase().startsWith(needle);
-        const bStarts = b.label.toLowerCase().startsWith(needle);
-        if (aStarts && !bStarts) return -1;
-        if (!aStarts && bStarts) return 1;
-        return (b.count ?? 0) - (a.count ?? 0);
-      });
-  }, [search, topSearches]);
+      .catch(console.error);
+  }, [suggestionsVisible, topSearches.length]);
 
   // totals
   const {
@@ -285,7 +253,11 @@ export default function SearchBox({
       {
         title: "Search",
         label: l("Vanligaste sökningar"),
-        items: popularSearches,
+        items: topSearches
+          .filter(({ label }) =>
+            label.toLowerCase().includes(search.trim().toLowerCase())
+          )
+          .sort(suggestionSort(search)),
         click: (s) => executeSearch(s.value),
         maxHeight: 240,
       },
@@ -322,7 +294,7 @@ export default function SearchBox({
         click: (p) => executeSearch(p.value),
       },
     ],
-    [popularSearches, people, places, provinces, archives, executeSearch]
+    [topSearches, people, places, provinces, archives, executeSearch, search]
   );
 
   // single source of truth for visible suggestions
