@@ -183,8 +183,8 @@ export default function MapMenu({
         </button>
       </div>
 
-      <div className="puffar">
-        <div className="statistics puff">
+      <div className="flex-1 overflow-y-auto p-4 mb-3 flex flex-col rounded-xl items-stretch h-full bg-white">
+        <div className="statistics">
           <StatisticsContainer />
 
           <h3>Senast avskrivna uppteckningar</h3>

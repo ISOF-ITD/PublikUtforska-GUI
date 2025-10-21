@@ -85,41 +85,6 @@
 		}
 	}
 
-	.puffar {
-		flex-grow: 1;
-		overflow-y: auto;
-		padding-bottom: 20px;
-
-
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		height: 100%;
-
-		.puff {
-			flex-grow: 1;
-			/* Allows each .puff to grow and fill the container */
-			opacity: 0;
-			overflow-y: scroll;
-			border-radius: 13px;
-			padding: 20px;
-			margin-bottom: 15px;
-			background: white;
-
-			/* Remove fixed height to allow dynamic sizing */
-			/* height: 250px; */
-
-			.app-initialized & {
-				opacity: 1;
-			}
-
-			/* Remove margin-bottom for the last child to avoid extra space */
-			&:last-child {
-				margin-bottom: 0;
-			}
-		}
-	}
-
 	@media print {
 		display: none;
 	}
