@@ -25,8 +25,9 @@ function MapWrapper({
       />
 
       {loading && (
-        <div className="map-progress" aria-busy="true" aria-live="polite">
-          <div className="indicator" />
+        <div className="absolute inset-0 grid place-items-center gap-2 bg-black/10 backdrop-blur-[1px]">
+          <div className="h-10 w-10 rounded-full border-4 border-white border-t-transparent animate-spin" />
+          <span className="sr-only">Laddar kartan...</span>
         </div>
       )}
 

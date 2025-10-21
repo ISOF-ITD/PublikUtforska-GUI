@@ -1,14 +1,3 @@
-// Container for a small map in a popup window (popupwindow.less)
-.map-container {
-	height: 400px;
-
-	margin-bottom: 40px;
-
-	&.small {
-		height: 200px;
-	}
-}
-
 // Main leaflet wrapper
 .map-wrapper {
 	height: 100vh;
@@ -85,65 +74,6 @@
 	}
 }
 
-.map-progress {
-	position: fixed;
-
-	top: 0;
-	left: 0;
-	right: 0;
-
-	height: 4px;
-
-	z-index: 1400;
-
-	.translate(0, -100%);
-
-	visibility: hidden;
-
-	transition: visibility 0s, transform 400ms ease-in-out;
-
-	.map-loading & {
-		visibility: visible;
-
-		.translate(0, 0);
-	}
-
-	.indicator {
-		position: absolute;
-
-		top: 0;
-		bottom: 0;
-
-		background: @color-red;
-
-		.animation-duration(1.5s);
-		.animation-name(indicatorAnimate);
-		.animation-iteration-count(infinite);
-	}
-}
-
-@keyframes indicatorAnimate {
-	0% {
-		left: 0%;
-		right: 100%;
-	}
-
-	25% {
-		left: 0%;
-		right: 50%;
-	}
-
-	75% {
-		left: 50%;
-		right: 0%;
-	}
-
-	100% {
-		left: 100%;
-		right: 0%;
-	}
-}
-
 .leaflet-bottom {
 	@leaflet-bottom-val: 70px;
 	bottom: @leaflet-bottom-val;
@@ -184,4 +114,26 @@
 
 .leaflet-container .leaflet-control-attribution, .leaflet-container .leaflet-control-scale {
 	font-size: 9px;
+}
+
+.map-wrapper .leaflet-control-zoom, .leaflet-control-layers {
+	bottom: 60px;
+	@media screen and (max-width: 550px) {
+		bottom: 100px;
+	}
+}
+
+.leaflet-control-layers-toggle {
+	background-image: url(../../img/layers.png);
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(../../img/layers-2x.png);
+	}
+
+.map-wrapper {
+	.leaflet-control-container {
+		.leaflet-top {
+			top: 160px;
+		}
+	}
 }

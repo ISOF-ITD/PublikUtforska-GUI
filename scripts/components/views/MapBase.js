@@ -281,7 +281,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
 
   return (
     <div
-      className={props.className || "map-container small"}
+      className={props.className || "mb-5 h-52"}
       ref={containerRef}
       style={style}
     />
