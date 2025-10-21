@@ -1,43 +1,48 @@
-/* eslint-disable react/require-default-props */
-import { useRef, useEffect, useState } from 'react';
-import L, { marker, circleMarker, DivIcon, Point, layerGroup } from 'leaflet';
-import 'leaflet.markercluster';
-import '../../lib/leaflet-heat';
-import PropTypes from 'prop-types';
-import iconMarkers from '../../../img/icon-markers.png';
-import iconCircles from '../../../img/icon-circles.png';
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import L, { marker, circleMarker, DivIcon, Point, layerGroup } from "leaflet";
+import "leaflet.markercluster";
+import "../../lib/leaflet-heat";
+import PropTypes from "prop-types";
+import iconMarkers from "../../../img/icon-markers.png";
+import iconCircles from "../../../img/icon-circles.png";
 
-import MapBase from './MapBase';
-import mapHelper from '../../utils/mapHelper';
+import MapBase from "./MapBase";
+import mapHelper from "../../utils/mapHelper";
 
 export default function MapView({
   onMarkerClick = undefined,
   highlightedMarkerIcon = undefined,
   defaultMarkerIcon = undefined,
-  layersControlPosition = 'bottomright',
-  zoomControlPosition = 'bottomright',
+  layersControlPosition = "bottomright",
+  zoomControlPosition = "bottomright",
   zoom = undefined,
   center = undefined,
   disableSwedenMap = false,
   mapData,
 }) {
-  const [currentView, setCurrentView] = useState('clusters');
+  const [currentView, setCurrentView] = useState("clusters");
   const mapView = useRef();
 
-  // Refs för att hålla överlagrar
+  // Keep references to overlays so we can remove them cleanly
   const clusterGroupRef = useRef(null);
   const circleGroupRef = useRef(null);
 
-  const updateMap = () => {
-    if (!mapView.current || !mapView.current.map) return;
-  const { map } = mapView.current;
-  // Wait until Leaflet has an initial view
-  if (!map._loaded) {
-    map.once('load', updateMap);
-    return;
-  }
+  // Compute valid points once per mapData change
+  const points = useMemo(() => {
+    const raw = Array.isArray(mapData?.data) ? mapData.data : [];
+    return raw.filter((obj) => {
+      const loc = obj?.location;
+      return (
+        Array.isArray(loc) &&
+        loc.length === 2 &&
+        Number.isFinite(loc[0]) &&
+        Number.isFinite(loc[1]) &&
+        !(loc[0] === 0 && loc[1] === 0)
+      );
+    });
+  }, [mapData]);
 
-    // Ta bort de tidigare överlagrarna
+  const removeOverlays = useCallback((map) => {
     if (clusterGroupRef.current) {
       map.removeLayer(clusterGroupRef.current);
       clusterGroupRef.current = null;
@@ -46,140 +51,175 @@ export default function MapView({
       map.removeLayer(circleGroupRef.current);
       circleGroupRef.current = null;
     }
+  }, []);
 
-    if (currentView === 'clusters') {
-      // Kluster-lagret
-      const markers = [];
+  const updateMap = useCallback(() => {
+    const map = mapView.current?.map;
+    if (!map) return;
 
-      mapData?.data?.forEach((obj) => {
-        const newMarker = marker([obj.location[0], obj.location[1]], {
-          title: obj.name,
-          icon: obj.has_metadata
-            ? (highlightedMarkerIcon || mapHelper.markerIconHighlighted)
-            : (defaultMarkerIcon || mapHelper.markerIcon),
-        });
-        if (onMarkerClick) newMarker.on('click', () => onMarkerClick(obj.id));
-        markers.push(newMarker);
-      });
+    const doUpdate = () => {
+      removeOverlays(map);
 
-      const clusterGroup = L.markerClusterGroup({
-        showCoverageOnHover: false,
-        maxClusterRadius: 45,
-        iconCreateFunction(cluster) {
-          const childCount = cluster.getChildCount();
-          let c = ' marker-cluster-';
-          if (childCount < 10) {
-            c += 'small';
-          } else if (childCount < 20) {
-            c += 'medium';
-          } else {
-            c += 'large';
-          }
-          return new DivIcon({
-            html: `<div><span><b>${childCount}</b></span></div>`,
-            className: `marker-cluster${c}`,
-            iconSize: new Point(28, 28),
+      if (currentView === "clusters") {
+        // Build markers once
+        const markers = points.map((obj) => {
+          const icon = obj.has_metadata
+            ? highlightedMarkerIcon || mapHelper.markerIconHighlighted
+            : defaultMarkerIcon || mapHelper.markerIcon;
+
+          const m = marker([obj.location[0], obj.location[1]], {
+            title: obj.name,
+            icon,
           });
-        },
-      });
 
-      clusterGroup.addLayers(markers.filter((m) => m.getLatLng().lat !== 0));
-
-      if (clusterGroup.getLayers().length > 0) {
-        map.addLayer(clusterGroup);
-        clusterGroupRef.current = clusterGroup; // Spara referensen
-      }
-    } else if (currentView === 'circles') {
-      // Cirkel-lagret
-      const circleGroup = layerGroup();
-
-      mapData?.data?.forEach((obj) => {
-        const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count) ? obj.doc_count : 1; // Sätter standard till 1 om count inte finns.
-
-        const circle = circleMarker([obj.location[0], obj.location[1]], {
-          color: '#01666e',
-          fillColor: 'black',
-          fillOpacity: 0.1,
-          title: `${obj.name}`,
-          weight: 1,
-          radius: Math.max(count / 14, 2), // Anpassa radien efter antal träffar och zoomnivå
-          interactive: true,
-        }).bindTooltip(`${obj.name?.replace?.(/ sn$/, ' socken') || ''}: ${count} träffar`, {
-          permanent: false, // Tooltip visas när man hovrar
-          direction: 'top', // Visar tooltip ovanför cirkeln
+          if (onMarkerClick) m.on("click", () => onMarkerClick(obj.id));
+          return m;
         });
 
-        if (onMarkerClick) circle.on('click', () => onMarkerClick(obj.id));
-        circleGroup.addLayer(circle);
-      });
+        const clusterGroup = L.markerClusterGroup({
+          showCoverageOnHover: false,
+          maxClusterRadius: 45,
+          iconCreateFunction(cluster) {
+            const childCount = cluster.getChildCount();
 
-      if (circleGroup.getLayers().length > 0) {
-        map.addLayer(circleGroup);
-        circleGroupRef.current = circleGroup; // Spara referensen
+            // Choose inner circle color by size bucket 
+            const innerBg = childCount < 20 ? "bg-isof" : "bg-darker-isof";
+
+            // Outer dark translucent ring + subtle shadow, inner solid teal circle with centered count
+            const html = `
+              <div class="w-8 h-8 rounded-full  bg-clip-padding">
+                <div class="m-px w-6 h-6 rounded-full ${innerBg} text-white shadow-sm border-1 border-solid border-darker-isof text-xs font-bold flex items-center justify-center">
+                  ${childCount}
+                </div>
+              </div>
+            `;
+
+            return new DivIcon({
+              html,
+              // No legacy classes; keep Leaflet's default container class
+              className: "",
+              iconSize: new Point(28, 28),
+            });
+          },
+        });
+
+        clusterGroup.addLayers(markers);
+        if (clusterGroup.getLayers().length > 0) {
+          map.addLayer(clusterGroup);
+          clusterGroupRef.current = clusterGroup;
+        }
+      } else {
+        // Circles view
+        const circles = points.map((obj) => {
+          const count =
+            typeof obj.doc_count === "number" && !Number.isNaN(obj.doc_count)
+              ? obj.doc_count
+              : 1;
+
+          const circle = circleMarker([obj.location[0], obj.location[1]], {
+            color: "#01666e",
+            fillColor: "black",
+            fillOpacity: 0.1,
+            title: `${obj.name}`,
+            weight: 1,
+            radius: Math.max(count / 14, 2),
+            interactive: true,
+          }).bindTooltip(
+            `${obj.name?.replace?.(/ sn$/, " socken") || ""}: ${count} träffar`,
+            { permanent: false, direction: "top" }
+          );
+
+          if (onMarkerClick) circle.on("click", () => onMarkerClick(obj.id));
+          return circle;
+        });
+
+        const group = layerGroup(circles);
+        if (group.getLayers().length > 0) {
+          map.addLayer(group);
+          circleGroupRef.current = group;
+        }
       }
-    }
-  };
+    };
 
-  // Bind zoomend när map är tillgänglig och när currentView ändras
-  useEffect(() => {
-    if (mapView.current && mapView.current.map && mapView.current.map._loaded) {
-      const handleZoomEnd = () => {
-        updateMap();
-      };
-      mapView.current.map.on('zoomend', handleZoomEnd);
+    // Public API – safe in all cases (fires immediately if ready)
+    map.whenReady(doUpdate);
+  }, [
+    currentView,
+    points,
+    onMarkerClick,
+    highlightedMarkerIcon,
+    defaultMarkerIcon,
+    removeOverlays,
+  ]);
 
-      // Rensa upp eventlistener när komponenten avmonteras eller map ändras
-      return () => {
-        mapView.current.map.off('zoomend', handleZoomEnd);
-      };
-    }
-    return undefined;
-  }, [mapView.current?.map, currentView, mapData]);
-
-  // Uppdatera kartan när mapData eller currentView ändras
+  // Rebuild overlays when data or view changes
   useEffect(() => {
     updateMap();
-  }, [mapData, currentView]);
+  }, [updateMap]);
 
-  const mapBaseLayerChangeHandler = () => {
-    // Uppdaterar kartan om underlagret ändras
+  const handleZoomEnd = useCallback(() => {
     updateMap();
-  };
+  }, [updateMap]);
+
+  // Keep overlays in sync on zoom changes
+  useEffect(() => {
+    const map = mapView.current?.map;
+    if (!map) return undefined;
+
+    map.whenReady(() => {
+      map.on("zoomend", handleZoomEnd);
+    });
+
+    return () => {
+      map.off("zoomend", handleZoomEnd);
+    };
+  }, [handleZoomEnd]);
+
+  // Cleanup overlays on unmount
+  useEffect(() => {
+    return () => {
+      const map = mapView.current?.map;
+      if (map) removeOverlays(map);
+    };
+  }, [removeOverlays]);
+
+  const mapBaseLayerChangeHandler = useCallback(() => {
+    // If the base layer changes, re-render overlays (icons/zoom scaling/etc.)
+    updateMap();
+  }, [updateMap]);
 
   return (
     <div>
       <button
         type="button"
         tabIndex={0}
-        onClick={() => setCurrentView(v => (v === 'clusters' ? 'circles' : 'clusters'))}
-        aria-pressed={currentView === 'circles'}
-        style={{
-          position: 'fixed',
-          bottom: 274,
-          right: 26,
-          zIndex: 401,
-          background: '#fff',
-          border: '2px solid rgba(0, 0, 0, 0.2)',
-          padding: 5,
-          height: 'auto',
-          lineHeight: 'normal',
-        }}
+        onClick={() =>
+          setCurrentView((v) => (v === "clusters" ? "circles" : "clusters"))
+        }
+        aria-pressed={currentView === "circles"}
+        aria-label={`Byt till ${
+          currentView === "clusters" ? "cirkel-vy" : "kluster-vy"
+        }`}
+        className="!fixed !bottom-72 right-7 z-[500] bg-white border-2 border-solid border-black/20 p-1.5 h-auto leading-normal"
       >
-        {/* Byt till {currentView === 'clusters' ? 'cirkel-vy' : 'kluster-vy'} */}
         <img
-          alt={`Byt till ${currentView === 'clusters' ? 'cirkel-vy' : 'kluster-vy'}`}
-          title={`Byt till ${currentView === 'clusters' ? 'cirkel-vy' : 'kluster-vy'}`}
-          src={currentView === 'clusters' ? iconCircles : iconMarkers}
+          alt={`Byt till ${
+            currentView === "clusters" ? "cirkel-vy" : "kluster-vy"
+          }`}
+          title={`Byt till ${
+            currentView === "clusters" ? "cirkel-vy" : "kluster-vy"
+          }`}
+          src={currentView === "clusters" ? iconCircles : iconMarkers}
           height={37}
           width={43}
         />
       </button>
+
       <MapBase
         ref={mapView}
         className="map-view"
         layersControlPosition={layersControlPosition}
         zoomControlPosition={zoomControlPosition}
-        // Inte visa locateControl knappen (som kan visa på kartan var användaren är)
         disableLocateControl
         scrollWheelZoom
         zoom={zoom}
@@ -193,7 +233,6 @@ export default function MapView({
 
 MapView.propTypes = {
   onMarkerClick: PropTypes.func,
-  // Leaflet Icon or plain object
   highlightedMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
   defaultMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
   layersControlPosition: PropTypes.string,

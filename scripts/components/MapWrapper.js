@@ -1,9 +1,9 @@
-/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
+import { memo } from 'react';
 import MapMenu from './MapMenu';
 import MapView from './views/MapView';
 
-export default function MapWrapper({
+function MapWrapper({
   mapMarkerClick,
   mode,
   params,
@@ -30,13 +30,7 @@ export default function MapWrapper({
         </div>
       )}
 
-      <MapView
-        onMarkerClick={mapMarkerClick}
-        mode={mode}
-        params={params}
-        mapData={mapData}
-        loading={loading}
-      />
+      <MapView onMarkerClick={mapMarkerClick} mapData={mapData} />
     </div>
   );
 }
@@ -52,3 +46,4 @@ MapWrapper.propTypes = {
   pictureRecordsData: PropTypes.object.isRequired,
 };
 
+export default memo(MapWrapper);
