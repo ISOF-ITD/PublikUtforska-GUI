@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
+import classNames from "classnames";
 
 /*  Swedish labels for page-/text-based material */
 const labels = {
@@ -33,7 +34,7 @@ export default function TranscriptionStatus({
 
     return (
       <span
-        className={`${bg} flex items-center gap-1 flex-nowrap ${pillClasses}`}
+        className={classNames(bg,  pillClasses, "flex items-center gap-1 flex-nowrap")}
         title={`${count} ${l("beskrivningar")}`}
         aria-label={`${count} ${l("beskrivningar")}`}
       >
@@ -52,7 +53,7 @@ export default function TranscriptionStatus({
       <span
         className={`${
           status === "published" ? "bg-gray-300" : "!bg-lighter-isof"
-        } ${pillClasses} mt-1`}
+        } ${pillClasses} text-center`}
       >
         {labels[status]}
       </span>

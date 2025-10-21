@@ -38,7 +38,7 @@ export default function RecordListWrapper({
       </div>
 
       <div className="row">
-        <div className="records-list-wrapper" ref={containerRef}>
+        <div ref={containerRef}>
           <RecordList
             highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
             disableListPagination={disableListPagination}

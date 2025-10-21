@@ -15,6 +15,7 @@ import SearchBox from "./SearchBox";
 import StatisticsContainer from "./StatisticsContainer";
 import TranscribeButton from "./views/transcribe/TranscribeButton";
 import RecordList from "../features/RecordList/RecordList";
+import classNames from "classnames";
 
 // Helpers
 function SurveyLink() {
@@ -173,9 +174,10 @@ export default function MapMenu({
           aria-controls="mapmenu-panel"
           aria-label={expanded ? l("Dölj meny") : l("Visa meny")}
           title={expanded ? l("Dölj meny") : l("Visa meny")}
-          className={`pointer-events-auto shadow-md p-0 bg-white w-7 h-12 flex justify-center items-center border-0 focus:outline-none focus-visible:ring focus-visible:lighter-isof ${
+          className={classNames(
+            "pointer-events-auto shadow-md p-0 bg-white w-7 h-12 flex justify-center items-center border-0 focus:outline-none focus-visible:ring focus-visible:lighter-isof",
             isMobile ? (expanded ? "rounded-r" : "rounded-l") : "rounded-r"
-          }`}
+          )}
         >
           <FontAwesomeIcon icon={expanded ? faChevronLeft : faChevronRight} />
         </button>
@@ -194,7 +196,6 @@ export default function MapMenu({
               disableListPagination
               disableListDownload
               smallTitle
-              tableClass="table-compressed"
               columns={["title", "year", "place", "transcribedby"]}
               params={latestParams}
               interval={60_000}

@@ -1,4 +1,3 @@
-// RecordListItem.js
 /* eslint-disable react/require-default-props */
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,15 +7,12 @@ import {
   faClosedCaptioning,
 } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
-
 import HighlightedText from "./HighlightedText";
 import MediaIcons from "./MediaIcons";
 import TranscriptionStatus from "./TranscriptionStatus";
 import AccessionIdCell from "./AccessionIdCell";
 import CollectorList from "./CollectorList";
 import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
-import TranscribeButton from "../../../components/views/transcribe/TranscribeButton";
-
 import { l } from "../../../lang/Lang";
 import config from "../../../config";
 import {
@@ -107,7 +103,6 @@ export default function RecordListItem(props) {
     (m) => m.type === "audio" && m.utterances?.utterances?.length > 0
   );
 
-  /* ---------- #beskrivningar for AUDIO ---------- */
   /* ---------- helper to count beskrivningar ---------- */
   const countDescriptionsInMedia = (mediaArr = []) =>
     mediaArr.reduce(
@@ -152,7 +147,7 @@ export default function RecordListItem(props) {
     >
       {/* ---------- title (mobile+desktop) ---------- */}
       {shouldRenderColumn("title", columns) && (
-        <td className={`${smallTitle ? "" : "text-base"} !px-2 py-2 space-y-1`}>
+        <td className={`${smallTitle ? "" : "text-base"} !px-2 !py-3 space-y-1`}>
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
@@ -324,20 +319,6 @@ export default function RecordListItem(props) {
                 </ul>
               )}
             </div>
-          )}
-
-          {/* immediate transcribe button */}
-          {transcriptionstatus === "readytotranscribe" && media.length > 0 && (
-            <TranscribeButton
-              className="button button-primary mt-2"
-              label={l("Skriv av")}
-              title={title}
-              recordId={recordId}
-              archiveId={archive.archive_id}
-              places={places}
-              images={media}
-              transcriptionType={transcriptiontype}
-            />
           )}
         </td>
       )}

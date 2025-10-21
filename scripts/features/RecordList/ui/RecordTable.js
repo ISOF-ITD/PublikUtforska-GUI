@@ -17,7 +17,6 @@ export default function RecordTable({
   useRouteParams,
   smallTitle,
   columns,
-  tableClass,
 }) {
   const items = records.map((item) => (
     <RecordListItem
@@ -37,7 +36,7 @@ export default function RecordTable({
   ));
 
   return (
-    <div className={`hidden md:block ${tableClass}`}>
+    <div className="hidden md:block">
       <table
         className="mobile-table w-full text-sm border-collapse"
         role="table"
@@ -109,8 +108,6 @@ export default function RecordTable({
             )}
           </tr>
         </thead>
-
-        {/* ---------- body ---------- */}
         <tbody className="[&>tr]:block md:[&>tr]:table-row [&>td]:flex [&>td]:justify-between [&>td]:gap-2">
           {/* hidden header for accessibility on small screens */}
           <tr className="sr-only md:hidden">
@@ -142,5 +139,4 @@ RecordTable.propTypes = {
   useRouteParams: PropTypes.bool,
   smallTitle: PropTypes.bool,
   columns: PropTypes.array,
-  tableClass: PropTypes.string,
 };

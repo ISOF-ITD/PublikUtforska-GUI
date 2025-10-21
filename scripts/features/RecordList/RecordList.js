@@ -11,6 +11,7 @@ import RecordViewToggle from "./ui/RecordViewToggle";
 import { createSearchRoute } from "../../utils/routeHelper";
 import useRecords from "./hooks/useRecords";
 import config from "../../config";
+import classNames from "classnames";
 
 const { hitsPerPage, siteOptions } = config;
 
@@ -24,7 +25,6 @@ export default function RecordList(props) {
     highlightRecordsWithMetadataField,
     interval,
     openSwitcherHelptext,
-    tableClass,
     params,
     mode,
     containerRef,
@@ -166,9 +166,8 @@ export default function RecordList(props) {
 
       {!fetching && (
         <div
-          className={`${tableClass} mb-10 md:mb-2 rounded ${
-            records.length === 0 ? "min-h-[200px]" : ""
-          }`}
+          className={classNames("mb-10 md:mb-2 rounded",
+            records.length && "min-h-[200px]")}
         >
           <div aria-live="polite" className="sr-only">
             {l("Sida")} {currentPage} {l("av")} {maxPage}
@@ -228,7 +227,6 @@ export default function RecordList(props) {
                 useRouteParams={useRouteParams}
                 smallTitle={smallTitle}
                 columns={columns}
-                tableClass={tableClass}
               />
             )}
           </div>
@@ -267,7 +265,6 @@ RecordList.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   interval: PropTypes.number,
   openSwitcherHelptext: PropTypes.func,
-  tableClass: PropTypes.string,
   params: PropTypes.objectOf(PropTypes.any),
   mode: PropTypes.string,
   useRouteParams: PropTypes.bool,
