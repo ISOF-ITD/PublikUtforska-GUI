@@ -4,7 +4,6 @@
 @import "ui-components/map.less";
 @import "ui-components/popupwindow.less";
 @import "mapmenu.less";
-@import "ui-components/map-menu-list.less";
 @import "ui-components/dropdownmenu.less";
 @import "ui-components/overlay.less";
 @import "ui-components/feedback-buttons.less";
@@ -125,26 +124,7 @@ h3 {
 		padding-top: 0;
 		padding-bottom: 0;		
 	}
-
-.container-wrapper {
-	position: absolute;
-
-	top: 100vh;
-	left: 0;
-	right: 0;
-
-	padding: 60px 0;
-
-	background: #fff;
-
-	box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.4);
-
-	z-index: 1300;
-}
-
-.slider-container .noUi-horizontal .noUi-handle {
-	left: 25px;
-}
+	
 
 audio::-webkit-media-controls {
     overflow: hidden !important
@@ -185,15 +165,6 @@ audio::-webkit-media-controls-enclosure {
 		position: absolute;
 		right: 0;
 		top: 6px;
-	}
-}
-
-.map-bottom-wrapper {
-	position: absolute;
-	left: 440px;
-	z-index: 1100;
-	@media screen and (max-width: 550px) {
-		left: 0;	
 	}
 }
 
