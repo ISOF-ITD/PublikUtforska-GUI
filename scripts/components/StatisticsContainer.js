@@ -22,6 +22,11 @@ export default function StatisticsContainer() {
     if (dataChanged) setDataChanged(false);
   }, [dataChanged]);
 
+  useEffect(() => {
+    // trigger one fetch for dependents on first mount
+    setDataChanged(true);
+  }, []);
+
   // fetch server month once, and refresh at the top of each hour
   useEffect(() => {
     let intervalId;
@@ -103,13 +108,13 @@ export default function StatisticsContainer() {
           range: monthRange,
           aggregation: "cardinality,transcribedby.keyword",
         }}
-        label={`medskapare som har skrivit av uppteckningar i ${monthOrFallback}`}
+        label={`transkriberare som har skrivit av uppteckningar i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
       <ShortStatistics
         params={{ ...base, aggregation: "cardinality,transcribedby.keyword" }}
-        label="medskapare som har skrivit av uppteckningar totalt"
+        label="transkriberare som har skrivit av uppteckningar totalt"
         shouldFetch={dataChanged}
       />
 
