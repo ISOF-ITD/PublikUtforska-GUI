@@ -54,20 +54,21 @@ export default function ShortStatistics({
       if (e.name !== "AbortError") setError(e.message || String(e));
     } finally {
       inflightRef.current = false;
-      setLoading(false);
+      if (!abortRef.current?.signal.aborted) setLoading(false);
     }
   }, [params, compareAndUpdateStat]);
 
   // Drive the “total” tile + minute polling when compareAndUpdateStat is provided
   useEffect(() => {
-    if (!compareAndUpdateStat) return undefined;
-    fetchStatistics();
+    if (!compareAndUpdateStat) return;
+    fetchStatistics(); // call the current closure
     const id = setInterval(fetchStatistics, 60_000);
     return () => {
       clearInterval(id);
       abortRef.current?.abort();
     };
-  }, [compareAndUpdateStat, fetchStatistics]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!compareAndUpdateStat]);
 
   // One fetch for dependent tiles when shouldFetch flips true
   useEffect(() => {

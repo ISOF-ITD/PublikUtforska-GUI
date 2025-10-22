@@ -72,26 +72,33 @@ export default function StatisticsContainer() {
   );
   const monthRange = "transcriptiondate,now/M,now+2h";
 
+  const pTotals = base;
+  const pMonthRecords = useMemo(() => ({ ...base, range: monthRange }), [base]);
+  const pMonthPages = useMemo(
+    () => ({
+      ...base,
+      range: monthRange,
+      aggregation: "sum,archive.total_pages",
+    }),
+    [base]
+  );
+
   return (
     <div className="statistics-container">
       <ShortStatistics
-        params={{ ...base, range: monthRange }}
+        params={pMonthRecords}
         label={`avskrivna uppteckningar i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
       <ShortStatistics
-        params={{ ...base }}
+        params={pTotals}
         label="avskrivna uppteckningar totalt"
         compareAndUpdateStat={compareAndUpdateStat}
       />
 
       <ShortStatistics
-        params={{
-          ...base,
-          range: monthRange,
-          aggregation: "sum,archive.total_pages",
-        }}
+        params={pMonthPages}
         label={`avskrivna sidor i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
