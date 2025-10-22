@@ -188,7 +188,7 @@ export default function MapMenu({
           <StatisticsContainer />
 
           <h3>Senast avskrivna uppteckningar</h3>
-          <div className="statistics-table">
+          <div>
             <RecordList
               key="latest-RecordList"
               showViewToggle={false}

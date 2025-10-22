@@ -1,8 +1,8 @@
 /* eslint-disable react/require-default-props */
-import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import config from '../config';
-import { l } from '../lang/Lang';
+import { useState, useEffect, useRef, useCallback } from "react";
+import PropTypes from "prop-types";
+import config from "../config";
+import { l } from "../lang/Lang";
 
 export default function StatisticsList({
   params: rawParams = {},
@@ -11,77 +11,91 @@ export default function StatisticsList({
   shouldFetch = false,
 }) {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
+  const [loading, setLoading] = useState(false); // show spinner only when fetching
+  const [fetchError, setFetchError] = useState("");
+  const abortRef = useRef(null);
 
-  const fetchStatistics = async () => {
-    // console.log("hämtar statisticsList")
-    const queryParams = { ...config.requiredParams, ...rawParams };
-    const paramString = new URLSearchParams(queryParams).toString();
+  const fetchStatistics = useCallback(async () => {
+    // Replace any running request with a new one
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
-    let esApiEndpoint;
-    switch (type) {
-      case "topTranscribersByPages":
-        esApiEndpoint = "statistics/get_top_transcribers_by_pages/";
-        break;
-      default:
-        setFetchError(`Unsupported type: ${type}`);
-        setLoading(false);
-        return;
-    }
-
+    setLoading(true);
+    setFetchError("");
     try {
-      const response = await fetch(`${config.apiUrl}${esApiEndpoint}?${paramString}`);
+      const queryParams = { ...config.requiredParams, ...rawParams };
+      const paramString = new URLSearchParams(queryParams).toString();
 
-      if (!response.ok) {
-        throw new Error('Fel vid hämtning av statistik');
+      let esApiEndpoint;
+      switch (type) {
+        case "topTranscribersByPages":
+          esApiEndpoint = "statistics/get_top_transcribers_by_pages/";
+          break;
+        default:
+          throw new Error(`${l("Otillåten typ")}: ${type}`);
       }
+
+      const response = await fetch(
+        `${config.apiUrl}${esApiEndpoint}?${paramString}`,
+        { signal: controller.signal }
+      );
+      if (!response.ok) throw new Error(l("Fel vid hämtning av statistik"));
 
       const json = await response.json();
-      setData(json.data);
-      setLoading(false);
-      setFetchError(false);
+      setData(Array.isArray(json?.data) ? json.data : []);
     } catch (error) {
       if (error.name !== "AbortError") {
-        setLoading(false);
-        setFetchError(error.message);
+        setFetchError(error.message || String(error));
       }
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [rawParams, type]);
 
+  // Fire when the parent says "fetch now"
   useEffect(() => {
-    if (shouldFetch) {
-      fetchStatistics();
-    }
-  }, [shouldFetch]);
+    if (!shouldFetch) return;
+    fetchStatistics();
+  }, [shouldFetch, fetchStatistics]);
+
+  // Abort on unmount only
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   return (
     <div className="statistics-list">
-      {loading && <div className="loading" role="status" aria-live="polite">{l("Hämtar statistik...")}</div>}
-      {fetchError && (
-        <div className="error">
-          Fel vid hämtning av statistik:
-          {' '}
-          {fetchError}
+      {loading && (
+        <div className="loading" role="status" aria-live="polite">
+          {l("Hämtar statistik...")}
         </div>
       )}
-      {!loading && !fetchError && <h3>{label}</h3>}
-      {!loading && !fetchError && data && (
-        <ol>
-          {data.map((item) => (
-            <li key={`${item.key}-${item.value}`}>
-              <span className="key">
-                {item.key}
-              </span>
-              :
-              {' '}
-              {parseInt(item.value, 10).toLocaleString('sv-SE')}
-              {' '}
-              {item.value === 1 ? 'sida' : 'sidor'}
-            </li>
-          ))}
-        </ol>
+
+      {!!fetchError && (
+        <div className="error" role="alert">
+          {l("Fel vid hämtning av statistik")}: {fetchError}
+        </div>
       )}
+
+      {!loading && !fetchError && <h3>{label}</h3>}
+
+      {!loading &&
+        !fetchError &&
+        (data?.length ? (
+          <ol>
+            {data.map((item) => {
+              const valueNum = Number(item.value) || 0;
+              return (
+                <li key={`${item.key}-${item.value}`}>
+                  <span className="key">{item.key}</span>:{" "}
+                  {valueNum.toLocaleString("sv-SE")}{" "}
+                  {valueNum === 1 ? "sida" : "sidor"}
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <p>{l("Ingen data att visa än")}</p>
+        ))}
     </div>
   );
 }

@@ -1,127 +1,127 @@
-import { useState, useEffect, useRef } from 'react';
-import ShortStatistics from './ShortStatistics';
-import StatisticsList from './StatisticsList';
-import config from '../config';
-import { l } from '../lang/Lang';
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import ShortStatistics from "./ShortStatistics";
+import StatisticsList from "./StatisticsList";
+import config from "../config";
+import { l } from "../lang/Lang";
 
 export default function StatisticsContainer() {
   const firstStatValueRef = useRef(null);
   const [dataChanged, setDataChanged] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState('');
+  const [currentMonth, setCurrentMonth] = useState("");
 
-  // Funktion för att hantera förändring i första statistiken
-  const compareAndUpdateStat = (newValue) => {
-    // console.log("----\nJämför gammalt och nytt värde...");
-    if (firstStatValueRef.current !== newValue) {
-      // console.log(`De är olika! förut ${firstStatValueRef.current}, men nu ${newValue}. sätter dataChanged till true.`);
-      firstStatValueRef.current = newValue;
+  const compareAndUpdateStat = useCallback((newValue) => {
+    const v = Number(newValue ?? 0);
+    if (firstStatValueRef.current !== v) {
+      firstStatValueRef.current = v;
       setDataChanged(true);
     }
-  };
+  }, []);
 
+  // let children do one fetch per trigger
   useEffect(() => {
-    if (dataChanged) {
-      // Återställ flaggan efter att andra komponenter har fått hämta data
-      // console.log("Återställer dataChanged till false.")
-      setDataChanged(false);
-    }
+    if (dataChanged) setDataChanged(false);
   }, [dataChanged]);
 
+  // fetch server month once, and refresh at the top of each hour
   useEffect(() => {
-    // fetch "current_month" from server.
-    // the path is the api address plus "current_time", and the result is a json object with a
-    // "data" property that contains the current date and time as milliseconds since 1970-01-01
-    // the variable current_month's value is the month's name in Swedish for that timestamp
-    // only fetch once, when the component is mounted
-    fetch(`${config.apiUrl}current_time`)
-      .then((response) => response.json())
-      .then((data) => {
-        setCurrentMonth(new Date(data.data).toLocaleString('sv-SE', { month: 'long' }));
-      });
+    let intervalId;
+    const controller = new AbortController();
+
+    const loadCurrentMonth = async () => {
+      try {
+        const res = await fetch(`${config.apiUrl}current_time`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error("current_time fetch failed");
+        const json = await res.json();
+        const month = new Date(json.data).toLocaleString("sv-SE", {
+          month: "long",
+        });
+        setCurrentMonth(month);
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          // local fallback
+          setCurrentMonth(
+            new Date().toLocaleString("sv-SE", { month: "long" })
+          );
+        }
+      }
+    };
+
+    loadCurrentMonth();
+    // keep the label in sync across month rollovers
+    intervalId = setInterval(loadCurrentMonth, 60 * 60 * 1000);
+
+    return () => {
+      controller.abort();
+      clearInterval(intervalId);
+    };
   }, []);
+
+  const monthOrFallback = currentMonth || l("denna månad");
+
+  // memoize param objects to avoid needless re-renders
+  const base = useMemo(
+    () => ({ recordtype: "one_record", transcriptionstatus: "published" }),
+    []
+  );
+  const monthRange = "transcriptiondate,now/M,now+2h";
 
   return (
     <div className="statistics-container">
-      {/* Första ShortStatistics som hämtar data när dataChanged är true */}
       <ShortStatistics
-        params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-          range: 'transcriptiondate,now/M,now+2h',
-        }}
-        label={`avskrivna uppteckningar i ${currentMonth || l("denna månad")}`}
+        params={{ ...base, range: monthRange }}
+        label={`avskrivna uppteckningar i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
-      {/* Andra ShortStatistics som hämtar data varje minut */}
       <ShortStatistics
-        params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-        }}
+        params={{ ...base }}
         label="avskrivna uppteckningar totalt"
         compareAndUpdateStat={compareAndUpdateStat}
       />
 
-      {/* Övriga ShortStatistics och StatisticsList som hämtar data när dataChanged är true */}
       <ShortStatistics
         params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-          range: 'transcriptiondate,now/M,now+2h',
-          aggregation: 'sum,archive.total_pages',
+          ...base,
+          range: monthRange,
+          aggregation: "sum,archive.total_pages",
         }}
-        label={`avskrivna sidor i ${currentMonth}`}
+        label={`avskrivna sidor i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
       <ShortStatistics
-        params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-          aggregation: 'sum,archive.total_pages',
-        }}
+        params={{ ...base, aggregation: "sum,archive.total_pages" }}
         label="avskrivna sidor totalt"
         shouldFetch={dataChanged}
       />
 
       <ShortStatistics
         params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-          range: 'transcriptiondate,now/M,now+2h',
-          aggregation: 'cardinality,transcribedby.keyword',
+          ...base,
+          range: monthRange,
+          aggregation: "cardinality,transcribedby.keyword",
         }}
-        label={`användare som har skrivit av uppteckningar i ${currentMonth}`}
+        label={`medskapare som har skrivit av uppteckningar i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
       <ShortStatistics
-        params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-          aggregation: 'cardinality,transcribedby.keyword',
-        }}
-        label="användare som har skrivit av uppteckningar totalt"
+        params={{ ...base, aggregation: "cardinality,transcribedby.keyword" }}
+        label="medskapare som har skrivit av uppteckningar totalt"
         shouldFetch={dataChanged}
       />
 
       <StatisticsList
-        params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-          range: 'transcriptiondate,now/M,now+2h',
-        }}
+        params={{ ...base, range: monthRange }}
         type="topTranscribersByPages"
-        label={`Topplista transkriberare i ${currentMonth}`}
+        label={`Topplista transkriberare i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
       <StatisticsList
-        params={{
-          recordtype: 'one_record',
-          transcriptionstatus: 'published',
-        }}
+        params={{ ...base }}
         type="topTranscribersByPages"
         label="Topplista transkriberare totalt"
         shouldFetch={dataChanged}
