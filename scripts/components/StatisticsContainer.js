@@ -84,7 +84,7 @@ export default function StatisticsContainer() {
   );
 
   return (
-    <div className="statistics-container">
+    <div className="flex flex-col gap-4">
       <ShortStatistics
         params={pMonthRecords}
         label={`avskrivna uppteckningar i ${monthOrFallback}`}

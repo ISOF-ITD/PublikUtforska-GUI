@@ -80,7 +80,7 @@ export default function ShortStatistics({
   useEffect(() => () => abortRef.current?.abort(), []);
 
   return (
-    <div className="short-statistics">
+    <div>
       {loading && (
         <div className="loading" role="status" aria-live="polite">
           {l("Hämtar statistik...")}
@@ -93,12 +93,12 @@ export default function ShortStatistics({
       )}
       {!loading && !error && (
         <>
-          <animated.div className="value">
+          <animated.div className="font-bold text-4xl font-barlow">
             {animatedValue.number.to((num) =>
               Math.floor(num).toLocaleString("sv-SE")
             )}
           </animated.div>
-          <div className="label">{label}</div>
+          <div>{label}</div>
         </>
       )}
     </div>

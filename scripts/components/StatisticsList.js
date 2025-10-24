@@ -63,7 +63,7 @@ export default function StatisticsList({
   useEffect(() => () => abortRef.current?.abort(), []);
 
   return (
-    <div className="statistics-list">
+    <div>
       {loading && (
         <div className="loading" role="status" aria-live="polite">
           {l("Hämtar statistik...")}
@@ -86,7 +86,7 @@ export default function StatisticsList({
               const valueNum = Number(item.value) || 0;
               return (
                 <li key={`${item.key}-${item.value}`}>
-                  <span className="key">{item.key}</span>:{" "}
+                  <span className="font-bold">{item.key}</span>:{" "}
                   {valueNum.toLocaleString("sv-SE")}{" "}
                   {valueNum === 1 ? "sida" : "sidor"}
                 </li>
@@ -94,7 +94,7 @@ export default function StatisticsList({
             })}
           </ol>
         ) : (
-          <p>{l("Ingen data att visa än")}</p>
+          <span>{l("Ingen data att visa än")}</span>
         ))}
     </div>
   );
