@@ -76,7 +76,7 @@ export default function StatisticsList({
         </div>
       )}
 
-      {!loading && !fetchError && <h3>{label}</h3>}
+      {!loading && !fetchError && <h3 className="!my-2">{label}</h3>}
 
       {!loading &&
         !fetchError &&
