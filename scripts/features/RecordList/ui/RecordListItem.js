@@ -128,15 +128,7 @@ export default function RecordListItem(props) {
   /* ---------- hrefs ---------- */
   const recordHref = `${
     mode === "transcribe" ? "/transcribe" : ""
-  }/records/${id}${createSearchRoute(
-    useRouteParams
-      ? createParamsFromSearchRoute(params["*"])
-      : {
-          category: searchParams.category,
-          search: searchParams.search,
-          search_field: searchParams.search_field,
-        }
-  )}`;
+  }/records/${id}`;
 
   /* ---------- render ---------- */
   return (
@@ -285,10 +277,7 @@ export default function RecordListItem(props) {
                             <Link
                               to={`${
                                 mode === "transcribe" ? "/transcribe" : ""
-                              }/records/${s._source.id}${createSearchRoute({
-                                search: searchParams.search,
-                                search_field: searchParams.search_field,
-                              })}`}
+                              }/records/${s._source.id}`}
                               className={`${
                                 pub ? "font-bold" : ""
                               } hover:underline text-isof`}

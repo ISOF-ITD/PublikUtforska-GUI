@@ -127,7 +127,7 @@ function LoadError() {
         >
           {state === "loading" ? "Försöker…" : "Försök igen"}
         </button>
-        <a href="/" className="btn btn-secondary">
+        <a href="/" className="button button-secondary">
           Till startsidan
         </a>
       </div>

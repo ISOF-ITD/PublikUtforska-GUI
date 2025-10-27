@@ -10,6 +10,7 @@ import ContributorInfo from "./ui/ContributorInfo";
 import TranscribedText from "./ui/TranscribedText";
 import { splitPages } from "./utils/splitPages";
 import { StatusIndicator } from "./ui/TranscriptionStatusIndicator";
+import HighlightSwitcher from "./ui/HighlightSwitcher";
 
 export default function RecordTextPanel({
   data,
