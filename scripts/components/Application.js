@@ -120,8 +120,8 @@ useEffect(() => {
 
 
   useEffect(() => {
-    const onVisible = () => document.body.classList.add("has-docked-control");
-    const onHidden = () => document.body.classList.remove("has-docked-control");
+    const onVisible = () => document.body.classList.add("bottom-16");
+    const onHidden = () => document.body.classList.remove("bottom-16");
 
     window.eventBus.addEventListener("audio.playervisible", onVisible);
     window.eventBus.addEventListener("audio.playerhidden", onHidden);

@@ -214,7 +214,7 @@ export default function MapView({
 
       <MapBase
         ref={mapView}
-        className="map-view"
+        className="absolute top-0 h-screen w-screen opacity-0 transition-opacity duration-300 ease-in-out [.app-initialized_&]:opacity-100"
         layersControlPosition={layersControlPosition}
         zoomControlPosition={zoomControlPosition}
         disableLocateControl

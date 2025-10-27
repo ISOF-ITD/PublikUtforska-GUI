@@ -14,7 +14,7 @@ function MapWrapper({
   pictureRecordsData,
 }) {
   return (
-    <div className="map-wrapper">
+    <div className="h-screen w-screen print:[.has-overlay_&]:hidden">
       <MapMenu
         mode={mode}
         params={params}

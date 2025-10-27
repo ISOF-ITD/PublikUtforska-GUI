@@ -113,18 +113,15 @@ export default function MapMenu({
     <div
       id="mapmenu-panel"
       aria-hidden={!expanded}
-      className={`menu-wrapper ${
-        expanded ? "menu-expanded" : "menu-collapsed"
-      }`}
+      className={classNames(
+        "bg-isof print:hidden absolute top-0 left-0 bottom-0 w-96 border-r-2 border-white !z-[1201] pt-5 px-5 flex flex-col transition-all duration-300 ease-in-out pointer-events-auto max-sm:box-border max-sm:w-full max-sm:p-2.5",
+        expanded ? "" : "-left-[500px]"
+      )}
     >
       {/* <SurveyLink />  enable when needed */}
       {/*<Warning /> */}
 
-      <img
-        src={Folkelogga}
-        alt="Folkelogga"
-        style={{ height: 80, width: "100%" }}
-      />
+      <img src={Folkelogga} alt="Folkelogga" className="h-20 w-full" />
 
       <FilterSwitch mode={mode} />
 

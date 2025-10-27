@@ -2,7 +2,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faList } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faList } from "@fortawesome/free-solid-svg-icons";
 
 import { l } from "../lang/Lang";
 import config from "../config";
@@ -14,7 +14,9 @@ import {
 } from "../utils/helpers";
 
 import SearchSuggestions from "./SearchSuggestions";
-import SearchFilterButton from "./views/SearchFilterButton";
+import SearchFilterButton from "./SearchFilterButton";
+import classNames from "classnames";
+import SearchFilters from "./SearchFilterButton";
 
 // Utils & hooks
 function useDebounce(fn, delay = 300) {
@@ -59,7 +61,7 @@ function useAutocomplete(search) {
 
     const { apiUrl } = config;
 
-    Promise.all([
+    Promise.allSettled([
       fetchJson(`${apiUrl}autocomplete/persons?search=${search}`, (data) =>
         data
           .filter((p) => !/^p\d+$/.test(p.id))
@@ -87,14 +89,17 @@ function useAutocomplete(search) {
           secondaryLabel: `(${r.id})`,
         }))
       ),
-    ]).then(([people, places, provinces, archives]) =>
-      setSuggestions({
-        people,
-        places,
-        provinces,
-        archives,
+    ])
+      .then((results) => {
+        if (signal.aborted) return;
+        const [pe, pl, pr, ar] = results.map((r) =>
+          r.status === "fulfilled" ? r.value : []
+        );
+        setSuggestions({ people: pe, places: pl, provinces: pr, archives: ar });
       })
-    );
+      .catch((err) => {
+        if (err?.name !== "AbortError") console.error(err);
+      });
     return () => controller.abort();
   }, [search]);
 
@@ -165,16 +170,15 @@ export default function SearchBox({
   }, [suggestionsVisible, topSearches.length]);
 
   // totals
-  const {
-    metadata: { total },
-  } = recordsData;
-  const {
-    metadata: { total: audioTotal },
-  } = audioRecordsData;
-  const {
-    metadata: { total: pictureTotal },
-  } = pictureRecordsData;
-
+  const total = recordsData?.metadata?.total ?? { value: 0, relation: "eq" };
+  const audioTotal = audioRecordsData?.metadata?.total ?? {
+    value: 0,
+    relation: "eq",
+  };
+  const pictureTotal = pictureRecordsData?.metadata?.total ?? {
+    value: 0,
+    relation: "eq",
+  };
   // autocomplete
   const { people, places, provinces, archives } = useAutocomplete(search);
 
@@ -253,10 +257,9 @@ export default function SearchBox({
       {
         title: "Search",
         label: l("Vanligaste sökningar"),
-        items: topSearches
-          .filter(({ label }) =>
-            label.toLowerCase().includes(search.trim().toLowerCase())
-          ),
+        items: topSearches.filter(({ label }) =>
+          label.toLowerCase().includes(search.trim().toLowerCase())
+        ),
         click: (s) => executeSearch(s.value),
         maxHeight: 240,
       },
@@ -354,6 +357,7 @@ export default function SearchBox({
   // event handlers
   const onInput = ({ target }) => {
     const { value } = target;
+    setInputValue(value);
     debouncedChange(value);
     setSuggestionsVisible(true);
   };
@@ -400,27 +404,28 @@ export default function SearchBox({
     return () => window.removeEventListener("keydown", handleGlobalKey);
   }, [handleGlobalKey]);
 
+  const hasSelection = !!(selectedPerson || selectedPlace);
+
+  const handleFilterToggle = (categoryId) => {
+    executeSearch(undefined, undefined, categoryId);
+  };
+
   return (
     <>
-      <div className="search-box expanded lg:p-3 p-1 text-color-gray-700 text-base bg-neutral-100 rounded">
-        <div>
+      <div className="left-0 mb-4 z-[2000] cursor-auto relative lg:p-3 p-1 text-gray-700 text-base bg-neutral-100 rounded shadow-sm">
+        <div className="relative">
           <input
             ref={inputRef}
             id="searchInputMapMenu"
             type="text"
-            className={
-              (selectedPerson && "person") ||
-              (selectedPlace && "place") ||
-              "keyword"
-            }
+            className={classNames(
+              "w-full h-20 sm:h-16 rounded-lg border bg-white px-4 pr-28 text-gray-900 placeholder-gray-500 shadow-sm",
+              "border-gray-300 focus:border-isof focus:ring-2 focus:ring-isof/60 focus:outline-none",
+              hasSelection ? "opacity-0 pointer-events-none" : "opacity-100"
+            )}
             placeholder={l("Sök i Folke")}
             value={inputValue}
-            onChange={(e) => {
-              const { value } = e.target;
-              setInputValue(value);
-              debouncedChange(value);
-              setSuggestionsVisible(true);
-            }}
+            onChange={onInput}
             onKeyDown={onKeyDown}
             onFocus={() => setSuggestionsVisible(true)}
             onBlur={({ relatedTarget }) => {
@@ -435,30 +440,23 @@ export default function SearchBox({
             aria-activedescendant={
               activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
             }
+            aria-haspopup="listbox"
+            aria-owns={suggestionsVisible ? "search-suggestions" : undefined}
+            aria-label={l("Sök i Folke")}
             autoComplete="off"
             spellCheck="false"
             tabIndex={0}
           />
-
           <div
-            className={`search-label ${
-              (selectedPerson && "person") ||
-              (selectedPlace && "place") ||
-              "keyword"
-            }`}
-            style={{
-              fontSize: "0.9rem",
-              textOverflow: "ellipsis",
-              overflow: "hidden",
-              whiteSpace: "nowrap",
-              maxWidth: 227,
-              display: "block",
-            }}
+            className={classNames(
+              "absolute pointer-events-none block top-2.5 left-4 right-36",
+              "truncate text-gray-700 leading-6",
+              hasSelection ? "opacity-100" : "opacity-0"
+            )}
           >
             {labelPrefix}
             <strong>{labelValue}</strong>
           </div>
-
           {suggestionsVisible && hasSuggestions && (
             <SearchSuggestions
               search={search}
@@ -468,73 +466,62 @@ export default function SearchBox({
               onClose={() => setSuggestionsVisible(false)}
             />
           )}
-        </div>
+          <div className="absolute inset-y-0 right-2 flex items-center gap-2">
+            {(search || selectedPerson || selectedPlace) && (
+              <button
+                type="button"
+                className="pointer-events-auto rounded-full !py-0 !border-none !m-0 text-gray-500 hover:text-gray-700 focus-visible:outline-none"
+                onClick={clearSearch}
+                aria-label="Rensa sökning"
+              >
+                <span aria-hidden className="bg-white">
+                  Rensa <FontAwesomeIcon icon={faClose} />
+                </span>
+              </button>
+            )}
 
-        <div className="search-field-buttons">
-          {(search || selectedPerson || selectedPlace) && (
-            <button
-              type="button"
-              className="clear-button"
-              onClick={clearSearch}
-              aria-label="Rensa sökning"
-            />
-          )}
-          {!loading && (
-            <button
-              type="button"
-              className="search-button"
-              onClick={() => executeSearch(inputValue)}
-              aria-label="Sök"
-              style={{
-                visibility:
-                  selectedPerson || selectedPlace ? "hidden" : "unset",
-              }}
-            />
-          )}
-          {loading && search && (
-            <div
-              className="search-spinner"
-              style={{
-                visibility:
-                  selectedPerson || selectedPlace ? "hidden" : "unset",
-              }}
-            />
-          )}
-        </div>
-      </div>
+            {!loading && (
+              <button
+                type="button"
+                className={classNames(
+                  "pointer-events-auto rounded-md px-3.5 py-2.5 text-sm font-medium !mb-0",
+                  "bg-isof !text-white hover:bg-darker-isof",
+                  "focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white"
+                )}
+                onClick={() => executeSearch(inputValue)}
+                aria-label="Sök"
+              >
+                Sök
+              </button>
+            )}
 
-      <div
-        className={`totals${
-          loading ? " visible" : " visible"
-        } text-white lg:ml-0 lg:text-base text-lg ml-4 pb-6 flex gap-2 lg:flex-nowrap flex-wrap p-2`}
-      >
-        <span className="whitespace-nowrap">
-          {l("Begränsa sökningen till: ")}
-        </span>
-        <div className="flex items-center gap-4">
-          <SearchFilterButton
-            handleFilterChange={handleFilterChange}
-            label="Ljud"
-            categoryId="contentG5"
-            total={audioTotal}
-            checked={categories.includes("contentG5")}
-          />
-          <SearchFilterButton
-            handleFilterChange={handleFilterChange}
-            label="Bild"
-            categoryId="contentG2"
-            total={pictureTotal}
-            checked={categories.includes("contentG2")}
-          />
+            {loading && search && (
+              <span
+                className={classNames(
+                  "h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent",
+                  hasSelection ? "hidden" : "inline-block"
+                )}
+                aria-label="Laddar"
+              />
+            )}
+          </div>
         </div>
       </div>
-
+      <SearchFilters
+        loading={loading}
+        selectedCategories={categories}
+        onToggle={handleFilterToggle}
+        filters={[
+          { label: "Ljud", categoryId: "contentG5", total: audioTotal },
+          { label: "Bild", categoryId: "contentG2", total: pictureTotal },
+        ]}
+      />
       {total && (
-        <div className="popup-wrapper">
+        <div className="mt-2">
           {total.value > 0 && !loading && (
             <button
               type="button"
-              className="popup-open-button"
+              className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
               onClick={() => window.eventBus?.dispatch("routePopup.show")}
             >
               <FontAwesomeIcon icon={faList} />
@@ -544,14 +531,19 @@ export default function SearchBox({
             </button>
           )}
           {loading && (
-            <button type="button" className="popup-open-button disabled">
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-400 shadow cursor-not-allowed"
+              disabled
+            >
               <span>Söker...</span>
             </button>
           )}
           {total.value === 0 && !loading && (
             <button
               type="button"
-              className="popup-open-button visible disabled"
+              className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-400 shadow cursor-default"
+              disabled
             >
               <span>0 sökträffar</span>
             </button>
