@@ -114,7 +114,7 @@ export default function MapMenu({
       id="mapmenu-panel"
       aria-hidden={!expanded}
       className={classNames(
-        "bg-isof print:hidden absolute top-0 left-0 bottom-0 w-96 border-r-2 border-white !z-[1201] pt-5 px-5 flex flex-col transition-all duration-300 ease-in-out pointer-events-auto max-sm:box-border max-sm:w-full max-sm:p-2.5",
+        "bg-isof print:hidden absolute top-0 left-0 bottom-0 w-96 border-r-2 border-white !z-[1201] pt-5 px-5 flex flex-col items-center transition-all duration-300 ease-in-out pointer-events-auto max-sm:box-border max-sm:w-full max-sm:p-2.5",
         expanded ? "" : "-left-[500px]"
       )}
     >
@@ -134,9 +134,9 @@ export default function MapMenu({
         loading={loading}
       />
 
-      <div className="popup-wrapper">
+      <div className="popup-wrapper w-full flex">
         <TranscribeButton
-          className="visible popup-open-button"
+        className=""
           label={
             <>
               <FontAwesomeIcon icon={faPen} />{" "}

@@ -14,9 +14,8 @@ import {
 } from "../utils/helpers";
 
 import SearchSuggestions from "./SearchSuggestions";
-import SearchFilterButton from "./SearchFilterButton";
+import SearchFilters from "./SearchFilters";
 import classNames from "classnames";
-import SearchFilters from "./SearchFilterButton";
 
 // Utils & hooks
 function useDebounce(fn, delay = 300) {
@@ -131,7 +130,6 @@ export default function SearchBox({
     category,
   } = createParamsFromSearchRoute(params["*"]);
   const navigate = useNavigate();
-  const [, setSearchParams] = useSearchParams(); // reserved for future needs
 
   // refs & state
   const inputRef = useRef(null);
@@ -412,14 +410,14 @@ export default function SearchBox({
 
   return (
     <>
-      <div className="left-0 mb-4 z-[2000] cursor-auto relative lg:p-3 p-1 text-gray-700 text-base bg-neutral-100 rounded shadow-sm">
-        <div className="relative">
+      <div className="w-full left-0 mb-4 z-[2000] cursor-auto relative lg:p-3 p-1 text-gray-700 text-base bg-neutral-100 rounded shadow-sm">
+        <div className="relative ">
           <input
             ref={inputRef}
             id="searchInputMapMenu"
             type="text"
             className={classNames(
-              "w-full h-20 sm:h-16 rounded-lg border bg-white px-4 pr-28 text-gray-900 placeholder-gray-500 shadow-sm",
+              "w-full h-20 sm:h-16 rounded-lg border bg-white !p-4 pr-28 text-gray-900 placeholder-gray-500 shadow-sm",
               "border-gray-300 focus:border-isof focus:ring-2 focus:ring-isof/60 focus:outline-none",
               hasSelection ? "opacity-0 pointer-events-none" : "opacity-100"
             )}
@@ -517,11 +515,11 @@ export default function SearchBox({
         ]}
       />
       {total && (
-        <div className="mt-2">
+        <div className="mt-2 w-full">
           {total.value > 0 && !loading && (
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
               onClick={() => window.eventBus?.dispatch("routePopup.show")}
             >
               <FontAwesomeIcon icon={faList} />

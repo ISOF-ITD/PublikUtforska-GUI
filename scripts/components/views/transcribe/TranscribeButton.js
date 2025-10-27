@@ -1,4 +1,5 @@
 /* eslint-disable react/require-default-props */
+import classNames from "classnames";
 import PropTypes from "prop-types";
 import { useCallback, useMemo, useState, useId } from "react";
 import config from "../../../config";
@@ -168,14 +169,18 @@ export default function TranscribeButton({
   const isDisabled = disabled || busy;
 
   return (
-    <div>
+    <div className="m-0 p-0 w-full">
       {helptext && (
-        <div id={helpTextId} className="help-text">
+        <div id={helpTextId}>
           {helptext}
         </div>
       )}
       <button
-        className={`transcribe-button${className ? ` ${className}` : ""}`}
+        className={classNames("flex items-center justify-center gap-2 h-10 !p-3 !text-base leading-normal tracking-normal border border-solid", 
+        "border-white !text-white no-underline cursor-pointer mb-4 print:hidden transition-opacity duration-500",
+        className
+        )
+      }
         onClick={effectiveOnClick}
         type="button"
         disabled={isDisabled}

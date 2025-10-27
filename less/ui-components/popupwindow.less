@@ -1,49 +1,4 @@
 .popup-wrapper {
-	.popup-open-button {
-		font-size: 1rem;
-		font-weight: normal;
-		border: 1px solid white;
-
-		position: relative;
-		height: 60px; 
-		left: 20px;
-		letter-spacing: normal;
-		line-height: normal;
-
-		margin-bottom: 15px;
-
-		text-decoration: none;
-		color: white;
-
-		cursor: pointer;
-
-		opacity: 0;
-
-		.app-initialized & {
-			opacity: 1;
-
-			// .transform(translateY(0));
-			// .transition-delay(500ms);
-		}
-
-		@media print {
-			display: none;
-		}
-
-		@media (max-width: 550px) {
-			left: 10px;
-			bottom: 10px;
-
-			height: 40px;
-
-			padding: 10px;
-		}
-		&.disabled {
-			opacity: 0.6;
-			cursor: default;
-		}
-	}
-
 	.popup-content-wrapper {
 		position: fixed;
 
