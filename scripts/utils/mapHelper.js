@@ -3,7 +3,6 @@ import L, { icon, tileLayer, bounds } from 'leaflet';
 import mapMarkerBlueLocation from '../../img/map-marker-blue-location.png';
 import mapMarkerBlueHighlighted from '../../img/map-marker-blue-highlighted.png';
 import mapMarkerShadow from '../../img/map-marker-shadow.png';
-import mapMarkerOrange from '../../img/map-marker-orange.png';
 import markerBlue from '../../img/marker-blue.png';
 import markerRed from '../../img/marker-red.png';
 
@@ -28,13 +27,6 @@ export default {
     iconAnchor: [14, 35],
     shadowAnchor: [12, 40],
     popupAnchor: [-1, -15],
-  }),
-
-  orangeIcon: icon({
-    iconUrl: mapMarkerOrange,
-    iconSize: [27, 27],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, 0],
   }),
 
   blueIcon: icon({
