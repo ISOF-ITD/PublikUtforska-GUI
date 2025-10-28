@@ -3,9 +3,9 @@ import { useEffect, useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import config from "../../../config";
-import loaderSpinner from "../../../../img/loader.gif";
 import { l } from "../../../lang/Lang";
 import { getTitleText } from "../../../utils/helpers";
+import Spinner from "../../Spinner";
 
 function SimilarRecords({ data }) {
   // Normalize id to a stable string so the effect doesn't refire due to type flips.
@@ -103,10 +103,10 @@ function SimilarRecords({ data }) {
         role="status"
         aria-live="polite"
       >
-        <img
-          src={loaderSpinner}
-          alt={l("Laddar liknande uppteckningar")}
-          className="w-12 h-12"
+        <Spinner
+          size="lg"
+          className="text-isof"
+          label={l("Laddar liknande uppteckningar")}
         />
       </div>
     );

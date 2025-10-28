@@ -18,7 +18,6 @@ import ContentsElement from "./ContentsElement";
 import Disclaimer from "../Disclaimer";
 import HeadwordsElement from "./HeadwordsElement";
 import License from "./License";
-import loaderSpinner from "../../../../img/loader.gif";
 import PdfElement from "./PdfElement";
 import PersonItems from "./PersonItems";
 import PlaceItems from "./PlaceItems";
@@ -34,6 +33,7 @@ import SimilarRecords from "./SimilarRecords";
 import { getTitleText } from "../../../utils/helpers";
 import config from "../../../config";
 import AudioItems from "../../../features/AudioDescription/AudioItems";
+import Spinner from "../../Spinner";
 
 function RecordView({ mode = "material" }) {
   const { results: resultsPromise } = useLoaderData();
@@ -88,15 +88,11 @@ function LoadingFallback() {
   return (
     <>
       <div
-        className="container-header"
+        className="container-header h-32"
         aria-live="polite"
         aria-busy="true"
-        style={{ height: 130 }}
       />
-      <div className="flex items-center gap-2" role="status" aria-live="polite">
-        <img src={loaderSpinner} alt="" aria-hidden="true" />
-        <span className="sr-only">Hämtar data…</span>
-      </div>
+      <Spinner className="text-isof" label="Hämtar data…" />
     </>
   );
 }
@@ -121,7 +117,7 @@ function LoadError() {
       <div className="mt-2 flex gap-2">
         <button
           type="button"
-          className="btn btn-primary"
+          className="button button-primary"
           onClick={() => revalidate()}
           disabled={state === "loading"}
         >
