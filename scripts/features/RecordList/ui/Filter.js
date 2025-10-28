@@ -1,53 +1,69 @@
-import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileLines } from '@fortawesome/free-solid-svg-icons';
-import PdfGif from '../../../../img/pdf.gif';
+import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileLines, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
-export default function Filter({
-  uniqueId, filter, onChange, openHelp,
-}) {
+export default function Filter({ uniqueId, filter, onChange, openHelp }) {
   return (
-    <div className="filter-wrapper">
+    <div className="flex items-center gap-2 p-2">
       <label htmlFor={`all-filter-${uniqueId}`}>
         <input
           type="radio"
           name={`filter-${uniqueId}`}
           value=""
-          checked={filter === ''}
+          checked={filter === ""}
           onChange={onChange}
           id={`all-filter-${uniqueId}`}
         />
         Allt
       </label>
+
       <label htmlFor={`one-accession-row-filter-${uniqueId}`}>
         <input
           type="radio"
           name={`filter-${uniqueId}`}
           value="one_accession_row,one_audio_record"
-          checked={filter === 'one_accession_row,one_audio_record'}
+          checked={filter === "one_accession_row,one_audio_record"}
           onChange={onChange}
           id={`one-accession-row-filter-${uniqueId}`}
         />
-        <sub>
-          <img src={PdfGif} style={{ marginRight: 5 }} alt="pdf" title="Accession" />
-        </sub>
+        <FontAwesomeIcon
+          icon={faFilePdf}
+          title="Accession"
+          className="mx-1 align-middle text-red-500"
+          aria-hidden="true"
+        />
         Accessioner
       </label>
-      <label htmlFor={`one-record-filter-${uniqueId}`}>
-        <input
-          type="radio"
-          name={`filter-${uniqueId}`}
-          value="one_record"
-          checked={filter === 'one_record'}
-          onChange={onChange}
-          id={`one-record-filter-${uniqueId}`}
-        />
-        <FontAwesomeIcon icon={faFileLines} style={{ marginRight: 5 }} alt="jpg" title="Uppteckning" />
-        Uppteckningar
-      </label>
-      <span className="switcher-help-button" onClick={openHelp} title="Om accessioner och uppteckningar">
-        ?
-      </span>
+      <div className="flex items-center">
+        <label htmlFor={`one-record-filter-${uniqueId}`}>
+          <input
+            type="radio"
+            name={`filter-${uniqueId}`}
+            value="one_record"
+            checked={filter === "one_record"}
+            onChange={onChange}
+            id={`one-record-filter-${uniqueId}`}
+          />
+          <FontAwesomeIcon
+            icon={faFileLines}
+            title="Uppteckning"
+            className="mx-1 align-middle text-isof"
+            aria-hidden="true"
+          />
+          Uppteckningar
+        </label>
+
+        <span
+          className="switcher-help-button !mb-2"
+          onClick={openHelp}
+          title="Om accessioner och uppteckningar"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openHelp()}
+        >
+          ?
+        </span>
+      </div>
     </div>
   );
 }
