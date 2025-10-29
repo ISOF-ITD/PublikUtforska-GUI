@@ -54,12 +54,25 @@ export default function SearchPanel({
   const popularQueries = usePopularQueries(suggestionsVisible);
 
   // routing helpers
-  const { navigateToSearch, toggleCategory } = useSearchRouting({
-    mode,
-    search_field,
-    categories,
-    setCategories,
-  });
+  const { navigateToSearch: rawNavigateToSearch, toggleCategory } =
+    useSearchRouting({
+      mode,
+      search_field,
+      categories,
+      setCategories,
+    });
+
+  // Ensure the controlled input reflects any picked suggestion
+  const navigateToSearch = useCallback(
+    (keywordOverwrite, searchFieldOverwrite) => {
+      const v = typeof keywordOverwrite === "string" ? keywordOverwrite : "";
+      // Update both pieces of state so the input text appear right away
+      setInputValue(v);
+      setQuery(v);
+      rawNavigateToSearch(keywordOverwrite, searchFieldOverwrite);
+    },
+    [rawNavigateToSearch]
+  );
 
   // selection derived from route
   const {

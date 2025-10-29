@@ -65,8 +65,9 @@ const SuggestionsPopover = forwardRef(
                           isActive ? "bg-gray-100" : ""
                         }`}
                         // prevent input blur before we handle the click
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => {
+                        onPointerDown={(e) => {
+                          // Do the action on pointer down so the input’s blur can’t unmount us first
+                          e.preventDefault();
                           click(item);
                           onClose();
                         }}
