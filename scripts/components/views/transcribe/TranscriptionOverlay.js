@@ -143,9 +143,9 @@ export default function TranscriptionOverlay(props) {
               </small>
             )}
             {randomRecord && !sent && (
-              <div className="next-random-record-button-container">
+              <div className="relative h-2">
                 <TranscribeButton
-                  className="button button-primary next-random-record-button"
+                  className="button button-primary absolute right-0 top-2"
                   label={l("Skriv av annan slumpmässig uppteckning")}
                   random
                   /* when the user clicks, we first cancel the current session */

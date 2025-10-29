@@ -310,9 +310,9 @@ export default function TranscriptionPageByPageOverlay() {
               onClick={handleHideOverlay}
               aria-label="Stäng"
             />
-            <div className="next-random-record-button-container">
+            <div className="relative h-2">
               <TranscribeButton
-                className="button button-primary next-random-record-button"
+                className="button button-primary absolute right-0 top-2"
                 random
                 label="Skriv av annan slumpmässig uppteckning"
                 transcribeCancel={transcribeCancel}

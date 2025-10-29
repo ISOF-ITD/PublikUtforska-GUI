@@ -114,8 +114,9 @@ export default function MapMenu({
       id="mapmenu-panel"
       aria-hidden={!expanded}
       className={classNames(
-        "bg-isof print:hidden absolute top-0 left-0 bottom-0 w-96 border-r-2 border-white !z-[1201] pt-5 px-5 flex flex-col items-center transition-all duration-300 ease-in-out pointer-events-auto max-sm:box-border max-sm:w-full max-sm:p-2.5",
-        expanded ? "" : "-left-[500px]"
+        "bg-isof flex flex-col print:hidden absolute top-0 bottom-0 w-96 border-r-2 border-white !z-[1201]",
+        "pt-5 px-5 items-center transition-all duration-300 ease-in-out pointer-events-auto max-sm:box-border max-sm:w-full max-sm:p-2.5",
+        expanded ? "left-0" : "-left-[500px]"
       )}
     >
       {/* <SurveyLink />  enable when needed */}
@@ -136,7 +137,7 @@ export default function MapMenu({
 
       <div className="popup-wrapper w-full flex">
         <TranscribeButton
-        className=""
+          className=""
           label={
             <>
               <FontAwesomeIcon icon={faPen} />{" "}
