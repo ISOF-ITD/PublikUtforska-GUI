@@ -68,7 +68,7 @@ export function SearchFilters({
               >
                 <FontAwesomeIcon
                   icon={checked ? faSquareCheck : faSquare}
-                  className="h-6 w-6 text-white"
+                  className="h-5 w-5 text-white"
                   aria-hidden="true"
                 />
                 <span id={labelId} className="whitespace-nowrap text-sm">

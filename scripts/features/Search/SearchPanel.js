@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClose, faList, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faList, faPen, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { l } from "../../lang/Lang";
 import { createParamsFromSearchRoute } from "../../utils/routeHelper";
 import useAutocomplete from "./hooks/useAutocomplete";
@@ -248,14 +248,16 @@ export default function SearchPanel({
             {!loading && (
               <button
                 type="button"
-                className="pointer-events-auto rounded-md px-3.5 py-2.5 text-sm font-medium !mb-0 bg-isof !text-white hover:bg-darker-isof focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white"
+                className="pointer-events-auto gap-1 flex items-center rounded-md px-3.5 py-2.5 text-sm font-medium !mb-0 bg-isof !text-white hover:bg-darker-isof focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white"
                 onClick={() => {
                   navigateToSearch(inputValue);
                   setSuggestionsVisible(false);
                 }}
                 aria-label="Sök"
               >
+                
                 Sök
+                <FontAwesomeIcon icon={faSearch}/>
               </button>
             )}
 
