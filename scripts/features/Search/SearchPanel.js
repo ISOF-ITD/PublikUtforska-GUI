@@ -1,20 +1,20 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose, faList } from "@fortawesome/free-solid-svg-icons";
 
-import { l } from "../lang/Lang";
-import config from "../config";
-import { createParamsFromSearchRoute } from "../utils/routeHelper";
+import { l } from "../../lang/Lang";
+import config from "../../config";
+import { createParamsFromSearchRoute } from "../../utils/routeHelper";
 import {
   getPersonFetchLocation,
   getPlaceFetchLocation,
   makeArchiveIdHumanReadable,
-} from "../utils/helpers";
+} from "../../utils/helpers";
 
-import SearchSuggestions from "./SearchSuggestions";
-import SearchFilters from "./SearchFilters";
+import SuggestionsPopover from "./ui/SuggestionsPopover";
+import SearchFilters from "./ui/SearchFilters";
 import classNames from "classnames";
 
 // Utils & hooks
@@ -32,7 +32,7 @@ function useDebounce(fn, delay = 300) {
   );
 }
 
-function useAutocomplete(search) {
+function useAutocomplete(query) {
   const [{ people, places, provinces, archives }, setSuggestions] = useState({
     people: [],
     places: [],
@@ -48,7 +48,7 @@ function useAutocomplete(search) {
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
-    if (search.length < 2) {
+    if (query.length < 2) {
       controller.abort();
       return setSuggestions({
         people: [],
@@ -61,7 +61,7 @@ function useAutocomplete(search) {
     const { apiUrl } = config;
 
     Promise.allSettled([
-      fetchJson(`${apiUrl}autocomplete/persons?search=${search}`, (data) =>
+      fetchJson(`${apiUrl}autocomplete/persons?search=${query}`, (data) =>
         data
           .filter((p) => !/^p\d+$/.test(p.id))
           .map((p) => ({
@@ -69,19 +69,19 @@ function useAutocomplete(search) {
             label: `${p.name}${p.birth_year ? ` (född ${p.birth_year})` : ""}`,
           }))
       ),
-      fetchJson(`${apiUrl}autocomplete/socken?search=${search}`, (data) =>
+      fetchJson(`${apiUrl}autocomplete/socken?search=${query}`, (data) =>
         data.map((p) => ({
           value: p.id,
           label: `${p.name}${p.landskap ? ` (${p.landskap})` : ""}`,
         }))
       ),
-      fetchJson(`${apiUrl}autocomplete/landskap?search=${search}`, (data) =>
+      fetchJson(`${apiUrl}autocomplete/landskap?search=${query}`, (data) =>
         data.map((p) => ({
           value: p.name,
           label: p.name,
         }))
       ),
-      fetchJson(`${apiUrl}autocomplete/archive_ids?search=${search}`, (data) =>
+      fetchJson(`${apiUrl}autocomplete/archive_ids?search=${query}`, (data) =>
         data.map((r) => ({
           value: r.id,
           label: makeArchiveIdHumanReadable(r.id),
@@ -100,7 +100,7 @@ function useAutocomplete(search) {
         if (err?.name !== "AbortError") console.error(err);
       });
     return () => controller.abort();
-  }, [search]);
+  }, [query]);
 
   return { people, places, provinces, archives };
 }
@@ -115,7 +115,7 @@ const suggestionSort = (needle) => (a, b) => {
 
 // Component
 
-export default function SearchBox({
+export default function SearchPanel({
   mode,
   params,
   recordsData,
@@ -125,7 +125,7 @@ export default function SearchBox({
 }) {
   // routing & derived params
   const {
-    search: qParam,
+    query: qParam,
     search_field,
     category,
   } = createParamsFromSearchRoute(params["*"]);
@@ -135,7 +135,7 @@ export default function SearchBox({
   const inputRef = useRef(null);
   const suggestionsRef = useRef(null);
   const [inputValue, setInputValue] = useState(qParam ?? "");
-  const [search, setSearch] = useState(qParam ?? "");
+  const [query, setQuery] = useState(qParam ?? "");
   const [categories, setCategories] = useState(
     category ? category.split(",") : []
   );
@@ -144,10 +144,10 @@ export default function SearchBox({
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
 
   // Popular Matomo searches
-  const [topSearches, setTopSearches] = useState([]);
+  const [popularQueries, setPopularQueries] = useState([]);
 
   useEffect(() => {
-    if (!suggestionsVisible || topSearches.length) return;
+    if (!suggestionsVisible || popularQueries.length) return;
 
     const url = new URL(config.matomoApiUrl);
     Object.entries(config.searchSuggestionsParams).forEach(([k, v]) =>
@@ -158,14 +158,14 @@ export default function SearchBox({
       .then((r) => r.json())
       .then((json) => {
         if (!Array.isArray(json)) return;
-        setTopSearches(
+        setPopularQueries(
           json
             .filter((row) => !/^start/i.test(row.label))
             .map((row) => ({ value: row.label, label: row.label }))
         );
       })
       .catch(console.error);
-  }, [suggestionsVisible, topSearches.length]);
+  }, [suggestionsVisible, popularQueries.length]);
 
   // totals
   const total = recordsData?.metadata?.total ?? { value: 0, relation: "eq" };
@@ -178,11 +178,11 @@ export default function SearchBox({
     relation: "eq",
   };
   // autocomplete
-  const { people, places, provinces, archives } = useAutocomplete(search);
+  const { people, places, provinces, archives } = useAutocomplete(query);
 
   // helpers
-  // inside SearchBox, replace the whole executeSearch with:
-  const executeSearch = useCallback(
+  // inside SearchPanel, replace the whole navigateToSearch with:
+  const navigateToSearch = useCallback(
     (
       keywordOverwrite = inputValue,
       searchFieldOverwriteProp = search_field ?? null,
@@ -229,7 +229,7 @@ export default function SearchBox({
       categories,
       mode,
       navigate,
-      search,
+      query,
       inputValue,
       search_field,
       setSuggestionsVisible,
@@ -238,14 +238,14 @@ export default function SearchBox({
 
   const handleFilterChange = (e) => {
     const { filter: categoryToToggle } = e.currentTarget.dataset;
-    executeSearch(undefined, undefined, categoryToToggle);
+    navigateToSearch(undefined, undefined, categoryToToggle);
   };
 
   const clearSearch = () => {
     setSelectedPerson(null);
     setSelectedPlace(null);
-    setSearch("");
-    executeSearch("", null); // strip the old search_field segment
+    setQuery("");
+    navigateToSearch("", null); // strip the old search_field segment
     setInputValue(""); // keep the input in sync
     inputRef.current?.focus();
   };
@@ -255,19 +255,19 @@ export default function SearchBox({
       {
         title: "Search",
         label: l("Vanligaste sökningar"),
-        items: topSearches.filter(({ label }) =>
-          label.toLowerCase().includes(search.trim().toLowerCase())
+        items: popularQueries.filter(({ label }) =>
+          label.toLowerCase().includes(query.trim().toLowerCase())
         ),
-        click: (s) => executeSearch(s.value),
+        click: (s) => navigateToSearch(s.value),
         maxHeight: 240,
       },
       {
         // Personer
         title: "Person", // <- must match config.numberOfPersonSuggestions
         label: l("Personer"),
-        items: [...people].sort(suggestionSort(search)),
+        items: [...people].sort(suggestionSort(query)),
         field: "person",
-        click: (p) => executeSearch(p.value, "person"),
+        click: (p) => navigateToSearch(p.value, "person"),
       },
       {
         // Orter
@@ -275,7 +275,7 @@ export default function SearchBox({
         label: l("Orter"),
         items: places,
         field: "place",
-        click: (p) => executeSearch(p.value, "place"),
+        click: (p) => navigateToSearch(p.value, "place"),
       },
       {
         // Landskap
@@ -283,7 +283,7 @@ export default function SearchBox({
         label: l("Landskap"),
         items: provinces,
         field: "place",
-        click: (p) => executeSearch(p.value, "place"),
+        click: (p) => navigateToSearch(p.value, "place"),
       },
       {
         // Arkivsignum
@@ -291,10 +291,10 @@ export default function SearchBox({
         label: l("Arkivsignum"),
         items: archives,
         /* field left undefined on purpose – we search the raw value */
-        click: (p) => executeSearch(p.value),
+        click: (p) => navigateToSearch(p.value),
       },
     ],
-    [topSearches, people, places, provinces, archives, executeSearch, search]
+    [popularQueries, people, places, provinces, archives, navigateToSearch, query]
   );
 
   // single source of truth for visible suggestions
@@ -317,12 +317,12 @@ export default function SearchBox({
 
   const hasSuggestions = flatSuggestions.length > 0;
 
-  const debouncedChange = useDebounce(setSearch);
+  const debouncedChange = useDebounce(setQuery);
 
   // effects
   // keep component in sync with route changes
   useEffect(() => {
-    setSearch(qParam ?? "");
+    setQuery(qParam ?? "");
     setCategories(category ? category.split(",") : []);
     if (search_field === "person") {
       fetch(getPersonFetchLocation(qParam))
@@ -346,11 +346,11 @@ export default function SearchBox({
     ? "Person: "
     : selectedPlace
     ? "Ort: "
-    : search
+    : query
     ? "Innehåll: "
     : "";
 
-  const labelValue = selectedPerson?.name ?? selectedPlace?.name ?? search;
+  const labelValue = selectedPerson?.name ?? selectedPlace?.name ?? query;
 
   // event handlers
   const onInput = ({ target }) => {
@@ -362,7 +362,7 @@ export default function SearchBox({
 
   const onKeyDown = (e) => {
     if (e.key === "Enter") {
-      executeSearch(inputValue);
+      navigateToSearch(inputValue);
       setSuggestionsVisible(false);
     } else if (e.key === "Escape") {
       setSuggestionsVisible(false);
@@ -373,7 +373,7 @@ export default function SearchBox({
 
   useEffect(
     () => setActiveIdx(-1),
-    [suggestionsVisible, search, flatSuggestions.length]
+    [suggestionsVisible, query, flatSuggestions.length]
   );
 
   const handleGlobalKey = useCallback(
@@ -404,8 +404,8 @@ export default function SearchBox({
 
   const hasSelection = !!(selectedPerson || selectedPlace);
 
-  const handleFilterToggle = (categoryId) => {
-    executeSearch(undefined, undefined, categoryId);
+  const toggleCategory = (categoryId) => {
+    navigateToSearch(undefined, undefined, categoryId);
   };
 
   return (
@@ -456,8 +456,8 @@ export default function SearchBox({
             <strong>{labelValue}</strong>
           </div>
           {suggestionsVisible && hasSuggestions && (
-            <SearchSuggestions
-              search={search}
+            <SuggestionsPopover
+              search={query}
               activeIdx={activeIdx}
               groups={visibleSuggestionGroups}
               ref={suggestionsRef}
@@ -465,7 +465,7 @@ export default function SearchBox({
             />
           )}
           <div className="absolute inset-y-0 right-2 flex items-center gap-2">
-            {(search || selectedPerson || selectedPlace) && (
+            {(query || selectedPerson || selectedPlace) && (
               <button
                 type="button"
                 className="pointer-events-auto rounded-full !py-0 !border-none !m-0 text-gray-500 hover:text-gray-700 focus-visible:outline-none"
@@ -486,14 +486,14 @@ export default function SearchBox({
                   "bg-isof !text-white hover:bg-darker-isof",
                   "focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white"
                 )}
-                onClick={() => executeSearch(inputValue)}
+                onClick={() => navigateToSearch(inputValue)}
                 aria-label="Sök"
               >
                 Sök
               </button>
             )}
 
-            {loading && search && (
+            {loading && query && (
               <span
                 className={classNames(
                   "h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent",
@@ -508,7 +508,7 @@ export default function SearchBox({
       <SearchFilters
         loading={loading}
         selectedCategories={categories}
-        onToggle={handleFilterToggle}
+        onToggle={toggleCategory}
         filters={[
           { label: "Ljud", categoryId: "contentG5", total: audioTotal },
           { label: "Bild", categoryId: "contentG2", total: pictureTotal },
@@ -552,7 +552,7 @@ export default function SearchBox({
   );
 }
 
-SearchBox.propTypes = {
+SearchPanel.propTypes = {
   mode: PropTypes.string.isRequired,
   params: PropTypes.object.isRequired,
   recordsData: PropTypes.object.isRequired,

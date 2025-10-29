@@ -11,7 +11,7 @@ import Folkelogga from "../../img/folke-white.svg";
 import { l } from "../lang/Lang";
 import config from "../config";
 import FilterSwitch from "./FilterSwitch";
-import SearchBox from "./SearchBox";
+import SearchPanel from "../features/Search/SearchPanel";
 import StatisticsContainer from "./StatisticsContainer";
 import TranscribeButton from "./views/transcribe/TranscribeButton";
 import RecordList from "../features/RecordList/RecordList";
@@ -126,7 +126,7 @@ export default function MapMenu({
 
       <FilterSwitch mode={mode} />
 
-      <SearchBox
+      <SearchPanel
         params={params}
         mode={mode}
         recordsData={recordsData}

@@ -1,7 +1,7 @@
 /* eslint-disable react/require-default-props */
 import { forwardRef } from "react";
 import PropTypes from "prop-types";
-import config from "../config";
+import config from "../../../config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
@@ -28,7 +28,7 @@ const highlight = (text, needle = "") => {
   ));
 };
 
-const SearchSuggestions = forwardRef(
+const SuggestionsPopover = forwardRef(
   ({ search, groups, activeIdx, onClose }, ref) => {
     let runningIdx = -1;
 
@@ -132,9 +132,9 @@ const SearchSuggestions = forwardRef(
   }
 );
 
-SearchSuggestions.displayName = "SearchSuggestions";
+SuggestionsPopover.displayName = "SearchSuggestions";
 
-SearchSuggestions.propTypes = {
+SuggestionsPopover.propTypes = {
   search: PropTypes.string,
   onClose: PropTypes.func.isRequired,
   groups: PropTypes.arrayOf(
@@ -158,4 +158,4 @@ SearchSuggestions.propTypes = {
   activeIdx: PropTypes.number.isRequired,
 };
 
-export default SearchSuggestions;
+export default SuggestionsPopover;

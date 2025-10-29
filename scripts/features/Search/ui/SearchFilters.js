@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquare, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
-import { l } from "../lang/Lang";
+import { l } from "../../../lang/Lang";
 
 export default function SearchFilters({
   filters,
