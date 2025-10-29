@@ -56,7 +56,7 @@ const SuggestionsPopover = forwardRef(
 
                     return (
                       <div
-                        key={item.value}
+                        key={`${title}:${item.value}`}
                         id={`suggestion-${currentIdx}`}
                         role="option"
                         aria-selected={isActive}

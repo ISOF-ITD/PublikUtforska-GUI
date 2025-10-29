@@ -49,9 +49,9 @@ export default function useSearchRouting({
   );
 
   const toggleCategory = useCallback(
-    (categoryId) => navigateToSearch(undefined, undefined, categoryId),
+    (categoryId, keywordOverwrite) =>
+      navigateToSearch(keywordOverwrite, undefined, categoryId),
     [navigateToSearch]
   );
-
   return { navigateToSearch, toggleCategory };
 }

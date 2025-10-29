@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSquare, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
 import { l } from "../../../lang/Lang";
 
-export default function SearchFilters({
+export function SearchFilters({
   filters,
   selectedCategories,
   onToggle,
@@ -98,3 +98,5 @@ SearchFilters.propTypes = {
   disabled: PropTypes.bool,
   className: PropTypes.string,
 };
+
+export default SearchFilters;

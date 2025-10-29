@@ -91,8 +91,28 @@ export default function SearchPanel({
     onPick: (run) => {
       run();
       setSuggestionsVisible(false);
+      // return focus to the input for good a11y
+      inputRef.current?.focus();
     },
   });
+
+  // When pressing Enter on the input, prefer selecting the active suggestion
+  const pickActiveSuggestion = useCallback(() => {
+    if (!suggestionsVisible || activeIdx < 0) return false;
+    const s = flatSuggestions?.[activeIdx];
+    // support both shapes: a function or an object with .run() or a { click, item }
+    const run =
+      typeof s === "function"
+        ? s
+        : s?.run || (s?.click && (() => s.click(s.item ?? s)));
+    if (typeof run === "function") {
+      run();
+      setSuggestionsVisible(false);
+      inputRef.current?.focus();
+      return true;
+    }
+    return false;
+  }, [suggestionsVisible, activeIdx, flatSuggestions]);
 
   // input handlers
   const debouncedChange = useDebouncedCallback(setQuery);
@@ -104,6 +124,7 @@ export default function SearchPanel({
   };
   const onKeyDown = (e) => {
     if (e.key === "Enter") {
+      if (pickActiveSuggestion()) return;
       navigateToSearch(inputValue);
       setSuggestionsVisible(false);
     } else if (e.key === "Escape") {
@@ -119,14 +140,21 @@ export default function SearchPanel({
     inputRef.current?.focus();
   }, [navigateToSearch, setSelectedPerson, setSelectedPlace]);
 
-  // keep in sync with route changes
+  // keep categories in sync with the route
   useEffect(() => {
-    setQuery(qParam ?? "");
-    setInputValue(qParam ?? "");
     setCategories(category ? category.split(",") : []);
-  }, [qParam, category]);
+  }, [category]);
 
-  const onFiltersToggle = (categoryId) => toggleCategory(categoryId);
+  // keep input/query in sync only when the route's query changes
+  useEffect(() => {
+    const next = qParam ?? "";
+    // React will bail out if value is unchanged, so setting unconditionally is fine
+    setQuery(next);
+    setInputValue(next);
+  }, [qParam]); // do NOT include `category` here
+
+  const onFiltersToggle = (categoryId) =>
+    toggleCategory(categoryId, inputValue || qParam || "");
 
   return (
     <>
@@ -147,7 +175,7 @@ export default function SearchPanel({
             onKeyDown={onKeyDown}
             onFocus={() => setSuggestionsVisible(true)}
             onBlur={({ relatedTarget }) => {
-              if (!relatedTarget?.closest("#search-suggestions")) {
+              if (!relatedTarget?.closest("#search-suggestions-container")) {
                 setSuggestionsVisible(false);
               }
             }}
@@ -159,8 +187,8 @@ export default function SearchPanel({
               activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
             }
             aria-haspopup="listbox"
-            aria-owns={suggestionsVisible ? "search-suggestions" : undefined}
             aria-label={l("Sök i Folke")}
+            aria-busy={loading || undefined}
             autoComplete="off"
             spellCheck="false"
             tabIndex={0}
@@ -221,6 +249,8 @@ export default function SearchPanel({
                   hasSelection ? "hidden" : "inline-block"
                 )}
                 aria-label="Laddar"
+                role="status"
+                aria-live="polite"
               />
             )}
           </div>
@@ -242,7 +272,7 @@ export default function SearchPanel({
           {total.value > 0 && !loading && (
             <button
               type="button"
-              className="inline-flex w/full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
               onClick={() => window.eventBus?.dispatch("routePopup.show")}
             >
               <FontAwesomeIcon icon={faList} />
@@ -278,8 +308,9 @@ export default function SearchPanel({
 SearchPanel.propTypes = {
   mode: PropTypes.string.isRequired,
   params: PropTypes.object.isRequired,
-  recordsData: PropTypes.object.isRequired,
-  audioRecordsData: PropTypes.object.isRequired,
-  pictureRecordsData: PropTypes.object.isRequired,
-  loading: PropTypes.bool.isRequired,
+  // These can be null/undefined while data loads; code already guards
+  recordsData: PropTypes.object,
+  audioRecordsData: PropTypes.object,
+  pictureRecordsData: PropTypes.object,
+  loading: PropTypes.bool,
 };
