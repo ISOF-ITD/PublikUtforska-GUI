@@ -1,3 +1,5 @@
+import classNames from "classnames";
+
 // helper: make the search term bold inside any string
 export const highlight = (text, needle = "") => {
   if (!needle) return text;

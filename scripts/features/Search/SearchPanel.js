@@ -1,25 +1,20 @@
-import { useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose, faList } from "@fortawesome/free-solid-svg-icons";
-
 import { l } from "../../lang/Lang";
-import config from "../../config";
 import { createParamsFromSearchRoute } from "../../utils/routeHelper";
-import {
-  getPersonFetchLocation,
-  getPlaceFetchLocation,
-} from "../../utils/helpers";
-
-import SuggestionsPopover from "./ui/SuggestionsPopover";
-import SearchFilters from "./ui/SearchFilters";
-import classNames from "classnames";
 import useAutocomplete from "./hooks/useAutocomplete";
 import useDebouncedCallback from "./hooks/useDebouncedCallback";
-import { suggestionSort } from "./utils/suggestionSort";
+import SuggestionsPopover from "./ui/SuggestionsPopover";
+import SearchFilters from "./ui/SearchFilters";
+import usePopularQueries from "./hooks/usePopularQueries";
+import useSearchRouting from "./hooks/useSearchRouting";
+import useSelectionFromRoute from "./hooks/useSelectionFromRoute";
+import useSuggestionGroups from "./hooks/useSuggestionGroups";
+import useSuggestionKeyboard from "./hooks/useSuggestionKeyboard";
 
-// Component
 export default function SearchPanel({
   mode,
   params,
@@ -28,49 +23,20 @@ export default function SearchPanel({
   pictureRecordsData,
   loading,
 }) {
-  // routing & derived params
   const {
     query: qParam,
     search_field,
     category,
   } = createParamsFromSearchRoute(params["*"]);
-  const navigate = useNavigate();
 
-  // refs & state
+  // state
   const inputRef = useRef(null);
-  const suggestionsRef = useRef(null);
   const [inputValue, setInputValue] = useState(qParam ?? "");
   const [query, setQuery] = useState(qParam ?? "");
   const [categories, setCategories] = useState(
     category ? category.split(",") : []
   );
-  const [selectedPerson, setSelectedPerson] = useState(null);
-  const [selectedPlace, setSelectedPlace] = useState(null);
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
-
-  // Popular Matomo searches
-  const [popularQueries, setPopularQueries] = useState([]);
-
-  useEffect(() => {
-    if (!suggestionsVisible || popularQueries.length) return;
-
-    const url = new URL(config.matomoApiUrl);
-    Object.entries(config.searchSuggestionsParams).forEach(([k, v]) =>
-      url.searchParams.append(k, v)
-    );
-
-    fetch(url, { mode: "cors" })
-      .then((r) => r.json())
-      .then((json) => {
-        if (!Array.isArray(json)) return;
-        setPopularQueries(
-          json
-            .filter((row) => !/^start/i.test(row.label))
-            .map((row) => ({ value: row.label, label: row.label }))
-        );
-      })
-      .catch(console.error);
-  }, [suggestionsVisible, popularQueries.length]);
 
   // totals
   const total = recordsData?.metadata?.total ?? { value: 0, relation: "eq" };
@@ -82,197 +48,60 @@ export default function SearchPanel({
     value: 0,
     relation: "eq",
   };
-  // autocomplete
+
+  // data
   const { people, places, provinces, archives } = useAutocomplete(query);
+  const popularQueries = usePopularQueries(suggestionsVisible);
 
-  // helpers
-  // inside SearchPanel, replace the whole navigateToSearch with:
-  const navigateToSearch = useCallback(
-    (
-      keywordOverwrite = inputValue,
-      searchFieldOverwriteProp = search_field ?? null,
-      toggleCategory = null
-    ) => {
-      // update local category state
-      const newCats = toggleCategory
-        ? categories.includes(toggleCategory)
-          ? categories.filter((c) => c !== toggleCategory)
-          : [...categories, toggleCategory]
-        : categories;
-      setCategories(newCats);
+  // routing helpers
+  const { navigateToSearch, toggleCategory } = useSearchRouting({
+    mode,
+    search_field,
+    categories,
+    setCategories,
+  });
 
-      const searchFieldOverwrite = keywordOverwrite
-        ? searchFieldOverwriteProp
-        : null;
+  // selection derived from route
+  const {
+    selectedPerson,
+    selectedPlace,
+    hasSelection,
+    labelPrefix,
+    labelValue,
+    setSelectedPerson,
+    setSelectedPlace,
+  } = useSelectionFromRoute(qParam, search_field);
 
-      // build the path
-      const segments = [];
-      if (keywordOverwrite) {
-        segments.push("search", encodeURIComponent(keywordOverwrite));
-      }
-      if (searchFieldOverwrite) {
-        segments.push("search_field", searchFieldOverwrite);
-      }
-      if (newCats.length) {
-        segments.push("category", newCats.join(","));
-      }
-
-      const transcribePrefix = mode === "transcribe" ? "transcribe/" : "";
-      const pathname = `/${transcribePrefix}${segments.join("/")}`;
-
-      // add the ?s= query only when a keyword exists
-      const searchParam = keywordOverwrite
-        ? `?s=${
-            searchFieldOverwrite ? `${searchFieldOverwrite}:` : ""
-          }${encodeURIComponent(keywordOverwrite)}`
-        : "";
-
-      navigate(`${pathname}${searchParam}`);
-      setSuggestionsVisible(false);
-    },
-    [
-      categories,
-      mode,
-      navigate,
+  // suggestions model
+  const { visibleSuggestionGroups, flatSuggestions, hasSuggestions } =
+    useSuggestionGroups({
       query,
-      inputValue,
-      search_field,
-      setSuggestionsVisible,
-    ]
-  );
-
-  const handleFilterChange = (e) => {
-    const { filter: categoryToToggle } = e.currentTarget.dataset;
-    navigateToSearch(undefined, undefined, categoryToToggle);
-  };
-
-  const clearSearch = () => {
-    setSelectedPerson(null);
-    setSelectedPlace(null);
-    setQuery("");
-    navigateToSearch("", null); // strip the old search_field segment
-    setInputValue(""); // keep the input in sync
-    inputRef.current?.focus();
-  };
-
-  const suggestionGroups = useMemo(
-    () => [
-      {
-        title: "Search",
-        label: l("Vanligaste sökningar"),
-        items: popularQueries.filter(({ label }) =>
-          label.toLowerCase().includes(query.trim().toLowerCase())
-        ),
-        click: (s) => navigateToSearch(s.value),
-        maxHeight: 240,
-      },
-      {
-        // Personer
-        title: "Person", // <- must match config.numberOfPersonSuggestions
-        label: l("Personer"),
-        items: [...people].sort(suggestionSort(query)),
-        field: "person",
-        click: (p) => navigateToSearch(p.value, "person"),
-      },
-      {
-        // Orter
-        title: "Place",
-        label: l("Orter"),
-        items: places,
-        field: "place",
-        click: (p) => navigateToSearch(p.value, "place"),
-      },
-      {
-        // Landskap
-        title: "Province",
-        label: l("Landskap"),
-        items: provinces,
-        field: "place",
-        click: (p) => navigateToSearch(p.value, "place"),
-      },
-      {
-        // Arkivsignum
-        title: "ArchiveId",
-        label: l("Arkivsignum"),
-        items: archives,
-        /* field left undefined on purpose – we search the raw value */
-        click: (p) => navigateToSearch(p.value),
-      },
-    ],
-    [
       popularQueries,
       people,
       places,
       provinces,
       archives,
       navigateToSearch,
-      query,
-    ]
-  );
+    });
 
-  // single source of truth for visible suggestions
-  const visibleSuggestionGroups = useMemo(
-    () =>
-      suggestionGroups.map((g) => {
-        const limit = config[`numberOf${g.title}Suggestions`];
-        return { ...g, items: limit ? g.items.slice(0, limit) : g.items };
-      }),
-    [suggestionGroups]
-  );
+  // keyboard nav
+  const { activeIdx } = useSuggestionKeyboard({
+    enabled: suggestionsVisible,
+    flatSuggestions,
+    onPick: (run) => {
+      run();
+      setSuggestionsVisible(false);
+    },
+  });
 
-  const flatSuggestions = useMemo(
-    () =>
-      visibleSuggestionGroups.flatMap((g) =>
-        g.items.map((it) => ({ ...it, group: g }))
-      ),
-    [visibleSuggestionGroups]
-  );
-
-  const hasSuggestions = flatSuggestions.length > 0;
-
+  // input handlers
   const debouncedChange = useDebouncedCallback(setQuery);
-
-  // effects
-  // keep component in sync with route changes
-  useEffect(() => {
-    setQuery(qParam ?? "");
-    setCategories(category ? category.split(",") : []);
-    if (search_field === "person") {
-      fetch(getPersonFetchLocation(qParam))
-        .then((r) => r.json())
-        .then(setSelectedPerson);
-    } else if (search_field === "place") {
-      fetch(getPlaceFetchLocation(qParam))
-        .then((r) => r.json())
-        .then(setSelectedPlace);
-    } else {
-      setSelectedPerson(null);
-      setSelectedPlace(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qParam, search_field, category]);
-
-  useEffect(() => setInputValue(qParam ?? ""), [qParam]);
-
-  // render helpers
-  const labelPrefix = selectedPerson
-    ? "Person: "
-    : selectedPlace
-    ? "Ort: "
-    : query
-    ? "Innehåll: "
-    : "";
-
-  const labelValue = selectedPerson?.name ?? selectedPlace?.name ?? query;
-
-  // event handlers
   const onInput = ({ target }) => {
     const { value } = target;
     setInputValue(value);
     debouncedChange(value);
     setSuggestionsVisible(true);
   };
-
   const onKeyDown = (e) => {
     if (e.key === "Enter") {
       navigateToSearch(inputValue);
@@ -281,45 +110,23 @@ export default function SearchPanel({
       setSuggestionsVisible(false);
     }
   };
+  const clearSearch = useCallback(() => {
+    setSelectedPerson(null);
+    setSelectedPlace(null);
+    setQuery("");
+    navigateToSearch("", null); // strips old search_field segment
+    setInputValue("");
+    inputRef.current?.focus();
+  }, [navigateToSearch, setSelectedPerson, setSelectedPlace]);
 
-  const [activeIdx, setActiveIdx] = useState(-1);
-
-  useEffect(
-    () => setActiveIdx(-1),
-    [suggestionsVisible, query, flatSuggestions.length]
-  );
-
-  const handleGlobalKey = useCallback(
-    (e) => {
-      if (!suggestionsVisible || flatSuggestions.length === 0) return;
-      if (["ArrowDown", "ArrowUp"].includes(e.key)) {
-        e.preventDefault();
-        setActiveIdx((prev) =>
-          e.key === "ArrowDown"
-            ? (prev + 1) % flatSuggestions.length
-            : (prev - 1 + flatSuggestions.length) % flatSuggestions.length
-        );
-      }
-      if (e.key === "Enter" && activeIdx > -1) {
-        e.preventDefault();
-        const { group, ...item } = flatSuggestions[activeIdx];
-        group.click(item);
-        setSuggestionsVisible(false);
-      }
-    },
-    [activeIdx, flatSuggestions, suggestionsVisible]
-  );
-
+  // keep in sync with route changes
   useEffect(() => {
-    window.addEventListener("keydown", handleGlobalKey);
-    return () => window.removeEventListener("keydown", handleGlobalKey);
-  }, [handleGlobalKey]);
+    setQuery(qParam ?? "");
+    setInputValue(qParam ?? "");
+    setCategories(category ? category.split(",") : []);
+  }, [qParam, category]);
 
-  const hasSelection = !!(selectedPerson || selectedPlace);
-
-  const toggleCategory = (categoryId) => {
-    navigateToSearch(undefined, undefined, categoryId);
-  };
+  const onFiltersToggle = (categoryId) => toggleCategory(categoryId);
 
   return (
     <>
@@ -358,6 +165,7 @@ export default function SearchPanel({
             spellCheck="false"
             tabIndex={0}
           />
+
           <div
             className={classNames(
               "absolute pointer-events-none block top-2.5 left-4 right-36",
@@ -368,15 +176,16 @@ export default function SearchPanel({
             {labelPrefix}
             <strong>{labelValue}</strong>
           </div>
+
           {suggestionsVisible && hasSuggestions && (
             <SuggestionsPopover
               search={query}
               activeIdx={activeIdx}
               groups={visibleSuggestionGroups}
-              ref={suggestionsRef}
               onClose={() => setSuggestionsVisible(false)}
             />
           )}
+
           <div className="absolute inset-y-0 right-2 flex items-center gap-2">
             {(query || selectedPerson || selectedPlace) && (
               <button
@@ -394,12 +203,11 @@ export default function SearchPanel({
             {!loading && (
               <button
                 type="button"
-                className={classNames(
-                  "pointer-events-auto rounded-md px-3.5 py-2.5 text-sm font-medium !mb-0",
-                  "bg-isof !text-white hover:bg-darker-isof",
-                  "focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white"
-                )}
-                onClick={() => navigateToSearch(inputValue)}
+                className="pointer-events-auto rounded-md px-3.5 py-2.5 text-sm font-medium !mb-0 bg-isof !text-white hover:bg-darker-isof focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white"
+                onClick={() => {
+                  navigateToSearch(inputValue);
+                  setSuggestionsVisible(false);
+                }}
                 aria-label="Sök"
               >
                 Sök
@@ -418,21 +226,23 @@ export default function SearchPanel({
           </div>
         </div>
       </div>
+
       <SearchFilters
         loading={loading}
         selectedCategories={categories}
-        onToggle={toggleCategory}
+        onToggle={onFiltersToggle}
         filters={[
           { label: "Ljud", categoryId: "contentG5", total: audioTotal },
           { label: "Bild", categoryId: "contentG2", total: pictureTotal },
         ]}
       />
+
       {total && (
         <div className="mt-2 w-full">
           {total.value > 0 && !loading && (
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
+              className="inline-flex w/full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
               onClick={() => window.eventBus?.dispatch("routePopup.show")}
             >
               <FontAwesomeIcon icon={faList} />
