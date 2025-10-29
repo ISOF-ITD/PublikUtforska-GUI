@@ -10,111 +10,16 @@ import { createParamsFromSearchRoute } from "../../utils/routeHelper";
 import {
   getPersonFetchLocation,
   getPlaceFetchLocation,
-  makeArchiveIdHumanReadable,
 } from "../../utils/helpers";
 
 import SuggestionsPopover from "./ui/SuggestionsPopover";
 import SearchFilters from "./ui/SearchFilters";
 import classNames from "classnames";
-
-// Utils & hooks
-function useDebounce(fn, delay = 300) {
-  const timer = useRef();
-
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  return useCallback(
-    (...args) => {
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => fn(...args), delay);
-    },
-    [delay, fn]
-  );
-}
-
-function useAutocomplete(query) {
-  const [{ people, places, provinces, archives }, setSuggestions] = useState({
-    people: [],
-    places: [],
-    provinces: [],
-    archives: [],
-  });
-
-  const fetchJson = (endpoint, mapFn, signal) =>
-    fetch(endpoint, { mode: "cors", signal })
-      .then((r) => r.json())
-      .then(({ data }) => mapFn(data));
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-    if (query.length < 2) {
-      controller.abort();
-      return setSuggestions({
-        people: [],
-        places: [],
-        provinces: [],
-        archives: [],
-      });
-    }
-
-    const { apiUrl } = config;
-
-    Promise.allSettled([
-      fetchJson(`${apiUrl}autocomplete/persons?search=${query}`, (data) =>
-        data
-          .filter((p) => !/^p\d+$/.test(p.id))
-          .map((p) => ({
-            value: p.id,
-            label: `${p.name}${p.birth_year ? ` (född ${p.birth_year})` : ""}`,
-          }))
-      ),
-      fetchJson(`${apiUrl}autocomplete/socken?search=${query}`, (data) =>
-        data.map((p) => ({
-          value: p.id,
-          label: `${p.name}${p.landskap ? ` (${p.landskap})` : ""}`,
-        }))
-      ),
-      fetchJson(`${apiUrl}autocomplete/landskap?search=${query}`, (data) =>
-        data.map((p) => ({
-          value: p.name,
-          label: p.name,
-        }))
-      ),
-      fetchJson(`${apiUrl}autocomplete/archive_ids?search=${query}`, (data) =>
-        data.map((r) => ({
-          value: r.id,
-          label: makeArchiveIdHumanReadable(r.id),
-          secondaryLabel: `(${r.id})`,
-        }))
-      ),
-    ])
-      .then((results) => {
-        if (signal.aborted) return;
-        const [pe, pl, pr, ar] = results.map((r) =>
-          r.status === "fulfilled" ? r.value : []
-        );
-        setSuggestions({ people: pe, places: pl, provinces: pr, archives: ar });
-      })
-      .catch((err) => {
-        if (err?.name !== "AbortError") console.error(err);
-      });
-    return () => controller.abort();
-  }, [query]);
-
-  return { people, places, provinces, archives };
-}
-
-const suggestionSort = (needle) => (a, b) => {
-  const aStarts = a.label.toLowerCase().startsWith(needle);
-  const bStarts = b.label.toLowerCase().startsWith(needle);
-  if (aStarts && !bStarts) return -1;
-  if (!aStarts && bStarts) return 1;
-  return a.label.localeCompare(b.label, "sv"); // secondary alphabetical sort
-};
+import useAutocomplete from "./hooks/useAutocomplete";
+import useDebouncedCallback from "./hooks/useDebouncedCallback";
+import { suggestionSort } from "./utils/suggestionSort";
 
 // Component
-
 export default function SearchPanel({
   mode,
   params,
@@ -294,7 +199,15 @@ export default function SearchPanel({
         click: (p) => navigateToSearch(p.value),
       },
     ],
-    [popularQueries, people, places, provinces, archives, navigateToSearch, query]
+    [
+      popularQueries,
+      people,
+      places,
+      provinces,
+      archives,
+      navigateToSearch,
+      query,
+    ]
   );
 
   // single source of truth for visible suggestions
@@ -317,7 +230,7 @@ export default function SearchPanel({
 
   const hasSuggestions = flatSuggestions.length > 0;
 
-  const debouncedChange = useDebounce(setQuery);
+  const debouncedChange = useDebouncedCallback(setQuery);
 
   // effects
   // keep component in sync with route changes

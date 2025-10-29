@@ -4,29 +4,7 @@ import PropTypes from "prop-types";
 import config from "../../../config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
-import classNames from "classnames";
-
-// helper: make the search term bold inside any string
-const highlight = (text, needle = "") => {
-  if (!needle) return text;
-  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return text.split(new RegExp(`(${escaped})`, "gi")).map((part, i) => (
-    <span
-      key={i}
-      className={classNames(
-        part.toLowerCase() === needle.toLowerCase()
-          ? "font-bold"
-          : "font-normal",
-        part.toLowerCase() === needle.toLowerCase()
-          ? "bg-yellow-100 rounded-sm"
-          : "",
-        part.toLowerCase() === needle.toLowerCase() ? "py-0.5 px-0.5" : ""
-      )}
-    >
-      {part}
-    </span>
-  ));
-};
+import { highlight } from "../utils/highlight";
 
 const SuggestionsPopover = forwardRef(
   ({ search, groups, activeIdx, onClose }, ref) => {
