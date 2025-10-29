@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClose, faList } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faList, faPen } from "@fortawesome/free-solid-svg-icons";
 import { l } from "../../lang/Lang";
 import { createParamsFromSearchRoute } from "../../utils/routeHelper";
 import useAutocomplete from "./hooks/useAutocomplete";
@@ -14,6 +14,9 @@ import useSearchRouting from "./hooks/useSearchRouting";
 import useSelectionFromRoute from "./hooks/useSelectionFromRoute";
 import useSuggestionGroups from "./hooks/useSuggestionGroups";
 import useSuggestionKeyboard from "./hooks/useSuggestionKeyboard";
+import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import FilterSwitch from "../../components/FilterSwitch";
+import config from "../../config";
 
 export default function SearchPanel({
   mode,
@@ -171,6 +174,7 @@ export default function SearchPanel({
 
   return (
     <>
+      <FilterSwitch mode={mode} />
       <div className="w-full left-0 mb-4 z-[2000] cursor-auto relative lg:p-3 p-1 text-gray-700 text-base bg-neutral-100 rounded shadow-sm">
         <div className="relative ">
           <input
@@ -285,7 +289,7 @@ export default function SearchPanel({
           {total.value > 0 && !loading && (
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow hover:bg-gray-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow hover:bg-gray-50"
               onClick={() => window.eventBus?.dispatch("routePopup.show")}
             >
               <FontAwesomeIcon icon={faList} />
@@ -297,7 +301,7 @@ export default function SearchPanel({
           {loading && (
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-400 shadow cursor-not-allowed"
+              className="inline-flex w-full items-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow cursor-not-allowed"
               disabled
             >
               <span>Söker...</span>
@@ -306,7 +310,7 @@ export default function SearchPanel({
           {total.value === 0 && !loading && (
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-400 shadow cursor-default"
+              className="inline-flex w-full items-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow cursor-default"
               disabled
             >
               <span>0 sökträffar</span>
@@ -314,6 +318,19 @@ export default function SearchPanel({
           )}
         </div>
       )}
+      <TranscribeButton
+        className=""
+        label={
+          <>
+            <FontAwesomeIcon icon={faPen} />{" "}
+            {l("Skriv av slumpmässig uppteckning")}
+            {config.specialEventTranscriptionCategoryLabel && <br />}
+            {config.specialEventTranscriptionCategoryLabel || ""}
+          </>
+        }
+        random
+        variant="listLike" // match "Visa sökträffar" look
+      />
     </>
   );
 }

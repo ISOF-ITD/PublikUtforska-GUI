@@ -4,16 +4,12 @@ import PropTypes from "prop-types";
 import {
   faChevronLeft,
   faChevronRight,
-  faPen,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Folkelogga from "../../img/folke-white.svg";
 import { l } from "../lang/Lang";
-import config from "../config";
-import FilterSwitch from "./FilterSwitch";
 import SearchPanel from "../features/Search/SearchPanel";
 import StatisticsContainer from "./StatisticsContainer";
-import TranscribeButton from "./views/transcribe/TranscribeButton";
 import RecordList from "../features/RecordList/RecordList";
 import classNames from "classnames";
 
@@ -124,8 +120,6 @@ export default function MapMenu({
 
       <img src={Folkelogga} alt="Folkelogga" className="h-20 w-full" />
 
-      <FilterSwitch mode={mode} />
-
       <SearchPanel
         params={params}
         mode={mode}
@@ -135,20 +129,6 @@ export default function MapMenu({
         loading={loading}
       />
 
-      <div className="popup-wrapper w-full flex">
-        <TranscribeButton
-          className=""
-          label={
-            <>
-              <FontAwesomeIcon icon={faPen} />{" "}
-              {l("Skriv av slumpmässig uppteckning")}
-              {config.specialEventTranscriptionCategoryLabel && <br />}
-              {config.specialEventTranscriptionCategoryLabel || ""}
-            </>
-          }
-          random
-        />
-      </div>
       <div
         className="fixed z-[1999] pointer-events-none will-change-[left,transform] transition-[left,transform] duration-300 ease-in-out"
         style={

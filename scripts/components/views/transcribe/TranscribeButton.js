@@ -24,6 +24,7 @@ export default function TranscribeButton({
   helptext = null,
   transcribeCancel,
   disabled = false,
+  variant = "primary",
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -176,11 +177,16 @@ export default function TranscribeButton({
         </div>
       )}
       <button
-        className={classNames("flex items-center justify-center gap-2 h-10 !p-3 !text-base leading-normal tracking-normal border border-solid", 
-        "border-white !text-white no-underline cursor-pointer mb-4 print:hidden transition-opacity duration-500",
-        className
-        )
-      }
+        className={classNames(
+          // base
+          "flex items-center justify-center gap-2 h-10 !p-3 !text-base leading-normal tracking-normal border border-solid",
+          "no-underline cursor-pointer mb-4 print:hidden transition-opacity duration-500",
+          // variants
+          variant === "primary" && "border-white !text-white",
+          variant === "listLike" && "w-full rounded-md bg-white px-3 py-2 font-medium text-gray-700 shadow hover:bg-gray-50 border-transparent",
+          // custom extra classes last
+          className
+        )}
         onClick={effectiveOnClick}
         type="button"
         disabled={isDisabled}
@@ -211,4 +217,5 @@ TranscribeButton.propTypes = {
   helptext: PropTypes.node,
   transcribeCancel: PropTypes.func,
   disabled: PropTypes.bool,
+  variant: PropTypes.oneOf(["primary", "listLike"]),
 };
