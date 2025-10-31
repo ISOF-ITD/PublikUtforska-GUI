@@ -183,104 +183,116 @@ export default function SearchPanel({
   return (
     <>
       <FilterSwitch mode={mode} />
-      <div className="w-full left-0 mb-4 z-[2000] cursor-auto relative lg:p-3 p-1 text-gray-700 text-base bg-neutral-100 rounded shadow-sm">
-        <div className="relative ">
-          <input
-            ref={inputRef}
-            id="searchInputMapMenu"
-            type="text"
-            className={classNames(
-              "w-full h-20 sm:h-16 rounded-lg border bg-white !p-4 pr-28 text-gray-900 placeholder-gray-500 shadow-sm",
-              "border-gray-300 focus:border-isof focus:ring-2 focus:ring-isof/60 focus:outline-none",
-              hasSelection ? "opacity-0 pointer-events-none" : "opacity-100"
-            )}
-            placeholder={l("Sök i Folke")}
-            value={inputValue}
-            onChange={onInput}
-            onKeyDown={onKeyDown}
-            onFocus={() => setSuggestionsVisible(true)}
-            onBlur={({ relatedTarget }) => {
-              if (!relatedTarget?.closest("#search-suggestions-container")) {
-                setSuggestionsVisible(false);
-              }
-            }}
-            role="combobox"
-            aria-expanded={suggestionsVisible}
-            aria-controls="search-suggestions"
-            aria-haspopup="listbox"
-            aria-autocomplete="list"
-            aria-activedescendant={
-              activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
-            }
-            aria-hidden={hasSelection || undefined}
-            aria-label={l("Sök i Folke")}
-            aria-busy={loading || undefined}
-            autoComplete="off"
-            spellCheck="false"
-            tabIndex={hasSelection ? -1 : 0}
-          />
-
-          <div
-            className={classNames(
-              "absolute pointer-events-none block top-2.5 left-4 right-36",
-              "truncate text-gray-700 leading-6",
-              hasSelection ? "opacity-100" : "opacity-0"
-            )}
-          >
-            {labelPrefix}
-            <strong>{labelValue}</strong>
-          </div>
-
-          {suggestionsVisible && hasSuggestions && (
-            <SuggestionsPopover
-              search={query}
-              activeIdx={activeIdx}
-              groups={visibleSuggestionGroups}
-              onClose={() => setSuggestionsVisible(false)}
-            />
-          )}
-
-          <div className="absolute inset-y-0 right-2 flex items-center gap-2">
-            {(query || selectedPerson || selectedPlace) && (
-              <button
-                type="button"
-                className="pointer-events-auto rounded-full !py-0 !border-none !m-0 text-gray-500 hover:text-gray-700 focus-visible:outline-none"
-                onClick={clearSearch}
-                aria-label="Rensa sökning"
-              >
-                <span aria-hidden className="bg-white">
-                  Rensa <FontAwesomeIcon icon={faClose} />
-                </span>
-              </button>
-            )}
-
-            {!loading && (
-              <button
-                type="button"
-                className="pointer-events-auto gap-1 flex items-center rounded-md px-3.5 py-2.5 text-sm font-medium !mb-0 bg-isof !text-white hover:bg-darker-isof focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white"
-                onClick={() => {
-                  navigateToSearch(inputValue);
+      <div className="w-full left-0 z-[2000] flex items-center cursor-auto relative lg:p-3 p-1 text-gray-700 text-base bg-neutral-100 rounded shadow-sm">
+        {/* Make the input and the external button siblings */}
+        <div className=" w-full flex gap-2 items-center">
+          {/* Input wrapper stays relative so the popover can be absolutely positioned */}
+          <div className="relative flex-1 items-center">
+            <input
+              ref={inputRef}
+              id="searchInputMapMenu"
+              type="text"
+              className={classNames(
+                "w-full h-20 sm:h-16 rounded-lg border bg-white !p-2 text-gray-900 placeholder-gray-500 shadow-sm",
+                "border-gray-300 focus:border-isof focus:ring-2 focus:ring-isof/60 focus:outline-none !mb-0",
+                hasSelection ? "opacity-0 pointer-events-none" : "opacity-100"
+              )}
+              placeholder={l("Sök i Folke")}
+              value={inputValue}
+              onChange={onInput}
+              onKeyDown={onKeyDown}
+              onFocus={() => setSuggestionsVisible(true)}
+              onBlur={({ relatedTarget }) => {
+                if (!relatedTarget?.closest("#search-suggestions-container")) {
                   setSuggestionsVisible(false);
-                }}
-                aria-label="Sök"
-              >
-                Sök
-                <FontAwesomeIcon icon={faSearch} />
-              </button>
-            )}
+                }
+              }}
+              role="combobox"
+              aria-expanded={suggestionsVisible}
+              aria-controls="search-suggestions"
+              aria-haspopup="listbox"
+              aria-autocomplete="list"
+              aria-activedescendant={
+                activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
+              }
+              aria-hidden={hasSelection || undefined}
+              aria-label={l("Sök i Folke")}
+              aria-busy={loading || undefined}
+              autoComplete="off"
+              spellCheck="false"
+              tabIndex={hasSelection ? -1 : 0}
+            />
 
-            {loading && query && (
-              <span
-                className={classNames(
-                  "h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent",
-                  hasSelection ? "hidden" : "inline-block"
-                )}
-                aria-label="Laddar"
-                role="status"
-                aria-live="polite"
+            {/* Read-only label overlay – tighten right edge since search is now outside */}
+            <div
+              className={classNames(
+                "absolute pointer-events-none block top-2.5 left-4 right-12",
+                "truncate text-gray-700 leading-6",
+                hasSelection ? "opacity-100" : "opacity-0"
+              )}
+            >
+              {labelPrefix}
+              <strong>{labelValue}</strong>
+            </div>
+
+            {suggestionsVisible && hasSuggestions && (
+              <SuggestionsPopover
+                search={query}
+                activeIdx={activeIdx}
+                groups={visibleSuggestionGroups}
+                onClose={() => setSuggestionsVisible(false)}
               />
             )}
+
+            {/* Keep only clear + loader inside the input */}
+            <div className="absolute inset-y-0 right-2 flex items-center gap-2">
+              {(query || selectedPerson || selectedPlace) && (
+                <button
+                  type="button"
+                  className="pointer-events-auto rounded-full !py-0 !border-none !m-0 text-gray-500 hover:text-gray-700 focus-visible:outline-none"
+                  onClick={clearSearch}
+                  aria-label="Rensa sökning"
+                  title={l("Rensa sökning")}
+                >
+                  <span aria-hidden className="bg-white">
+                    Rensa <FontAwesomeIcon icon={faClose} />
+                  </span>
+                </button>
+              )}
+
+              {loading && query && (
+                <span
+                  className={classNames(
+                    "h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent",
+                    hasSelection ? "hidden" : "inline-block"
+                  )}
+                  aria-label="Laddar"
+                  role="status"
+                  aria-live="polite"
+                />
+              )}
+            </div>
           </div>
+
+          {/* External “Sök” button */}
+          <button
+            type="button"
+            className={classNames(
+              "pointer-events-auto gap-1 flex items-center justify-center self-center rounded-md p-2 text-sm font-medium",
+              "bg-isof !text-white hover:bg-darker-isof focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white",
+              "shrink-0 !mb-0"
+            )}
+            onClick={() => {
+              navigateToSearch(inputValue);
+              setSuggestionsVisible(false);
+            }}
+            aria-label={l("Sök")}
+            disabled={loading}
+            title={l("Hämta sökresultat")}
+          >
+            <FontAwesomeIcon icon={faSearch} />
+            {l("Sök")}
+          </button>
         </div>
       </div>
 
@@ -301,7 +313,7 @@ export default function SearchPanel({
               type="button"
               className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow hover:bg-gray-50"
               onClick={() => window.eventBus?.dispatch("routePopup.show")}
-               title={l("Visa sökträffar")}
+              title={l("Visa sökträffar")}
             >
               <FontAwesomeIcon icon={faList} />
               {` Visa ${total.value}${
