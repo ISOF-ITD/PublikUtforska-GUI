@@ -3,7 +3,6 @@ import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
-  faWindowMaximize,
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
@@ -84,6 +83,8 @@ export default function MapMenu({
     typeof window !== "undefined" ? window.innerWidth < 700 : false;
   const [isMobile, setIsMobile] = useState(getIsMobile());
   const [expanded, setExpanded] = useState(true);
+  const [toggleW, setToggleW] = useState(64);
+  const toggleRef = useRef(null);
 
   useEffect(() => {
     const onResize = () => {
@@ -93,6 +94,16 @@ export default function MapMenu({
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const measure = () => {
+      const w = toggleRef.current?.getBoundingClientRect().width || 64;
+      setToggleW(w);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
 
   const latestParams = useMemo(
@@ -137,7 +148,6 @@ export default function MapMenu({
       ? window.innerWidth
       : PANEL_WIDTH // full width on mobile
     : PANEL_WIDTH;
-  const TOGGLE_W = 28;
 
   return (
     <div
@@ -170,7 +180,7 @@ export default function MapMenu({
         style={
           isMobile
             ? {
-                left: expanded ? Math.max((panelWidth ?? 0) - TOGGLE_W, 0) : 0,
+                left: expanded ? Math.max((panelWidth ?? 0) - toggleW, 0) : 0,
                 top: 8,
                 transform: "none",
               }
@@ -189,12 +199,23 @@ export default function MapMenu({
           aria-label={expanded ? l("Dölj meny") : l("Visa meny")}
           title={expanded ? l("Dölj meny") : l("Visa meny")}
           className={classNames(
-            "pointer-events-auto shadow-md p-0 bg-white w-7 h-12 flex justify-center items-center border-0 focus:outline-none focus-visible:ring focus-visible:lighter-isof",
+            "pointer-events-auto shadow-md bg-white/95 backdrop-blur-sm border border-gray-200",
+            "w-12 h-12 flex justify-center gap-2 items-center rounded-r",
             isMobile ? (expanded ? "rounded-r" : "rounded-l") : "rounded-r"
           )}
+          style={{ touchAction: "manipulation" }}
         >
-          <FontAwesomeIcon icon={expanded ? faChevronLeft : faChevronRight} />
+          <FontAwesomeIcon
+            icon={expanded ? faChevronLeft : faChevronRight}
+            aria-hidden="true"
+          />
+          <span className="transform rotate-90">
+            {expanded ? l("Dölj") : l("Visa")}
+          </span>
         </button>
+        <span className="sr-only" role="status" aria-live="polite">
+          {expanded ? l("Meny öppen") : l("Meny stängd")}
+        </span>
       </div>
 
       <div className="overflow-y-auto p-4 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white">

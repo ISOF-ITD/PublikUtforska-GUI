@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,7 +8,6 @@ import {
   faPen,
   faSearch,
   faCircleQuestion,
-  faWindowMaximize,
 } from "@fortawesome/free-solid-svg-icons";
 import { l } from "../../lang/Lang";
 import { createParamsFromSearchRoute } from "../../utils/routeHelper";
