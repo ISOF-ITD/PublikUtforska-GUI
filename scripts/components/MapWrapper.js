@@ -1,7 +1,7 @@
-import PropTypes from 'prop-types';
-import { memo } from 'react';
-import MapMenu from './MapMenu';
-import MapView from './views/MapView';
+import PropTypes from "prop-types";
+import { memo } from "react";
+import MapMenu from "./MapMenu";
+import MapView from "./views/MapView";
 
 function MapWrapper({
   mapMarkerClick,
@@ -14,7 +14,10 @@ function MapWrapper({
   pictureRecordsData,
 }) {
   return (
-    <div className="h-screen w-screen print:[.has-overlay_&]:hidden">
+    <div
+      className="relative h-screen w-screen print:hidden"
+      aria-busy={loading || undefined}
+    >
       <MapMenu
         mode={mode}
         params={params}
@@ -25,7 +28,11 @@ function MapWrapper({
       />
 
       {loading && (
-        <div className="absolute inset-0 grid place-items-center gap-2 bg-black/10 backdrop-blur-[1px]">
+        <div
+          className="absolute inset-0 z-[1500] grid place-items-center gap-2 bg-black/10 backdrop-blur-[1px]"
+          role="status"
+          aria-live="polite"
+        >
           <div className="h-10 w-10 rounded-full border-4 border-white border-t-transparent animate-spin" />
           <span className="sr-only">Laddar kartan...</span>
         </div>

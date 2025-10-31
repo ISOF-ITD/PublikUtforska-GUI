@@ -24,7 +24,6 @@ import { NavigationContext } from '../NavigationContext';
 import RequestToTranscribeOverlay from './views/RequestToTranscribeOverlay';
 
 import MapWrapper from './MapWrapper';
-import Header from './Header';
 import Footer from './Footer';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
@@ -150,11 +149,7 @@ useEffect(() => {
             mode={mode}
           />
         </RoutePopupWindow>
-
         <Outlet />
-
-        <Header />
-
         <MapWrapper
           mapMarkerClick={mapMarkerClick}
           mode={mode}

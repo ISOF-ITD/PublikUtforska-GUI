@@ -1,7 +1,9 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
+  faWindowMaximize,
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
@@ -12,6 +14,8 @@ import SearchPanel from "../features/Search/SearchPanel";
 import StatisticsContainer from "./StatisticsContainer";
 import RecordList from "../features/RecordList/RecordList";
 import classNames from "classnames";
+import IntroOverlay from "./views/IntroOverlay";
+import config from "../config";
 
 // Helpers
 function SurveyLink() {
@@ -72,6 +76,10 @@ export default function MapMenu({
   pictureRecordsData = { data: [], metadata: {} },
   loading,
 }) {
+  const location = useLocation();
+  const initialLoad = useRef(true);
+  const [showIntroOverlay, setShowIntroOverlay] = useState(false);
+  const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
   const getIsMobile = () =>
     typeof window !== "undefined" ? window.innerWidth < 700 : false;
   const [isMobile, setIsMobile] = useState(getIsMobile());
@@ -97,6 +105,32 @@ export default function MapMenu({
     }),
     []
   );
+
+  // Auto-open on first load, on root path, with no hash,
+  // and only if the feature is enabled in config.
+  useEffect(() => {
+    if (!activateIntroOverlay) return;
+    const isRoot = location.pathname === "/";
+    const noHash = !location.hash || location.hash === "#/";
+    const SEEN_KEY = "folke:introSeen:v1"; // bump version when content changes
+    const hasSeen =
+      typeof window !== "undefined" && localStorage.getItem(SEEN_KEY) === "1";
+    if (initialLoad.current && isRoot && noHash) {
+      if (!hasSeen) setShowIntroOverlay(true);
+    }
+    initialLoad.current = false;
+  }, [location, activateIntroOverlay]);
+
+  const handleShowIntro = useCallback(() => {
+    if (activateIntroOverlay) setShowIntroOverlay(true);
+  }, [activateIntroOverlay]);
+  const handleCloseOverlay = useCallback(() => {
+    setShowIntroOverlay(false);
+    try {
+      localStorage.setItem("folke:introSeen:v1", "1");
+    } catch {}
+  }, []);
+
   const PANEL_WIDTH = 422;
   const panelWidth = isMobile
     ? typeof window !== "undefined"
@@ -108,6 +142,7 @@ export default function MapMenu({
   return (
     <div
       id="mapmenu-panel"
+      aria-label="Sök och filter"
       aria-hidden={!expanded}
       className={classNames(
         "bg-isof flex flex-col print:hidden absolute top-0 bottom-0 w-96 border-r-2 border-white !z-[1201]",
@@ -127,6 +162,7 @@ export default function MapMenu({
         audioRecordsData={audioRecordsData}
         pictureRecordsData={pictureRecordsData}
         loading={loading}
+        onOpenIntroOverlay={handleShowIntro}
       />
 
       <div
@@ -181,6 +217,13 @@ export default function MapMenu({
           </div>
         </div>
       </div>
+      {activateIntroOverlay && (
+        <IntroOverlay
+          id="intro-overlay"
+          show={showIntroOverlay}
+          onClose={handleCloseOverlay}
+        />
+      )}
     </div>
   );
 }

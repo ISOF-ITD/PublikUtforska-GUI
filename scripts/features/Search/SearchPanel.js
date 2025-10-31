@@ -1,8 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClose, faList, faPen, faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+  faClose,
+  faList,
+  faPen,
+  faSearch,
+  faCircleQuestion,
+  faWindowMaximize,
+} from "@fortawesome/free-solid-svg-icons";
 import { l } from "../../lang/Lang";
 import { createParamsFromSearchRoute } from "../../utils/routeHelper";
 import useAutocomplete from "./hooks/useAutocomplete";
@@ -25,6 +32,7 @@ export default function SearchPanel({
   audioRecordsData,
   pictureRecordsData,
   loading,
+  onOpenIntroOverlay,
 }) {
   const {
     query: qParam,
@@ -199,16 +207,17 @@ export default function SearchPanel({
             role="combobox"
             aria-expanded={suggestionsVisible}
             aria-controls="search-suggestions"
+            aria-haspopup="listbox"
             aria-autocomplete="list"
             aria-activedescendant={
               activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
             }
-            aria-haspopup="listbox"
+            aria-hidden={hasSelection || undefined}
             aria-label={l("Sök i Folke")}
             aria-busy={loading || undefined}
             autoComplete="off"
             spellCheck="false"
-            tabIndex={0}
+            tabIndex={hasSelection ? -1 : 0}
           />
 
           <div
@@ -255,9 +264,8 @@ export default function SearchPanel({
                 }}
                 aria-label="Sök"
               >
-                
                 Sök
-                <FontAwesomeIcon icon={faSearch}/>
+                <FontAwesomeIcon icon={faSearch} />
               </button>
             )}
 
@@ -293,6 +301,7 @@ export default function SearchPanel({
               type="button"
               className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow hover:bg-gray-50"
               onClick={() => window.eventBus?.dispatch("routePopup.show")}
+               title={l("Visa sökträffar")}
             >
               <FontAwesomeIcon icon={faList} />
               {` Visa ${total.value}${
@@ -331,8 +340,24 @@ export default function SearchPanel({
           </>
         }
         random
+        title={l("Skriv av slumpmässig uppteckning")}
         variant="listLike" // match "Visa sökträffar" look
       />
+      {onOpenIntroOverlay && (
+        <button
+          type="button"
+          onClick={onOpenIntroOverlay}
+          aria-controls="intro-overlay"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow hover:bg-gray-50"
+          title={l("Hjälp & nyheter")}
+          aria-label={l("Hjälp och nyheter")}
+        >
+          <span className="inline-flex items-center gap-2">
+            <FontAwesomeIcon icon={faCircleQuestion} />
+            <span className="font-medium">{l("Hjälp och nyheter")}</span>
+          </span>
+        </button>
+      )}
     </>
   );
 }
@@ -345,4 +370,5 @@ SearchPanel.propTypes = {
   audioRecordsData: PropTypes.object,
   pictureRecordsData: PropTypes.object,
   loading: PropTypes.bool,
+  onOpenIntroOverlay: PropTypes.func,
 };
