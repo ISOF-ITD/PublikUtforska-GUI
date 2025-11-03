@@ -199,7 +199,7 @@ export default function MapMenu({
           aria-label={expanded ? l("Dölj meny") : l("Visa meny")}
           title={expanded ? l("Dölj meny") : l("Visa meny")}
           className={classNames(
-            "pointer-events-auto shadow-md bg-white/95 backdrop-blur-sm border border-gray-200",
+            "pointer-events-auto shadow-md bg-white backdrop-blur-sm border border-gray-200",
             "w-12 h-12 flex justify-center gap-2 items-center rounded-r",
             isMobile ? (expanded ? "rounded-r" : "rounded-l") : "rounded-r"
           )}
