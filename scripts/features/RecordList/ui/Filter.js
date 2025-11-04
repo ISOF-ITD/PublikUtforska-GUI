@@ -69,8 +69,8 @@ export default function Filter({ uniqueId, filter, onChange, openHelp }) {
 }
 
 Filter.propTypes = {
-  uniqueId: PropTypes.string.isRequired,
-  filter: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  openHelp: PropTypes.func.isRequired,
+  uniqueId: PropTypes.string,
+  filter: PropTypes.string,
+  onChange: PropTypes.func,
+  openHelp: PropTypes.func,
 };
