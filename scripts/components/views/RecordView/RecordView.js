@@ -208,11 +208,11 @@ function ResolvedRecord({
             <License data={data} />
         </div>
 
-        <SubrecordsElement
+        {/*<SubrecordsElement
           data={data}
           subrecordsCount={subrecordsCount}
           mode={mode}
-        />
+          />*/}
         <PersonItems data={data} routeParams={routeParams} />
         <PlaceItems data={data} routeParams={routeParams} />
         <hr />

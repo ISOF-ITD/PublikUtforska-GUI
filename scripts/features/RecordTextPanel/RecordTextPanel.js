@@ -41,8 +41,7 @@ export default function RecordTextPanel({
   const [highlight, setHighlight] = useState(true);
   const [expandedTextByIndex, setExpandedTextByIndex] = useState({});
   const toggleExpanded = useCallback(
-    (i) =>
-      setExpandedTextByIndex((prev) => ({ ...prev, [i]: !prev[i] })),
+    (i) => setExpandedTextByIndex((prev) => ({ ...prev, [i]: !prev[i] })),
     []
   );
 
@@ -52,7 +51,8 @@ export default function RecordTextPanel({
 
   // handlers for media open
   const handleMediaClick = useCallback(
-    (mediaItem, allMedia, index) => mediaImageClickHandler(mediaItem, allMedia, index),
+    (mediaItem, allMedia, index) =>
+      mediaImageClickHandler(mediaItem, allMedia, index),
     [mediaImageClickHandler]
   );
   const handleKeyDown = useCallback(
@@ -141,23 +141,14 @@ export default function RecordTextPanel({
     const images = mediaImagesAbsolute;
     if (!images.length) return [];
 
-    // Map media id -> absolute index
     const idToIndex = new Map(images.map((m, idx) => [m.id, idx]));
 
-    // If no "segments" provided, use one segment with all images
-    if (!rawSegments || rawSegments.length === 0) {
-      return [
-        {
-          id: "__all__",
-          startIndex: 0,
-          items: images,
-          title: images[0]?.title || `${l("Sida")} 1`,
-        },
-      ];
-    }
+    const raw =
+      !rawSegments || rawSegments.length === 0
+        ? [{ id: "__all__", startIndex: 0 }]
+        : rawSegments;
 
-    // Normalize & sort segments by first image index
-    const normalized = rawSegments
+    const normalized = raw
       .map((s, i) => ({
         ...s,
         __order: i,
@@ -168,28 +159,76 @@ export default function RecordTextPanel({
       .filter((s) => Number.isFinite(s.startIndex))
       .sort((a, b) => a.startIndex - b.startIndex);
 
-    // Build contiguous slices
     const built = normalized.map((s, i) => {
       const start = s.startIndex;
-      const end = i < normalized.length - 1 ? normalized[i + 1].startIndex : images.length;
+      const end =
+        i < normalized.length - 1
+          ? normalized[i + 1].startIndex
+          : images.length;
       const items = images.slice(start, end);
-      const titleFromFirst = items[0]?.title || `${l("Sida")} ${start + 1}`;
+
+      const pageLabel =
+        items.length === 1
+          ? `${l("Sida")} ${start + 1}`
+          : `${l("Sidor")} ${start + 1}–${end}`;
+
+      const allReadyToTranscribe =
+        items.length > 0 &&
+        items.every((m) => m?.transcriptionstatus === "readytotranscribe");
+
+      const titleFromFirst = items[0]?.title || pageLabel;
+      const displayTitle = allReadyToTranscribe
+        ? `${pageLabel}: ${l("kan skrivas av")}`
+        : titleFromFirst;
+
+      // aggregate a segment-level transcriptionstatus
+      const segmentTxStatus = (() => {
+        const pageStatuses = items
+          .map((m) => m?.transcriptionstatus)
+          .filter(Boolean);
+
+        // if any page says “readytotranscribe”, show that (so volunteers see work)
+        if (pageStatuses.some((s) => s === "readytotranscribe")) {
+          return "readytotranscribe";
+        }
+
+        // if any page is not yet published (in progress / whatever)
+        const nonPublished = pageStatuses.find((s) => s !== "published");
+        if (nonPublished) return nonPublished;
+
+        // if everything was published, show published
+        if (
+          pageStatuses.length &&
+          pageStatuses.every((s) => s === "published")
+        ) {
+          return "published";
+        }
+
+        // fallback to record-level status
+        return transcriptionstatus ?? null;
+      })();
+
       return {
         id: s.id ?? `seg-${i}`,
         startIndex: start,
         items,
-        title: titleFromFirst,
+        title: displayTitle,
+        segmentTranscriptionstatus: segmentTxStatus,
       };
     });
 
-    // Edge case: if nothing resolved, fallback to one segment
-    return built.length ? built : [{
-      id: "__all__",
-      startIndex: 0,
-      items: images,
-      title: images[0]?.title || `${l("Sida")} 1`,
-    }];
-  }, [mediaImagesAbsolute, rawSegments]);
+    return built.length
+      ? built
+      : [
+          {
+            id: "__all__",
+            startIndex: 0,
+            items: images,
+            title: images[0]?.title || `${l("Sida")} 1`,
+            segmentTranscriptionstatus: transcriptionstatus ?? null,
+          },
+        ];
+  }, [mediaImagesAbsolute, rawSegments, transcriptionstatus]);
 
   // -------------- Side (text) builder, now works with absolute index --------------
   const buildTextSide = useCallback(
@@ -240,7 +279,9 @@ export default function RecordTextPanel({
       // Otherwise, it's being processed
       return (
         <p className="text-gray-700">
-          {l("Texten är ännu inte färdig – transkribering eller granskning pågår.")}
+          {l(
+            "Texten är ännu inte färdig – transkribering eller granskning pågår."
+          )}
         </p>
       );
     },
@@ -299,6 +340,14 @@ export default function RecordTextPanel({
               }
               buildTextSide={buildTextSide}
               defaultOpen={i === 0}
+              // 👇 NEW
+              segmentStatus={
+                seg.segmentTranscriptionstatus
+                  ? computeStatus({
+                      transcriptionstatus: seg.segmentTranscriptionstatus,
+                    })
+                  : null
+              }
             />
           ))}
         </div>

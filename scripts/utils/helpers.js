@@ -700,12 +700,9 @@ export function getPages(data) {
 }
 
 export function getRecordtypeLabel(recordType) {
-  switch (recordType) {
-    case 'one_accession_row':
+    if (recordType === 'one_accession_row') {
       return l('Accession');
-    case 'one_record':
-      return l('Uppteckning');
-    default:
-      return null; // eller en standardetikett om det behövs, t.ex. l('Okänd')
-  }
+    } else {
+      return null
+    }
 }

@@ -43,23 +43,17 @@ function fetchPlace(placeId, signal) {
 }
 
 function fetchRecordAndCountSubrecords(recordId, searchValue = null, signal) {
-  // if there is a search value, we use both the search and the document endpoint because
-  // the search endpoint will return highlighted text also
-  // making sure to use the same search and highlight logic including stemmers
-  const recordsPromise = searchValue
+  // if there was a search, also get the highlighted version
+ const searchPromise = searchValue
     ? fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }), { signal }).then((r) => r.json())
     : Promise.resolve(null);
 
-  // Hämta huvudposten direkt
   const recordPromise = fetch(getRecordFetchLocation(recordId), { signal }).then((r) => r.json());
 
-  // Hämta subrecords count
-  const subrecordsCountPromise = fetch(
-    getRecordsCountLocation({ search: recordId, recordtype: 'one_record' }),
-    { signal }
-  ).then((r) => r.json());
-  return Promise.all([recordsPromise, recordPromise, subrecordsCountPromise]);
+  // return both
+  return Promise.all([searchPromise, recordPromise]);
 }
+
 
 function fetchPerson(personId, signal) {
   return fetch(getPersonFetchLocation(personId), { signal }).then((r) => r.json());

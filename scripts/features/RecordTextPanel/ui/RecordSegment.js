@@ -2,16 +2,11 @@ import PropTypes from "prop-types";
 import { memo, useId, useState, useCallback } from "react";
 import MediaCard from "./MediaCard";
 import { l } from "../../../lang/Lang";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { StatusIndicator } from "./TranscriptionStatusIndicator";
 
-/**
- * RecordSegment component
- * Shows text for media items within a segment of a record.
- * 
- * Props:
- * - imageUrl: Full path to file storage of images
- * - mediaItem: Media item object containing source with relative path to image file, title, comment, etc.
- */
-function RecordSegment ({
+function RecordSegment({
   title,
   mediaItems,
   startIndex,
@@ -21,25 +16,49 @@ function RecordSegment ({
   onKeyDown,
   buildTextSide,
   defaultOpen = false,
+  segmentStatus,
 }) {
   const segId = useId();
   const [open, setOpen] = useState(defaultOpen);
   const toggle = useCallback(() => setOpen((o) => !o), []);
 
   return (
-    <section className="bg-white shadow-sm border border-black/5 overflow-hidden">
+    <section className="bg-white shadow-sm border border-black/5 overflow-hidden relative">
       <button
-            type="button"
-            className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left border !border-solid border-gray-500 rounded !m-0"
-            aria-expanded={open}
-            aria-controls={`seg-panel-${segId}`}
-            onClick={toggle}
-        >
-            <span className="font-medium truncate">{title || l("Segment")}</span>
-            <span className="text-sm text-gray-500 shrink-0">
-            {open ? l("Dölj") : l("Visa")}
-            </span>
-        </button>
+        type="button"
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left border !border-solid border-gray-500 rounded !m-0"
+        aria-expanded={open}
+        aria-controls={`seg-panel-${segId}`}
+        onClick={toggle}
+      >
+        <span className="flex items-center gap-2">
+          {segmentStatus && (
+            <StatusIndicator
+              status={segmentStatus}
+              size="sm"
+              positionClass=""
+              className="shrink-0"
+            />
+          )}
+          <span className="font-medium truncate">{title || l("Segment")}</span>
+        </span>
+
+        <span className="flex items-center gap-2">
+          <span className="text-gray-500 shrink-0">
+            {open ? (
+              <span>
+                {l("Dölj")}{" "}
+                <FontAwesomeIcon className="text-lg" icon={faChevronUp} />
+              </span>
+            ) : (
+              <span>
+                {l("Visa")}{" "}
+                <FontAwesomeIcon className="text-lg" icon={faChevronDown} />
+              </span>
+            )}
+          </span>
+        </span>
+      </button>
 
       {open && (
         <div id={`seg-panel-${segId}`} className="lg:p-2 p-4 space-y-3">
@@ -62,7 +81,7 @@ function RecordSegment ({
       )}
     </section>
   );
-};
+}
 
 RecordSegment.propTypes = {
   title: PropTypes.string,
@@ -74,6 +93,12 @@ RecordSegment.propTypes = {
   onKeyDown: PropTypes.func.isRequired,
   buildTextSide: PropTypes.func.isRequired,
   defaultOpen: PropTypes.bool,
+  segmentStatus: PropTypes.shape({
+    key: PropTypes.string,
+    label: PropTypes.string.isRequired,
+    color: PropTypes.string.isRequired,
+    icon: PropTypes.any,
+  }),
 };
 
 export default RecordSegment;
