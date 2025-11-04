@@ -1,3 +1,4 @@
+// src/views/record/RecordTextPanel.jsx
 import PropTypes from "prop-types";
 import { memo, useState, useMemo, useCallback, useId } from "react";
 import config from "../../config";
@@ -5,13 +6,17 @@ import { l } from "../../lang/Lang";
 import sanitizeHtml from "../../utils/sanitizeHtml";
 import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
 import { computeStatus } from "./utils/computeStatus.js";
-import MediaCard from "./ui/MediaCard";
 import ContributorInfo from "./ui/ContributorInfo";
 import TranscribedText from "./ui/TranscribedText";
 import { splitPages } from "./utils/splitPages";
 import { StatusIndicator } from "./ui/TranscriptionStatusIndicator";
 import HighlightSwitcher from "./ui/HighlightSwitcher";
+import RecordSegment from "./ui/RecordSegment";
 
+/**
+ * RecordTextPanel component
+ * Shows text for all media items in a record, grouped into expandable segments.
+ */
 export default function RecordTextPanel({
   data,
   highlightData = null,
@@ -27,15 +32,17 @@ export default function RecordTextPanel({
     transcriptiontype,
     transcriptionstatus,
     media = [],
+    segments: rawSegments = [],
   } = data;
 
   const { imageUrl } = config;
 
   // local state
   const [highlight, setHighlight] = useState(true);
-  const [expanded, setExpanded] = useState({});
+  const [expandedTextByIndex, setExpandedTextByIndex] = useState({});
   const toggleExpanded = useCallback(
-    (i) => setExpanded((prev) => ({ ...prev, [i]: !prev[i] })),
+    (i) =>
+      setExpandedTextByIndex((prev) => ({ ...prev, [i]: !prev[i] })),
     []
   );
 
@@ -43,20 +50,21 @@ export default function RecordTextPanel({
   const switchId = useId();
   const headingId = `text-${recordId}`;
 
-  // event handlers
+  // handlers for media open
   const handleMediaClick = useCallback(
-    (mediaItem, index) => mediaImageClickHandler(mediaItem, media, index),
-    [mediaImageClickHandler, media]
+    (mediaItem, allMedia, index) => mediaImageClickHandler(mediaItem, allMedia, index),
+    [mediaImageClickHandler]
   );
-
   const handleKeyDown = useCallback(
     (e, mediaItem, index) => {
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
         e.preventDefault();
-        mediaImageClickHandler(mediaItem, media, index);
+        mediaImageClickHandler(mediaItem, mediaImagesAbsolute, index);
       }
     },
-    [mediaImageClickHandler, media]
+    // NOTE: mediaImagesAbsolute is defined below; we re-bind safely after memo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [mediaImageClickHandler]
   );
 
   // status indicator overlay
@@ -72,14 +80,17 @@ export default function RecordTextPanel({
     [transcriptionstatus, transcriptiontype]
   );
 
-  // highlight data
-  const isPageByPage = transcriptiontype === "sida";
-  const mediaImages = useMemo(
+  // Always page-by-page after all records are one_accession_row (one_record is removed).
+  // When we are sure isPageByPage is not needed it could be removed entirely.
+  const isPageByPage = true;
+
+  // All image media (absolute order)
+  const mediaImagesAbsolute = useMemo(
     () => media.filter((m) => m?.type === "image"),
     [media]
   );
 
-  // "page-by-page" inner hits + count of <em> tags
+  // -------------- Highlight plumbing (unchanged) --------------
   const innerHits =
     highlightData?.data?.[0]?.inner_hits?.media?.hits?.hits ?? [];
 
@@ -104,14 +115,12 @@ export default function RecordTextPanel({
     [innerHits]
   );
 
-  // Non-"page-by-page" highlight text + count
   const highlightedText = highlightData?.data?.[0]?.highlight?.text?.[0] || "";
   const highlightCount = useMemo(
     () => (highlightedText.match(/<em>/g) || []).length,
     [highlightedText]
   );
 
-  // Prepare text to display for non-"page-by-page"
   const sourceText = useMemo(
     () => (highlight && highlightedText ? highlightedText : text),
     [highlight, highlightedText, text]
@@ -123,44 +132,85 @@ export default function RecordTextPanel({
     : Boolean(highlightedText);
   const totalHits = isPageByPage ? pageByPageHitCount : highlightCount;
 
-  // Header (shared)
-  const Header = (
-    <header className="flex items-center justify-between mb-1">
-      <h2 id={headingId} className="sr-only">
-        {l("Text och bild")}
-      </h2>
+  // -------------- Segment grouping --------------
+  /**
+   * Build segments from data.segments (with start_media_id) or fallback to a single segment.
+   * Each segment spans from its start index up to (but not including) the next segment's start.
+   */
+  const segments = useMemo(() => {
+    const images = mediaImagesAbsolute;
+    if (!images.length) return [];
 
-      {hasHighlights && (
-        <HighlightSwitcher
-          id={switchId}
-          highlight={highlight}
-          setHighlight={setHighlight}
-          count={totalHits}
-          ariaLabel={l("Markera träffar")}
-        />
-      )}
-    </header>
-  );
+    // Map media id -> absolute index
+    const idToIndex = new Map(images.map((m, idx) => [m.id, idx]));
 
-  // Side with text builder
+    // If no "segments" provided, use one segment with all images
+    if (!rawSegments || rawSegments.length === 0) {
+      return [
+        {
+          id: "__all__",
+          startIndex: 0,
+          items: images,
+          title: images[0]?.title || `${l("Sida")} 1`,
+        },
+      ];
+    }
+
+    // Normalize & sort segments by first image index
+    const normalized = rawSegments
+      .map((s, i) => ({
+        ...s,
+        __order: i,
+        startIndex: idToIndex.has(s.start_media_id)
+          ? idToIndex.get(s.start_media_id)
+          : Number.POSITIVE_INFINITY,
+      }))
+      .filter((s) => Number.isFinite(s.startIndex))
+      .sort((a, b) => a.startIndex - b.startIndex);
+
+    // Build contiguous slices
+    const built = normalized.map((s, i) => {
+      const start = s.startIndex;
+      const end = i < normalized.length - 1 ? normalized[i + 1].startIndex : images.length;
+      const items = images.slice(start, end);
+      const titleFromFirst = items[0]?.title || `${l("Sida")} ${start + 1}`;
+      return {
+        id: s.id ?? `seg-${i}`,
+        startIndex: start,
+        items,
+        title: titleFromFirst,
+      };
+    });
+
+    // Edge case: if nothing resolved, fallback to one segment
+    return built.length ? built : [{
+      id: "__all__",
+      startIndex: 0,
+      items: images,
+      title: images[0]?.title || `${l("Sida")} 1`,
+    }];
+  }, [mediaImagesAbsolute, rawSegments]);
+
+  // -------------- Side (text) builder, now works with absolute index --------------
   const buildTextSide = useCallback(
-    (mediaItem, index) => {
+    (mediaItem, absoluteIndex) => {
       // If page has text and isn't awaiting transcription, show HTML (with optional highlight)
       if (
         mediaItem.text &&
         mediaItem.transcriptionstatus !== "readytotranscribe"
       ) {
+        const key = String(absoluteIndex);
         const html =
-          highlight && highlightedMediaTexts[String(index)]
-            ? highlightedMediaTexts[String(index)]
+          highlight && highlightedMediaTexts[key]
+            ? highlightedMediaTexts[key]
             : mediaItem.text;
 
         return (
           <TranscribedText
             html={sanitizeHtml(html)}
-            expanded={!!expanded[index]}
-            onToggle={() => toggleExpanded(index)}
-            contentId={`page-by-page-text-${recordId}-${index}`}
+            expanded={!!expandedTextByIndex[absoluteIndex]}
+            onToggle={() => toggleExpanded(absoluteIndex)}
+            contentId={`page-by-page-text-${recordId}-${absoluteIndex}`}
           />
         );
       }
@@ -190,16 +240,15 @@ export default function RecordTextPanel({
       // Otherwise, it's being processed
       return (
         <p className="text-gray-700">
-          {l(
-            "Texten är ännu inte färdig – transkribering eller granskning pågår."
-          )}
+          {l("Texten är ännu inte färdig – transkribering eller granskning pågår.")}
         </p>
       );
     },
     [
       archive?.archive_id,
-      expanded,
+      expandedTextByIndex,
       highlightedMediaTexts,
+      highlight,
       l,
       media,
       places,
@@ -207,7 +256,6 @@ export default function RecordTextPanel({
       title,
       transcriptionstatus,
       transcriptiontype,
-      highlight,
       toggleExpanded,
     ]
   );
@@ -216,47 +264,98 @@ export default function RecordTextPanel({
   if (isPageByPage) {
     return (
       <section aria-labelledby={headingId} className="space-y-3">
-        {Header}
+        {/* Header */}
+        <header className="flex items-center justify-between mb-1">
+          <h2 id={headingId} className="sr-only">
+            {l("Text och bild")}
+          </h2>
 
-        {mediaImages.map((mediaItem, index) => (
-          <MediaCard
-            key={`${mediaItem.source ?? "img"}-${index}`}
-            mediaItem={mediaItem}
-            index={index}
-            imageUrl={imageUrl}
-            renderIndicator={renderIndicator}
-            onMediaClick={handleMediaClick}
-            onKeyDown={handleKeyDown}
-            right={buildTextSide(mediaItem, index)}
-          />
-        ))}
+          {hasHighlights && (
+            <HighlightSwitcher
+              id={switchId}
+              highlight={highlight}
+              setHighlight={setHighlight}
+              count={totalHits}
+              ariaLabel={l("Markera träffar")}
+            />
+          )}
+        </header>
+
+        {/* Segments */}
+        <div className="space-y-3">
+          {segments.map((seg, i) => (
+            <RecordSegment
+              key={seg.id || `seg-${i}`}
+              title={seg.title}
+              mediaItems={seg.items}
+              startIndex={seg.startIndex}
+              imageUrl={imageUrl}
+              renderIndicator={renderIndicator}
+              onMediaClick={(item, _arr, absIndex) =>
+                handleMediaClick(item, mediaImagesAbsolute, absIndex)
+              }
+              onKeyDown={(e, item, absIndex) =>
+                handleKeyDown(e, item, absIndex)
+              }
+              buildTextSide={buildTextSide}
+              defaultOpen={i === 0}
+            />
+          ))}
+        </div>
+
+        {/* Contributor info (keep at the end) */}
+        <ContributorInfo
+          transcribedby={transcribedby}
+          comment={data.comment}
+          transcriptiondate={data.transcriptiondate}
+        />
       </section>
     );
   }
 
-  // Non-"page-by-page"
+  // Non-"page-by-page" fallback (still grouped by segments and using split text by absolute index)
   return (
     <section aria-labelledby={headingId} className="space-y-3">
-      {Header}
+      <header className="flex items-center justify-between mb-1">
+        <h2 id={headingId} className="sr-only">
+          {l("Text och bild")}
+        </h2>
 
-      {mediaImages.map((mediaItem, index) => (
-        <MediaCard
-          key={`${mediaItem.source ?? "img"}-${index}`}
-          mediaItem={mediaItem}
-          index={index}
-          imageUrl={imageUrl}
-          renderIndicator={renderIndicator}
-          onMediaClick={handleMediaClick}
-          onKeyDown={handleKeyDown}
-          right={
-            <TranscribedText
-              html={sanitizeHtml(textParts?.[index] || "")}
-              onToggle={() => toggleExpanded(index)}
-              contentId={`non-page-by-page-text-${recordId}-${index}`}
-            />
-          }
-        />
-      ))}
+        {hasHighlights && (
+          <HighlightSwitcher
+            id={switchId}
+            highlight={highlight}
+            setHighlight={setHighlight}
+            count={totalHits}
+            ariaLabel={l("Markera träffar")}
+          />
+        )}
+      </header>
+
+      <div className="space-y-3">
+        {segments.map((seg, i) => (
+          <Segment
+            key={seg.id || `seg-${i}`}
+            title={seg.title}
+            mediaItems={seg.items}
+            startIndex={seg.startIndex}
+            imageUrl={imageUrl}
+            renderIndicator={renderIndicator}
+            onMediaClick={(item, _arr, absIndex) =>
+              handleMediaClick(item, mediaImagesAbsolute, absIndex)
+            }
+            onKeyDown={(e, item, absIndex) => handleKeyDown(e, item, absIndex)}
+            buildTextSide={(mediaItem, absoluteIndex) => (
+              <TranscribedText
+                html={sanitizeHtml(textParts?.[absoluteIndex] || "")}
+                onToggle={() => toggleExpanded(absoluteIndex)}
+                contentId={`non-page-by-page-text-${recordId}-${absoluteIndex}`}
+              />
+            )}
+            defaultOpen={i === 0}
+          />
+        ))}
+      </div>
 
       <ContributorInfo
         transcribedby={transcribedby}

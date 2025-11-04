@@ -3,6 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 
+/**
+ * ArchiveImage component to display an image from the archive with optional
+ * magnifying glass effect and status indicator.
+ * 
+ * Props:
+ * - imageUrl: Full path to file storage of images
+ * - mediaItem: Media item object containing source with relative path to image file, title, comment, etc.
+ */ 
 function ArchiveImage({
   mediaItem,
   index,
