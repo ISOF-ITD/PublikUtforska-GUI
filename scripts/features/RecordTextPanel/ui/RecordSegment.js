@@ -5,6 +5,7 @@ import { l } from "../../../lang/Lang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { StatusIndicator } from "./TranscriptionStatusIndicator";
+import SegmentPersons from "./SegmentPersons";
 
 function RecordSegment({
   title,
@@ -17,6 +18,7 @@ function RecordSegment({
   buildTextSide,
   defaultOpen = false,
   segmentStatus,
+  persons = [],
 }) {
   const segId = useId();
   const [open, setOpen] = useState(defaultOpen);
@@ -41,6 +43,11 @@ function RecordSegment({
             />
           )}
           <span className="font-medium truncate">{title || l("Segment")}</span>
+          {persons.length > 0 && (
+            <div className="px-4 pb-0">
+              <SegmentPersons persons={persons} />
+            </div>
+          )}
         </span>
 
         <span className="flex items-center gap-2">
@@ -59,7 +66,6 @@ function RecordSegment({
           </span>
         </span>
       </button>
-
       {open && (
         <div id={`seg-panel-${segId}`} className="lg:p-2 p-4 space-y-3">
           {mediaItems.map((mediaItem, i) => {

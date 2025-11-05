@@ -6,7 +6,7 @@ import { l } from "../../lang/Lang";
 import sanitizeHtml from "../../utils/sanitizeHtml";
 import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
 import { computeStatus } from "./utils/computeStatus.js";
-import ContributorInfo from "./ui/ContributorInfo";
+import ContributorInfo, { PageContributor } from "./ui/ContributorInfo";
 import TranscribedText from "./ui/TranscribedText";
 import { splitPages } from "./utils/splitPages";
 import { StatusIndicator } from "./ui/TranscriptionStatusIndicator";
@@ -142,6 +142,7 @@ export default function RecordTextPanel({
     if (!images.length) return [];
 
     const idToIndex = new Map(images.map((m, idx) => [m.id, idx]));
+    const personsById = new Map((data.persons || []).map((p) => [p.id, p]));
 
     const raw =
       !rawSegments || rawSegments.length === 0
@@ -181,30 +182,29 @@ export default function RecordTextPanel({
         ? `${pageLabel}: ${l("kan skrivas av")}`
         : titleFromFirst;
 
-      // aggregate a segment-level transcriptionstatus
+      // NEW: resolve persons on this segment
+      const segmentPersons = (s.person_ids || [])
+        .map((pid) => personsById.get(pid))
+        .filter(Boolean);
+
+      // aggregate status (as you had)
       const segmentTxStatus = (() => {
         const pageStatuses = items
           .map((m) => m?.transcriptionstatus)
           .filter(Boolean);
 
         // if any page says “readytotranscribe”, show that (so volunteers see work)
-        if (pageStatuses.some((s) => s === "readytotranscribe")) {
+        if (pageStatuses.some((st) => st === "readytotranscribe")) {
           return "readytotranscribe";
         }
-
-        // if any page is not yet published (in progress / whatever)
-        const nonPublished = pageStatuses.find((s) => s !== "published");
+        const nonPublished = pageStatuses.find((st) => st !== "published");
         if (nonPublished) return nonPublished;
-
-        // if everything was published, show published
         if (
           pageStatuses.length &&
-          pageStatuses.every((s) => s === "published")
+          pageStatuses.every((st) => st === "published")
         ) {
           return "published";
         }
-
-        // fallback to record-level status
         return transcriptionstatus ?? null;
       })();
 
@@ -214,6 +214,7 @@ export default function RecordTextPanel({
         items,
         title: displayTitle,
         segmentTranscriptionstatus: segmentTxStatus,
+        persons: segmentPersons, // ← important
       };
     });
 
@@ -226,9 +227,10 @@ export default function RecordTextPanel({
             items: images,
             title: images[0]?.title || `${l("Sida")} 1`,
             segmentTranscriptionstatus: transcriptionstatus ?? null,
+            persons: [],
           },
         ];
-  }, [mediaImagesAbsolute, rawSegments, transcriptionstatus]);
+  }, [mediaImagesAbsolute, rawSegments, transcriptionstatus, data.persons]);
 
   // -------------- Side (text) builder, now works with absolute index --------------
   const buildTextSide = useCallback(
@@ -245,12 +247,22 @@ export default function RecordTextPanel({
             : mediaItem.text;
 
         return (
-          <TranscribedText
-            html={sanitizeHtml(html)}
-            expanded={!!expandedTextByIndex[absoluteIndex]}
-            onToggle={() => toggleExpanded(absoluteIndex)}
-            contentId={`page-by-page-text-${recordId}-${absoluteIndex}`}
-          />
+          <div className="space-y-2">
+            <TranscribedText
+              html={sanitizeHtml(html)}
+              expanded={!!expandedTextByIndex[absoluteIndex]}
+              onToggle={() => toggleExpanded(absoluteIndex)}
+              contentId={`page-by-page-text-${recordId}-${absoluteIndex}`}
+            />
+            {/* compact contributor under the text */}
+            <PageContributor
+              transcribedby={mediaItem.transcribedby || transcribedby}
+              transcriptiondate={
+                mediaItem.transcriptiondate || data.transcriptiondate
+              }
+              comment={mediaItem.comment}
+            />
+          </div>
         );
       }
 
@@ -290,7 +302,6 @@ export default function RecordTextPanel({
       expandedTextByIndex,
       highlightedMediaTexts,
       highlight,
-      l,
       media,
       places,
       recordId,
@@ -298,6 +309,8 @@ export default function RecordTextPanel({
       transcriptionstatus,
       transcriptiontype,
       toggleExpanded,
+      transcribedby,
+      data.transcriptiondate,
     ]
   );
 
@@ -340,7 +353,6 @@ export default function RecordTextPanel({
               }
               buildTextSide={buildTextSide}
               defaultOpen={i === 0}
-              // 👇 NEW
               segmentStatus={
                 seg.segmentTranscriptionstatus
                   ? computeStatus({
@@ -348,6 +360,7 @@ export default function RecordTextPanel({
                     })
                   : null
               }
+              persons={seg.persons} // ← NEW
             />
           ))}
         </div>

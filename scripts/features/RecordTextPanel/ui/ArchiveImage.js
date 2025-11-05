@@ -2,15 +2,18 @@
 import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { l } from "../../../lang/Lang";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 
 /**
  * ArchiveImage component to display an image from the archive with optional
  * magnifying glass effect and status indicator.
- * 
+ *
  * Props:
  * - imageUrl: Full path to file storage of images
  * - mediaItem: Media item object containing source with relative path to image file, title, comment, etc.
- */ 
+ */
 function ArchiveImage({
   mediaItem,
   index,
@@ -168,11 +171,20 @@ function ArchiveImage({
       {/* Caption (visible) */}
       {showCaption && (mediaItem.title || mediaItem.comment) && (
         <div className="mt-2 text-sm text-gray-700">
+          {/* title is already shown in the segment header, 
+          can be used later if we add support for single page titles
           <div className="font-medium">{mediaItem.title || ""}</div>
+          
+          Comments are shown here, although they often come from transcriber, but there's no garantee they do.
+          */}
           {mediaItem.comment &&
             mediaItem.comment.trim() !== "" &&
             mediaItem.comment.trim() !== "None" && (
-              <div className="text-gray-600">{mediaItem.comment}</div>
+              <div className="text-gray-600 flex items-center gap-2">
+                 <FontAwesomeIcon icon={faCommentDots} />
+                {l("Kommentarer: ")}
+                {mediaItem.comment}
+              </div>
             )}
         </div>
       )}

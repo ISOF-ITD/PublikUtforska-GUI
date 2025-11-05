@@ -322,7 +322,6 @@ export default function ImageOverlay() {
               {/* Index indicator + caption */}
               <div className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-sm !text-white shadow-md">
                 <span className="font-medium">{currentIndex + 1} / {total}</span>
-                {altText ? <span className="ml-2 opacity-80">· {altText}</span> : null}
               </div>
             </>
           )}

@@ -60,7 +60,9 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
                 ))}
               </ul>
             ) : (
-              <span className="ml-6 m-0 text-gray-800">{l("Inga kommentarer.")}</span>
+              <span className="ml-6 m-0 text-gray-800">
+                {l("Inga kommentarer.")}
+              </span>
             )}
           </div>
         )}
@@ -76,3 +78,31 @@ ContributorInfo.propTypes = {
 };
 
 export default ContributorInfo;
+
+// Current ContributorInfo is great for the whole record, but it’s visually heavy for “every page”. So it is a tiny variant.
+
+export function PageContributor({ transcribedby, transcriptiondate, comment }) {
+  if (!transcribedby && !comment) return null;
+
+  const dateStr = transcriptiondate
+    ? new Date(transcriptiondate).toLocaleDateString("sv-SE")
+    : null;
+
+  return (
+    <div className="mt-2 border-t border-gray-100 pt-2 text-xs text-gray-600 space-y-1">
+      {transcribedby && (
+        <span className="m-0 flex items-center gap-1">
+          <FontAwesomeIcon icon={faUserPen} />
+          <span className="font-medium">Transkriberad av:</span> {transcribedby}
+          {dateStr ? ` • ${dateStr}` : null}
+        </span>
+      )}
+    </div>
+  );
+}
+
+PageContributor.propTypes = {
+  transcribedby: PropTypes.string,
+  transcriptiondate: PropTypes.string,
+  comment: PropTypes.string,
+};
