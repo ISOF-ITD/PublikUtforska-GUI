@@ -177,12 +177,14 @@ export default function RecordTextPanel({
         items.length > 0 &&
         items.every((m) => m?.transcriptionstatus === "readytotranscribe");
 
-      const titleFromFirst = items[0]?.title || pageLabel;
+      const customTitle = items[0]?.title;
+
       const displayTitle = allReadyToTranscribe
         ? `${pageLabel}: ${l("kan skrivas av")}`
-        : titleFromFirst;
+        : customTitle
+        ? `${pageLabel} – ${customTitle}`
+        : pageLabel;
 
-      // NEW: resolve persons on this segment
       const segmentPersons = (s.person_ids || [])
         .map((pid) => personsById.get(pid))
         .filter(Boolean);
