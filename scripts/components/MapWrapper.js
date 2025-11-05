@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import MapMenu from "./MapMenu";
 import MapView from "./views/MapView";
 
@@ -13,10 +13,30 @@ function MapWrapper({
   audioRecordsData,
   pictureRecordsData,
 }) {
+  // Debounce "loading" to avoid flicker on quick transitions
+  const [uiLoading, setUiLoading] = useState(!!loading);
+  useEffect(() => {
+    let t;
+    if (loading) t = setTimeout(() => setUiLoading(true), 150);
+    else setUiLoading(false);
+    return () => clearTimeout(t);
+  }, [loading]);
+
+  // Preserve last non-empty mapData across mode switches
+  const lastMapDataRef = useRef(mapData);
+  useEffect(() => {
+    if (mapData && Object.keys(mapData).length > 0) {
+      lastMapDataRef.current = mapData;
+    }
+  }, [mapData]);
+  const stableMapData =
+    mapData && Object.keys(mapData).length > 0
+      ? mapData
+      : lastMapDataRef.current;
   return (
     <div
       className="relative h-screen w-screen print:hidden"
-      aria-busy={loading || undefined}
+      aria-busy={uiLoading || undefined}
     >
       <MapMenu
         mode={mode}
@@ -24,10 +44,10 @@ function MapWrapper({
         recordsData={recordsData}
         audioRecordsData={audioRecordsData}
         pictureRecordsData={pictureRecordsData}
-        loading={loading}
+        loading={uiLoading}
       />
 
-      {loading && (
+      {uiLoading && (
         <div
           className="absolute inset-0 z-[1500] grid place-items-center gap-2 bg-black/10 backdrop-blur-[1px]"
           role="status"
@@ -38,7 +58,7 @@ function MapWrapper({
         </div>
       )}
 
-      <MapView onMarkerClick={mapMarkerClick} mapData={mapData} />
+      <MapView onMarkerClick={mapMarkerClick} mapData={stableMapData} />
     </div>
   );
 }
