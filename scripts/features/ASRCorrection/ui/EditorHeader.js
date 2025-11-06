@@ -26,6 +26,7 @@ export default function EditorHeader({
   setFollowActive,
   onSearchPrev,
   onSearchNext,
+  showAutoWarning = true,
 }) {
   const { filter, setFilter } = filterState;
   const { queryRaw, setQueryRaw, showOnlyMatches, setShowOnlyMatches } =
@@ -43,10 +44,12 @@ export default function EditorHeader({
           {audioTitle || "Transkribering"}
         </h1>
 
-        <p className="flex items-center gap-2 text-orange-600">
-          <FontAwesomeIcon icon={faInfoCircle} />
-          OBS! Automat­genererad text – kan innehålla fel
-        </p>
+        {showAutoWarning && (
+          <p className="flex items-center gap-2 text-orange-600">
+            <FontAwesomeIcon icon={faInfoCircle} />
+            OBS! Automat­genererad text – kan innehålla fel
+          </p>
+        )}
       </section>
 
       {
@@ -111,52 +114,51 @@ export default function EditorHeader({
         {/* Search */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 min-w-0">
-          <span className="hidden sm:block text-xs font-semibold text-gray-500 uppercase mb-1">
-            Sök
-          </span>
+            <span className="hidden sm:block text-xs font-semibold text-gray-500 uppercase mb-1">
+              Sök
+            </span>
 
-          {/* search icon */}
-          <FontAwesomeIcon
-            icon={faSearch}
-            className="pointer-events-none absolute right-3 top-1/4 lg:top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-          />
+            {/* search icon */}
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="pointer-events-none absolute right-3 top-1/4 lg:top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            />
 
-          <input
-            type="search"
-            id="transcript-search"
-            placeholder="Sök i texten…"
-            aria-label="Sök i transkriptionen"
-            value={queryRaw}
-            onChange={(e) => setQueryRaw(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                onSearchNext?.();
-              } else if (e.key === "Enter" && e.shiftKey) {
-                e.preventDefault();
-                onSearchPrev?.();
-              } else if (e.key === "Escape") {
-                setQueryRaw("");
-              }
-            }}
-            className="w-full pl-10 pr-28 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-isof"
-          />
+            <input
+              type="search"
+              id="transcript-search"
+              placeholder="Sök i texten…"
+              aria-label="Sök i transkriptionen"
+              value={queryRaw}
+              onChange={(e) => setQueryRaw(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  onSearchNext?.();
+                } else if (e.key === "Enter" && e.shiftKey) {
+                  e.preventDefault();
+                  onSearchPrev?.();
+                } else if (e.key === "Escape") {
+                  setQueryRaw("");
+                }
+              }}
+              className="w-full pl-10 pr-28 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-isof"
+            />
 
-          {/* hit-count pill (kept clear of the ✕ button) */}
-          {queryRaw && (
-            <span
-              aria-live="polite"
-              className="absolute right-16 top-1/2 -translate-y-1/2
+            {/* hit-count pill (kept clear of the ✕ button) */}
+            {queryRaw && (
+              <span
+                aria-live="polite"
+                className="absolute right-16 top-1/2 -translate-y-1/2
                          text-xs px-1.5 py-0.5 rounded-full
                          bg-gray-200 text-gray-600 select-none"
-              title="Antal rader med träffar"
-            >
-              {searchHits}
-            </span>
-          )}
-          
-        </div>
-        {/* clear button */}
+                title="Antal rader med träffar"
+              >
+                {searchHits}
+              </span>
+            )}
+          </div>
+          {/* clear button */}
           {queryRaw && (
             <button
               type="button"
@@ -167,8 +169,7 @@ export default function EditorHeader({
               Rensa sökningen <FontAwesomeIcon icon={faTimes} />
             </button>
           )}
-          </div>
-        
+        </div>
       </section>
 
       {/* ─── Actions ───────────────────────────────── */}

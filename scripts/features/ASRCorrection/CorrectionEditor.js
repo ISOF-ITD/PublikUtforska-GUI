@@ -37,6 +37,11 @@ export default function CorrectionEditor({
   const scrollRef = useRef(null);
 
   /* -------- audio item & title -------- */
+  // TEMP hack: this one recording is manually transcribed and contains <i>...</i> to be rendered.
+  const allowItalicsHack = useMemo(
+    () => data?.id === "bd10106_253556",
+    [data?.id]
+  );
   const audioItem = useMemo(() => {
     const sameFileId =
       data?.media?.filter((m) => String(m.id) === String(fileId)) ?? [];
@@ -213,6 +218,7 @@ export default function CorrectionEditor({
       query: searchState.query,
       followActive,
       saveCurrentEdit,
+      allowItalics: allowItalicsHack,
     }),
     [
       visibleUtterances,
@@ -226,6 +232,7 @@ export default function CorrectionEditor({
       data?.speakers,
       activeSegmentId,
       searchState.query,
+      allowItalicsHack,
     ]
   );
 
@@ -254,6 +261,7 @@ export default function CorrectionEditor({
         setFollowActive={setFollowActive}
         onSearchPrev={() => goToMatch(-1)}
         onSearchNext={() => goToMatch(1)}
+        showAutoWarning={!allowItalicsHack}
       />
 
       <div className="bg-white shadow rounded-lg w-full">
