@@ -85,7 +85,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
       tabIndex={0}
       ref={rowRef}
       data-utt={u.id}
-      style={{ ...style, width: "100%" }}
+      style={{ ...style, width: "95%" }}
       onClick={() => handlePlay(u.start, u.id)}
       onKeyDown={(e) =>
         [" ", "Enter"].includes(e.key) && handlePlay(u.start, u.id)
