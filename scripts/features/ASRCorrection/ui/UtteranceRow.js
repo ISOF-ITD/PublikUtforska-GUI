@@ -23,6 +23,40 @@ const formatTimestamp = (sec) =>
     .map((v) => v.toString().padStart(2, "0"))
     .join(":");
 
+function renderWithItalics(text, query, allowItalics) {
+  if (!allowItalics || !text?.includes("<i>")) return highlight(text, query);
+
+  // Split and toggle on <i> ... </i> (case-insensitive), ignoring any other tags
+  const parts = text.split(/(<\/?i>)/i);
+  let ital = false;
+  const out = [];
+
+  for (let i = 0; i < parts.length; i++) {
+    const tok = parts[i];
+    if (!tok) continue;
+    const low = tok.toLowerCase();
+
+    if (low === "<i>") {
+      ital = true;
+      continue;
+    }
+    if (low === "</i>") {
+      ital = false;
+      continue;
+    }
+
+    const node = highlight(tok, query);
+    out.push(
+      ital ? (
+        <em key={i}>{node}</em>
+      ) : (
+        <React.Fragment key={i}>{node}</React.Fragment>
+      )
+    );
+  }
+  return out;
+}
+
 /* ─────────────────── READ-ONLY ROW ─────────────────── */
 export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
   index,
@@ -33,6 +67,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
   const u = rows[index];
   const isActive = activeId === u.id;
   const isCurrentPlaying = isPlaying && isActive;
+  const allowItalics = data.allowItalics;
 
   const ts = (sec) =>
     [sec / 3600, (sec % 3600) / 60, sec % 60]
@@ -50,7 +85,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
       tabIndex={0}
       ref={rowRef}
       data-utt={u.id}
-      style={{ ...style, width: "100%" }}
+      style={{ ...style, width: "95%" }}
       onClick={() => handlePlay(u.start, u.id)}
       onKeyDown={(e) =>
         [" ", "Enter"].includes(e.key) && handlePlay(u.start, u.id)
@@ -84,7 +119,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
           {ts(u.start)}
         </time>
         <p className="whitespace-pre-wrap break-words !mr-2">
-          {highlight(u.text, query)}
+          {renderWithItalics(u.text, query, allowItalics)}
         </p>
       </div>
     </div>

@@ -75,6 +75,60 @@ export default function MapMenu({
   pictureRecordsData = { data: [], metadata: {} },
   loading,
 }) {
+  // --- Track a "just switched mode" window
+  const prevModeRef = useRef(mode);
+  const [justSwitched, setJustSwitched] = useState(false);
+  useEffect(() => {
+    if (prevModeRef.current !== mode) {
+      prevModeRef.current = mode;
+      setJustSwitched(true);
+      const t = setTimeout(() => setJustSwitched(false), 400);
+      return () => clearTimeout(t);
+    }
+  }, [mode]);
+
+  // Remember last good data (so totals & list button don’t vanish)
+  const lastGoodRef = useRef({
+    recordsData,
+    audioRecordsData,
+    pictureRecordsData,
+  });
+  const anyTotals =
+    (recordsData?.metadata?.total?.value ?? 0) +
+    (audioRecordsData?.metadata?.total?.value ?? 0) +
+    (pictureRecordsData?.metadata?.total?.value ?? 0);
+  useEffect(() => {
+    if (anyTotals > 0) {
+      lastGoodRef.current = {
+        recordsData,
+        audioRecordsData,
+        pictureRecordsData,
+      };
+    }
+  }, [anyTotals, recordsData, audioRecordsData, pictureRecordsData]);
+
+  // While switching (and only for a short time), keep showing last good data
+  const stable =
+    justSwitched && loading
+      ? lastGoodRef.current
+      : {
+          recordsData,
+          audioRecordsData,
+          pictureRecordsData,
+        };
+  // Debounce loading inside the panel to prevent gray flash
+  const [panelLoading, setPanelLoading] = useState(!!loading);
+  useEffect(() => {
+    let t;
+    // During the brief "justSwitched" phase, don’t show loading at all
+    if (justSwitched && loading) {
+      setPanelLoading(false);
+      return;
+    }
+    if (loading) t = setTimeout(() => setPanelLoading(true), 150);
+    else setPanelLoading(false);
+    return () => clearTimeout(t);
+  }, [loading, justSwitched]);
   const location = useLocation();
   const initialLoad = useRef(true);
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
@@ -168,10 +222,10 @@ export default function MapMenu({
       <SearchPanel
         params={params}
         mode={mode}
-        recordsData={recordsData}
-        audioRecordsData={audioRecordsData}
-        pictureRecordsData={pictureRecordsData}
-        loading={loading}
+        recordsData={stable.recordsData}
+        audioRecordsData={stable.audioRecordsData}
+        pictureRecordsData={stable.pictureRecordsData}
+        loading={panelLoading}
         onOpenIntroOverlay={handleShowIntro}
       />
 

@@ -21,6 +21,7 @@ export default function UtterancesList({
   followActive,
   readOnly,
   activeId,
+  allowItalics,
 }) {
   const listRef = useRef(null);
   const isMobile = useIsMobile();
