@@ -11,7 +11,6 @@ import Uppteckningsblankett from "./transcriptionForms/Uppteckningsblankett";
 import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import ContributorInfoFields from "./transcriptionForms/ContributorInfoFields";
-import { FocusTrap } from "@headlessui/react";
 import { toastOk } from "../../../utils/toast";
 
 export default function TranscriptionOverlay(props) {
