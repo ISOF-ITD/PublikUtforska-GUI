@@ -34,10 +34,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   // Provide a stable indicator renderer for ArchiveImage
   const renderIndicator = useCallback(
     (item) => {
-      const isSida = (data?.transcriptiontype || "").toLowerCase() === "sida";
-      const tx =
-        (isSida ? item?.transcriptionstatus : data?.transcriptionstatus) ||
-        null;
+      const tx = item?.transcriptionstatus || data?.transcriptionstatus || null;
 
       const status = computeStatus({ transcriptionstatus: tx });
       return <StatusIndicator status={status} />;

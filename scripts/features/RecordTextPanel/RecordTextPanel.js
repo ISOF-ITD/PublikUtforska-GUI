@@ -70,14 +70,21 @@ export default function RecordTextPanel({
   // status indicator overlay
   const renderIndicator = useCallback(
     (mediaItem) => {
+      // 1. prefer the page status
       const tx =
-        (transcriptiontype === "sida"
-          ? mediaItem?.transcriptionstatus
-          : transcriptionstatus) || null;
-      const status = tx ? computeStatus({ transcriptionstatus: tx }) : null;
+        mediaItem?.transcriptionstatus ||
+        // 2. otherwise fall back to record-level
+        transcriptionstatus ||
+        null;
+
+      if (!tx) return null;
+
+      const status = computeStatus({ transcriptionstatus: tx });
+      if (!status) return null;
+
       return <StatusIndicator status={status} size="md" />;
     },
-    [transcriptionstatus, transcriptiontype]
+    [transcriptionstatus]
   );
 
   // Always page-by-page after all records are one_accession_row (one_record is removed).
@@ -269,7 +276,10 @@ export default function RecordTextPanel({
       }
 
       // If record is ready to be transcribed, show CTA
-      if (transcriptionstatus === "readytotranscribe") {
+      if (
+        mediaItem.transcriptionstatus === "readytotranscribe" ||
+        transcriptionstatus === "readytotranscribe"
+      ) {
         return (
           <div className="flex flex-col items-center justify-between gap-2 p-2 rounded-lg bg-gray-50">
             <span className="text-gray-700">
