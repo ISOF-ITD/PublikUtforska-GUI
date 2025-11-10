@@ -16,7 +16,7 @@ import RecordListWrapper from '../features/RecordList/RecordListWrapper';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from '../features/TranscriptionOverlay/ui/TranscriptionHelpOverlay';
-import TranscriptionPageByPageOverlay from '../features/TranscriptionOverlay/TranscriptionPageByPageOverlay';
+import TranscriptionOverlay from '../features/TranscriptionOverlay/TranscriptionOverlay';
 import HelpTextOverlay from './views/HelpTextOverlay';
 import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
@@ -166,7 +166,7 @@ useEffect(() => {
         <FeedbackOverlay />
         <ContributeInfoOverlay />
         <RequestToTranscribeOverlay />
-        <TranscriptionPageByPageOverlay />
+        <TranscriptionOverlay />
         <TranscriptionHelpOverlay />
         <HelpTextOverlay />
         <Footer />

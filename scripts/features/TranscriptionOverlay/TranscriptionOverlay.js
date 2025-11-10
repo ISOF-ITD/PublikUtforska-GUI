@@ -11,7 +11,7 @@ import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import { toastOk } from "../../utils/toast";
 
-export default function TranscriptionPageByPageOverlay() {
+export default function TranscriptionOverlay() {
   /* visibility & record data */
   const [visible, setVisible] = useState(false);
   const [recordDetails, setRecordDetails] = useState(null); // url, id, title...
