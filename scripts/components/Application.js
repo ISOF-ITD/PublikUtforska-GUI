@@ -16,7 +16,6 @@ import RecordListWrapper from '../features/RecordList/RecordListWrapper';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from './views/transcribe/TranscriptionHelpOverlay';
-import TranscriptionOverlay from './views/transcribe/TranscriptionOverlay';
 import TranscriptionPageByPageOverlay from './views/transcribe/TranscriptionPageByPageOverlay';
 import HelpTextOverlay from './views/HelpTextOverlay';
 import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
@@ -132,7 +131,8 @@ useEffect(() => {
       window.eventBus.removeEventListener("audio.playervisible", onVisible);
       window.eventBus.removeEventListener("audio.playerhidden", onHidden);
     };
-  }, [location.pathname, location.search, results]);
+  }, []);
+
 
   // Separate useEffect to handle location changes, tracking for "back"-button in RoutePopupWindow
   useEffect(() => {
@@ -165,7 +165,6 @@ useEffect(() => {
         <ImageOverlay />
         <FeedbackOverlay />
         <ContributeInfoOverlay />
-        <TranscriptionOverlay />
         <RequestToTranscribeOverlay />
         <TranscriptionPageByPageOverlay />
         <TranscriptionHelpOverlay />

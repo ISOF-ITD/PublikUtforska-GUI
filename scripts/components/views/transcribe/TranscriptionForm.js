@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState, useId } from "react";
 import Uppteckningsblankett from "./transcriptionForms/Uppteckningsblankett";
-import Fritext from "./transcriptionForms/Fritext";
 import { l } from "../../../lang/Lang";
 
 /* — Re-usable TW strings — */
@@ -88,13 +87,7 @@ export default function TranscriptionForm({
   /* ─── UI ───────────────────────────────────── */
   return (
     <div className="space-y-6">
-      {/* inner form — chooses layout based on type */}
-      {page.transcriptiontype === "uppteckningsblankett" ? (
         <Uppteckningsblankett {...uppteckningsProps} />
-      ) : (
-        <Fritext {...commonProps} />
-      )}
-
       {(page.transcriptionstatus === "readytotranscribe" || isSent) && (
         <fieldset
           className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"

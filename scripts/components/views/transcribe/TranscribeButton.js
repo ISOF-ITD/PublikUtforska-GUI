@@ -56,7 +56,7 @@ export default function TranscribeButton({
     []
   );
 
-  dispatchOverlay(payload, "overlay.transcribePageByPage");
+  const eventFor = () => "overlay.transcribePageByPage";
 
   const startTranscription = useCallback(
     (opts) => {

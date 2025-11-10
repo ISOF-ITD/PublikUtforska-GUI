@@ -30,6 +30,17 @@ export default function TranscriptionPageByPageOverlay() {
     setFields,
   } = useTranscriptionForm();
 
+  const handleFormChange = (e) => {
+    handleInputChange(e);
+    setPages((prev) => {
+      const next = [...prev];
+      const page = next[currentPageIndex];
+      if (!page) return prev;
+      next[currentPageIndex] = { ...page, unsavedChanges: true };
+      return next;
+    });
+  };
+
   useEffect(() => {
     setRecordDetails((prev) =>
       prev ? { ...prev, title: fields.titleInput || prev.title } : prev
@@ -69,13 +80,19 @@ export default function TranscriptionPageByPageOverlay() {
       });
 
       /* prep page array with per-page meta */
-      const initialPages = (t.images || []).map((p) => ({
-        ...p,
-        isSent: false,
-        unsavedChanges: false,
-        text: p.text || "",
-        comment: p.comment || "",
-      }));
+      const initialPages = (t.images || []).map((p) => {
+        const alreadyTranscribed =
+          p.transcriptionstatus &&
+          p.transcriptionstatus !== "readytotranscribe";
+        return {
+          ...p,
+          isSent: alreadyTranscribed,
+          unsavedChanges: false,
+          text: p.text || "",
+          comment: p.comment || "",
+        };
+      });
+
       setPages(initialPages);
 
       /* focus first “readytotranscribe” page (or fall back to first) */
@@ -147,12 +164,16 @@ export default function TranscriptionPageByPageOverlay() {
   const saveCurrentPageDraft = useCallback(() => {
     setPages((prev) => {
       const next = [...prev];
-      next[currentPageIndex].text = fields.messageInput;
-      next[currentPageIndex].comment = fields.messageCommentInput;
+      if (!next[currentPageIndex]) return prev;
+      next[currentPageIndex] = {
+        ...next[currentPageIndex],
+        text: fields.messageInput,
+        comment: fields.messageCommentInput,
+        unsavedChanges: false,
+      };
       return next;
     });
   }, [currentPageIndex, fields.messageInput, fields.messageCommentInput]);
-
   // index setter
   const navigatePages = useCallback(
     (index) => {
@@ -220,7 +241,12 @@ export default function TranscriptionPageByPageOverlay() {
   };
 
   const sendButtonClickHandler = async (e) => {
-    if ((fields.messageInput || "").trim().length === 0) {
+    const words = (fields.messageInput || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (words.length < 2) {
       alert(
         l(
           'Avskriften kan inte sparas. Fältet "Text" ska innehålla en avskrift!'
@@ -243,6 +269,7 @@ export default function TranscriptionPageByPageOverlay() {
     }
 
     const ok = await send(payload);
+
     if (!ok) return;
 
     toastOk(l(`Sida ${currentPageIndex + 1} sparad – tack!`), {
@@ -263,8 +290,8 @@ export default function TranscriptionPageByPageOverlay() {
     });
 
     if (goToNext) goToNextTranscribePage();
+    window.eventBus?.dispatch?.("overlay.transcribe.sent");
   };
-  const closeBtnRef = useRef(null);
 
   /* ------------------------------------------------------------ */
   /* Render                                                       */
@@ -286,6 +313,8 @@ export default function TranscriptionPageByPageOverlay() {
       />
     )
   );
+  const currentPage = pages[currentPageIndex];
+  const isPdf = currentPage?.source?.toLowerCase().endsWith(".pdf");
 
   return (
     <div className="overlay-container visible transcription-page-by-page-overlay">
@@ -303,7 +332,6 @@ export default function TranscriptionPageByPageOverlay() {
           <button
             type="button"
             title="stäng"
-            ref={closeBtnRef}
             className="close-button white"
             onClick={handleHideOverlay}
             aria-label="Stäng"
@@ -339,17 +367,27 @@ export default function TranscriptionPageByPageOverlay() {
               nameInput={fields.nameInput}
               emailInput={fields.emailInput}
               comment={fields.messageCommentInput}
-              inputChangeHandler={handleInputChange}
+              inputChangeHandler={handleFormChange}
               sendButtonClickHandler={sendButtonClickHandler}
             />
           </div>
 
           {/* -------- Right column: image + nav ------ */}
           <div className="eight columns">
-            {pages.length > 0 && (
-              <ImageMap
-                image={`${config.imageUrl}${pages[currentPageIndex].source}`}
-              />
+            {currentPage && !isPdf && (
+              <ImageMap image={`${config.imageUrl}${currentPage.source}`} />
+            )}
+            {currentPage && isPdf && (
+              <p>
+                Den här sidan är en PDF.{" "}
+                <a
+                  href={`${config.imageUrl}${currentPage.source}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Öppna i ny flik
+                </a>
+              </p>
             )}
 
             <div className="row">
