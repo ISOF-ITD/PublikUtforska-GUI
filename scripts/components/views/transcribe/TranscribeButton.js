@@ -56,11 +56,7 @@ export default function TranscribeButton({
     []
   );
 
-  const eventFor = useCallback(
-    (tType) =>
-      tType === "sida" ? "overlay.transcribePageByPage" : "overlay.transcribe",
-    []
-  );
+  dispatchOverlay(payload, "overlay.transcribePageByPage");
 
   const startTranscription = useCallback(
     (opts) => {
@@ -171,11 +167,7 @@ export default function TranscribeButton({
 
   return (
     <div className="m-0 p-0 w-full">
-      {helptext && (
-        <div id={helpTextId}>
-          {helptext}
-        </div>
-      )}
+      {helptext && <div id={helpTextId}>{helptext}</div>}
       <button
         className={classNames(
           // base
@@ -183,7 +175,8 @@ export default function TranscribeButton({
           "no-underline cursor-pointer mb-4 print:hidden transition-opacity duration-500",
           // variants
           variant === "primary" && "border-white !text-white",
-          variant === "listLike" && "w-full rounded-md bg-white px-3 py-2 font-medium text-gray-700 shadow hover:bg-gray-50 border-transparent",
+          variant === "listLike" &&
+            "w-full rounded-md bg-white px-3 py-2 font-medium text-gray-700 shadow hover:bg-gray-50 border-transparent",
           // custom extra classes last
           className
         )}
