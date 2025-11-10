@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import config from "../../config";
 import { l } from "../../lang/Lang";
 import TranscriptionForm from "./ui/TranscriptionForm";
-import ImageMap from "../../components/views/ImageMap";
+import ImageMap from "./ui/ImageMap";
 import TranscriptionThumbnails from "./ui/TranscriptionThumbnails";
 import NavigationPanel from "./ui/NavigationPanel";
 import OverlayHeader from "./ui/OverlayHeader";
@@ -11,7 +11,7 @@ import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import { toastOk } from "../../utils/toast";
 
-export default function TranscriptionOverlay() {
+export default function TranscriptionPageByPageOverlay () {
   /* visibility & record data */
   const [visible, setVisible] = useState(false);
   const [recordDetails, setRecordDetails] = useState(null); // url, id, title...
