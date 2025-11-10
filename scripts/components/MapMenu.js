@@ -177,11 +177,18 @@ export default function MapMenu({
     if (!activateIntroOverlay) return;
     const isRoot = location.pathname === "/";
     const noHash = !location.hash || location.hash === "#/";
-    const SEEN_KEY = "folke:introSeen:v1"; // bump version when content changes
+    // detect shared/deep-linked intro content
+    const params = new URLSearchParams(location.search);
+    const hasK = params.has("k") && params.get("k") !== "";
+
+    const SEEN_KEY = "folke:introSeen:v1";
     const hasSeen =
       typeof window !== "undefined" && localStorage.getItem(SEEN_KEY) === "1";
     if (initialLoad.current && isRoot && noHash) {
-      if (!hasSeen) setShowIntroOverlay(true);
+      // If there’s a k=... in the URL, always open the intro, even if user saw it before
+      if (hasK || !hasSeen) {
+        setShowIntroOverlay(true);
+      }
     }
     initialLoad.current = false;
   }, [location, activateIntroOverlay]);
