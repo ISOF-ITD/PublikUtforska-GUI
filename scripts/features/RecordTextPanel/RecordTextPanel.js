@@ -4,7 +4,7 @@ import { memo, useState, useMemo, useCallback, useId } from "react";
 import config from "../../config";
 import { l } from "../../lang/Lang";
 import sanitizeHtml from "../../utils/sanitizeHtml";
-import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import TranscribeButton from "../TranscriptionOverlay/ui/TranscribeButton";
 import { computeStatus } from "./utils/computeStatus.js";
 import ContributorInfo, { PageContributor } from "./ui/ContributorInfo";
 import TranscribedText from "./ui/TranscribedText";

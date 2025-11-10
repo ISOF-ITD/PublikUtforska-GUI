@@ -20,7 +20,7 @@ import useSearchRouting from "./hooks/useSearchRouting";
 import useSelectionFromRoute from "./hooks/useSelectionFromRoute";
 import useSuggestionGroups from "./hooks/useSuggestionGroups";
 import useSuggestionKeyboard from "./hooks/useSuggestionKeyboard";
-import TranscribeButton from "../../components/views/transcribe/TranscribeButton";
+import TranscribeButton from "../TranscriptionOverlay/ui/TranscribeButton";
 import FilterSwitch from "../../components/FilterSwitch";
 import config from "../../config";
 

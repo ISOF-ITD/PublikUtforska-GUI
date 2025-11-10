@@ -1,4 +1,4 @@
-import { l } from "../../../../lang/Lang";
+import { l } from "../../../lang/Lang";
 
 
 const field =

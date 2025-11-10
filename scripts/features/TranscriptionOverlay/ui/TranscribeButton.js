@@ -1,7 +1,7 @@
 /* eslint-disable react/require-default-props */
 import classNames from "classnames";
 import PropTypes from "prop-types";
-import { useCallback, useMemo, useState, useId } from "react";
+import { useCallback, useState, useId } from "react";
 import config from "../../../config";
 import { getPlaceString } from "../../../utils/helpers";
 

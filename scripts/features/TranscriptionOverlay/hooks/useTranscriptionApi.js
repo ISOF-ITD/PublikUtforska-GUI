@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import config from "../../../../config";
+import config from "../../../config";
 
 /** All network traffic for transcribing lives here. */
 export default function useTranscriptionApi() {

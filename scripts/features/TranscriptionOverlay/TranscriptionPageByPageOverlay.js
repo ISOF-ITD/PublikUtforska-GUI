@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import config from "../../../config";
-import { l } from "../../../lang/Lang";
-import TranscriptionForm from "./TranscriptionForm";
-import ImageMap from "../ImageMap";
-import TranscriptionThumbnails from "./TranscriptionThumbnails";
-import NavigationPanel from "./NavigationPanel";
-import OverlayHeader from "./OverlayHeader";
-import TranscribeButton from "./TranscribeButton";
+import config from "../../config";
+import { l } from "../../lang/Lang";
+import TranscriptionForm from "./ui/TranscriptionForm";
+import ImageMap from "../../components/views/ImageMap";
+import TranscriptionThumbnails from "./ui/TranscriptionThumbnails";
+import NavigationPanel from "./ui/NavigationPanel";
+import OverlayHeader from "./ui/OverlayHeader";
+import TranscribeButton from "./ui/TranscribeButton";
 import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
-import { toastOk } from "../../../utils/toast";
+import { toastOk } from "../../utils/toast";
 
 export default function TranscriptionPageByPageOverlay() {
   /* visibility & record data */
@@ -38,7 +38,7 @@ export default function TranscriptionPageByPageOverlay() {
     handleInputChange(e);
     const pageLevelFields = ["messageInput", "messageCommentInput"];
     if (!pageLevelFields.includes(name)) return;
-    
+
     // also update the current page, so the effect won’t overwrite with old text
     setPages((prev) => {
       const next = [...prev];
@@ -53,6 +53,51 @@ export default function TranscriptionPageByPageOverlay() {
       return next;
     });
   };
+
+  /* ------------------------------------------------------------ */
+  /* Close / cancel helpers                                       */
+  /* ------------------------------------------------------------ */
+  const resetEverything = () => {
+    setVisible(false);
+    setRecordDetails(null);
+    setPages([]);
+    setCurrentPageIndex(0);
+    resetForm();
+  };
+
+  const transcribeCancel = async () => {
+    if (recordDetails?.id) {
+      try {
+        await cancel(recordDetails.id);
+      } catch {}
+    }
+    resetEverything();
+  };
+
+  /* ------------------------------------------------------------ */
+  /* Page navigation helpers                                      */
+  /* ------------------------------------------------------------ */
+  const saveCurrentPageDraft = useCallback(() => {
+    setPages((prev) => {
+      const next = [...prev];
+      if (!next[currentPageIndex]) return prev;
+      next[currentPageIndex] = {
+        ...next[currentPageIndex],
+        text: fields.messageInput,
+        comment: fields.messageCommentInput,
+        unsavedChanges: false,
+      };
+      return next;
+    });
+  }, [currentPageIndex, fields.messageInput, fields.messageCommentInput]);
+  // index setter
+  const navigatePages = useCallback(
+    (index) => {
+      saveCurrentPageDraft();
+      setCurrentPageIndex(index);
+    },
+    [saveCurrentPageDraft]
+  );
 
   useEffect(() => {
     setRecordDetails((prev) =>
@@ -74,6 +119,16 @@ export default function TranscriptionPageByPageOverlay() {
       behavior: "smooth",
     });
   };
+
+  const handleHideOverlay = useCallback(() => {
+    if (pages.some((p) => p.unsavedChanges)) {
+      const ok = window.confirm(
+        "Det finns osparade ändringar. Är du säker på att du vill stänga?"
+      );
+      if (!ok) return;
+    }
+    transcribeCancel();
+  }, [pages, transcribeCancel]);
 
   /* ------------------------------------------------------------ */
   /* Event-listeners: show / hide overlay                         */
@@ -139,70 +194,15 @@ export default function TranscriptionPageByPageOverlay() {
       "overlay.transcribePageByPage",
       showHandler
     );
-    window.eventBus.addEventListener("overlay.hide", hideHandler);
+    window.eventBus.addEventListener("overlay.close", hideHandler);
     return () => {
       window.eventBus.removeEventListener(
         "overlay.transcribePageByPage",
         showHandler
       );
-      window.eventBus.removeEventListener("overlay.hide", hideHandler);
+      window.eventBus.removeEventListener("overlay.close", hideHandler);
     };
-  }, [start]);
-
-  /* ------------------------------------------------------------ */
-  /* Close / cancel helpers                                       */
-  /* ------------------------------------------------------------ */
-  const resetEverything = () => {
-    setVisible(false);
-    setRecordDetails(null);
-    setPages([]);
-    setCurrentPageIndex(0);
-    resetForm();
-  };
-
-  const transcribeCancel = async () => {
-    if (recordDetails?.id) {
-      try {
-        await cancel(recordDetails.id);
-      } catch {}
-    }
-    resetEverything();
-  };
-
-  const handleHideOverlay = useCallback(() => {
-    if (pages.some((p) => p.unsavedChanges)) {
-      const ok = window.confirm(
-        "Det finns osparade ändringar. Är du säker på att du vill stänga?"
-      );
-      if (!ok) return;
-    }
-    transcribeCancel();
-  }, [pages, transcribeCancel]);
-
-  /* ------------------------------------------------------------ */
-  /* Page navigation helpers                                      */
-  /* ------------------------------------------------------------ */
-  const saveCurrentPageDraft = useCallback(() => {
-    setPages((prev) => {
-      const next = [...prev];
-      if (!next[currentPageIndex]) return prev;
-      next[currentPageIndex] = {
-        ...next[currentPageIndex],
-        text: fields.messageInput,
-        comment: fields.messageCommentInput,
-        unsavedChanges: false,
-      };
-      return next;
-    });
-  }, [currentPageIndex, fields.messageInput, fields.messageCommentInput]);
-  // index setter
-  const navigatePages = useCallback(
-    (index) => {
-      saveCurrentPageDraft();
-      setCurrentPageIndex(index);
-    },
-    [saveCurrentPageDraft]
-  );
+  }, [start, handleHideOverlay, scrollToActiveThumbnail]);
 
   // whenever index changes, (re)hydrate the form from pages[index]
   useEffect(() => {

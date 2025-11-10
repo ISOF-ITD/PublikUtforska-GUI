@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, useId } from "react";
-import Uppteckningsblankett from "./transcriptionForms/Uppteckningsblankett";
+import Uppteckningsblankett from "./Uppteckningsblankett";
 import { l } from "../../../lang/Lang";
-import ContributorInfoFields from "./transcriptionForms/ContributorInfoFields";
+import ContributorInfoFields from "./ContributorInfoFields";
 
 /* — Re-usable TW strings — */
 const field =

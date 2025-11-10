@@ -2,10 +2,9 @@ import config from "../../../config";
 import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
 
-import ContributeInfoButton from "../ContributeInfoButton";
-import FeedbackButton from "../FeedbackButton";
+import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
+import FeedbackButton from "../../../components/views/FeedbackButton";
 import TranscriptionHelpButton from "./TranscriptionHelpButton";
-import TranscribeButton from "./TranscribeButton";
 
 /**
  * Header for the page-by-page overlay.
