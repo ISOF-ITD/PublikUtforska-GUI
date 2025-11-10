@@ -24,6 +24,8 @@ export default function TranscriptionForm({
   comment,
   inputChangeHandler,
   sendButtonClickHandler,
+  showMetaFields,
+  onToggleMetaFields,
 }) {
   /* ─── Local state ─────────────────────────── */
   const [emailValid, setEmailValid] = useState(true);
@@ -87,7 +89,21 @@ export default function TranscriptionForm({
   /* ─── UI ───────────────────────────────────── */
   return (
     <div className="space-y-6">
-        <Uppteckningsblankett {...uppteckningsProps} />
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold">Uppgifter om uppteckningen</h2>
+        <button
+          type="button"
+          onClick={onToggleMetaFields}
+          className="text-sm underline"
+        >
+          {showMetaFields ? "Dölj fälten" : "Visa fälten"}
+        </button>
+      </div>
+
+      {showMetaFields && (
+        // record-level fields should NOT be disabled just because this page was sent
+        <Uppteckningsblankett {...uppteckningsProps} disableInput={false} />
+      )}
       {(page.transcriptionstatus === "readytotranscribe" || isSent) && (
         <fieldset
           className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"

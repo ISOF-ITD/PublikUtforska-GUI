@@ -17,6 +17,7 @@ export default function TranscriptionPageByPageOverlay() {
   const [recordDetails, setRecordDetails] = useState(null); // url, id, title...
   const [pages, setPages] = useState([]); // { source, text, ... }
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [showMetaFields, setShowMetaFields] = useState(false);
 
   /* thumbnails need a ref to auto-scroll the active one into view */
   const thumbnailContainerRef = useRef(null);
@@ -31,12 +32,24 @@ export default function TranscriptionPageByPageOverlay() {
   } = useTranscriptionForm();
 
   const handleFormChange = (e) => {
+    const { name, value } = e.target;
+
+    // update central form state
     handleInputChange(e);
+    const pageLevelFields = ["messageInput", "messageCommentInput"];
+    if (!pageLevelFields.includes(name)) return;
+    
+    // also update the current page, so the effect won’t overwrite with old text
     setPages((prev) => {
       const next = [...prev];
       const page = next[currentPageIndex];
       if (!page) return prev;
-      next[currentPageIndex] = { ...page, unsavedChanges: true };
+
+      next[currentPageIndex] = {
+        ...page,
+        unsavedChanges: true,
+        ...(name === "messageInput" ? { text: value } : { comment: value }),
+      };
       return next;
     });
   };
@@ -78,6 +91,11 @@ export default function TranscriptionPageByPageOverlay() {
         transcriptionType: t.transcriptionType,
         placeString: t.placeString,
       });
+      // prefill form fields from the record
+      setFields((prev) => ({
+        ...prev,
+        titleInput: t.title || "",
+      }));
 
       /* prep page array with per-page meta */
       const initialPages = (t.images || []).map((p) => {
@@ -103,6 +121,9 @@ export default function TranscriptionPageByPageOverlay() {
       requestAnimationFrame(() =>
         scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0)
       );
+
+      // show form fields by default for “uppteckningsblankett”
+      setShowMetaFields(t.transcriptionType === "uppteckningsblankett");
 
       /* backend session */
       start(t.id);
@@ -148,7 +169,7 @@ export default function TranscriptionPageByPageOverlay() {
     resetEverything();
   };
 
-  const handleHideOverlay = () => {
+  const handleHideOverlay = useCallback(() => {
     if (pages.some((p) => p.unsavedChanges)) {
       const ok = window.confirm(
         "Det finns osparade ändringar. Är du säker på att du vill stänga?"
@@ -156,7 +177,7 @@ export default function TranscriptionPageByPageOverlay() {
       if (!ok) return;
     }
     transcribeCancel();
-  };
+  }, [pages, transcribeCancel]);
 
   /* ------------------------------------------------------------ */
   /* Page navigation helpers                                      */
@@ -369,6 +390,8 @@ export default function TranscriptionPageByPageOverlay() {
               comment={fields.messageCommentInput}
               inputChangeHandler={handleFormChange}
               sendButtonClickHandler={sendButtonClickHandler}
+              showMetaFields={showMetaFields}
+              onToggleMetaFields={() => setShowMetaFields((v) => !v)}
             />
           </div>
 
