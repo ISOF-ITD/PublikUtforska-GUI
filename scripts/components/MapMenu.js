@@ -283,7 +283,7 @@ export default function MapMenu({
         <div>
           <StatisticsContainer />
 
-          <h3 className="!my-2">Senast avskrivna uppteckningar</h3>
+          <h3 className="!my-2">Senast avskrivna</h3>
           <div>
             <RecordList
               key="latest-RecordList"

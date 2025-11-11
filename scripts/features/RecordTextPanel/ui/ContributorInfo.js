@@ -26,7 +26,7 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
             <div className="flex items-center gap-2 text-isof">
               <FontAwesomeIcon icon={faUserPen} className="h-4 w-4" />
               <h3 className="font-semibold text-base m-0">
-                {l("Transkriberad av")}
+                {l("Bidrag av")}
               </h3>
             </div>
             <div className="ml-6 space-y-1">
@@ -93,7 +93,7 @@ export function PageContributor({ transcribedby, transcriptiondate, comment }) {
       {transcribedby && (
         <span className="m-0 flex items-center gap-1">
           <FontAwesomeIcon icon={faUserPen} />
-          <span className="font-medium">Transkriberad av:</span> {transcribedby}
+          <span className="font-medium">Bidrag av:</span> {transcribedby}
           {dateStr ? ` • ${dateStr}` : null}
         </span>
       )}

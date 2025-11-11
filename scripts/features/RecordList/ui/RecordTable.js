@@ -104,7 +104,7 @@ export default function RecordTable({
               )}
 
             {columns?.includes("transcribedby") && (
-              <th className="text-left">{l("Transkriberad av")}</th>
+              <th className="text-left">{l("Bidrag av")}</th>
             )}
           </tr>
         </thead>

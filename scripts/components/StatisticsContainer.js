@@ -86,18 +86,6 @@ export default function StatisticsContainer() {
   return (
     <div className="flex flex-col gap-4">
       <ShortStatistics
-        params={pMonthRecords}
-        label={`avskrivna uppteckningar i ${monthOrFallback}`}
-        shouldFetch={dataChanged}
-      />
-
-      <ShortStatistics
-        params={pTotals}
-        label="avskrivna uppteckningar totalt"
-        compareAndUpdateStat={compareAndUpdateStat}
-      />
-
-      <ShortStatistics
         params={pMonthPages}
         label={`avskrivna sidor i ${monthOrFallback}`}
         shouldFetch={dataChanged}
@@ -115,27 +103,27 @@ export default function StatisticsContainer() {
           range: monthRange,
           aggregation: "cardinality,transcribedby.keyword",
         }}
-        label={`transkriberare som har skrivit av uppteckningar i ${monthOrFallback}`}
+        label={`bidragsgivare i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
       <ShortStatistics
         params={{ ...base, aggregation: "cardinality,transcribedby.keyword" }}
-        label="transkriberare som har skrivit av uppteckningar totalt"
+        label="bidragsgivare totalt"
         shouldFetch={dataChanged}
       />
 
       <StatisticsList
         params={{ ...base, range: monthRange }}
         type="topTranscribersByPages"
-        label={`Topplista transkriberare i ${monthOrFallback}`}
+        label={`Topplista bidragsgivare i ${monthOrFallback}`}
         shouldFetch={dataChanged}
       />
 
       <StatisticsList
         params={{ ...base }}
         type="topTranscribersByPages"
-        label="Topplista transkriberare totalt"
+        label="Topplista bidragsgivare totalt"
         shouldFetch={dataChanged}
       />
     </div>

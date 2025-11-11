@@ -425,7 +425,7 @@ export default function RecordListItem(props) {
       )}
 
       {columns?.includes("transcribedby") && (
-        <td data-title={`${l("Transkriberad av")}:`} className="py-2">
+        <td data-title={`${l("Bidrag av")}:`} className="py-2">
           {transcribedby && <span className="text-sm">{transcribedby}</span>}
         </td>
       )}
