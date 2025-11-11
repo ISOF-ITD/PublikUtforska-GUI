@@ -21,8 +21,8 @@ export default function AccessionIdCell({
     </span>
   );
 
-  /* one_accession_row and one_audio_record are both at parent level*/
-  if (recordtype === "one_accession_row" || recordtype === "one_audio_record")
+  // parent-level → just show
+  if (recordtype === "one_accession_row" || recordtype === "one_audio_record") {
     return (
       <td
         data-title={`${l("Arkivnummer")}:`}
@@ -31,8 +31,9 @@ export default function AccessionIdCell({
         <span className={pillClasses}>{base}</span>
       </td>
     );
+  }
 
-  /* one_record → link up to accession */
+  // child-level → link UP to accession (this can stay for old data)
   if (recordtype === "one_record")
     return (
       <td
@@ -41,8 +42,6 @@ export default function AccessionIdCell({
       >
         <a
           data-archiveidrow={archive.archive_id_row}
-          data-search={searchParams.search ?? ""}
-          data-recordtype={searchParams.recordtype}
           onClick={archiveIdClick}
           className={`${pillClasses} bg-white text-isof underline hover:bg-gray-100 cursor-pointer`}
         >
@@ -51,21 +50,10 @@ export default function AccessionIdCell({
       </td>
     );
 
-  /* accession → link down to records */
+  // everything else → just show, no more "go to one_record"
   return (
     <td data-title={`${l("Arkivnummer")}:`} className="py-2">
-      <a
-        data-archiveid={archive.archive_id}
-        data-recordtype={
-          searchParams.recordtype === "one_accession_row"
-            ? "one_record"
-            : "one_accession_row"
-        }
-        onClick={archiveIdClick}
-        className={`${pillClasses} underline text-isof bg-white hover:bg-gray-100 cursor-pointer`}
-      >
-        {base}
-      </a>
+      <span className={pillClasses}>{base}</span>
     </td>
   );
 }

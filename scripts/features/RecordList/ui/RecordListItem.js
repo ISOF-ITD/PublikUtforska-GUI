@@ -55,6 +55,8 @@ export default function RecordListItem(props) {
       transcriptionstatus,
       transcriptiontype,
       year,
+      segments = [],
+      update_status,
     },
     highlight,
     inner_hits: innerHits,
@@ -139,7 +141,9 @@ export default function RecordListItem(props) {
     >
       {/* ---------- title (mobile+desktop) ---------- */}
       {shouldRenderColumn("title", columns) && (
-        <td className={`${smallTitle ? "" : "text-base"} !px-2 !py-3 space-y-1`}>
+        <td
+          className={`${smallTitle ? "" : "text-base"} !px-2 !py-3 space-y-1`}
+        >
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
@@ -269,35 +273,40 @@ export default function RecordListItem(props) {
                         (isFinite(pb) ? pb : Infinity)
                       );
                     })
-                    .map((s) => {
+                    .map((s, idx) => {
                       const pub = s._source.transcriptionstatus === "published";
+
+                      const parentHref = `${
+                        mode === "transcribe" ? "/transcribe" : ""
+                      }/records/${id}`;
+                      const href =
+                        s._source.href ??
+                        (s._source.media_id
+                          ? `${parentHref}?media=${s._source.media_id}`
+                          : parentHref);
+
                       return (
-                        <li key={s._source.id} className="mb-1">
+                        <li key={s._source.id || idx} className="mb-1">
                           <small>
                             <Link
-                              to={`${
-                                mode === "transcribe" ? "/transcribe" : ""
-                              }/records/${s._source.id}`}
+                              to={href}
                               className={`${
                                 pub ? "font-bold" : ""
                               } hover:underline text-isof`}
                             >
-                              {transcriptiontype !== "audio" && (
-                                <>Sida {pageFromTo(s)}: </>
-                              )}
+                              {/* for old fetched records we had pageFromTo; for segments we just show the page we derived */}
+                              {transcriptiontype !== "audio" &&
+                                s._source.archive?.page && (
+                                  <>Sida {s._source.archive.page}: </>
+                                )}
                               <span
                                 dangerouslySetInnerHTML={{
-                                  __html: `${getTitle(
-                                    s._source.title,
-                                    s._source.contents,
-                                    s._source.archive
-                                  )}${
-                                    !pub
-                                      ? transcriptiontype === "audio"
-                                        ? " (kan bidra)"
-                                        : " (ej avskriven)"
-                                      : ""
-                                  }`,
+                                  __html:
+                                    s._source.title ||
+                                    // fallback so we don’t render empty links
+                                    `Segment ${
+                                      s._source.archive?.page || idx + 1
+                                    }`,
                                 }}
                               />
                             </Link>

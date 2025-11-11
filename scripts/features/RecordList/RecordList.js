@@ -122,11 +122,9 @@ export default function RecordList(props) {
   };
 
   const archiveIdClick = (e) => {
-    const { archiveidrow, recordtype, search } = e.target.dataset;
+    const { archiveidrow } = e.target.dataset;
     if (archiveidrow) {
-      navigate(
-        `/records/${archiveidrow}${createSearchRoute({ search, recordtype })}`
-      );
+      navigate(`/records/${archiveidrow}`);
     }
   };
 
@@ -169,8 +167,10 @@ export default function RecordList(props) {
 
       {!fetching && (
         <div
-          className={classNames("mb-10 md:mb-2 rounded",
-            records.length && "min-h-[200px]")}
+          className={classNames(
+            "mb-10 md:mb-2 rounded",
+            records.length && "min-h-[200px]"
+          )}
         >
           <div aria-live="polite" className="sr-only">
             {l("Sida")} {currentPage} {l("av")} {maxPage}

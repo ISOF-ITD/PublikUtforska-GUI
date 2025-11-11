@@ -20,9 +20,11 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
     id: recordId,
   } = data || {};
 
+  const CHUNK_SIZE = 24;
   const mediaList = Array.isArray(media) ? media : [];
   const [expanded, setExpanded] = useState(false);
   const [hasLoadedImages, setHasLoadedImages] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
   const contentId = useId();
 
   const images = useMemo(
@@ -52,6 +54,8 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
     const next = saved !== null ? saved === "1" : shouldAutoOpen;
     setExpanded(next);
     setHasLoadedImages(next);
+    // if we auto-open on a record with few images, show at most CHUNK_SIZE
+    setVisibleCount(CHUNK_SIZE);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -68,6 +72,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   }, [hasLoadedImages]);
 
   if (!hasImages) return null;
+  const visibleImages = images.slice(0, visibleCount);
 
   return (
     <section className="mb-4">
@@ -95,11 +100,12 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
           id={contentId}
           className={classNames(
             "flex flex-wrap gap-2 bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full p-5",
+            "max-h-96 overflow-auto",
             !expanded && "hidden"
           )}
           aria-hidden={!expanded}
         >
-          {images.map((mediaItem, index) => (
+          {visibleImages.map((mediaItem, index) => (
             <ArchiveImage
               key={mediaItem?.source || `${index}`}
               mediaItem={mediaItem}
@@ -127,6 +133,19 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
               renderIndicator={renderIndicator}
             />
           ))}
+          {visibleCount < images.length && (
+            <button
+              type="button"
+              onClick={() =>
+                setVisibleCount((prev) =>
+                  Math.min(prev + CHUNK_SIZE, images.length)
+                )
+              }
+              className="mt-2 px-3 py-1.5 text-sm bg-white border rounded shadow-sm hover:bg-gray-50"
+            >
+              Visa fler ({images.length - visibleCount} kvar)
+            </button>
+          )}
         </div>
       )}
     </section>
