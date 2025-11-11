@@ -48,7 +48,7 @@ export default function TranscriptionStatus({
   /* ─────────────────────────────────────────────────────────────
      RECORD-LEVEL pill for handwritten/text pages 
   ───────────────────────────────────────────────────────────── */
-  if (status && status !== "accession" && status !== "accession" && status !== "readytocontribute")  {
+  if (status && status !== "accession" && status !== "accession" && status !== "readytocontribute" && status !== "readytotranscribe")  {
     return (
       <span
         className={`${

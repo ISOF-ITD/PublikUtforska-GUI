@@ -121,7 +121,9 @@ function createRootRoute() {
     loader: ({ params, request }) => {
       const queryParams = {
         ...createParamsFromSearchRoute(params['*']),
-        transcriptionstatus: 'published,accession,readytocontribute',
+        transcriptionstatus: 'published,accession,readytotranscribe,readytocontribute',
+        // Mode Arkiv: only for: one_accession_row
+        recordtype: 'one_accession_row',
       };
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),
@@ -155,7 +157,9 @@ function createTranscribeRoute() {
       const queryParams = {
         ...base,
         recordtype: base.recordtype ?? 'one_accession_row',
-        has_untranscribed_records: base.has_untranscribed_records ?? true,
+        // Used in counting untranscribed records
+        transcriptionstatus: base.transcriptionstatus ?? 'readytotranscribe',
+        //has_untranscribed_records: base.has_untranscribed_records ?? true,
       };
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),

@@ -46,7 +46,9 @@ export default function RecordListWrapper({
             params={{
               ...createParamsFromSearchRoute(params['*']),
               has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute',
+              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe',
+              // Ignore other (older) record types:
+              recordtype: 'one_accession_row',
             }}
             mode={mode}
             hasFilter={mode !== 'transcribe'}

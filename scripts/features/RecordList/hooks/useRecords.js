@@ -80,13 +80,16 @@ export default function useRecords(params, mode) {
       has_metadata: params.has_metadata || undefined,
       has_media: params.has_media || undefined,
       has_transcribed_records: params.has_transcribed_records || undefined,
-      has_untranscribed_records: params.has_untranscribed_records || undefined,
+      // has_untranscribed_records not used anymore 
+      //has_untranscribed_records: params.has_untranscribed_records || undefined,
+      transcriptionstatus: params.transcriptionstatus || 'readytotranscribe',
+      // Fanns:
+      //transcriptionstatus: params.transcriptionstatus || undefined,
       recordtype:
         params.recordtype ||
         (mode === "transcribe" ? "one_accession_row" : filter || null),
       person_id: params.person_id || undefined,
       socken_id: params.place_id || undefined,
-      transcriptionstatus: params.transcriptionstatus || undefined,
       sort: params.sort || sort || undefined,
       order: params.order || order || undefined,
       ...(filterParameterName && filterParameterValues && "filter" in params

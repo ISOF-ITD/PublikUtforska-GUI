@@ -163,7 +163,7 @@ export default function MapMenu({
   const latestParams = useMemo(
     () => ({
       size: 20,
-      recordtype: "one_record",
+      recordtype: "one_accession_row",
       transcriptionstatus: "published",
       sort: "changedate",
       order: "desc",
