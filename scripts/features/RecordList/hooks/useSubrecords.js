@@ -13,7 +13,6 @@ export default function useSubrecords({
   recordtype,
   id,
   numberofpages,
-  numberofonerecord,
   numberoftranscribedonerecord,
   numberoftranscribedpages,
   transcriptiontype,
@@ -34,6 +33,8 @@ export default function useSubrecords({
   const hasEmbeddedSegments =
     update_status === "segments" ||
     (Array.isArray(segments) && segments.length > 0);
+
+  const numberOfSegments = segments.length;
 
   /* ---------- counters / derived data for new model ---------- */
   useEffect(() => {
@@ -111,8 +112,8 @@ export default function useSubrecords({
       }
     }
 
-    if (Number.isInteger(numberofonerecord)) {
-      setCount(numberofonerecord);
+    if (Number.isInteger(numberOfSegments)) {
+      setCount(numberOfSegments);
       setCountDone(numberoftranscribedonerecord);
     } else {
       fetchRecordCount(oneRecordParams, setCount);
@@ -126,7 +127,7 @@ export default function useSubrecords({
     media,
     numberofpages,
     numberoftranscribedpages,
-    numberofonerecord,
+    numberOfSegments,
     numberoftranscribedonerecord,
     transcriptiontype,
   ]);
