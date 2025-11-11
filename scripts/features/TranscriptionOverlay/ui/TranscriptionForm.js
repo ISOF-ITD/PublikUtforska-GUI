@@ -2,8 +2,14 @@ import { useCallback, useMemo, useState, useId } from "react";
 import Uppteckningsblankett from "./Uppteckningsblankett";
 import { l } from "../../../lang/Lang";
 import ContributorInfoFields from "./ContributorInfoFields";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronDown,
+  faChevronUp,
+  faCircleChevronDown,
+  faCircleChevronUp,
+} from "@fortawesome/free-solid-svg-icons";
 
-/* — Re-usable TW strings — */
 const field =
   "w-full border border-gray-300 rounded-lg p-3 font-serif leading-relaxed " +
   "disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-isof " +
@@ -28,7 +34,6 @@ export default function TranscriptionForm({
   showMetaFields,
   onToggleMetaFields,
 }) {
-  /* ─── Local state ─────────────────────────── */
   const [emailValid, setEmailValid] = useState(true);
   const emailId = useId();
   const commentId = useId();
@@ -38,7 +43,6 @@ export default function TranscriptionForm({
     []
   );
 
-  /* ─── Derived state ───────────────────────── */
   const page = pages[currentPageIndex] ?? {};
   const disableInput = page.transcriptionstatus !== "readytotranscribe";
   const isSent = !!page.isSent;
@@ -47,7 +51,6 @@ export default function TranscriptionForm({
     ? l("Sidan har skickats")
     : l(`Skicka sida ${currentPageIndex + 1} (av ${pages.length})`);
 
-  /* ─── Shared props for sub-forms ───────────── */
   const commonProps = useMemo(
     () => ({
       messageInput: transcriptionText,
@@ -79,7 +82,6 @@ export default function TranscriptionForm({
     ...commonProps,
   };
 
-  /* ─── Handlers ─────────────────────────────── */
   const handleEmailBlur = (e) => setEmailValid(validateEmail(e.target.value));
   const wordCount = transcriptionText
     .trim()
@@ -87,30 +89,69 @@ export default function TranscriptionForm({
     .filter(Boolean).length;
   const formValid = wordCount >= 2 && emailValid;
 
-  /* ─── UI ───────────────────────────────────── */
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Uppgifter om uppteckningen</h2>
+    <div className="space-y-3">
+      <div className="flex items-center justify-center w-full">
         <button
           type="button"
           onClick={onToggleMetaFields}
-          className="text-sm underline"
+          className="text-sm w-full flex items-center gap-2 !my-0"
         >
-          {showMetaFields ? "Dölj fälten" : "Visa fälten"}
+          {showMetaFields ? (
+            <span className="w-full flex items-center justify-between">
+              {l("Dölj uppgifter om uppteckningen")}{" "}
+              <FontAwesomeIcon className="text-lg" icon={faCircleChevronUp} />
+            </span>
+          ) : (
+            <span className="w-full flex items-center justify-between">
+              {l("Visa uppgifter om uppteckningen")}{" "}
+              <FontAwesomeIcon className="text-lg" icon={faCircleChevronDown} />
+            </span>
+          )}
         </button>
       </div>
 
+      {/* 1) META: toggleable */}
       {showMetaFields && (
-        // record-level fields should NOT be disabled just because this page was sent
-        <Uppteckningsblankett {...uppteckningsProps} disableInput={false} />
+        <Uppteckningsblankett
+          {...uppteckningsProps}
+          disableInput={false}
+          showMeta={true}
+          showText={false}
+        />
       )}
+
+      {/* 2) TEXT: always visible */}
+      <fieldset
+        className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
+        disabled={disableInput}
+      >
+        <label
+          htmlFor="transcription_text_always"
+          className="font-semibold block"
+        >
+          Text på sidan {currentPageIndex + 1} (av {pages.length})
+        </label>
+        <textarea
+          id="transcription_text_always"
+          name="messageInput"
+          lang="sv"
+          spellCheck="false"
+          value={transcriptionText}
+          onChange={inputChangeHandler}
+          className="w-full min-h-[18rem] max-h-96 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100"
+        />
+        <span className="text-sm text-gray-600 self-end" aria-live="polite">
+          {wordCount} {l("ord")}
+        </span>
+      </fieldset>
+
+      {/* 3) Comment + contributor + send (same as before) */}
       {(page.transcriptionstatus === "readytotranscribe" || isSent) && (
         <fieldset
           className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"
           disabled={disableInput}
         >
-          {/* Kommentar */}
           <div>
             <label
               htmlFor={commentId}
@@ -121,6 +162,7 @@ export default function TranscriptionForm({
                   pages.length
                 })`
               )}
+              
             </label>
             <textarea
               id={commentId}
@@ -131,9 +173,13 @@ export default function TranscriptionForm({
               onChange={inputChangeHandler}
               className={field + " h-40 resize-y"}
             />
+            <span className="text-xs text-gray-500">
+                {l(
+                  "Har du stött på något problem med avskriften eller har du någon annan kommentar till den? Skriv då i kommentarsfältet."
+                )}
+              </span>
           </div>
 
-          {/* GDPR blurb */}
           <ContributorInfoFields
             nameInput={nameInput}
             emailInput={emailInput}
@@ -144,20 +190,19 @@ export default function TranscriptionForm({
             disabled={disableInput}
           />
 
-          {/* Skicka-knapp */}
           <button
             type="button"
             onClick={sendButtonClickHandler}
             data-gotonext="true"
             className={`
-          inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
-          font-semibold text-white shadow transition
-          ${
-            sending || disableInput || !formValid
-              ? "bg-gray-400 !cursor-not-allowed !hover:text-white"
-              : "!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof"
-          }
-        `}
+              inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
+              font-semibold text-white shadow transition
+              ${
+                sending || disableInput || !formValid
+                  ? "bg-gray-400 !cursor-not-allowed !hover:text-white"
+                  : "!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof"
+              }
+            `}
             disabled={disableInput || sending || !formValid}
             title={
               !formValid
@@ -170,7 +215,6 @@ export default function TranscriptionForm({
             {sending ? l("Skickar…") : sendButtonLabel}
           </button>
 
-          {/* Tack */}
           {isSent && (
             <p className="mt-4" aria-live="polite">
               {l(
