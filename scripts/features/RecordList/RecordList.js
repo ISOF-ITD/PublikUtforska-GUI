@@ -141,7 +141,10 @@ export default function RecordList(props) {
   /* ------- render ------- */
   return (
     <>
-      {hasFilter && (
+      {/*
+      No longer used after removal of one_record,
+      left here as temporary reference
+      hasFilter && (
         <Filter
           uniqueId={uniqueId}
           filter={filter}
@@ -151,7 +154,7 @@ export default function RecordList(props) {
           }}
           openHelp={openSwitcherHelptext}
         />
-      )}
+        )*/}
 
       {hasTimeline && (
         <Timeline

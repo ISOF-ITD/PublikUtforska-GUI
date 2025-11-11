@@ -87,7 +87,7 @@ export default function Uppteckningsblankett({
 
           <div>
             <label htmlFor="transcription_informant" className="font-semibold">
-              Fält under berättat av (om det finns fler uppgifter nedskrivna):
+              Fält under "Berättat av"
             </label>
             <input
               id="transcription_informant"
@@ -95,6 +95,7 @@ export default function Uppteckningsblankett({
               type="text"
               value={informantInformationInput}
               onChange={inputChangeHandler}
+              placeholder="Om det finns fler uppgifter nedskrivna"
               className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
             />
           </div>
