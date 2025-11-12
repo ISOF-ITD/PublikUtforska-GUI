@@ -20,8 +20,6 @@ import TranscriptionPageByPageOverlay  from '../features/TranscriptionOverlay/Tr
 import HelpTextOverlay from './views/HelpTextOverlay';
 import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
-import RequestToTranscribeOverlay from './views/RequestToTranscribeOverlay';
-
 import MapWrapper from './MapWrapper';
 import Footer from './Footer';
 
@@ -165,7 +163,6 @@ useEffect(() => {
         <ImageOverlay />
         <FeedbackOverlay />
         <ContributeInfoOverlay />
-        <RequestToTranscribeOverlay />
         <TranscriptionPageByPageOverlay />
         <TranscriptionHelpOverlay />
         <HelpTextOverlay />

@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import archiveLogoIsof from "../../../../img/archive-logo-isof.png";
 import archiveLogoIkos from "../../../../img/archive-logo-ikos.png";
 import logotypSprakbanken from "../../../../img/logotyp_sprakbanken.svg";
+import Disclamer from "../Disclaimer";
 
 // Normalize: lowercase, strip diacritics, collapse punctuation/whitespace
 const normalize = (s) =>
@@ -50,15 +51,10 @@ function RecordViewFooter({ data }) {
   const logoSrc = useMemo(() => getArchiveLogo(archiveName), [archiveName]);
 
   return (
-    <div className="row">
+    <div className="flex flex-row items-center max-sm:flex-col">
+      <Disclamer />
       <div
-        className="twelve columns"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          flexWrap: "wrap",
-        }}
+        className="flex items-center gap-4 max-sm:flex-col max-sm:mb-20"
       >
         <a
           href="https://isof.se"

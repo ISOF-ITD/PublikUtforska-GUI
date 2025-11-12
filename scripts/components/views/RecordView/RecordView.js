@@ -15,7 +15,6 @@ import {
   createParamsFromRecordRoute,
 } from "../../../utils/routeHelper";
 import ContentsElement from "./ContentsElement";
-import Disclaimer from "../Disclaimer";
 import HeadwordsElement from "./HeadwordsElement";
 import License from "./License";
 import PdfElement from "./PdfElement";
@@ -27,7 +26,6 @@ import RecordViewThumbnails from "./RecordViewThumbnails";
 import ReferenceLinks from "./ReferenceLinks";
 import SubrecordsElement from "./SubrecordsElement";
 import RecordTextPanel from "../../../features/RecordTextPanel/RecordTextPanel";
-import RequestToTranscribePrompt from "./RequestToTranscribePrompt";
 import TranscriptionPrompt from "./TranscriptionPrompt";
 import SimilarRecords from "./SimilarRecords";
 import { getTitleText } from "../../../utils/helpers";
@@ -178,9 +176,7 @@ function ResolvedRecord({
         location={location}
       />
       <div>
-        <Disclaimer />
         <div role="group" aria-label="Snabböversikt" className="space-y-0">
-          <RequestToTranscribePrompt data={data} />
           <RecordViewThumbnails
             data={data}
             mediaImageClickHandler={mediaImageClickHandler}
