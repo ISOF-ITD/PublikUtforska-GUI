@@ -6,7 +6,7 @@ export default function Disclaimer() {
     <aside
       role="note"
       aria-label="Information till läsaren"
-      className="w-full max-w-3xl"
+      className=""
     >
       <div className="rounded-md px-4 py-3">
         <div className="border-0 border-l-4 border-l-lighter-isof border-solid pl-3 mb-3">

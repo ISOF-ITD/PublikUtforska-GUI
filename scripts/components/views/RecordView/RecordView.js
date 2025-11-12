@@ -15,7 +15,6 @@ import {
   createParamsFromRecordRoute,
 } from "../../../utils/routeHelper";
 import ContentsElement from "./ContentsElement";
-import Disclaimer from "../Disclaimer";
 import HeadwordsElement from "./HeadwordsElement";
 import License from "./License";
 import PdfElement from "./PdfElement";
@@ -177,7 +176,6 @@ function ResolvedRecord({
         location={location}
       />
       <div>
-        <Disclaimer />
         <div role="group" aria-label="Snabböversikt" className="space-y-0">
           <RecordViewThumbnails
             data={data}
