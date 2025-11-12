@@ -27,7 +27,6 @@ import RecordViewThumbnails from "./RecordViewThumbnails";
 import ReferenceLinks from "./ReferenceLinks";
 import SubrecordsElement from "./SubrecordsElement";
 import RecordTextPanel from "../../../features/RecordTextPanel/RecordTextPanel";
-import RequestToTranscribePrompt from "./RequestToTranscribePrompt";
 import TranscriptionPrompt from "./TranscriptionPrompt";
 import SimilarRecords from "./SimilarRecords";
 import { getTitleText } from "../../../utils/helpers";
@@ -180,7 +179,6 @@ function ResolvedRecord({
       <div>
         <Disclaimer />
         <div role="group" aria-label="Snabböversikt" className="space-y-0">
-          <RequestToTranscribePrompt data={data} />
           <RecordViewThumbnails
             data={data}
             mediaImageClickHandler={mediaImageClickHandler}
