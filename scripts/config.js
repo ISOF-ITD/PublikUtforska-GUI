@@ -111,6 +111,7 @@ export default {
     // Also add utils/orLokaltypCategories.js in CategoryMenu.js and CategoryList.js
     // type: 'ortnamn',
     /// /categorytypes: 'ortnamn'
+    recordtype: 'one_accession_row',
   },
 
   // Speciella inställningar för projektet, används nu mest för Matkarta-GUI, siteOptions som property av config måste dock finnas

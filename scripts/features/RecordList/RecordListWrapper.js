@@ -48,7 +48,8 @@ export default function RecordListWrapper({
               has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
               transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe',
               // Ignore other (older) record types:
-              recordtype: 'one_accession_row',
+              // In requiredParams in config.js:
+              // recordtype: 'one_accession_row',
             }}
             mode={mode}
             hasFilter={mode !== 'transcribe'}

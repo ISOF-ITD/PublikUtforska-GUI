@@ -163,7 +163,8 @@ export default function MapMenu({
   const latestParams = useMemo(
     () => ({
       size: 20,
-      recordtype: "one_accession_row",
+      // In requiredParams in config.js:
+      // recordtype: "one_accession_row",
       transcriptionstatus: "published",
       sort: "changedate",
       order: "desc",

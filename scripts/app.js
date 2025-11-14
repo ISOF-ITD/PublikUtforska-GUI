@@ -123,7 +123,8 @@ function createRootRoute() {
         ...createParamsFromSearchRoute(params['*']),
         transcriptionstatus: 'published,accession,readytotranscribe,readytocontribute',
         // Mode Arkiv: only for: one_accession_row
-        recordtype: 'one_accession_row',
+        // In requiredParams in config.js:
+        // recordtype: 'one_accession_row',
       };
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),
