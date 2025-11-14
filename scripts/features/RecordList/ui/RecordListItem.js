@@ -139,7 +139,9 @@ export default function RecordListItem(props) {
     >
       {/* ---------- title (mobile+desktop) ---------- */}
       {shouldRenderColumn("title", columns) && (
-        <td className={`${smallTitle ? "" : "text-base"} !px-2 !py-3 space-y-1`}>
+        <td
+          className={`${smallTitle ? "" : "text-base"} !px-2 !py-3 space-y-1 flex flex-col`}
+        >
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
@@ -226,6 +228,15 @@ export default function RecordListItem(props) {
           {highlight?.text?.[0] && (
             <HighlightedText text={highlight.text[0]} className="block mt-2" />
           )}
+          {highlight?.headwords?.[0] && (
+            <HighlightedText
+              text={highlight.headwords[0]}
+              maxSnippets={1}
+              maxWords={15}
+              className="block mt-2"
+            />
+          )}
+
           {innerHits?.media?.hits?.hits.map(
             (hit) =>
               hit.highlight?.["media.text"] && (
