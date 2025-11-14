@@ -256,11 +256,14 @@ export default function RecordListItem(props) {
           {innerHits?.media?.hits?.hits.map(
             (hit) =>
               hit.highlight?.["media.text"] && (
-                <HighlightedText
-                  key={`${hit._id}`}
-                  text={hit.highlight["media.text"][0]}
-                  className="block mt-2"
-                />
+                <div className="flex flex-col mt-2">
+                  <span className="mr-1">Transkribering:</span>
+                  <HighlightedText
+                    key={`${hit._id}`}
+                    text={hit.highlight["media.text"][0]}
+                    className="block mt-2"
+                  />
+                </div>
               )
           )}
 
