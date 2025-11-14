@@ -317,19 +317,44 @@ export const RecordCardItem = ({
         </span>
       )}
 
-      <div className="flex flex-col">
-        {innerHitsToShow.map(({ key, text }) => (
-          <HighlightedText key={key} text={text} className="mt-2 text-sm" />
-        ))}
+      {highlight?.text?.[0] && (
+        <div className="flex flex-col mt-2">
+          <span className="mr-1">Transkribering:</span>
+          <HighlightedText
+            text={highlight.text[0]} // only the ES highlight HTML
+            className="inline"
+            maxSnippets={1}
+            maxWords={15}
+          />
+        </div>
+      )}
+      {highlight?.headwords?.[0] && (
+        <div className="flex flex-col mt-2">
+          <span className="mr-1">
+            Uppgifter från äldre innehållsregister:
+          </span>
+          <HighlightedText
+            text={highlight.headwords[0]}
+            maxSnippets={1}
+            maxWords={15}
+            className="inline"
+          />
+        </div>
+      )}
 
-        {/* Fallback: ordinary ES text hit */}
-        {(() => {
-          const fallback = toText(highlight?.text?.[0]);
-          return !summary && innerHitsToShow.length === 0 && fallback ? (
-            <HighlightedText text={fallback} className="mt-2" />
-          ) : null;
-        })()}
-      </div>
+       {innerHitsToShow?.media?.hits?.hits.map(
+        (hit) =>
+          hit.highlight?.["media.text"] && (
+            <div className="flex flex-col mt-2">
+              <span className="mr-1">Transkribering:</span>
+              <HighlightedText
+                key={`${hit._id}`}
+                text={hit.highlight["media.text"][0]}
+                className="block mt-2"
+              />
+            </div>
+          )
+      )}
 
       <TranscriptionStatus
         status={transcriptionstatus}
