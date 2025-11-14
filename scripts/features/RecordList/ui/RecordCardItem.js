@@ -317,18 +317,35 @@ export const RecordCardItem = ({
         </span>
       )}
 
+      {highlight?.text?.[0] && (
+        <div className="flex flex-col mt-2">
+          <span className="mr-1">Transkribering:</span>
+          <HighlightedText
+            text={highlight.text[0]} // only the ES highlight HTML
+            className="inline"
+            maxSnippets={1}
+            maxWords={15}
+          />
+        </div>
+      )}
+      {highlight?.headwords?.[0] && (
+        <div className="flex flex-col mt-2">
+          <span className="mr-1">
+            Uppgifter från äldre innehållsregister:
+          </span>
+          <HighlightedText
+            text={highlight.headwords[0]}
+            maxSnippets={1}
+            maxWords={15}
+            className="inline"
+          />
+        </div>
+      )}
+
       <div className="flex flex-col">
         {innerHitsToShow.map(({ key, text }) => (
           <HighlightedText key={key} text={text} className="mt-2 text-sm" />
         ))}
-
-        {/* Fallback: ordinary ES text hit */}
-        {(() => {
-          const fallback = toText(highlight?.text?.[0]);
-          return !summary && innerHitsToShow.length === 0 && fallback ? (
-            <HighlightedText text={fallback} className="mt-2" />
-          ) : null;
-        })()}
       </div>
 
       <TranscriptionStatus
