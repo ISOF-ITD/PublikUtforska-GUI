@@ -107,14 +107,9 @@ export default function useRecords(params, mode) {
     collections.fetch(getFetchParams());
   }, [collections, getFetchParams]);
 
-  useEffect(fetchData, [
-    currentPage,
-    yearFilter,
-    filter,
-    sort,
-    order,
-    params.person_id,
-  ]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   /* ---------------- outward API ---------------- */
   return {
