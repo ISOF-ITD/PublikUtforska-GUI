@@ -155,13 +155,17 @@ export default function SearchPanel({
     }
   };
   const clearSearch = useCallback(() => {
+    if (!qParam && !inputValue && !selectedPerson && !selectedPlace) {
+      inputRef.current?.focus();
+      return;
+    }
     setSelectedPerson(null);
     setSelectedPlace(null);
     setQuery("");
-    navigateToSearch("", null); // strips old search_field segment
+    navigateToSearch("", null);
     setInputValue("");
     inputRef.current?.focus();
-  }, [navigateToSearch, setSelectedPerson, setSelectedPlace]);
+  }, [navigateToSearch, qParam, inputValue, selectedPerson, selectedPlace]);
 
   // keep categories in sync with the route
   useEffect(() => {

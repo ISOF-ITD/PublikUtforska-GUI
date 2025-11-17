@@ -80,6 +80,7 @@ export default function MapMenu({
   const [justSwitched, setJustSwitched] = useState(false);
   useEffect(() => {
     if (prevModeRef.current !== mode) {
+      if (prevModeRef.current === mode) return;
       prevModeRef.current = mode;
       setJustSwitched(true);
       const t = setTimeout(() => setJustSwitched(false), 400);
