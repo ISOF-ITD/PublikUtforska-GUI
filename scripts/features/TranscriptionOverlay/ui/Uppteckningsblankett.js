@@ -102,7 +102,7 @@ export default function Uppteckningsblankett({
 
           <div>
             <label htmlFor="transcription_title" className="font-semibold">
-              Titel
+              Titel (eller "Uppgiften rör")
             </label>
             <input
               id="transcription_title"
