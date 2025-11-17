@@ -51,6 +51,10 @@ export default function useRecords(params, mode, interval) {
     return () => collections.abort();
   }, [collections]);
 
+  useEffect(() => {
+    setCurrentPage(params.page || 1);
+  }, [params.page]);
+
   const getFetchParams = useCallback(
     () => ({
       from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),
