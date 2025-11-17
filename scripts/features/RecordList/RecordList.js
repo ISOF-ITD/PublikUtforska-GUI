@@ -37,6 +37,7 @@ export default function RecordList(props) {
   const location = useLocation();
 
   /* ------- business logic extracted to hook ------- */
+  // RecordList.jsx
   const {
     records,
     total,
@@ -52,7 +53,7 @@ export default function RecordList(props) {
     setSort,
     setOrder,
     setYearFilter,
-  } = useRecords(params, mode);
+  } = useRecords(params, mode, interval);
 
   /* ------- desktop view mode (table|cards) ------- */
   const [view, setView] = useState("table"); // desktop default remains table

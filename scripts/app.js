@@ -18,9 +18,12 @@ import {
   getPersonFetchLocation,
   getRecordsFetchLocation,
 } from './utils/helpers';
+import {
+  createParamsFromSearchRoute,
+  removeViewParamsFromRoute,
+} from './utils/routeHelper';
 
 import '../less/style-basic.less';
-import { createParamsFromSearchRoute } from './utils/routeHelper';
 import NavigationContextProvider from './NavigationContext';
 
 const container = document.getElementById('app');
@@ -119,12 +122,15 @@ function createRootRoute() {
   return {
     path: '/*?',
     loader: ({ params, request }) => {
+      const basePath = removeViewParamsFromRoute(params['*'] || "");
+
       const queryParams = {
-        ...createParamsFromSearchRoute(params['*']),
+        ...createParamsFromSearchRoute(basePath),
         transcriptionstatus: 'published,accession,readytotranscribe,readytocontribute',
         // Mode Arkiv: only for: one_accession_row
         recordtype: 'one_accession_row',
       };
+
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),
         audioResults: countRecords(
@@ -153,7 +159,9 @@ function createTranscribeRoute() {
   return {
     path: '/transcribe/*?',
     loader: async ({ params, request }) => {
-      const base = createParamsFromSearchRoute(params['*']);
+      const basePath = removeViewParamsFromRoute(params['*'] || "");
+      const base = createParamsFromSearchRoute(basePath);
+
       const queryParams = {
         ...base,
         recordtype: base.recordtype ?? 'one_accession_row',
@@ -161,10 +169,17 @@ function createTranscribeRoute() {
         transcriptionstatus: base.transcriptionstatus ?? 'readytotranscribe',
         //has_untranscribed_records: base.has_untranscribed_records ?? true,
       };
+
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),
-        audioResults: countRecords({ ...queryParams, category: 'contentG5' }, request.signal),
-        pictureResults: countRecords({ ...queryParams, category: 'contentG2' }, request.signal),
+        audioResults: countRecords(
+          { ...queryParams, category: 'contentG5' },
+          request.signal
+        ),
+        pictureResults: countRecords(
+          { ...queryParams, category: 'contentG2' },
+          request.signal
+        ),
       });
     },
     shouldRevalidate: ({ currentParams, nextParams }) => {

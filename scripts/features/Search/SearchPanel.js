@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,7 +10,10 @@ import {
   faCircleQuestion,
 } from "@fortawesome/free-solid-svg-icons";
 import { l } from "../../lang/Lang";
-import { createParamsFromSearchRoute } from "../../utils/routeHelper";
+import {
+  createParamsFromSearchRoute,
+  removeViewParamsFromRoute,
+} from "../../utils/routeHelper";
 import useAutocomplete from "./hooks/useAutocomplete";
 import useDebouncedCallback from "./hooks/useDebouncedCallback";
 import SuggestionsPopover from "./ui/SuggestionsPopover";
@@ -23,6 +26,7 @@ import useSuggestionKeyboard from "./hooks/useSuggestionKeyboard";
 import TranscribeButton from "../TranscriptionOverlay/ui/TranscribeButton";
 import FilterSwitch from "../../components/FilterSwitch";
 import config from "../../config";
+import { useLocation } from "react-router-dom";
 
 export default function SearchPanel({
   mode,
@@ -33,11 +37,17 @@ export default function SearchPanel({
   loading,
   onOpenIntroOverlay,
 }) {
+  const location = useLocation();
+  // Strip /records/:id, /places/:id, /persons/:id etc. back to the "pure" search route
+  const baseSearchPath = removeViewParamsFromRoute(location.pathname);
   const {
-    query: qParam,
+    search: qParam,
     search_field,
     category,
-  } = createParamsFromSearchRoute(params["*"]);
+  } = useMemo(
+    () => createParamsFromSearchRoute(baseSearchPath),
+    [baseSearchPath]
+  );
 
   // state
   const inputRef = useRef(null);
@@ -155,13 +165,17 @@ export default function SearchPanel({
     }
   };
   const clearSearch = useCallback(() => {
+    if (!qParam && !inputValue && !selectedPerson && !selectedPlace) {
+      inputRef.current?.focus();
+      return;
+    }
     setSelectedPerson(null);
     setSelectedPlace(null);
     setQuery("");
-    navigateToSearch("", null); // strips old search_field segment
+    navigateToSearch("", null);
     setInputValue("");
     inputRef.current?.focus();
-  }, [navigateToSearch, setSelectedPerson, setSelectedPlace]);
+  }, [navigateToSearch, qParam, inputValue, selectedPerson, selectedPlace]);
 
   // keep categories in sync with the route
   useEffect(() => {

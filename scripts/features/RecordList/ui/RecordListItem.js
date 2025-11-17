@@ -128,9 +128,13 @@ export default function RecordListItem(props) {
   const descriptionCount = descriptionCountSelf + descriptionCountSubrecords;
 
   /* ---------- hrefs ---------- */
+  // build a search suffix from the current list params
+  const searchSuffix = createSearchRoute(searchParams || {});
+
+  // avoid adding a bare "/" when there are no params
   const recordHref = `${
     mode === "transcribe" ? "/transcribe" : ""
-  }/records/${id}`;
+  }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
 
   /* ---------- render ---------- */
   return (

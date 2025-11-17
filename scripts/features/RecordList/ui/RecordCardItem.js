@@ -22,6 +22,7 @@ import MediaIcons from "./MediaIcons";
 import HighlightedText from "./HighlightedText";
 import PropTypes from "prop-types";
 import { secondsToMMSS } from "../../../utils/timeHelper";
+import { createSearchRoute } from "../../../utils/routeHelper";
 
 const pill =
   "inline-flex items-center border rounded-full px-3 py-1 text-xs font-medium";
@@ -80,13 +81,13 @@ export const RecordCardItem = ({
   );
   const placeString = useMemo(() => getPlaceString(places || []), [places]);
 
-  // guard record id; keep link stable even if id missing
-  const recordUrl = useMemo(() => {
-    if (id == null) return null;
-    return `${
-      mode === "transcribe" ? "/transcribe" : ""
-    }/records/${encodeURIComponent(String(id))}`;
-  }, [id, mode]);
+  // build a search suffix from the current list params
+  const searchSuffix = createSearchRoute(searchParams || {});
+
+  // avoid adding a bare "/" when there are no params
+  const recordUrl = `${
+    mode === "transcribe" ? "/transcribe" : ""
+  }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
 
   const hasTranscription = useMemo(
     () =>
