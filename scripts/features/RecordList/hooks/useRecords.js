@@ -11,7 +11,7 @@ const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
  * Returns data *and* all UI handlers so the component that
  * calls this hook is almost stateless.
  */
-export default function useRecords(params, mode) {
+export default function useRecords(params, mode, interval) {
   /* ---------------- state ---------------- */
   const [records, setRecords] = useState([]);
   const [total, setTotal] = useState(0);
@@ -110,6 +110,16 @@ export default function useRecords(params, mode) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Update "Latest transcribed" list every minute
+  useEffect(() => {
+    if (!interval) return;
+    const id = setInterval(() => {
+      fetchData();
+    }, interval);
+
+    return () => clearInterval(id);
+  }, [interval, fetchData]);
 
   /* ---------------- outward API ---------------- */
   return {

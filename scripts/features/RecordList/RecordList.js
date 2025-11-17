@@ -37,6 +37,7 @@ export default function RecordList(props) {
   const location = useLocation();
 
   /* ------- business logic extracted to hook ------- */
+  // RecordList.jsx
   const {
     records,
     total,
@@ -52,7 +53,7 @@ export default function RecordList(props) {
     setSort,
     setOrder,
     setYearFilter,
-  } = useRecords(params, mode);
+  } = useRecords(params, mode, interval);
 
   /* ------- desktop view mode (table|cards) ------- */
   const [view, setView] = useState("table"); // desktop default remains table
@@ -166,8 +167,10 @@ export default function RecordList(props) {
 
       {!fetching && (
         <div
-          className={classNames("mb-10 md:mb-2 rounded",
-            records.length && "min-h-[200px]")}
+          className={classNames(
+            "mb-10 md:mb-2 rounded",
+            records.length && "min-h-[200px]"
+          )}
         >
           <div aria-live="polite" className="sr-only">
             {l("Sida")} {currentPage} {l("av")} {maxPage}
