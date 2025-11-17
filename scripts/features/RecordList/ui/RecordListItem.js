@@ -196,41 +196,53 @@ export default function RecordListItem(props) {
           )}
 
           {/* Show hits for double nested hits with highlight for descriptions */}
-          {innerHits?.["media.description"]?.hits?.hits.map((descHit) => (
-            <HighlightedText
-              key={descHit._id}
-              text={`Innehållsbeskriving: ${
-                descHit._source?.start !== undefined
-                  ? `${descHit._source.start} `
-                  : ""
-              }${
-                descHit.highlight?.["media.description.text"]
-                  ? descHit.highlight["media.description.text"][0]
-                  : descHit._source?.text || ""
-              }`}
-              className="block mt-2"
-            />
-          ))}
-          {/* Show hits for double nested hits with highlight for utterances */}
-          {innerHits?.["media.utterances.utterances"]?.hits?.hits.map(
-            (descHit) => (
-              <HighlightedText
-                key={descHit._id}
-                text={`Ljudavskrift: ${
-                  descHit._source?.start !== undefined
-                    ? `${secondsToMMSS(descHit._source.start)} `
-                    : ""
-                }${
-                  descHit.highlight?.["media.utterances.utterances.text"]
-                    ? descHit.highlight["media.utterances.utterances.text"][0]
-                    : descHit._source?.text || ""
-                }`}
-                className="block mt-2"
-              />
-            )
-          )}
-          {/* ES highlighted hits */}
+          {innerHits?.["media.description"]?.hits?.hits.map((descHit) => {
+            const highlighted =
+              descHit.highlight?.["media.description.text"]?.[0] ??
+              descHit._source?.text ??
+              "";
 
+            if (!highlighted) return null;
+
+            return (
+              <div className="flex flex-col mt-2" key={descHit._id}>
+                <span className="mr-1">Innehållsbeskrivning:</span>
+                <HighlightedText
+                  text={highlighted}
+                  className="inline"
+                  maxSnippets={1}
+                  maxWords={15}
+                />
+              </div>
+            );
+          })}
+          {innerHits?.["media.utterances.utterances"]?.hits?.hits.map(
+            (descHit) => {
+              const highlighted =
+                descHit.highlight?.["media.utterances.utterances.text"]?.[0] ??
+                descHit._source?.text ??
+                "";
+
+              if (!highlighted) return null;
+
+              const startLabel =
+                descHit._source?.start !== undefined
+                  ? ` (${secondsToMMSS(descHit._source.start)})`
+                  : "";
+
+              return (
+                <div className="flex flex-col mt-2" key={descHit._id}>
+                  <span className="mr-1">Ljudavskrift{startLabel}:</span>
+                  <HighlightedText
+                    text={highlighted}
+                    className="inline"
+                    maxSnippets={1}
+                    maxWords={15}
+                  />
+                </div>
+              );
+            }
+          )}
           {highlight?.text?.[0] && (
             <div className="flex flex-col mt-2">
               <span className="mr-1">Transkribering:</span>
@@ -245,7 +257,7 @@ export default function RecordListItem(props) {
 
           {highlight?.headwords?.[0] && (
             <div className="flex flex-col mt-2">
-              <span className=" mr-1">
+              <span className="mr-1">
                 Uppgifter från äldre innehållsregister:
               </span>
               <HighlightedText
@@ -256,23 +268,24 @@ export default function RecordListItem(props) {
               />
             </div>
           )}
+          {innerHits?.media?.hits?.hits.map((hit) => {
+            const highlighted = hit.highlight?.["media.text"]?.[0];
+            if (!highlighted) return null;
 
-          {innerHits?.media?.hits?.hits.map(
-            (hit) =>
-              hit.highlight?.["media.text"] && (
-                <div className="flex flex-col mt-2">
-                  <span className="mr-1">Transkribering:</span>
-                  <HighlightedText
-                    key={`${hit._id}`}
-                    text={hit.highlight["media.text"][0]}
-                    className="block mt-2"
-                  />
-                </div>
-              )
-          )}
-
+            return (
+              <div className="flex flex-col mt-2" key={hit._id}>
+                <span className="mr-1">Transkribering:</span>
+                <HighlightedText
+                  text={highlighted}
+                  className="inline"
+                  maxSnippets={1}
+                  maxWords={15}
+                />
+              </div>
+            );
+          })}
           {/* sub-records accordion */}
-          {recordtype === "one_accession_row" && count !== 0 && (
+          {recordtype === "one_accession_row" && count !== 0 && visible && (
             <div className="subrecords mt-1">
               <small>
                 <a
