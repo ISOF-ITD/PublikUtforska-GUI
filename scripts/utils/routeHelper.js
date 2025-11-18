@@ -145,27 +145,6 @@ const routes = {
   person: `(/transcribe)/persons/:person_id${OPTIONAL}`,
 };
 
-const URL_HIDDEN_DEFAULTS = {
-  transcriptionstatus: 'published,accession,readytocontribute', 
-  recordtype: 'one_accession_row',
-  has_untranscribed_records: 'true',
-  page: '1'
-};
-
-function cleanParams(params) {
-  const cleaned = { ...params };
-  
-  Object.keys(cleaned).forEach((key) => {
-    // If the value matches the hidden default, delete it so it doesn't go into the URL
-    // We treat them as strings for comparison to be safe
-    if (String(cleaned[key]) === String(URL_HIDDEN_DEFAULTS[key])) {
-      delete cleaned[key];
-    }
-  });
-  
-  return cleaned;
-}
-
 // Utility to create a parser per route type
 function getParser(name) {
   return new RouteParser(routes[name]);
@@ -258,17 +237,14 @@ export function createPlacesPathFromRecord(recordArg) {
 // Build a search segment string from params.
 export function createSearchRoute(params) {
   const router = getParser("search");
+
   const raw = { ...(params || {}) };
-
-  // CLEAN THE PARAMS BEFORE GENERATING THE ROUTE
-  const cleanedParams = cleanParams(raw);
-
   // normalize + stringify per schema
   const normalized = Object.fromEntries(
-    SCHEMA.keys.map((k) => [k, toStringValue(k, cleanedParams[k])])
+    SCHEMA.keys.map((k) => [k, toStringValue(k, raw[k])])
   );
 
-  const { known, extra } = splitParams({ ...cleanedParams, ...normalized });
+  const { known, extra } = splitParams({ ...raw, ...normalized });
   const routeParams = applyAdvancedEnvelopeForBuild(
     known,
     extra,
