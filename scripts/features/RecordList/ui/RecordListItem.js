@@ -285,7 +285,7 @@ export default function RecordListItem(props) {
             );
           })}
           {/* sub-records accordion */}
-          {recordtype === "one_accession_row" && count !== 0 && visible && (
+          {recordtype === "one_accession_row" && count !== 0 && (
             <div className="subrecords mt-1">
               <small>
                 <a
