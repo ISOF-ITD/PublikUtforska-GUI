@@ -10,6 +10,9 @@ const INITIAL = {
   nameInput: "",
   emailInput: "",
   titleInput: "",
+  pagenumberInput: "",
+  foneticSignsInput: false,
+  unreadableInput: false,
 };
 
 /* Centralises every form field + change handler. */
@@ -17,7 +20,10 @@ export default function useTranscriptionForm(initial = {}) {
   const [fields, setFields] = useState({ ...INITIAL, ...initial });
 
   const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
+    // handle checkboxes vs text inputs
+    const target = e.target;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const name = target.name;
     setFields((prev) => ({ ...prev, [name]: value }));
   }, []);
 

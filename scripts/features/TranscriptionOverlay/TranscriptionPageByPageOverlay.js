@@ -31,12 +31,32 @@ export default function TranscriptionPageByPageOverlay () {
     setFields,
   } = useTranscriptionForm();
 
+  // --- Helper: Extract page number from filename ---
+  const getPageNumberFromSource = (source) => {
+    if (!source) return "";
+    // Matches "_0001." patterns at end of file names before extension
+    const match = source.match(/_(\d+)\.[^.]+$/); 
+    if (match && match[1]) {
+      return parseInt(match[1], 10).toString(); // Remove leading zeros
+    }
+    return "";
+  };
+
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
+    const { name, type, checked, value } = e.target;
+    const val = type === "checkbox" ? checked : value;
 
     // update central form state
     handleInputChange(e);
-    const pageLevelFields = ["messageInput", "messageCommentInput"];
+    // Define which fields are page-specific
+    const pageLevelFields = [
+      "messageInput", 
+      "messageCommentInput", 
+      "pagenumberInput", 
+      "foneticSignsInput", 
+      "unreadableInput"
+    ];
+    
     if (!pageLevelFields.includes(name)) return;
 
     // also update the current page, so the effect won’t overwrite with old text
@@ -45,10 +65,18 @@ export default function TranscriptionPageByPageOverlay () {
       const page = next[currentPageIndex];
       if (!page) return prev;
 
+      // Map form names back to data keys
+      let updateObj = {};
+      if (name === "messageInput") updateObj.text = val;
+      else if (name === "messageCommentInput") updateObj.comment = val;
+      else if (name === "pagenumberInput") updateObj.pagenumber = val;
+      else if (name === "foneticSignsInput") updateObj.fonetic_signs = val;
+      else if (name === "unreadableInput") updateObj.unreadable = val;
+
       next[currentPageIndex] = {
         ...page,
         unsavedChanges: true,
-        ...(name === "messageInput" ? { text: value } : { comment: value }),
+        ...updateObj
       };
       return next;
     });
@@ -81,16 +109,28 @@ export default function TranscriptionPageByPageOverlay () {
     setPages((prev) => {
       const next = [...prev];
       if (!next[currentPageIndex]) return prev;
+      
+      // Save all form fields back to the page object
       next[currentPageIndex] = {
         ...next[currentPageIndex],
         text: fields.messageInput,
         comment: fields.messageCommentInput,
+        pagenumber: fields.pagenumberInput,
+        fonetic_signs: fields.foneticSignsInput,
+        unreadable: fields.unreadableInput,
         unsavedChanges: false,
       };
       return next;
     });
-  }, [currentPageIndex, fields.messageInput, fields.messageCommentInput]);
-  // index setter
+  }, [
+    currentPageIndex, 
+    fields.messageInput, 
+    fields.messageCommentInput,
+    fields.pagenumberInput,
+    fields.foneticSignsInput,
+    fields.unreadableInput
+  ]);
+
   const navigatePages = useCallback(
     (index) => {
       saveCurrentPageDraft();
@@ -157,12 +197,22 @@ export default function TranscriptionPageByPageOverlay () {
         const alreadyTranscribed =
           p.transcriptionstatus &&
           p.transcriptionstatus !== "readytotranscribe";
+        
+        // Logic: Use existing pagenumber, or extract from source, or default to empty
+        const calculatedPageNum = p.pagenumber !== null 
+          ? p.pagenumber 
+          : getPageNumberFromSource(p.source);
+
         return {
           ...p,
           isSent: alreadyTranscribed,
           unsavedChanges: false,
           text: p.text || "",
           comment: p.comment || "",
+          // Map new fields
+          pagenumber: calculatedPageNum, 
+          fonetic_signs: p.fonetic_signs || false,
+          unreadable: p.unreadable || false,
         };
       });
 
@@ -177,7 +227,6 @@ export default function TranscriptionPageByPageOverlay () {
         scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0)
       );
 
-      // show form fields by default for “uppteckningsblankett”
       setShowMetaFields(t.transcriptionType === "uppteckningsblankett");
 
       /* backend session */
@@ -190,10 +239,7 @@ export default function TranscriptionPageByPageOverlay () {
     /* hide overlay on global request */
     const hideHandler = () => handleHideOverlay();
 
-    window.eventBus.addEventListener(
-      "overlay.transcribePageByPage",
-      showHandler
-    );
+    window.eventBus.addEventListener("overlay.transcribePageByPage", showHandler);
     window.eventBus.addEventListener("overlay.close", hideHandler);
     return () => {
       window.eventBus.removeEventListener(
@@ -218,6 +264,9 @@ export default function TranscriptionPageByPageOverlay () {
       ...prev,
       messageInput: shouldPrefill ? page.text || "" : "",
       messageCommentInput: shouldPrefill ? page.comment || "" : "",
+      pagenumberInput: page.pagenumber || "",
+      foneticSignsInput: page.fonetic_signs || false,
+      unreadableInput: page.unreadable || false,
     }));
     requestAnimationFrame(() => scrollToActiveThumbnail(currentPageIndex));
   }, [currentPageIndex, pages, setFields]);
@@ -252,6 +301,9 @@ export default function TranscriptionPageByPageOverlay () {
       message: fields.messageInput,
       page: pages[currentPageIndex].source,
       messageComment: fields.messageCommentInput,
+      pagenumber: fields.pagenumberInput,
+      fonetic_signs: fields.foneticSignsInput,
+      unreadable: fields.unreadableInput,
       informantName: fields.informantNameInput,
       informantBirthDate: fields.informantBirthDateInput,
       informantBirthPlace: fields.informantBirthPlaceInput,
@@ -306,6 +358,9 @@ export default function TranscriptionPageByPageOverlay () {
         transcriptionstatus: "transcribed",
         text: fields.messageInput ?? "",
         comment: fields.messageCommentInput ?? "",
+        pagenumber: fields.pagenumberInput,
+        fonetic_signs: fields.foneticSignsInput,
+        unreadable: fields.unreadableInput,
       };
       return next;
     });
@@ -381,6 +436,9 @@ export default function TranscriptionPageByPageOverlay () {
               pages={pages}
               titleInput={fields.titleInput}
               transcriptionText={fields.messageInput}
+              pagenumberInput={fields.pagenumberInput}
+              foneticSignsInput={fields.foneticSignsInput}
+              unreadableInput={fields.unreadableInput}
               informantNameInput={fields.informantNameInput}
               informantBirthDateInput={fields.informantBirthDateInput}
               informantBirthPlaceInput={fields.informantBirthPlaceInput}
