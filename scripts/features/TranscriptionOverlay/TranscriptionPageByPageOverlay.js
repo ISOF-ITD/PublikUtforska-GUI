@@ -11,7 +11,7 @@ import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import { toastOk } from "../../utils/toast";
 
-export default function TranscriptionPageByPageOverlay () {
+export default function TranscriptionPageByPageOverlay() {
   /* visibility & record data */
   const [visible, setVisible] = useState(false);
   const [recordDetails, setRecordDetails] = useState(null); // url, id, title...
@@ -35,9 +35,10 @@ export default function TranscriptionPageByPageOverlay () {
   const getPageNumberFromSource = (source) => {
     if (!source) return "";
     // Matches "_0001." patterns at end of file names before extension
-    const match = source.match(/_(\d+)\.[^.]+$/); 
+    const match = source.match(/_(\d+)\.[^.]+$/);
     if (match && match[1]) {
-      return parseInt(match[1], 10).toString(); // Remove leading zeros
+      // Remove leading zeros
+      return parseInt(match[1], 10).toString();
     }
     return "";
   };
@@ -50,13 +51,13 @@ export default function TranscriptionPageByPageOverlay () {
     handleInputChange(e);
     // Define which fields are page-specific
     const pageLevelFields = [
-      "messageInput", 
-      "messageCommentInput", 
-      "pagenumberInput", 
-      "foneticSignsInput", 
-      "unreadableInput"
+      "messageInput",
+      "messageCommentInput",
+      "pagenumberInput",
+      "foneticSignsInput",
+      "unreadableInput",
     ];
-    
+
     if (!pageLevelFields.includes(name)) return;
 
     // also update the current page, so the effect won’t overwrite with old text
@@ -76,7 +77,7 @@ export default function TranscriptionPageByPageOverlay () {
       next[currentPageIndex] = {
         ...page,
         unsavedChanges: true,
-        ...updateObj
+        ...updateObj,
       };
       return next;
     });
@@ -109,7 +110,7 @@ export default function TranscriptionPageByPageOverlay () {
     setPages((prev) => {
       const next = [...prev];
       if (!next[currentPageIndex]) return prev;
-      
+
       // Save all form fields back to the page object
       next[currentPageIndex] = {
         ...next[currentPageIndex],
@@ -123,12 +124,12 @@ export default function TranscriptionPageByPageOverlay () {
       return next;
     });
   }, [
-    currentPageIndex, 
-    fields.messageInput, 
+    currentPageIndex,
+    fields.messageInput,
     fields.messageCommentInput,
     fields.pagenumberInput,
     fields.foneticSignsInput,
-    fields.unreadableInput
+    fields.unreadableInput,
   ]);
 
   const navigatePages = useCallback(
@@ -174,7 +175,6 @@ export default function TranscriptionPageByPageOverlay () {
   /* Event-listeners: show / hide overlay                         */
   /* ------------------------------------------------------------ */
   useEffect(() => {
-    /* show overlay + kick off transcribeStart */
     const showHandler = async (e) => {
       const t = e.detail || e.target || {};
       setRecordDetails({
@@ -186,7 +186,7 @@ export default function TranscriptionPageByPageOverlay () {
         transcriptionType: t.transcriptionType,
         placeString: t.placeString,
       });
-      // prefill form fields from the record
+
       setFields((prev) => ({
         ...prev,
         titleInput: t.title || "",
@@ -197,10 +197,15 @@ export default function TranscriptionPageByPageOverlay () {
         const alreadyTranscribed =
           p.transcriptionstatus &&
           p.transcriptionstatus !== "readytotranscribe";
-        
-        // Logic: Use existing pagenumber, or extract from source, or default to empty
-        const calculatedPageNum = p.pagenumber !== null 
-          ? p.pagenumber 
+
+        // Use backend pagenumber if it’s non-empty; otherwise derive from source
+        const hasBackendPageNum =
+          p.pagenumber !== undefined &&
+          p.pagenumber !== null &&
+          String(p.pagenumber).trim() !== "";
+
+        const calculatedPageNum = hasBackendPageNum
+          ? String(p.pagenumber)
           : getPageNumberFromSource(p.source);
 
         return {
@@ -209,8 +214,7 @@ export default function TranscriptionPageByPageOverlay () {
           unsavedChanges: false,
           text: p.text || "",
           comment: p.comment || "",
-          // Map new fields
-          pagenumber: calculatedPageNum, 
+          pagenumber: calculatedPageNum, // <── new
           fonetic_signs: p.fonetic_signs || false,
           unreadable: p.unreadable || false,
         };
@@ -218,7 +222,6 @@ export default function TranscriptionPageByPageOverlay () {
 
       setPages(initialPages);
 
-      /* focus first “readytotranscribe” page (or fall back to first) */
       const startIdx = initialPages.findIndex(
         (p) => p.transcriptionstatus === "readytotranscribe"
       );
@@ -229,17 +232,17 @@ export default function TranscriptionPageByPageOverlay () {
 
       setShowMetaFields(t.transcriptionType === "uppteckningsblankett");
 
-      /* backend session */
       start(t.id);
-
-      /* show the overlay */
       setVisible(true);
     };
 
     /* hide overlay on global request */
     const hideHandler = () => handleHideOverlay();
 
-    window.eventBus.addEventListener("overlay.transcribePageByPage", showHandler);
+    window.eventBus.addEventListener(
+      "overlay.transcribePageByPage",
+      showHandler
+    );
     window.eventBus.addEventListener("overlay.close", hideHandler);
     return () => {
       window.eventBus.removeEventListener(
