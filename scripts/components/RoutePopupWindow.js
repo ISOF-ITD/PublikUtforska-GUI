@@ -32,14 +32,16 @@ const RoutePopupWindow = memo(({
   );
 
   const closeButtonClick = () => {
-    if (manuallyOpenPopup) {
-      setWindowOpen(false);
-      setManualOpen(false);
-    } else {
-      const path = removeViewParamsFromRoute(location.pathname);
-      navigate(path);
-    }
-  };
+  if (manuallyOpenPopup) {
+    setWindowOpen(false);
+    setManualOpen(false);
+  } else {
+    const fallback = removeViewParamsFromRoute(location.pathname);
+    const target = previousNavigation || fallback || "/";
+    navigate(target);
+  }
+};
+
 
   const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
