@@ -8,6 +8,7 @@ import {
   faChevronUp,
   faCircleChevronDown,
   faCircleChevronUp,
+  faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 const field =
@@ -129,11 +130,24 @@ export default function TranscriptionForm({
         className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
         disabled={disableInput}
       >
+        <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
+          <strong className="flex items-center mb-1 gap-2">
+            <FontAwesomeIcon icon={faInfoCircle} />
+            {l("Snabbguide (se även gärna instruktionerna ovanför)")}
+          </strong>
+          <ul className="list-disc list-inside space-y-0.5 !my-0">
+            <li>{l("Skriv av texten precis som den står (även stavfel).")}</li>
+            <li>
+              {l("Skriv av texten rad för rad, med samma radbrytningar.")}
+            </li>
+            <li>{l("Använd ### för ord du inte kan läsa.")}</li>
+          </ul>
+        </div>
         <label
           htmlFor="transcription_text_always"
           className="font-semibold block"
         >
-          Text på sidan {currentPageIndex + 1} (av {pages.length})
+          {l("Text på sidan")} {currentPageIndex + 1} {l("(av")} {pages.length})
         </label>
         <textarea
           id="transcription_text_always"
@@ -170,7 +184,7 @@ export default function TranscriptionForm({
             className="w-32 rounded border p-2 font-serif disabled:bg-gray-100"
           />
           <span className="text-xs text-gray-500 mt-1">
-            Du kan ändra om det inte stämmer.
+            Du kan ändra sidnummer om det inte stämmer
           </span>
         </div>
 
@@ -182,7 +196,9 @@ export default function TranscriptionForm({
               checked={!!foneticSignsInput}
               onChange={inputChangeHandler}
             />
-            <span>Innehåller fonetiska tecken</span>
+            <span>
+              Innehåller landsmålsalfabetet eller andra fonetiska tecken
+            </span>
           </label>
 
           <label className="inline-flex items-center gap-2">

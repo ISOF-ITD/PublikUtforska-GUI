@@ -22,14 +22,8 @@ export default function Uppteckningsblankett({
     <fieldset disabled={disableInput} className="space-y-1">
       {/* ───── Meta / “formulär” part ───── */}
       {showMeta && (
-        <> <span className="text-xs text-gray-500">
-        {l(
-          "Här kan du fylla i titel, berättare och annan information som står på sidan. Lämna tomt om det saknas."
-        )}
-      </span>
-      
+        <>
           <div className="grid gap-x-2 gap-y-4 md:grid-cols-12 mb-2">
-            
             <div className="md:col-span-6 flex flex-col">
               <label
                 htmlFor="transcription_informantname"
