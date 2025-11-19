@@ -328,9 +328,6 @@ export default function RecordListItem(props) {
                                 pub ? "font-bold" : ""
                               } hover:underline text-isof`}
                             >
-                              {transcriptiontype !== "audio" && (
-                                <>Sida {pageFromTo(s)}: </>
-                              )}
                               <span
                                 dangerouslySetInnerHTML={{
                                   __html: `${getTitle(
