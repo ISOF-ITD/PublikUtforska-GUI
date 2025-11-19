@@ -81,7 +81,7 @@ export default function StatisticsList({
       {!loading &&
         !fetchError &&
         (data?.length ? (
-          <ol>
+          <ol className="space-y-2">
             {data.map((item) => {
               const valueNum = Number(item.value) || 0;
               return (

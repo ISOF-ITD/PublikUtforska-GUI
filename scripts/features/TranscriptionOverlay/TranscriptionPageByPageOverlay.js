@@ -11,7 +11,7 @@ import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import { toastOk } from "../../utils/toast";
 
-export default function TranscriptionPageByPageOverlay () {
+export default function TranscriptionPageByPageOverlay() {
   /* visibility & record data */
   const [visible, setVisible] = useState(false);
   const [recordDetails, setRecordDetails] = useState(null); // url, id, title...
@@ -31,12 +31,33 @@ export default function TranscriptionPageByPageOverlay () {
     setFields,
   } = useTranscriptionForm();
 
+  // --- Helper: Extract page number from filename ---
+  const getPageNumberFromSource = (source) => {
+    if (!source) return "";
+    // Matches "_0001." patterns at end of file names before extension
+    const match = source.match(/_(\d+)\.[^.]+$/);
+    if (match && match[1]) {
+      // Remove leading zeros
+      return parseInt(match[1], 10).toString();
+    }
+    return "";
+  };
+
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
+    const { name, type, checked, value } = e.target;
+    const val = type === "checkbox" ? checked : value;
 
     // update central form state
     handleInputChange(e);
-    const pageLevelFields = ["messageInput", "messageCommentInput"];
+    // Define which fields are page-specific
+    const pageLevelFields = [
+      "messageInput",
+      "messageCommentInput",
+      "pagenumberInput",
+      "foneticSignsInput",
+      "unreadableInput",
+    ];
+
     if (!pageLevelFields.includes(name)) return;
 
     // also update the current page, so the effect won’t overwrite with old text
@@ -45,10 +66,18 @@ export default function TranscriptionPageByPageOverlay () {
       const page = next[currentPageIndex];
       if (!page) return prev;
 
+      // Map form names back to data keys
+      let updateObj = {};
+      if (name === "messageInput") updateObj.text = val;
+      else if (name === "messageCommentInput") updateObj.comment = val;
+      else if (name === "pagenumberInput") updateObj.pagenumber = val;
+      else if (name === "foneticSignsInput") updateObj.fonetic_signs = val;
+      else if (name === "unreadableInput") updateObj.unreadable = val;
+
       next[currentPageIndex] = {
         ...page,
         unsavedChanges: true,
-        ...(name === "messageInput" ? { text: value } : { comment: value }),
+        ...updateObj,
       };
       return next;
     });
@@ -81,16 +110,28 @@ export default function TranscriptionPageByPageOverlay () {
     setPages((prev) => {
       const next = [...prev];
       if (!next[currentPageIndex]) return prev;
+
+      // Save all form fields back to the page object
       next[currentPageIndex] = {
         ...next[currentPageIndex],
         text: fields.messageInput,
         comment: fields.messageCommentInput,
+        pagenumber: fields.pagenumberInput,
+        fonetic_signs: fields.foneticSignsInput,
+        unreadable: fields.unreadableInput,
         unsavedChanges: false,
       };
       return next;
     });
-  }, [currentPageIndex, fields.messageInput, fields.messageCommentInput]);
-  // index setter
+  }, [
+    currentPageIndex,
+    fields.messageInput,
+    fields.messageCommentInput,
+    fields.pagenumberInput,
+    fields.foneticSignsInput,
+    fields.unreadableInput,
+  ]);
+
   const navigatePages = useCallback(
     (index) => {
       saveCurrentPageDraft();
@@ -134,7 +175,6 @@ export default function TranscriptionPageByPageOverlay () {
   /* Event-listeners: show / hide overlay                         */
   /* ------------------------------------------------------------ */
   useEffect(() => {
-    /* show overlay + kick off transcribeStart */
     const showHandler = async (e) => {
       const t = e.detail || e.target || {};
       setRecordDetails({
@@ -146,7 +186,7 @@ export default function TranscriptionPageByPageOverlay () {
         transcriptionType: t.transcriptionType,
         placeString: t.placeString,
       });
-      // prefill form fields from the record
+
       setFields((prev) => ({
         ...prev,
         titleInput: t.title || "",
@@ -157,18 +197,31 @@ export default function TranscriptionPageByPageOverlay () {
         const alreadyTranscribed =
           p.transcriptionstatus &&
           p.transcriptionstatus !== "readytotranscribe";
+
+        // Use backend pagenumber if it’s non-empty; otherwise derive from source
+        const hasBackendPageNum =
+          p.pagenumber !== undefined &&
+          p.pagenumber !== null &&
+          String(p.pagenumber).trim() !== "";
+
+        const calculatedPageNum = hasBackendPageNum
+          ? String(p.pagenumber)
+          : getPageNumberFromSource(p.source);
+
         return {
           ...p,
           isSent: alreadyTranscribed,
           unsavedChanges: false,
           text: p.text || "",
           comment: p.comment || "",
+          pagenumber: calculatedPageNum, // <── new
+          fonetic_signs: p.fonetic_signs || false,
+          unreadable: p.unreadable || false,
         };
       });
 
       setPages(initialPages);
 
-      /* focus first “readytotranscribe” page (or fall back to first) */
       const startIdx = initialPages.findIndex(
         (p) => p.transcriptionstatus === "readytotranscribe"
       );
@@ -177,13 +230,9 @@ export default function TranscriptionPageByPageOverlay () {
         scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0)
       );
 
-      // show form fields by default for “uppteckningsblankett”
       setShowMetaFields(t.transcriptionType === "uppteckningsblankett");
 
-      /* backend session */
       start(t.id);
-
-      /* show the overlay */
       setVisible(true);
     };
 
@@ -218,6 +267,9 @@ export default function TranscriptionPageByPageOverlay () {
       ...prev,
       messageInput: shouldPrefill ? page.text || "" : "",
       messageCommentInput: shouldPrefill ? page.comment || "" : "",
+      pagenumberInput: page.pagenumber || "",
+      foneticSignsInput: page.fonetic_signs || false,
+      unreadableInput: page.unreadable || false,
     }));
     requestAnimationFrame(() => scrollToActiveThumbnail(currentPageIndex));
   }, [currentPageIndex, pages, setFields]);
@@ -252,6 +304,9 @@ export default function TranscriptionPageByPageOverlay () {
       message: fields.messageInput,
       page: pages[currentPageIndex].source,
       messageComment: fields.messageCommentInput,
+      pagenumber: fields.pagenumberInput,
+      fonetic_signs: fields.foneticSignsInput,
+      unreadable: fields.unreadableInput,
       informantName: fields.informantNameInput,
       informantBirthDate: fields.informantBirthDateInput,
       informantBirthPlace: fields.informantBirthPlaceInput,
@@ -306,6 +361,9 @@ export default function TranscriptionPageByPageOverlay () {
         transcriptionstatus: "transcribed",
         text: fields.messageInput ?? "",
         comment: fields.messageCommentInput ?? "",
+        pagenumber: fields.pagenumberInput,
+        fonetic_signs: fields.foneticSignsInput,
+        unreadable: fields.unreadableInput,
       };
       return next;
     });
@@ -381,6 +439,9 @@ export default function TranscriptionPageByPageOverlay () {
               pages={pages}
               titleInput={fields.titleInput}
               transcriptionText={fields.messageInput}
+              pagenumberInput={fields.pagenumberInput}
+              foneticSignsInput={fields.foneticSignsInput}
+              unreadableInput={fields.unreadableInput}
               informantNameInput={fields.informantNameInput}
               informantBirthDateInput={fields.informantBirthDateInput}
               informantBirthPlaceInput={fields.informantBirthPlaceInput}

@@ -22,6 +22,7 @@ import MediaIcons from "./MediaIcons";
 import HighlightedText from "./HighlightedText";
 import PropTypes from "prop-types";
 import { secondsToMMSS } from "../../../utils/timeHelper";
+import { createSearchRoute } from "../../../utils/routeHelper";
 
 const pill =
   "inline-flex items-center border rounded-full px-3 py-1 text-xs font-medium";
@@ -80,13 +81,13 @@ export const RecordCardItem = ({
   );
   const placeString = useMemo(() => getPlaceString(places || []), [places]);
 
-  // guard record id; keep link stable even if id missing
-  const recordUrl = useMemo(() => {
-    if (id == null) return null;
-    return `${
-      mode === "transcribe" ? "/transcribe" : ""
-    }/records/${encodeURIComponent(String(id))}`;
-  }, [id, mode]);
+  // build a search suffix from the current list params
+  const searchSuffix = createSearchRoute(searchParams || {});
+
+  // avoid adding a bare "/" when there are no params
+  const recordUrl = `${
+    mode === "transcribe" ? "/transcribe" : ""
+  }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
 
   const hasTranscription = useMemo(
     () =>
@@ -317,19 +318,93 @@ export const RecordCardItem = ({
         </span>
       )}
 
-      <div className="flex flex-col">
-        {innerHitsToShow.map(({ key, text }) => (
-          <HighlightedText key={key} text={text} className="mt-2 text-sm" />
-        ))}
+      {innerHitsToShow?.["media.description"]?.hits?.hits.map((descHit) => {
+            const highlighted =
+              descHit.highlight?.["media.description.text"]?.[0] ??
+              descHit._source?.text ??
+              "";
 
-        {/* Fallback: ordinary ES text hit */}
-        {(() => {
-          const fallback = toText(highlight?.text?.[0]);
-          return !summary && innerHitsToShow.length === 0 && fallback ? (
-            <HighlightedText text={fallback} className="mt-2" />
-          ) : null;
-        })()}
-      </div>
+            if (!highlighted) return null;
+
+            return (
+              <div className="flex flex-col mt-2" key={descHit._id}>
+                <span className="mr-1">Innehållsbeskrivning:</span>
+                <HighlightedText
+                  text={highlighted}
+                  className="inline"
+                  maxSnippets={1}
+                  maxWords={15}
+                />
+              </div>
+            );
+          })}
+          {innerHitsToShow?.["media.utterances.utterances"]?.hits?.hits.map(
+            (descHit) => {
+              const highlighted =
+                descHit.highlight?.["media.utterances.utterances.text"]?.[0] ??
+                descHit._source?.text ??
+                "";
+
+              if (!highlighted) return null;
+
+              const startLabel =
+                descHit._source?.start !== undefined
+                  ? ` (${secondsToMMSS(descHit._source.start)})`
+                  : "";
+
+              return (
+                <div className="flex flex-col mt-2" key={descHit._id}>
+                  <span className="mr-1">Ljudavskrift{startLabel}:</span>
+                  <HighlightedText
+                    text={highlighted}
+                    className="inline"
+                    maxSnippets={1}
+                    maxWords={15}
+                  />
+                </div>
+              );
+            }
+          )}
+          {highlight?.text?.[0] && (
+            <div className="flex flex-col mt-2">
+              <span className="mr-1">Transkribering:</span>
+              <HighlightedText
+                text={highlight.text[0]} // only the ES highlight HTML
+                className="inline"
+                maxSnippets={1}
+                maxWords={15}
+              />
+            </div>
+          )}
+          {highlight?.headwords?.[0] && (
+            <div className="flex flex-col mt-2">
+              <span className="mr-1">
+                Uppgifter från äldre innehållsregister:
+              </span>
+              <HighlightedText
+                text={highlight.headwords[0]}
+                maxSnippets={1}
+                maxWords={15}
+                className="inline"
+              />
+            </div>
+          )}
+          {innerHitsToShow?.media?.hits?.hits.map((hit) => {
+            const highlighted = hit.highlight?.["media.text"]?.[0];
+            if (!highlighted) return null;
+
+            return (
+              <div className="flex flex-col mt-2" key={hit._id}>
+                <span className="mr-1">Transkribering:</span>
+                <HighlightedText
+                  text={highlighted}
+                  className="inline"
+                  maxSnippets={1}
+                  maxWords={15}
+                />
+              </div>
+            );
+          })}
 
       <TranscriptionStatus
         status={transcriptionstatus}

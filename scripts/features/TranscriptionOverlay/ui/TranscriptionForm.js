@@ -8,6 +8,7 @@ import {
   faChevronUp,
   faCircleChevronDown,
   faCircleChevronUp,
+  faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 const field =
@@ -21,6 +22,9 @@ export default function TranscriptionForm({
   currentPageIndex,
   pages,
   transcriptionText,
+  pagenumberInput = "",
+  foneticSignsInput = false,
+  unreadableInput = false,
   informantNameInput,
   informantBirthDateInput,
   informantBirthPlaceInput,
@@ -126,11 +130,24 @@ export default function TranscriptionForm({
         className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
         disabled={disableInput}
       >
+        <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
+          <strong className="flex items-center mb-1 gap-2">
+            <FontAwesomeIcon icon={faInfoCircle} />
+            {l("Snabbguide (se även gärna instruktionerna ovanför)")}
+          </strong>
+          <ul className="list-disc list-inside space-y-0.5 !my-0">
+            <li>{l("Skriv av texten precis som den står (även stavfel).")}</li>
+            <li>
+              {l("Skriv av texten rad för rad, med samma radbrytningar.")}
+            </li>
+            <li>{l("Använd ### för ord du inte kan läsa.")}</li>
+          </ul>
+        </div>
         <label
           htmlFor="transcription_text_always"
           className="font-semibold block"
         >
-          Text på sidan {currentPageIndex + 1} (av {pages.length})
+          {l("Text på sidan")} {currentPageIndex + 1} {l("(av")} {pages.length})
         </label>
         <textarea
           id="transcription_text_always"
@@ -146,7 +163,57 @@ export default function TranscriptionForm({
         </span>
       </fieldset>
 
-      {/* 3) Comment + contributor + send (same as before) */}
+      {/* 2b) PAGE META: page number + flags */}
+      <fieldset
+        className="space-y-3 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
+        disabled={disableInput}
+      >
+        <div className="flex flex-col">
+          <label
+            htmlFor="transcription_pagenumber"
+            className="font-semibold mb-1"
+          >
+            Sidnummer
+          </label>
+          <input
+            id="transcription_pagenumber"
+            name="pagenumberInput"
+            type="text"
+            value={pagenumberInput ?? ""}
+            onChange={inputChangeHandler}
+            className="w-32 rounded border p-2 font-serif disabled:bg-gray-100"
+          />
+          <span className="text-xs text-gray-500 mt-1">
+            Du kan ändra sidnummer om det inte stämmer
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="foneticSignsInput"
+              checked={!!foneticSignsInput}
+              onChange={inputChangeHandler}
+            />
+            <span>
+              Innehåller landsmålsalfabetet eller andra fonetiska tecken
+            </span>
+          </label>
+
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="unreadableInput"
+              checked={!!unreadableInput}
+              onChange={inputChangeHandler}
+            />
+            <span>Sidan är svårläst eller delvis oläslig</span>
+          </label>
+        </div>
+      </fieldset>
+
+      {/* 3) Comment + contributor + send */}
       {(page.transcriptionstatus === "readytotranscribe" || isSent) && (
         <fieldset
           className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"
@@ -162,7 +229,6 @@ export default function TranscriptionForm({
                   pages.length
                 })`
               )}
-              
             </label>
             <textarea
               id={commentId}
@@ -174,10 +240,10 @@ export default function TranscriptionForm({
               className={field + " h-40 resize-y"}
             />
             <span className="text-xs text-gray-500">
-                {l(
-                  "Har du stött på något problem med avskriften eller har du någon annan kommentar till den? Skriv då i kommentarsfältet."
-                )}
-              </span>
+              {l(
+                "Har du stött på något problem med avskriften eller har du någon annan kommentar till den? Skriv då i kommentarsfältet."
+              )}
+            </span>
           </div>
 
           <ContributorInfoFields

@@ -12,23 +12,35 @@ export default function useSelectionFromRoute(qParam, search_field) {
     let cancelled = false;
 
     async function run() {
-      if (search_field === "person" && qParam) {
-        const r = await fetch(getPersonFetchLocation(qParam));
-        const json = await r.json();
-        if (!cancelled) setSelectedPerson(json);
-        if (!cancelled) setSelectedPlace(null);
-      } else if (search_field === "place" && qParam) {
-        const r = await fetch(getPlaceFetchLocation(qParam));
-        const json = await r.json();
-        if (!cancelled) setSelectedPlace(json);
-        if (!cancelled) setSelectedPerson(null);
-      } else {
+      try {
+        if (search_field === "person" && qParam) {
+          const r = await fetch(getPersonFetchLocation(qParam));
+          if (!r.ok) throw new Error("Failed to fetch person");
+          const json = await r.json();
+          if (!cancelled) {
+            setSelectedPerson(json);
+            setSelectedPlace(null);
+          }
+        } else if (search_field === "place" && qParam) {
+          const r = await fetch(getPlaceFetchLocation(qParam));
+          if (!r.ok) throw new Error("Failed to fetch place");
+          const json = await r.json();
+          if (!cancelled) {
+            setSelectedPlace(json);
+            setSelectedPerson(null);
+          }
+        } else if (!cancelled) {
+          setSelectedPerson(null);
+          setSelectedPlace(null);
+        }
+      } catch {
         if (!cancelled) {
           setSelectedPerson(null);
           setSelectedPlace(null);
         }
       }
     }
+
     run();
     return () => {
       cancelled = true;

@@ -80,6 +80,7 @@ export default function MapMenu({
   const [justSwitched, setJustSwitched] = useState(false);
   useEffect(() => {
     if (prevModeRef.current !== mode) {
+      if (prevModeRef.current === mode) return;
       prevModeRef.current = mode;
       setJustSwitched(true);
       const t = setTimeout(() => setJustSwitched(false), 400);
@@ -218,8 +219,10 @@ export default function MapMenu({
       aria-hidden={!expanded}
       className={classNames(
         "bg-isof flex flex-col print:hidden absolute top-0 bottom-0 w-96 border-r-2 border-white !z-[1201]",
-        "pt-5 px-5 items-center transition-all duration-300 ease-in-out pointer-events-auto max-sm:box-border max-sm:w-full max-sm:p-2.5",
-        expanded ? "left-0" : "-left-[500px]"
+        "pt-5 px-5 items-center transition-all duration-300 ease-in-out max-sm:box-border max-sm:w-full max-sm:p-2.5",
+        expanded
+          ? "left-0 pointer-events-auto"
+          : "-left-[500px] pointer-events-none"
       )}
     >
       {/* <SurveyLink />  enable when needed */}

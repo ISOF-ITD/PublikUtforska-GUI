@@ -29,10 +29,10 @@ function MapWrapper({
       lastMapDataRef.current = mapData;
     }
   }, [mapData]);
-  const stableMapData =
-    mapData && Object.keys(mapData).length > 0
-      ? mapData
-      : lastMapDataRef.current;
+
+  const hasMapData = mapData && Object.keys(mapData).length > 0;
+  const stableMapData = hasMapData ? mapData : lastMapDataRef.current;
+
   return (
     <div
       className="relative h-screen w-screen print:hidden"
@@ -69,9 +69,9 @@ MapWrapper.propTypes = {
   params: PropTypes.object.isRequired,
   mapData: PropTypes.object,
   loading: PropTypes.bool,
-  recordsData: PropTypes.object.isRequired,
-  audioRecordsData: PropTypes.object.isRequired,
-  pictureRecordsData: PropTypes.object.isRequired,
+  recordsData: PropTypes.object,
+  audioRecordsData: PropTypes.object,
+  pictureRecordsData: PropTypes.object,
 };
 
 export default memo(MapWrapper);
