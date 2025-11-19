@@ -18,7 +18,7 @@ import config from "../../../config";
 import {
   createSearchRoute,
 } from "../../../utils/routeHelper";
-import { getTitle, getPlaceString } from "../../../utils/helpers";
+import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
 
@@ -328,6 +328,9 @@ export default function RecordListItem(props) {
                                 pub ? "font-bold" : ""
                               } hover:underline text-isof`}
                             >
+                              {transcriptiontype !== "audio" && (
+                                <>Sida {pageFromTo(s)}: </>
+                              )}
                               <span
                                 dangerouslySetInnerHTML={{
                                   __html: `${getTitle(
