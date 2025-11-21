@@ -73,9 +73,8 @@ export default function TranscriptionPrompt({ data }) {
     recordtype,
   } = data || {};
 
-  if (recordtype === "one_accession_row" || transcriptionstatus === "published")
+  if (transcriptionstatus === "published" || transcriptiontype === "audio")
     return null;
-  if (transcriptiontype === "audio") return null;
 
   const statusNorm = (transcriptionstatus || "").toLowerCase();
   const isUnderTranscription = statusNorm === "undertranscription";
