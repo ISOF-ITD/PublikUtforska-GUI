@@ -136,7 +136,7 @@ export default function TranscriptionForm({
             {l("Snabbguide (se även gärna instruktionerna ovanför)")}
           </strong>
           <ul className="list-disc list-inside space-y-0.5 !my-0">
-            <li>{l("Skriv av texten precis som den står (även stavfel).")}</li>
+            <li>{l("Skriv av texten precis som den står, även stavfel.")}</li>
             <li>
               {l("Skriv av texten rad för rad, med samma radbrytningar.")}
             </li>

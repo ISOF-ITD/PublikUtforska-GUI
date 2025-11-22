@@ -101,10 +101,7 @@ export default function TranscriptionPrompt({ data }) {
       "approved",
     ].includes(statusNorm);
 
-    const hasReadyPage =
-      transcriptiontype === "sida"
-        ? ready > 0
-        : statusNorm === "readytotranscribe";
+    const hasReadyPage = ready > 0 || statusNorm === "readytotranscribe";
 
     const pagesLeft = total > 0 ? Math.max(total - done, 0) : 0;
 
@@ -117,7 +114,7 @@ export default function TranscriptionPrompt({ data }) {
       pagesLeft,
       pill: statusStyles(transcriptionstatus),
       nextReadyText:
-        transcriptiontype === "sida" && ready > 0
+        ready > 0
           ? `${ready} ${
               ready === 1 ? l(STRINGS.readyPages) : l(STRINGS.readyPagesPlural)
             }`
@@ -139,24 +136,16 @@ export default function TranscriptionPrompt({ data }) {
   // Primary enabled
   const primaryEnabled =
     !isUnderTranscription &&
-    (transcriptiontype === "sida"
-      ? hasReadyPage
-      : statusNorm === "readytotranscribe");
+    (hasReadyPage || statusNorm === "readytotranscribe");
 
   // Short, scannable status line
   const statusLine =
-    transcriptiontype === "sida" && totalPages > 0
+    totalPages > 0
       ? // compact: "X/Y sidor • Z kvar"
         `${transcribedCount}/${totalPages} ${l(
           STRINGS.pages
         )} • ${pagesLeft} ${l(STRINGS.pagesLeft)}`
       : l(STRINGS.notTranscribed);
-
-  // Show a secondary random CTA when the main action is blocked or there are no free pages
-  const showRandom =
-    (!primaryEnabled &&
-      (transcriptiontype === "sida" ? totalPages > 0 : true)) ||
-    (transcriptiontype === "sida" && totalPages === 0);
 
   return (
     <section
@@ -185,7 +174,7 @@ export default function TranscriptionPrompt({ data }) {
       </div>
 
       {/* Progress (sida only) */}
-      {transcriptiontype === "sida" && totalPages > 0 && (
+      {totalPages > 0 && (
         <div className="mt-3" aria-live="polite">
           <div
             id={progressId}
@@ -217,7 +206,7 @@ export default function TranscriptionPrompt({ data }) {
             ? l(STRINGS.underTranscription)
             : isUnderReview
             ? l(STRINGS.underReview)
-            : totalPages === 0 && transcriptiontype === "sida"
+            : totalPages === 0
             ? l(STRINGS.noPagesInfo)
             : l(STRINGS.invitation)}
         </span>
@@ -227,9 +216,7 @@ export default function TranscriptionPrompt({ data }) {
           {/* Primary */}
           <TranscribeButton
             className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
-            label={`${l(STRINGS.transcribe)} ${
-              transcriptiontype === "sida" ? l(STRINGS.perPage) : ""
-            }`}
+            label={`${l(STRINGS.transcribe)} ${l(STRINGS.perPage)}`}
             title={title}
             recordId={id}
             archiveId={archive?.archive_id}
@@ -248,7 +235,6 @@ export default function TranscriptionPrompt({ data }) {
           {/* Helpful note for disabled state (only when relevant) */}
           {!primaryEnabled &&
             statusNorm !== "undertranscription" &&
-            transcriptiontype === "sida" &&
             totalPages > 0 &&
             readyCount === 0 && (
               <span className="ml-1 text-gray-900" role="note">
@@ -258,7 +244,7 @@ export default function TranscriptionPrompt({ data }) {
         </div>
 
         {/* Ready pages tip */}
-        {transcriptiontype === "sida" && nextReadyText && (
+        {nextReadyText && (
           <span className="text-gray-700">{l(STRINGS.tipStartFirstFree)}</span>
         )}
       </div>
