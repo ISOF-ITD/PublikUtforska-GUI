@@ -22,10 +22,15 @@ module.exports = {
     'react',
   ],
   rules: {
+    // Avoid quotes rule that is deprecated
+    //"avoidEscape": true,
+    'quotes': ['error', 'double', { avoidEscape: true }],
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
     'react/no-danger': 'off',
+    // Disable requirement for default props as we do not use it 
+    'react/require-default-props': 'off',
     'react/forbid-prop-types': [1, { forbid: [] }],
     // New rule: No import av default export "React" från "react"
     // See: https://legacy.reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html
