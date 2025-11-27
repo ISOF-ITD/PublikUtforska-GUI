@@ -4,8 +4,6 @@ import { l } from "../../../lang/Lang";
 import ContributorInfoFields from "./ContributorInfoFields";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faChevronDown,
-  faChevronUp,
   faCircleChevronDown,
   faCircleChevronUp,
   faInfoCircle,

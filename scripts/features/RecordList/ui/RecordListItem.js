@@ -350,7 +350,7 @@ export default function RecordListItem(props) {
                               {/* for old fetched records we had pageFromTo; for segments we just show the page we derived */}
                               {transcriptiontype !== "audio" &&
                                 s._source.archive?.page && (
-                                  <>Sida {s._source.archive.page}: </>
+                                  <>Sida {s._source.archive.page - 1}: </>
                                 )}
                               <span
                                 dangerouslySetInnerHTML={{
@@ -358,7 +358,7 @@ export default function RecordListItem(props) {
                                     s._source.title ||
                                     // fallback so we don’t render empty links
                                     `Segment ${
-                                      s._source.archive?.page || idx + 1
+                                      s._source.archive?.page || idx
                                     }`,
                                 }}
                               />
