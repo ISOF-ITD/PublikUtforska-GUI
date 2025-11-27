@@ -74,8 +74,10 @@ export default function ImageMap({
       preferCanvas: true,
       maxBoundsViscosity: 1.0,
       wheelDebounceTime: 40,
-      wheelPxPerZoomLevel: 120,
+      wheelPxPerZoomLevel: 100,
       scrollWheelZoom: true,
+      zoomSnap: 0.25, // allow zoom levels like 0, 0.25, 0.5, 0.75, 1, etc
+      zoomDelta: 0.25,
     });
 
     // Wheel-zoom only while hovering/focused

@@ -15,10 +15,8 @@ import CollectorList from "./CollectorList";
 import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
 import { l } from "../../../lang/Lang";
 import config from "../../../config";
-import {
-  createSearchRoute,
-} from "../../../utils/routeHelper";
-import { getTitle, getPlaceString } from "../../../utils/helpers";
+import { createSearchRoute } from "../../../utils/routeHelper";
+import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
 
@@ -127,10 +125,21 @@ export default function RecordListItem(props) {
   const descriptionCount = descriptionCountSelf + descriptionCountSubrecords;
 
   /* ---------- hrefs ---------- */
-  // build a search suffix from the current list params
-  const searchSuffix = createSearchRoute(searchParams || {});
 
-  // avoid adding a bare "/" when there are no params
+  // build a search suffix from the current list params
+  const stripDetailParams = (params = {}) => {
+    const {
+      recordtype,
+      transcriptionstatus,
+      has_untranscribed_records,
+      ...rest
+    } = params; 
+    return rest;
+  };
+
+  const cleanParams = stripDetailParams(searchParams || {});
+  const searchSuffix = createSearchRoute(cleanParams);
+
   const recordHref = `${
     mode === "transcribe" ? "/transcribe" : ""
   }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
@@ -341,7 +350,7 @@ export default function RecordListItem(props) {
                               {/* for old fetched records we had pageFromTo; for segments we just show the page we derived */}
                               {transcriptiontype !== "audio" &&
                                 s._source.archive?.page && (
-                                  <>Sida {s._source.archive.page}: </>
+                                  <>Sida {s._source.archive.page - 1}: </>
                                 )}
                               <span
                                 dangerouslySetInnerHTML={{
@@ -349,7 +358,7 @@ export default function RecordListItem(props) {
                                     s._source.title ||
                                     // fallback so we don’t render empty links
                                     `Segment ${
-                                      s._source.archive?.page || idx + 1
+                                      s._source.archive?.page || idx
                                     }`,
                                 }}
                               />

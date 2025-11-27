@@ -36,9 +36,8 @@ const RoutePopupWindow = memo(({
     setWindowOpen(false);
     setManualOpen(false);
   } else {
-    const fallback = removeViewParamsFromRoute(location.pathname);
-    const target = previousNavigation || fallback || "/";
-    navigate(target);
+    const path = removeViewParamsFromRoute(location.pathname);
+      navigate(path);
   }
 };
 

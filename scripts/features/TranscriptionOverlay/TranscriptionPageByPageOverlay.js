@@ -386,7 +386,7 @@ export default function TranscriptionPageByPageOverlay() {
         data-index={idx}
         className="image-item"
         src={`${config.imageUrl}${p.source}`}
-        alt={`Uppteckning ${recordDetails.id} – ${l("sida")} ${idx + 1}`}
+        alt={`Uppteckning ${recordDetails.id} – ${l("sida")} ${idx}`}
         loading="lazy"
         onClick={() => navigatePages(idx)}
       />
