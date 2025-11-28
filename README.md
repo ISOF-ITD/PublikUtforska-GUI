@@ -148,8 +148,10 @@ If modifications to `robots.txt` are required, update the corresponding file in 
 ## Icons
 
 When possible use free svg icons for less data
+
 Use:
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 Use icon libaries like:
 @fortawesome/free-regular-svg-icons
 @fortawesome/free-solid-svg-icons
@@ -175,6 +177,10 @@ The first step was moving everything that belonged to the RecordList into its ow
 See: 
 - Robin Wieruch, React Folder Structure in 5 Steps: https://www.robinwieruch.de/react-folder-structure/
 - Feature‑Sliced Design methodology: https://feature-sliced.github.io/documentation/
+
+### Example of components and feature with the reasoning behind
+
+TODO
 
 ### Props
 
