@@ -74,7 +74,7 @@ export default function TranscribeButton({
       const url = new URL(`${config.apiUrl}random_document/`);
       const params = new URLSearchParams({
         type: "arkiv",
-        recordtype: "one_record",
+        recordtype: "one_accession_row",
         transcriptionstatus: "readytotranscribe",
         categorytypes: "tradark",
         publishstatus: "published",

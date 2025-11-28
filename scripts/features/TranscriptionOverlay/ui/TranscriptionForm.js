@@ -200,7 +200,7 @@ export default function TranscriptionForm({
           </label>
 
           <label className="inline-flex items-center gap-2">
-            <input
+        <input
               type="checkbox"
               name="unreadableInput"
               checked={!!unreadableInput}
