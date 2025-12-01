@@ -253,17 +253,15 @@ export const RecordCardItem = ({
             {archive?.page &&
               (() => {
                 try {
-                  // If pageFromTo expects the ES hit or just the archive/page shape,
-                  // try the narrowest input first; fall back to the whole hit.
-                  typeof pageFromTo === "function"
-                    ? pageFromTo({ archive })
-                    : null;
+                  const val =
+                    typeof pageFromTo === "function"
+                      ? pageFromTo({ _source: { archive } })
+                      : archive.page;
+
                   return val ? (
                     <span className="text-gray-500">:{val}</span>
                   ) : null;
                 } catch (e) {
-                  // Don't crash the card if formatting fails
-                  // console.warn("pageFromTo failed", { id, page: archive?.page, e });
                   return null;
                 }
               })()}

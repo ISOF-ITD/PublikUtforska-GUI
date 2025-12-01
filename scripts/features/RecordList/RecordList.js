@@ -274,4 +274,5 @@ RecordList.propTypes = {
   useRouteParams: PropTypes.bool,
   containerRef: PropTypes.objectOf(PropTypes.any),
   smallTitle: PropTypes.bool,
+  showViewToggle: PropTypes.bool,
 };
