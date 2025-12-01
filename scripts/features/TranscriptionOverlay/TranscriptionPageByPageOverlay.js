@@ -192,8 +192,23 @@ export default function TranscriptionPageByPageOverlay() {
         titleInput: t.title || "",
       }));
 
+      // Only keep non-PDF pages for transcription
+      const mediaForTranscription = (t.images || []).filter((p) => {
+        const source = (p.source || "").toLowerCase();
+        const type = (p.type || "").toLowerCase();
+        return type !== "pdf" && !source.endsWith(".pdf");
+      });
+
+      // handle case where nothing is left to transcribe
+      if (!mediaForTranscription.length) {
+        setPages([]);
+        setCurrentPageIndex(0);
+        setVisible(false);
+        return;
+      }
+
       /* prep page array with per-page meta */
-      const initialPages = (t.images || []).map((p) => {
+      const initialPages = mediaForTranscription.map((p) => {
         const alreadyTranscribed =
           p.transcriptionstatus &&
           p.transcriptionstatus !== "readytotranscribe";
@@ -214,7 +229,7 @@ export default function TranscriptionPageByPageOverlay() {
           unsavedChanges: false,
           text: p.text || "",
           comment: p.comment || "",
-          pagenumber: calculatedPageNum, // <── new
+          pagenumber: calculatedPageNum,
           fonetic_signs: p.fonetic_signs || false,
           unreadable: p.unreadable || false,
         };
