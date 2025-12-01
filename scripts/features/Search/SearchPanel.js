@@ -23,7 +23,7 @@ import useSearchRouting from "./hooks/useSearchRouting";
 import useSelectionFromRoute from "./hooks/useSelectionFromRoute";
 import useSuggestionGroups from "./hooks/useSuggestionGroups";
 import useSuggestionKeyboard from "./hooks/useSuggestionKeyboard";
-import TranscribeButton from "../TranscriptionOverlay/ui/TranscribeButton";
+import TranscribeButton from "../TranscriptionPageByPageOverlay/ui/TranscribeButton";
 import FilterSwitch from "../../components/FilterSwitch";
 import config from "../../config";
 import { useLocation } from "react-router-dom";

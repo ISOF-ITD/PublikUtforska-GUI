@@ -15,7 +15,7 @@ import {
   faClosedCaptioning,
 } from "@fortawesome/free-solid-svg-icons";
 import config from "../../../config";
-import TranscribeButton from "../../TranscriptionOverlay/ui/TranscribeButton";
+import TranscribeButton from "../../TranscriptionPageByPageOverlay/ui/TranscribeButton";
 import TranscriptionStatus from "./TranscriptionStatus";
 import useSubrecords from "../hooks/useSubrecords";
 import MediaIcons from "./MediaIcons";
