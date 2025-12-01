@@ -11,6 +11,9 @@ import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import { toastOk } from "../../utils/toast";
 
+/* 
+TranscriptionPageByPageOverlay feature is handling the transcribe page-by-page use case for users. 
+*/
 export default function TranscriptionPageByPageOverlay() {
   /* visibility & record data */
   const [visible, setVisible] = useState(false);
@@ -192,23 +195,8 @@ export default function TranscriptionPageByPageOverlay() {
         titleInput: t.title || "",
       }));
 
-      // Only keep non-PDF pages for transcription
-      const mediaForTranscription = (t.images || []).filter((p) => {
-        const source = (p.source || "").toLowerCase();
-        const type = (p.type || "").toLowerCase();
-        return type !== "pdf" && !source.endsWith(".pdf");
-      });
-
-      // handle case where nothing is left to transcribe
-      if (!mediaForTranscription.length) {
-        setPages([]);
-        setCurrentPageIndex(0);
-        setVisible(false);
-        return;
-      }
-
       /* prep page array with per-page meta */
-      const initialPages = mediaForTranscription.map((p) => {
+      const initialPages = (t.images || []).map((p) => {
         const alreadyTranscribed =
           p.transcriptionstatus &&
           p.transcriptionstatus !== "readytotranscribe";
@@ -229,7 +217,7 @@ export default function TranscriptionPageByPageOverlay() {
           unsavedChanges: false,
           text: p.text || "",
           comment: p.comment || "",
-          pagenumber: calculatedPageNum,
+          pagenumber: calculatedPageNum, // <── new
           fonetic_signs: p.fonetic_signs || false,
           unreadable: p.unreadable || false,
         };
