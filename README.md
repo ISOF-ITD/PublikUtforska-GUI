@@ -178,9 +178,20 @@ See:
 - Robin Wieruch, React Folder Structure in 5 Steps: https://www.robinwieruch.de/react-folder-structure/
 - Feature‑Sliced Design methodology: https://feature-sliced.github.io/documentation/
 
+
+### Notes on how "Feature‑Sliced Design methodology" is used
+The layers Widgets, here called components, and features are used but not pages.
+
+The features have only one slice (or are without slices)
+
+Each feature have segments, mainly:
+hooks: logic, mostly written as custom React hooks
+ui: presentation, mostly jsx
+utils (sometimes): helper functions
+
 ### Example of components and feature with the reasoning behind
 
-TODO
+TODO Maybe link to js-file with documentation
 
 ### Props
 
