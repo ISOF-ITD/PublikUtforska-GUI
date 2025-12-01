@@ -48,6 +48,7 @@ export default function TranscriptionForm({
   const page = pages[currentPageIndex] ?? {};
   const disableInput = page.transcriptionstatus !== "readytotranscribe";
   const isSent = !!page.isSent;
+  const isReadyToTranscribe = page.transcriptionstatus === "readytotranscribe";
 
   const sendButtonLabel = isSent
     ? l("Sidan har skickats")
@@ -128,24 +129,31 @@ export default function TranscriptionForm({
         className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
         disabled={disableInput}
       >
-        <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
-          <strong className="flex items-center mb-1 gap-2">
-            <FontAwesomeIcon icon={faInfoCircle} />
-            {l("Snabbguide (se även gärna instruktionerna ovanför)")}
-          </strong>
-          <ul className="list-disc list-inside space-y-0.5 !my-0">
-            <li>{l("Skriv av texten precis som den står, även stavfel.")}</li>
-            <li>
-              {l("Skriv av texten rad för rad, med samma radbrytningar.")}
-            </li>
-            <li>{l("Använd ### för ord du inte kan läsa.")}</li>
-          </ul>
-        </div>
+        {/* Only in state readytotranscribe */}
+        {isReadyToTranscribe && (
+          <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
+            <strong className="flex items-center mb-1 gap-2">
+              <FontAwesomeIcon icon={faInfoCircle} />
+              {l("Snabbguide (se även gärna instruktionerna ovanför)")}
+            </strong>
+            <ul className="list-disc list-inside space-y-0.5 !my-0">
+              <li>
+                {l("Skriv av texten precis som den står, även stavfel.")}
+              </li>
+              <li>
+                {l("Skriv av texten rad för rad, med samma radbrytningar.")}
+              </li>
+              <li>{l("Använd ### för ord du inte kan läsa.")}</li>
+            </ul>
+          </div>
+        )}
+
         <label
           htmlFor="transcription_text_always"
           className="font-semibold block"
         >
-          {l("Text på sidan")} {currentPageIndex + 1} {l("(av")} {pages.length})
+          {l("Text på sidan")} {currentPageIndex + 1} {l("(av")}{" "}
+          {pages.length})
         </label>
         <textarea
           id="transcription_text_always"
@@ -162,57 +170,60 @@ export default function TranscriptionForm({
       </fieldset>
 
       {/* 2b) PAGE META: page number + flags */}
-      <fieldset
-        className="space-y-3 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
-        disabled={disableInput}
-      >
-        <div className="flex flex-col">
-          <label
-            htmlFor="transcription_pagenumber"
-            className="font-semibold mb-1"
-          >
-            Sidnummer
-          </label>
-          <input
-            id="transcription_pagenumber"
-            name="pagenumberInput"
-            type="text"
-            value={pagenumberInput ?? ""}
-            onChange={inputChangeHandler}
-            className="w-32 rounded border p-2 font-serif disabled:bg-gray-100"
-          />
-          <span className="text-xs text-gray-500 mt-1">
-            Du kan ändra sidnummer om det inte stämmer
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="inline-flex items-center gap-2">
+      {/* Only in state readytotranscribe */}
+      {isReadyToTranscribe && (
+        <fieldset
+          className="space-y-3 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
+          disabled={disableInput}
+        >
+          <div className="flex flex-col">
+            <label
+              htmlFor="transcription_pagenumber"
+              className="font-semibold mb-1"
+            >
+              Sidnummer
+            </label>
             <input
-              type="checkbox"
-              name="foneticSignsInput"
-              checked={!!foneticSignsInput}
+              id="transcription_pagenumber"
+              name="pagenumberInput"
+              type="text"
+              value={pagenumberInput ?? ""}
               onChange={inputChangeHandler}
+              className="w-32 rounded border p-2 font-serif disabled:bg-gray-100"
             />
-            <span>
-              Innehåller landsmålsalfabetet eller andra fonetiska tecken
+            <span className="text-xs text-gray-500 mt-1">
+              Du kan ändra sidnummer om det inte stämmer
             </span>
-          </label>
+          </div>
 
-          <label className="inline-flex items-center gap-2">
-        <input
-              type="checkbox"
-              name="unreadableInput"
-              checked={!!unreadableInput}
-              onChange={inputChangeHandler}
-            />
-            <span>Sidan är svårläst eller delvis oläslig</span>
-          </label>
-        </div>
-      </fieldset>
+          <div className="flex flex-col gap-2">
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="foneticSignsInput"
+                checked={!!foneticSignsInput}
+                onChange={inputChangeHandler}
+              />
+              <span>
+                Innehåller landsmålsalfabetet eller andra fonetiska tecken
+              </span>
+            </label>
+
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="unreadableInput"
+                checked={!!unreadableInput}
+                onChange={inputChangeHandler}
+              />
+              <span>Sidan är svårläst eller delvis oläslig</span>
+            </label>
+          </div>
+        </fieldset>
+      )}
 
       {/* 3) Comment + contributor + send */}
-      {(page.transcriptionstatus === "readytotranscribe" || isSent) && (
+      {(isReadyToTranscribe || isSent) && (
         <fieldset
           className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"
           disabled={disableInput}
@@ -244,40 +255,47 @@ export default function TranscriptionForm({
             </span>
           </div>
 
-          <ContributorInfoFields
-            nameInput={nameInput}
-            emailInput={emailInput}
-            onChange={inputChangeHandler}
-            emailId={emailId}
-            emailValid={emailValid}
-            onEmailBlur={handleEmailBlur}
-            disabled={disableInput}
-          />
+          {/* 4) contributor + send */}
+          {/* Only in state readytotranscribe */}
+          {isReadyToTranscribe && (
+            <>
+              <ContributorInfoFields
+                nameInput={nameInput}
+                emailInput={emailInput}
+                onChange={inputChangeHandler}
+                emailId={emailId}
+                emailValid={emailValid}
+                onEmailBlur={handleEmailBlur}
+                disabled={disableInput}
+              />
 
-          <button
-            type="button"
-            onClick={sendButtonClickHandler}
-            data-gotonext="true"
-            className={`
-              inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
-              font-semibold text-white shadow transition
-              ${
-                sending || disableInput || !formValid
-                  ? "bg-gray-400 !cursor-not-allowed !hover:text-white"
-                  : "!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof"
-              }
-            `}
-            disabled={disableInput || sending || !formValid}
-            title={
-              !formValid
-                ? l(
-                    "Knappen aktiveras när du har skrivit minst två ord i Text-fältet"
-                  )
-                : undefined
-            }
-          >
-            {sending ? l("Skickar…") : sendButtonLabel}
-          </button>
+              {/* Only in state readytotranscribe */}
+              <button
+                type="button"
+                onClick={sendButtonClickHandler}
+                data-gotonext="true"
+                className={`
+                  inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
+                  font-semibold text-white shadow transition
+                  ${
+                    sending || disableInput || !formValid
+                      ? "bg-gray-400 !cursor-not-allowed !hover:text-white"
+                      : "!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof"
+                  }
+                `}
+                disabled={disableInput || sending || !formValid}
+                title={
+                  !formValid
+                    ? l(
+                        "Knappen aktiveras när du har skrivit minst två ord i Text-fältet"
+                      )
+                    : undefined
+                }
+              >
+                {sending ? l("Skickar…") : sendButtonLabel}
+              </button>
+            </>
+          )}
 
           {isSent && (
             <p className="mt-4" aria-live="polite">
