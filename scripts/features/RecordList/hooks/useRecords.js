@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import RecordsCollection from "../../../components/collections/RecordsCollection";
+import RecordsApiClient from "../api/RecordsApiClient";
 import config from "../../../config";
 
 const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
@@ -33,20 +33,29 @@ export default function useRecords(params, mode, interval) {
 
   const collections = useMemo(
     () =>
-      new RecordsCollection((json) => {
-        setRecords(json.data);
-        setTotal(json.metadata.total.value);
-        setFetching(false);
-        window.eventBus?.dispatch(
-          "recordList.totalRecords",
-          json.metadata.total.value
-        );
-        window.eventBus?.dispatch("recordList.fetchingPage", false);
-      }),
+      new RecordsApiClient(
+        (json) => {
+          setRecords(json.data);
+          setTotal(json.metadata.total.value);
+          setFetching(false);
+
+          window.eventBus?.dispatch(
+            "recordList.totalRecords",
+            json.metadata.total.value
+          );
+          window.eventBus?.dispatch("recordList.fetchingPage", false);
+        },
+        (err) => {
+          // Optional: log, show toast, etc.
+          console.error("Failed to fetch records", err);
+          setFetching(false);
+          window.eventBus?.dispatch("recordList.fetchingPage", false);
+        }
+      ),
     []
   );
 
-  // Abort any in-flight fetch if this hook unmounts (or if RecordsCollection ever re-memoizes)
+  // Abort any in-flight fetch if this hook unmounts (or if RecordsApiClient ever re-memoizes)
   useEffect(() => {
     return () => collections.abort();
   }, [collections]);
@@ -57,9 +66,12 @@ export default function useRecords(params, mode, interval) {
 
   const getFetchParams = useCallback(
     () => ({
-      from: Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage),
+      from: Math.max(
+        0,
+        Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage)
+      ),
       size: params.size || hitsPerPage,
-      search: params.search ? encodeURIComponent(params.search) : undefined,
+      search: params.search || undefined,
       search_field: params.search_field || undefined,
       type: params.type,
       category: params.category
@@ -84,9 +96,9 @@ export default function useRecords(params, mode, interval) {
       has_metadata: params.has_metadata || undefined,
       has_media: params.has_media || undefined,
       has_transcribed_records: params.has_transcribed_records || undefined,
-      // has_untranscribed_records not used anymore 
+      // has_untranscribed_records not used anymore
       //has_untranscribed_records: params.has_untranscribed_records || undefined,
-      transcriptionstatus: params.transcriptionstatus || 'readytotranscribe',
+      transcriptionstatus: params.transcriptionstatus || "readytotranscribe",
       // Fanns:
       //transcriptionstatus: params.transcriptionstatus || undefined,
       recordtype:
@@ -111,6 +123,7 @@ export default function useRecords(params, mode, interval) {
   /* ---------------- fetch ---------------- */
   const fetchData = useCallback(() => {
     setFetching(true);
+    window.eventBus?.dispatch("recordList.fetchingPage", true);
     collections.fetch(getFetchParams());
   }, [collections, getFetchParams]);
 

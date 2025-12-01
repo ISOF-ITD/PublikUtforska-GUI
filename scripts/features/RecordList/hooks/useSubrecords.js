@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState, useCallback } from "react";
-import RecordsCollection from "../../../components/collections/RecordsCollection";
+import { useEffect, useState, useCallback, useRef } from "react";
+import RecordsApiClient from "../api/RecordsApiClient";
 import { fetchRecordMediaCount } from "../../../utils/helpers";
 import config from "../../../config";
 
@@ -133,31 +133,36 @@ export default function useSubrecords({
   ]);
 
   /* ---------- list (old model) ---------- */
+  const clientRef = useRef(null);
+
   const loadList = useCallback(() => {
     // for the new model we never fetch
     if (hasEmbeddedSegments) return;
     if (loaded) return;
-    const coll = new RecordsCollection((json) => setSubrecords(json.data));
-    coll.fetch({ search: id, recordtype: "one_record" });
-    setLoaded(true);
-  }, [hasEmbeddedSegments, loaded, id]);
 
-  // audio-accessions in old model preloaded the list
-  useEffect(() => {
-    if (
-      recordtype === "one_accession_row" &&
-      transcriptiontype === "audio" &&
-      !loaded &&
-      !hasEmbeddedSegments
-    ) {
-      loadList();
+    if (!clientRef.current) {
+      clientRef.current = new RecordsApiClient(
+        (json) => {
+          setSubrecords(json.data);
+          // loaded is already true when we first call loadList
+        },
+        (err) => {
+          console.error("Failed to fetch subrecords", err);
+        }
+      );
     }
-  }, [recordtype, transcriptiontype, loaded, hasEmbeddedSegments, loadList]);
+
+    setLoaded(true); // only load once
+    clientRef.current.fetch({ search: id, recordtype: "one_record" });
+  }, [hasEmbeddedSegments, loaded, id]);
 
   // Abort if this container unmounts during a fetch
   useEffect(() => {
-    const coll = new RecordsCollection(() => {});
-    return () => coll.abort();
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.abort();
+      }
+    };
   }, []);
 
   const toggle = () => {
