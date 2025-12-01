@@ -145,6 +145,19 @@ This configuration ensures that the appropriate robots.txt file is used dependin
 
 If modifications to `robots.txt` are required, update the corresponding file in the `/robots/` directory and verify that the proxy correctly points to the intended version. 
 
+## Icons
+
+When possible use free svg icons for less data
+
+Use:
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+Use icon libaries like:
+@fortawesome/free-regular-svg-icons
+@fortawesome/free-solid-svg-icons
+
+Place icon files in catalogue /img
+
 ## Styling migration
 
 We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
@@ -164,6 +177,10 @@ The first step was moving everything that belonged to the RecordList into its ow
 See: 
 - Robin Wieruch, React Folder Structure in 5 Steps: https://www.robinwieruch.de/react-folder-structure/
 - Feature‑Sliced Design methodology: https://feature-sliced.github.io/documentation/
+
+### Example of components and feature with the reasoning behind
+
+TODO
 
 ### Props
 
