@@ -73,8 +73,19 @@ export default function TranscriptionPrompt({ data }) {
     recordtype,
   } = data || {};
 
+  // 1. Hide for audio & already published
   if (transcriptionstatus === "published" || transcriptiontype === "audio")
     return null;
+
+  // 2. Hide for records that only have PDF media, no page images
+  const hasMedia = Array.isArray(media) && media.length > 0;
+  const onlyPdfMedia =
+    hasMedia && media.every((m) => (m?.type || "").toLowerCase() === "pdf");
+
+  if (onlyPdfMedia) {
+    // Don’t show the prompt for PDF-only records
+    return null;
+  }
 
   const statusNorm = (transcriptionstatus || "").toLowerCase();
   const isUnderTranscription = statusNorm === "undertranscription";
