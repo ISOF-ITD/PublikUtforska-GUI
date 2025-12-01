@@ -67,7 +67,7 @@ export default function StatisticsContainer() {
 
   // memoize param objects to avoid needless re-renders
   const base = useMemo(
-    () => ({ recordtype: "one_record", transcriptionstatus: "published" }),
+    () => ({ transcriptionstatus: "published" }),
     []
   );
   const monthRange = "transcriptiondate,now/M,now+2h";
