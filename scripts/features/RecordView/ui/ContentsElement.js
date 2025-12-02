@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useId, useEffect } from "react";
+import React, { useState, useId, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,13 +6,7 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import ListPlayButton from "../../AudioDescription/ListPlayButton";
-import { getAudioTitle } from "../../../utils/helpers";
-import {
-  TIME_ANY_RE,
-  extractRowsFromContents,
-  buildMediaIndex,
-} from "../utils/legacyContentsParser";
-
+import useLegacyContents from "../hooks/useLegacyContents";
 
 /**
  * ContentsElement (legacy annotations)
@@ -33,60 +27,19 @@ export default function ContentsElement({ data, highlightData = [] }) {
     persons,
   } = data || {};
 
-  // Build a per-recording media index so rows can play the *right* file.
-  const mediaIndex = useMemo(() => buildMediaIndex(media), [media]);
-
-  // Detect if the contents has timestamps.
-  const hasStructured = useMemo(() => {
-    const text = contents || "";
-    return TIME_ANY_RE.test(text);
-  }, [contents]);
-
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
 
-  
-
-  const defaultAudio = useMemo(() => {
-    return (
-      media.find((m) => (m?.type || "").toLowerCase().includes("audio")) ||
-      media[0]
-    );
-  }, [media]);
-
-  const audioTitle = useMemo(() => {
-    // Keep title stable; using defaultAudio for the helper is fine.
-    const src = defaultAudio?.source;
-    return getAudioTitle(
-      title,
+  const { hasStructured, rows, isCompact, rowCount, defaultAudio, audioTitle } =
+    useLegacyContents({
       contents,
+      media,
+      title,
       archiveOrg,
       archive,
-      src,
       year,
-      persons
-    );
-  }, [title, contents, archiveOrg, archive, defaultAudio, year, persons]);
-
-  /** Parse legacy multi-recording text into rows */
-  const rows = useMemo(() => {
-    if (!hasStructured) return [];
-    return extractRowsFromContents(contents, mediaIndex);
-  }, [contents, hasStructured, mediaIndex]);
-
-  /** Auto-compact when entries are very short (best UX for 1–5 words) */
-  const isCompact = useMemo(() => {
-    if (!rows.length) return false;
-    const totalLen = rows.reduce((sum, r) => sum + (r.text || "").length, 0);
-    const avgLen = totalLen / rows.length;
-    return rows.length <= 50 && avgLen <= 18;
-  }, [rows]);
-
-  const rowCount = useMemo(() => {
-    if (hasStructured) return rows.length;
-    // rough line count fallback for plain text
-    return (contents || "").trim().split(/\n+/).filter(Boolean).length;
-  }, [hasStructured, rows, contents]);
+      persons,
+    });
 
   /** Renderers */
   const HeaderBand = () => (
