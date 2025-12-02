@@ -73,8 +73,8 @@ export default function TranscriptionPrompt({ data }) {
     recordtype,
   } = data || {};
 
-  // 1. Hide for audio & already published
-  if (transcriptionstatus === "published" || transcriptiontype === "audio")
+  // 1. Hide for audio & already published & if no transcription type explicitly defined
+  if (transcriptionstatus === "published" || transcriptiontype === "audio" || !transcriptiontype)
     return null;
 
   // 2. Hide for records that only have PDF media, no page images
