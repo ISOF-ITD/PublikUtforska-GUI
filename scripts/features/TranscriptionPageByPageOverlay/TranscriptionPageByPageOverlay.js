@@ -195,39 +195,53 @@ export default function TranscriptionPageByPageOverlay() {
         titleInput: t.title || "",
       }));
 
+      // Helper: decide if a page is a PDF
+      const isPdfPage = (p) =>
+        p?.type === "pdf" || p?.source?.toLowerCase().endsWith(".pdf");
+
+      // ...
+
       /* prep page array with per-page meta */
-      const initialPages = (t.images || []).map((p) => {
-        const alreadyTranscribed =
-          p.transcriptionstatus &&
-          p.transcriptionstatus !== "readytotranscribe";
+      const initialPages = (t.images || [])
+        // 1) drop all PDF pages
+        .filter((p) => !isPdfPage(p))
+        // 2) then do your existing mapping
+        .map((p) => {
+          const alreadyTranscribed =
+            p.transcriptionstatus &&
+            p.transcriptionstatus !== "readytotranscribe";
 
-        // Use backend pagenumber if it’s non-empty; otherwise derive from source
-        const hasBackendPageNum =
-          p.pagenumber !== undefined &&
-          p.pagenumber !== null &&
-          String(p.pagenumber).trim() !== "";
+          const hasBackendPageNum =
+            p.pagenumber !== undefined &&
+            p.pagenumber !== null &&
+            String(p.pagenumber).trim() !== "";
 
-        const calculatedPageNum = hasBackendPageNum
-          ? String(p.pagenumber)
-          : getPageNumberFromSource(p.source);
+          const calculatedPageNum = hasBackendPageNum
+            ? String(p.pagenumber)
+            : getPageNumberFromSource(p.source);
 
-        return {
-          ...p,
-          isSent: alreadyTranscribed,
-          unsavedChanges: false,
-          text: p.text || "",
-          comment: p.comment || "",
-          pagenumber: calculatedPageNum, // <── new
-          fonetic_signs: p.fonetic_signs || false,
-          unreadable: p.unreadable || false,
-        };
-      });
+          return {
+            ...p,
+            isSent: alreadyTranscribed,
+            unsavedChanges: false,
+            text: p.text || "",
+            comment: p.comment || "",
+            pagenumber: calculatedPageNum,
+            fonetic_signs: p.fonetic_signs || false,
+            unreadable: p.unreadable || false,
+          };
+        });
 
       setPages(initialPages);
 
       const startIdx = initialPages.findIndex(
         (p) => p.transcriptionstatus === "readytotranscribe"
       );
+      setCurrentPageIndex(startIdx !== -1 ? startIdx : 0);
+      requestAnimationFrame(() =>
+        scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0)
+      );
+
       setCurrentPageIndex(startIdx !== -1 ? startIdx : 0);
       requestAnimationFrame(() =>
         scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0)
