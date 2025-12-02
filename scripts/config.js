@@ -84,8 +84,14 @@ const folkeKontextApiUrlObject = {
 export default {
   siteTitle: 'Folke sök - Institutet för språk och folkminnen',
 
-  // aktivera transkriptionsfunktioner
+  // activate text transcription
   activateTranscription: true,
+
+  // activate audio correction
+  activateAudioCorrection: false,
+
+  // activate audio description
+  activateAudioDescription: false,
 
   // activate intro overlay
   activateIntroOverlay: true,

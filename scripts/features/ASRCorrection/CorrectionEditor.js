@@ -17,11 +17,14 @@ import ScrollTopButton from "./ui/ScrollTopButton";
 
 import useUtterances from "./hooks/useUtterances";
 import useEditorShortcuts from "./hooks/useEditorShortcuts";
+import config from "../../config";
 
 export default function CorrectionEditor({
   data: propData = null,
   readOnly = true,
+  readOnly = true
 }) {
+  readOnly = !config.activateAudioCorrection;
   /* -------- routing / context -------- */
   const { source, id: fileId } = useParams();
   // prefer an explicit prop, otherwise fall back to the outlet context
