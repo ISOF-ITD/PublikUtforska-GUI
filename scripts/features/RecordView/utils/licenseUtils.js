@@ -1,4 +1,18 @@
 import config from "../../../config";
+import { getArchiveName, getPages, makeArchiveIdHumanReadable } from "../../../utils/helpers";
+
+export function buildCitation(data) {
+  const {
+    archive: { archive_id: archiveId, archive_org: archiveOrg },
+  } = data;
+
+  const pages = getPages(data);
+  const idHuman = makeArchiveIdHumanReadable(archiveId, archiveOrg);
+  const orgName = getArchiveName(archiveOrg);
+
+  // Example: "A123:45, s. 12–14, Arkivnamn"
+  return `${idHuman}${pages ? `, s. ${pages}` : ""}, ${orgName}`;
+}
 
 export const DEFAULT_LICENSE =
   "https://creativecommons.org/licenses/by-nd/2.5/se/";

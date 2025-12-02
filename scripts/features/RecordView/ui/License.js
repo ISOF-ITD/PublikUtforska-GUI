@@ -1,4 +1,3 @@
-// scripts/features/RecordView/ui/License.js
 import React from "react";
 import PropTypes from "prop-types";
 import { resolveLicense } from "../utils/licenseUtils";
