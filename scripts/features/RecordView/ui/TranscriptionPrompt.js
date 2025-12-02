@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { useMemo } from "react";
-import TranscribeButton from "../../../features/TranscriptionPageByPageOverlay/ui/TranscribeButton";
+import TranscribeButton from "../../TranscriptionPageByPageOverlay/ui/TranscribeButton";
 import { l } from "../../../lang/Lang";
 
 // short keys; wrap with l()

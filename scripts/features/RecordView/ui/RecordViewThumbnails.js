@@ -8,9 +8,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import config from "../../../config";
-import ArchiveImage from "../../../features/RecordTextPanel/ui/ArchiveImage";
-import { computeStatus } from "../../../features/RecordTextPanel/utils/computeStatus.js";
-import { StatusIndicator } from "../../../features/RecordTextPanel/ui/TranscriptionStatusIndicator";
+import ArchiveImage from "../../RecordTextPanel/ui/ArchiveImage";
+import { computeStatus } from "../../RecordTextPanel/utils/computeStatus.js";
+import { StatusIndicator } from "../../RecordTextPanel/ui/TranscriptionStatusIndicator";
 
 export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
   const {

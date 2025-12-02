@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider, defer } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
-import RecordView from './components/views/RecordView/RecordView';
+import RecordView from './features/RecordView/RecordView';
 import PersonView from './components/views/PersonView';
 import PlaceView from './components/views/PlaceView';
 import CorrectionView from './features/ASRCorrection/CorrectionView';

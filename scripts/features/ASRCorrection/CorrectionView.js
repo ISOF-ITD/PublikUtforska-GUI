@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
-
-import RecordViewHeader from "../../components/views/RecordView/RecordViewHeader";
 import { getTitleText } from "../../utils/helpers";
 import config from "../../config";
 import CorrectionEditor from "./CorrectionEditor";
+import RecordViewHeader from "../RecordView/ui/RecordViewHeader";
 
 function CorrectionView() {
   // RecordView puts these on the outlet context in its “onlyTranscribe” branch

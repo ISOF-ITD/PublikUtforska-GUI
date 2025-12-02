@@ -13,25 +13,24 @@ import PropTypes from "prop-types";
 import {
   createSearchRoute,
   createParamsFromRecordRoute,
-} from "../../../utils/routeHelper";
-import ContentsElement from "./ContentsElement";
-import HeadwordsElement from "./HeadwordsElement";
-import License from "./License";
-import PdfElement from "./PdfElement";
-import PersonItems from "./PersonItems";
-import PlaceItems from "./PlaceItems";
-import RecordViewFooter from "./RecordViewFooter";
-import RecordViewHeader from "./RecordViewHeader";
-import RecordViewThumbnails from "./RecordViewThumbnails";
-import ReferenceLinks from "./ReferenceLinks";
-import SubrecordsElement from "./SubrecordsElement";
-import RecordTextPanel from "../../../features/RecordTextPanel/RecordTextPanel";
-import TranscriptionPrompt from "./TranscriptionPrompt";
-import SimilarRecords from "./SimilarRecords";
-import { getTitleText } from "../../../utils/helpers";
-import config from "../../../config";
-import AudioItems from "../../../features/AudioDescription/AudioItems";
-import Spinner from "../../Spinner";
+} from "../../utils/routeHelper";
+import ContentsElement from "./ui/ContentsElement";
+import HeadwordsElement from "./ui/HeadwordsElement";
+import License from "./ui/License";
+import PdfElement from "./ui/PdfElement";
+import PersonItems from "./ui/PersonItems";
+import PlaceItems from "./ui/PlaceItems";
+import RecordViewFooter from "./ui/RecordViewFooter";
+import RecordViewHeader from "./ui/RecordViewHeader";
+import RecordViewThumbnails from "./ui/RecordViewThumbnails";
+import ReferenceLinks from "./ui/ReferenceLinks";
+import RecordTextPanel from "../RecordTextPanel/RecordTextPanel";
+import TranscriptionPrompt from "./ui/TranscriptionPrompt";
+import SimilarRecords from "./ui/SimilarRecords";
+import { getTitleText } from "../../utils/helpers";
+import config from "../../config";
+import AudioItems from "../AudioDescription/AudioItems";
+import Spinner from "../../components/Spinner";
 
 function RecordView({ mode = "material" }) {
   const { results: resultsPromise } = useLoaderData();
@@ -203,12 +202,6 @@ function ResolvedRecord({
             <ReferenceLinks data={data} />
             <License data={data} />
         </div>
-
-        {/*<SubrecordsElement
-          data={data}
-          subrecordsCount={subrecordsCount}
-          mode={mode}
-          />*/}
         <PersonItems data={data} routeParams={routeParams} />
         <PlaceItems data={data} routeParams={routeParams} />
         <hr />

@@ -5,7 +5,7 @@ import {
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
-import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
+import ListPlayButton from "../../AudioDescription/ListPlayButton";
 import { getAudioTitle } from "../../../utils/helpers";
 
 /**

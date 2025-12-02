@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import SimpleMap from '../SimpleMap';
+import SimpleMap from '../../../components/views/SimpleMap';
 import { l } from '../../../lang/Lang';
 
 function PlaceItems({ data, routeParams = '' }) {
