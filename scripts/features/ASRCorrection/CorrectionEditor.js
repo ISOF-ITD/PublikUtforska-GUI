@@ -22,7 +22,6 @@ import config from "../../config";
 export default function CorrectionEditor({
   data: propData = null,
   readOnly = true,
-  readOnly = true
 }) {
   readOnly = !config.activateAudioCorrection;
   /* -------- routing / context -------- */
