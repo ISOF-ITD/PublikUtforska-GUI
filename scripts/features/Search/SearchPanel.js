@@ -40,8 +40,17 @@ export default function SearchPanel({
   onOpenIntroOverlay,
 }) {
   const location = useLocation();
-  // Strip /records/:id, /places/:id, /persons/:id etc. back to the "pure" search route
-  const baseSearchPath = removeViewParamsFromRoute(location.pathname);
+  // Normalise the path so it always starts from "search/…"
+  const baseSearchPath = useMemo(() => {
+    // 1. Strip view segments (/records/:id etc.)
+    const stripped = removeViewParamsFromRoute(location.pathname);
+    // 2. Remove leading "/" and optional "transcribe/" prefix,
+    // so both "/search/…" and "/transcribe/search/…" become "search/…"
+    return stripped
+      .replace(/^\/?transcribe\/?/, "/") // drop "transcribe" mode prefix
+      .replace(/^\//, ""); // drop leading slash
+  }, [location.pathname]);
+
   const {
     search: qParam,
     search_field,
