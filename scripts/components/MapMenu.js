@@ -283,7 +283,9 @@ export default function MapMenu({
         </span>
       </div>
 
-      <div className="overflow-y-auto p-4 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white">
+      <div
+        className="overflow-y-auto w-full min-w-0 max-w-full p-3 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white"
+      >
         <div>
           <StatisticsContainer />
 
