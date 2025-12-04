@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, defer } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, defer, redirect } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
@@ -62,11 +62,31 @@ function fetchPerson(personId, signal) {
   return fetch(getPersonFetchLocation(personId), { signal }).then((r) => r.json());
  }
 
+// Normalize old-style "accession_subrecord" IDs to just the accession ID.
+// Example: "03644_49362_1" -> "03644_49362"
+function normalizeRecordId(recordId) {
+  const str = String(recordId || '');
+  const parts = str.split('_');
+
+  // Only treat as an "uppteckning suffix" if there are at least 2 underscores
+  // and the last segment is all digits (the "_1", "_2", ... part).
+  if (parts.length > 2) {
+    const last = parts[parts.length - 1];
+    if (/^\d+$/.test(last)) {
+      return parts.slice(0, -1).join('_');
+    }
+  }
+
+  // Everything else is a canonical ID already
+  return str;
+}
+
+
 // prefix is either 'transcribe' or '' for respectively Application mode trnascribe or material
 function createPopupRoutes(prefix) {
   return [
     {
-      path: 'places/:placeId/*?',
+      path: "places/:placeId/*?",
       id: `${prefix}place`,
       loader: ({ params, request }) =>
         defer({ results: fetchPlace(params.placeId, request.signal) }),
@@ -77,14 +97,33 @@ function createPopupRoutes(prefix) {
       ),
     },
     {
-      path: 'records/:recordId/*?',
+      path: "records/:recordId/*?",
       id: `${prefix}record`,
       loader: ({ params: { recordId, "*": star }, request }) => {
+        // 1) Normalize "03644_49362_1" -> "03644_49362"
+        const normalizedId = normalizeRecordId(recordId);
+
+        // 2) If it changed, redirect to the canonical accession URL
+        if (normalizedId !== recordId) {
+          const url = new URL(request.url);
+
+          // Works for both "/records/…" and "/transcribe/records/…"
+          url.pathname = url.pathname.replace(
+            `/records/${recordId}`,
+            `/records/${normalizedId}`
+          );
+
+          // Keep any existing ?query params
+          return redirect(`${url.pathname}${url.search}`);
+        }
+
+        // 3) Normal loader behavior
         const cleaned = star?.startsWith("audio/") ? "" : star;
         const { search } = createParamsFromSearchRoute(cleaned);
+
         return defer({
           results: fetchRecordAndCountSubrecords(
-            recordId,
+            normalizedId,
             search,
             request.signal
           ),
@@ -98,13 +137,13 @@ function createPopupRoutes(prefix) {
       // This was added to point to the exact audio file, not used for text transcriptions yet
       children: [
         {
-          path: 'audio/:id/transcribe',
+          path: "audio/:id/transcribe",
           element: <CorrectionView />,
         },
       ],
     },
     {
-      path: 'persons/:personId/*?',
+      path: "persons/:personId/*?",
       id: `${prefix}person`,
       loader: async ({ params: { personId }, request }) =>
         fetchPerson(personId, request.signal),
