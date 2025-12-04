@@ -649,26 +649,46 @@ export function getTitleText(
   numberOfSubrecordsMedia,
   numberOfTranscribedSubrecordsMedia,
 ) {
-  let titleText;
   const transcriptionStatusElement = data.transcriptionstatus;
-
-  if (['undertranscription', 'transcribed', 'reviewing', 'needsimprovement', 'approved'].includes(transcriptionStatusElement)) {
-    titleText = 'Titel granskas';
-  } else if (data.transcriptionstatus === 'readytotranscribe' && data.transcriptiontype === 'sida' && numberOfSubrecordsMedia > 0) {
-    titleText = `Sida ${getPages(data)} (${numberOfTranscribedSubrecordsMedia} ${l(
-      numberOfTranscribedSubrecordsMedia === 1 ? 'sida avskriven' : 'sidor avskrivna',
-    )})`;
-  } else if (data.transcriptionstatus === 'readytotranscribe') {
-    titleText = 'Ej avskriven';
-    if (data.title) {
-      titleText = `${getTitle(data.title, data.contents)} (${titleText})`;
-    }
-  } else {
-    titleText = getTitle(data.title, data.contents);
+  // Let getTitle do the smart fallback work (title → contents → archive)
+  const baseTitle = getTitle(
+    data.title,
+    data.contents,
+    data.archive // pass archive too
+  );
+  if (
+    [
+      "undertranscription",
+      "transcribed",
+      "reviewing",
+      "needsimprovement",
+      "approved",
+    ].includes(transcriptionStatusElement)
+  ) {
+    return l("Titel granskas");
   }
 
-  return titleText || l('(Utan titel)');
+  if (
+    transcriptionStatusElement === "readytotranscribe" &&
+    data.transcriptiontype === "sida" &&
+    Number(numberOfSubrecordsMedia) > 0
+  ) {
+    return `Sida ${getPages(data)} (${numberOfTranscribedSubrecordsMedia} ${l(
+      numberOfTranscribedSubrecordsMedia === 1
+        ? "sida avskriven"
+        : "sidor avskrivna"
+    )})`;
+  }
+
+  if (transcriptionStatusElement === "readytotranscribe") {
+    // Use baseTitle if we have one; otherwise just the status text
+    const statusLabel = l("Ej avskriven");
+    return baseTitle ? `${baseTitle} (${statusLabel})` : statusLabel;
+  }
+  // Default: just show the best title we can construct
+  return baseTitle || l("(Utan titel)");
 }
+
 
 export function getPages(data) {
   let pages = '';
