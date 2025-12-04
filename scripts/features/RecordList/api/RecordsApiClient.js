@@ -46,7 +46,10 @@ export default class RecordsApiClient {
       const json = await res.json();
 
       // Only commit if this is still the newest request
-      if (requestId === this._requestId && typeof this.onComplete === "function") {
+      if (
+        requestId === this._requestId &&
+        typeof this.onComplete === "function"
+      ) {
         this.onComplete(json);
       }
 
@@ -104,13 +107,26 @@ function buildQueryString(inputParams = {}, requiredParams = {}) {
   });
 
   // --- Map search_field to ES Django API ---
-  if (merged.search) {
-    if (merged.search_field === "person") {
-      merged.person = merged.search;
-    } else if (merged.search_field === "place") {
-      merged.place = merged.search;
+  if (merged.search != null && merged.search !== "") {
+    const value = merged.search;
+
+    switch (merged.search_field) {
+      case "person":
+        merged.person = value;
+        delete merged.search; // we’ve moved it to person
+        break;
+
+      case "place":
+        merged.place = value;
+        delete merged.search; // we’ve moved it to place
+        break;
+
+      default:
+        // For “any”, “text”, or unknown search_field:
+        // keep merged.search so the backend can do a normal full-text search
+        break;
     }
-    delete merged.search;
+
     delete merged.search_field;
   }
 
