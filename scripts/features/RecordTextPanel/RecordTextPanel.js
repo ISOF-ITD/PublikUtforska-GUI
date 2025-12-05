@@ -339,9 +339,9 @@ export default function RecordTextPanel({
       <section aria-labelledby={headingId} className="space-y-3">
         {/* Header */}
         <header className="flex items-center justify-between mb-1">
-          <h2 id={headingId} className="px-4">
+          {segments && (<h2 id={headingId} className="px-4">
             {l("Text och bild")}
-          </h2>
+          </h2>)}
 
           {hasHighlights && (
             <HighlightSwitcher
@@ -398,9 +398,9 @@ export default function RecordTextPanel({
   return (
     <section aria-labelledby={headingId} className="space-y-3">
       <header className="flex items-center justify-between mb-1">
-        <h2 id={headingId} className="sr-only">
+        {segments && (<h2 id={headingId} className="sr-only">
           {l("Text och bild")}
-        </h2>
+        </h2>)}
 
         {hasHighlights && (
           <HighlightSwitcher

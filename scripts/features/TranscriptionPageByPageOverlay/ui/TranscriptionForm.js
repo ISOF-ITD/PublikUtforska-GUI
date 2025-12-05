@@ -137,9 +137,7 @@ export default function TranscriptionForm({
               {l("Snabbguide (se även gärna instruktionerna ovanför)")}
             </strong>
             <ul className="list-disc list-inside space-y-0.5 !my-0">
-              <li>
-                {l("Skriv av texten precis som den står, även stavfel.")}
-              </li>
+              <li>{l("Skriv av texten precis som den står, även stavfel.")}</li>
               <li>
                 {l("Skriv av texten rad för rad, med samma radbrytningar.")}
               </li>
@@ -152,8 +150,7 @@ export default function TranscriptionForm({
           htmlFor="transcription_text_always"
           className="font-semibold block"
         >
-          {l("Text på sidan")} {currentPageIndex + 1} {l("(av")}{" "}
-          {pages.length})
+          {l("Text på sidan")} {currentPageIndex + 1} {l("(av")} {pages.length})
         </label>
         <textarea
           id="transcription_text_always"

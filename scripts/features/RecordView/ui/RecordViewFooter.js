@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import archiveLogoIsof from "../../../../img/archive-logo-isof.png";
 import archiveLogoIkos from "../../../../img/archive-logo-ikos.png";
 import logotypSprakbanken from "../../../../img/logotyp_sprakbanken.svg";
-import Disclamer from "../Disclaimer";
+import Disclamer from "../../../components/views/Disclaimer";
 
 // Normalize: lowercase, strip diacritics, collapse punctuation/whitespace
 const normalize = (s) =>

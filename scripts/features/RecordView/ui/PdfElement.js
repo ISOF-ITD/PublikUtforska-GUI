@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
-import PdfViewer from "../../PdfViewer";
+import PdfViewer from "../../../components/PdfViewer";
 import config from "../../../config";
 import PdfThumbnail from "./PdfThumbnail";
 

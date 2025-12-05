@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import config from "../../../config";
 import { l } from "../../../lang/Lang";
 import { getTitleText } from "../../../utils/helpers";
-import Spinner from "../../Spinner";
+import Spinner from "../../../components/Spinner";
 
 function SimilarRecords({ data }) {
   // Normalize id to a stable string so the effect doesn't refire due to type flips.

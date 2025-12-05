@@ -9,8 +9,8 @@ import {
   getTitleText,
   getArchiveName,
 } from "../../../utils/helpers";
-import FeedbackButton from "../FeedbackButton";
-import ContributeInfoButton from "../ContributeInfoButton";
+import FeedbackButton from "../../../components/views/FeedbackButton";
+import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
 import config from "../../../config";
 
 const renderArchiveName = (archive) => {
