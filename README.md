@@ -168,6 +168,15 @@ We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
 * Tailwind JIT is configured in `tailwind.config.js`; just run `npm run start` as usual.
 * For conditional or dynamic styling, compose your Tailwind classes with the **classnames** utility (e.g. classnames('p-4', isActive && 'bg-blue-500')) instead of manual string concatenation.
 * For lightweight, non-blocking notifications, use **react-hot-toast** utility via our `toastOk()` / `toastError()` helpers in utils/toast.js (see Toast.js's own documentation for styling/use cases).
+* Set z-index by tailwind. Example: z-[23]
+Folke uses custom z-index values with tailwind and not tailwind built-in values, as Folkes z-index values are higher
+
+### Popups (modals)
+
+Rules about popups:
+- Avoid popups: https://www.nngroup.com/articles/popups/
+- z-index is used
+
 
 ## Project structure update, WIP (2025‑05‑02)
 
