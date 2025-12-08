@@ -33,7 +33,8 @@ function RecordSegment({
         aria-controls={`seg-panel-${segId}`}
         onClick={toggle}
       >
-        <span className="flex items-center gap-2">
+        {/* LEFT SIDE: indicator + title + persons */}
+        <span className="flex items-center gap-2 flex-1 min-w-0">
           {segmentStatus && (
             <StatusIndicator
               status={segmentStatus}
@@ -42,15 +43,21 @@ function RecordSegment({
               className="shrink-0"
             />
           )}
-          <span className="font-medium truncate">{title || l("Segment")}</span>
+
+          {/* This is the bit that will truncate nicely */}
+          <span className="font-medium truncate max-w-full">
+            {title || l("Segment")}
+          </span>
+
           {persons.length > 0 && (
-            <div className="px-4 pb-0">
-              <SegmentPersons persons={persons} />
+            <div className="px-4 pb-0 max-sm:hidden">
+              <SegmentPersons persons={persons} maxVisible={2} />
             </div>
           )}
         </span>
 
-        <span className="flex items-center gap-2">
+        {/* RIGHT SIDE: "Visa/Dölj" + chevron, never shrink */}
+        <span className="flex items-center gap-2 shrink-0">
           <span className="text-gray-500 shrink-0">
             {open ? (
               <span>
