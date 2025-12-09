@@ -133,7 +133,7 @@ export default function RecordListItem(props) {
       transcriptionstatus,
       has_untranscribed_records,
       ...rest
-    } = params; 
+    } = params;
     return rest;
   };
 
@@ -350,16 +350,14 @@ export default function RecordListItem(props) {
                               {/* for old fetched records we had pageFromTo; for segments we just show the page we derived */}
                               {transcriptiontype !== "audio" &&
                                 s._source.archive?.page && (
-                                  <>Sida {s._source.archive.page - 1}: </>
+                                  <>Sida {s._source.archive.page - 1}. </>
                                 )}
                               <span
                                 dangerouslySetInnerHTML={{
                                   __html:
                                     s._source.title ||
                                     // fallback so we don’t render empty links
-                                    `Segment ${
-                                      s._source.archive?.page || idx
-                                    }`,
+                                    "",
                                 }}
                               />
                             </Link>
