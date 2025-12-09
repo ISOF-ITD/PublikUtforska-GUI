@@ -192,7 +192,7 @@ export default function PersonView({ mode = "material" }) {
               flexWrap: "wrap",
             }}
           >
-            <h3 id="records">{l(`Arkivmaterial upptecknad av ${name}`)}</h3>
+            <h3 id="records">{l(`Arkivmaterial kopplat till ${name}`)}</h3>
           </div>
 
           <RecordList

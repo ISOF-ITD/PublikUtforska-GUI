@@ -8,6 +8,8 @@ import {
   faPen,
   faSearch,
   faCircleQuestion,
+  faClipboardList,
+  faExternalLink,
 } from "@fortawesome/free-solid-svg-icons";
 import { l } from "../../lang/Lang";
 import {
@@ -38,8 +40,17 @@ export default function SearchPanel({
   onOpenIntroOverlay,
 }) {
   const location = useLocation();
-  // Strip /records/:id, /places/:id, /persons/:id etc. back to the "pure" search route
-  const baseSearchPath = removeViewParamsFromRoute(location.pathname);
+  // Normalise the path so it always starts from "search/…"
+  const baseSearchPath = useMemo(() => {
+    // 1. Strip view segments (/records/:id etc.)
+    const stripped = removeViewParamsFromRoute(location.pathname);
+    // 2. Remove leading "/" and optional "transcribe/" prefix,
+    // so both "/search/…" and "/transcribe/search/…" become "search/…"
+    return stripped
+      .replace(/^\/?transcribe\/?/, "/") // drop "transcribe" mode prefix
+      .replace(/^\//, ""); // drop leading slash
+  }, [location.pathname]);
+
   const {
     search: qParam,
     search_field,
@@ -192,6 +203,23 @@ export default function SearchPanel({
 
   const onFiltersToggle = (categoryId) =>
     toggleCategory(categoryId, inputValue || qParam || "");
+
+  const [showSurvey, setShowSurvey] = useState(() => {
+    try {
+      return window.localStorage?.getItem("folkeSurveyDismissed") !== "1";
+    } catch {
+      return true;
+    }
+  });
+
+  const handleDismissSurvey = useCallback(() => {
+    setShowSurvey(false);
+    try {
+      window.localStorage?.setItem("folkeSurveyDismissed", "1");
+    } catch {
+      // ignore
+    }
+  }, []);
 
   return (
     <>
@@ -368,6 +396,7 @@ export default function SearchPanel({
         title={l("Skriv av slumpmässig uppteckning")}
         variant="listLike" // match "Visa sökträffar" look
       />
+
       {onOpenIntroOverlay && (
         <button
           type="button"
@@ -383,6 +412,33 @@ export default function SearchPanel({
           </span>
         </button>
       )}
+      <div className="relative w-full !mb-4">
+        {/* Red dot indicator */}
+        {showSurvey && (
+          <span
+            className="pointer-events-none absolute -top-1 -right-1 inline-flex h-3 w-3 rounded-full bg-red-500 ring-2 ring-white"
+            aria-hidden="true"
+          />
+        )}
+
+        <a
+          href="https://www.isof.se/enkatfolke"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleDismissSurvey}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white border-4 border-solid border-lighter-isof py-2 !text-base font-medium text-gray-700 shadow "
+          title={l("Tyck till om Folke – svara på vår enkät")}
+          aria-label={l("Tyck till om Folke – svara på vår enkät!")}
+        >
+          <span className="inline-flex items-center gap-2">
+            <FontAwesomeIcon icon={faClipboardList} />
+            <span className="font-medium">
+              {l("Tyck till om Folke – svara på vår enkät 2025")}
+            </span>
+            <FontAwesomeIcon icon={faExternalLink} />
+          </span>
+        </a>
+      </div>
     </>
   );
 }

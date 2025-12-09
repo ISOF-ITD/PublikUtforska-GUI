@@ -16,7 +16,7 @@ import DescriptionForm from "./DescriptionForm";
 import config from "../../config";
 import ConfirmationModal from "./ConfirmationModal";
 import useAudioDuration from "./hooks/useAudioDuration";
-import secondsToMinuteSeconds, { secondsToMMSS } from "../../utils/timeHelper";
+import { secondsToMMSS } from "../../utils/timeHelper";
 
 function AudioItemRow({
   item,
@@ -212,7 +212,7 @@ function AudioItemRow({
           ) : null}
         </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
-          {canContribute && (
+          {canContribute && config.activateAudioDescription && (
             <a
               className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               aria-expanded={openItems[item.source] ? "true" : "false"}
