@@ -6,7 +6,6 @@ import {
   faChevronLeft,
   faChevronRight,
   faClock,
-  faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Folkelogga from "../../img/folke-white.svg";
@@ -287,14 +286,14 @@ export default function MapMenu({
       <div className="w-full bg-gray-300 text-center py-2 gap-2 rounded-sm">
         <FontAwesomeIcon icon={faClock} /> {"   "}
         Data uppdateras...
-        </div>
+      </div>
       {/*<div
         className="overflow-y-auto w-full min-w-0 max-w-full p-3 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white"
       >
         <div>
           <StatisticsContainer />
 
-          <h3 className="!my-2">Senast avskrivna</h3>
+          <h3 className="!my-2">Senast avskrivna uppteckningar</h3>
           <div>
             <RecordList
               key="latest-RecordList"
@@ -308,8 +307,9 @@ export default function MapMenu({
               interval={60_000}
             />
           </div>
-        </div>
-      </div>*/}
+          </div>
+          */}
+
       {activateIntroOverlay && (
         <IntroOverlay
           id="intro-overlay"
