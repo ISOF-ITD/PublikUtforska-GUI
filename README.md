@@ -98,10 +98,24 @@ See README.md in TradarkAdmin: https://vcs.its.uu.se/isof-devs/TradarkAdmin/src/
 
 # Documentation
 
-## How to display a warning message, e.g., when the server is slow
+## How to display a warning message, e.g., when 1) update in the server is slow
 
 To add a custom warning message to the application, follow these steps:
 
+1. **Create the `varning.html` file on the server**:
+   - Add a file named `varning.html` to the main folder of your project. You can copy one of the example varning-XX.html in the main folder as a start.
+   - This file should contain the HTML structure of the warning message. You can include plain text or HTML tags (e.g., `<pre>`, `<strong>`, etc.) to style the message as needed.
+   
+2. **Activate the Warning component**:
+   - Uncomment the warning compnent {/*<Warning /> */} in scripts/components/MapMenu.js.
+
+3. **Deploy again**:
+   - ./deploy.sh.
+
+4. **Display the warning message**:
+   - If the `varning.html` file exists, the warning message will be automatically rendered.
+
+Old way:
 1. **Create the `varning.html` file on the server**:
    - Add a file named `varning.html` to the `www` folder of your project. 
    - This file should contain the HTML structure of the warning message. You can include plain text or HTML tags (e.g., `<pre>`, `<strong>`, etc.) to style the message as needed.
