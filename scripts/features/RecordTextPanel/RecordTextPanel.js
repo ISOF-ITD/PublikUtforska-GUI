@@ -10,7 +10,7 @@ import TranscribedText from "./ui/TranscribedText";
 import { StatusIndicator } from "./ui/TranscriptionStatusIndicator";
 import HighlightSwitcher from "./ui/HighlightSwitcher";
 import RecordSegment from "./ui/RecordSegment";
-import { buildSegments } from "./utils/buildSegments";
+import buildSegments from "./utils/buildSegments";
 import { useRecordHighlights } from "./hooks/useRecordHighlights";
 import { useDownloadAllText } from "./hooks/useDownloadAllText";
 import {
