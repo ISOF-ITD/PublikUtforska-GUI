@@ -9,6 +9,7 @@ export function useDownloadAllText({
   textParts,
   title,
   recordId,
+  getPersonsForPage,
 }) {
   const textPages = useMemo(
     () => buildTextPages({ isPageByPage, mediaImages, textParts }),
@@ -26,8 +27,24 @@ export function useDownloadAllText({
     }
 
     textPages.forEach((page, idx) => {
+      // Heading
       lines.push(`${l("Sida")} ${page.pageNumber}: ${page.title}`);
       lines.push("");
+
+      // Persons line(s)
+      const persons = getPersonsForPage ? getPersonsForPage(idx) : [];
+
+      if (persons.length) {
+        const personsLabel = l("Personer");
+        const personsLine = persons
+          .map((p) => (p.relation ? `${p.name} (${p.relation})` : p.name))
+          .join(", ");
+
+        lines.push(`${personsLabel}: ${personsLine}`);
+        lines.push(""); // blank line before the actual text
+      }
+
+      // Page text
       lines.push(htmlToPlainText(page.html));
 
       if (idx < textPages.length - 1) {
@@ -60,7 +77,7 @@ export function useDownloadAllText({
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, [textPages, title, recordId]);
+  }, [textPages, title, recordId, getPersonsForPage]);
 
   return { textPages, handleDownloadAllText };
 }

@@ -13,6 +13,13 @@ import RecordSegment from "./ui/RecordSegment";
 import { buildSegments } from "./utils/buildSegments";
 import { useRecordHighlights } from "./hooks/useRecordHighlights";
 import { useDownloadAllText } from "./hooks/useDownloadAllText";
+import {
+  faCompress,
+  faDownload,
+  faExpand,
+  faHighlighter,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 /**
  * RecordTextPanel component
@@ -154,6 +161,20 @@ export default function RecordTextPanel({
     });
   }, [segments]);
 
+  // Map page index -> persons[] (derived from segments)
+  const getPersonsForPage = useCallback(
+    (pageIndex) => {
+      const seg = segments.find((seg) => {
+        const start = seg.startIndex;
+        const end = start + seg.items.length;
+        return pageIndex >= start && pageIndex < end;
+      });
+
+      return seg?.persons || [];
+    },
+    [segments]
+  );
+
   // --- Flat list of all text pages we can export ---
   const { textPages, handleDownloadAllText } = useDownloadAllText({
     isPageByPage,
@@ -161,7 +182,22 @@ export default function RecordTextPanel({
     textParts,
     title,
     recordId,
+    getPersonsForPage,
   });
+
+  const allOpen =
+    segments.length > 0 &&
+    segments.every((seg, index) => {
+      const key = seg.id || `seg-${index}`;
+      return openSegments[key] === true;
+    });
+
+  const allClosed =
+    segments.length > 0 &&
+    segments.every((seg, index) => {
+      const key = seg.id || `seg-${index}`;
+      return openSegments[key] === false;
+    });
 
   // -------------- Side (text) builder, now works with absolute index --------------
   const buildTextSide = useCallback(
@@ -256,52 +292,78 @@ export default function RecordTextPanel({
     return (
       <section aria-labelledby={headingId} className="space-y-3">
         {/* Header */}
-        <header className="flex items-center justify-between mb-1">
-          {segments && (
-            <h2 id={headingId} className="px-4">
-              {l("Text och bild")}
-            </h2>
-          )}
+        <header className="mb-1 px-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            {segments && <h2 id={headingId}>{l("Text och bild")}</h2>}
 
-          <div className="flex items-center gap-2">
-            {segments?.length > 0 && (
-              <>
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              {/* Segment controls */}
+              {segments?.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1">
+                  <button
+                    type="button"
+                    className="button button-secondary text-sm"
+                    onClick={handleOpenAllSegments}
+                    disabled={allOpen}
+                  >
+                    <FontAwesomeIcon
+                      icon={faExpand}
+                      className="mr-1"
+                      aria-hidden="true"
+                    />
+                    {l("Öppna alla")}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="button button-ghost text-sm"
+                    onClick={handleCloseAllSegments}
+                    disabled={allClosed}
+                  >
+                    <FontAwesomeIcon
+                      icon={faCompress}
+                      className="mr-1"
+                      aria-hidden="true"
+                    />
+                    {l("Stäng alla")}
+                  </button>
+                </div>
+              )}
+
+              {/* Download control */}
+              {textPages.length > 0 && (
                 <button
                   type="button"
                   className="button button-secondary text-sm"
-                  onClick={handleOpenAllSegments}
+                  onClick={handleDownloadAllText}
                 >
-                  {l("Öppna alla")}
+                  <FontAwesomeIcon
+                    icon={faDownload}
+                    className="mr-1"
+                    aria-hidden="true"
+                  />
+                  {l("Ladda ner text (.txt)")}
                 </button>
-                <button
-                  type="button"
-                  className="button button-ghost text-sm"
-                  onClick={handleCloseAllSegments}
-                >
-                  {l("Stäng alla")}
-                </button>
-              </>
-            )}
+              )}
 
-            {textPages.length > 0 && (
-              <button
-                type="button"
-                className="button button-secondary text-sm"
-                onClick={handleDownloadAllText}
-              >
-                {l("Ladda ner text (.txt)")}
-              </button>
-            )}
-
-            {hasHighlights && (
-              <HighlightSwitcher
-                id={switchId}
-                highlight={highlight}
-                setHighlight={setHighlight}
-                count={totalHits}
-                ariaLabel={l("Markera träffar")}
-              />
-            )}
+              {/* Highlight switch */}
+              {hasHighlights && (
+                <div className="flex items-center gap-1">
+                  <FontAwesomeIcon
+                    icon={faHighlighter}
+                    className="text-xs"
+                    aria-hidden="true"
+                  />
+                  <HighlightSwitcher
+                    id={switchId}
+                    highlight={highlight}
+                    setHighlight={setHighlight}
+                    count={totalHits}
+                    ariaLabel={l("Markera träffar")}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
