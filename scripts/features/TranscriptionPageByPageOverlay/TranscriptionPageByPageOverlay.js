@@ -275,6 +275,9 @@ export default function TranscriptionPageByPageOverlay() {
     if (!pages.length) return;
     const page = pages[currentPageIndex];
 
+    // Always activate "uppteckningsblankett" meta fields for "uppteckningsblankett" type
+    if (page.transcriptionType === "uppteckningsblankett") setShowMetaFields(page.transcriptionType === "uppteckningsblankett");
+
     const shouldPrefill =
       (page.transcriptionstatus &&
         page.transcriptionstatus !== "readytotranscribe") ||
