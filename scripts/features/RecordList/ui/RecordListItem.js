@@ -299,8 +299,9 @@ export default function RecordListItem(props) {
             <div className="subrecords mt-1">
               <small>
                 <a
+                  type="button"
                   onClick={toggle}
-                  className="text-isof hover:underline cursor-pointer"
+                  className="inline-flex items-center text-isof hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-isof/60 rounded-sm"
                 >
                   <FontAwesomeIcon
                     icon={visible ? faFolderOpen : faFolder}
@@ -316,56 +317,69 @@ export default function RecordListItem(props) {
               </small>
 
               {visible && (
-                <ul className="ml-2 mt-1 list-disc text-sm">
-                  {subrecords
-                    .sort((a, b) => {
-                      const pa = Number(a?._source?.archive?.page);
-                      const pb = Number(b?._source?.archive?.page);
-                      return (
-                        (isFinite(pa) ? pa : Infinity) -
-                        (isFinite(pb) ? pb : Infinity)
-                      );
-                    })
-                    .map((s, idx) => {
-                      const pub = s._source.transcriptionstatus === "published";
+                <div className="relative ml-2 mt-1">
+                  <div
+                    className={`rounded-md border !px-1.5 border-gray-200 bg-white/70 shadow-sm ${
+                      subrecords.length > 5
+                        ? "max-h-48 overflow-y-auto pr-2"
+                        : "pr-1"
+                    }`}
+                  >
+                    <ul className="list-disc list-inside !space-y-0.5">
+                      {subrecords
+                        .sort((a, b) => {
+                          const pa = Number(a?._source?.archive?.page);
+                          const pb = Number(b?._source?.archive?.page);
+                          return (
+                            (isFinite(pa) ? pa : Infinity) -
+                            (isFinite(pb) ? pb : Infinity)
+                          );
+                        })
+                        .map((s, idx) => {
+                          const pub =
+                            s._source.transcriptionstatus === "published";
 
-                      const parentHref = `${
-                        mode === "transcribe" ? "/transcribe" : ""
-                      }/records/${id}`;
-                      const href =
-                        s._source.href ??
-                        (s._source.media_id
-                          ? `${parentHref}?media=${s._source.media_id}`
-                          : parentHref);
+                          const parentHref = `${
+                            mode === "transcribe" ? "/transcribe" : ""
+                          }/records/${id}`;
 
-                      return (
-                        <li key={s._source.id || idx} className="mb-1">
-                          <small>
-                            <Link
-                              to={href}
-                              className={`${
-                                pub ? "font-bold" : ""
-                              } hover:underline text-isof`}
-                            >
-                              {/* for old fetched records we had pageFromTo; for segments we just show the page we derived */}
-                              {transcriptiontype !== "audio" &&
-                                s._source.archive?.page && (
-                                  <>Sida {s._source.archive.page - 1}. </>
-                                )}
-                              <span
-                                dangerouslySetInnerHTML={{
-                                  __html:
-                                    s._source.title ||
-                                    // fallback so we don’t render empty links
-                                    "",
-                                }}
-                              />
-                            </Link>
-                          </small>
-                        </li>
-                      );
-                    })}
-                </ul>
+                          const href =
+                            s._source.href ??
+                            (s._source.media_id
+                              ? `${parentHref}?media=${s._source.media_id}`
+                              : parentHref);
+
+                          return (
+                            <li key={s._source.id || idx}>
+                              <small>
+                                <Link
+                                  to={href}
+                                  className={`${
+                                    pub ? "font-semibold" : ""
+                                  } hover:underline text-isof`}
+                                >
+                                  {transcriptiontype !== "audio" &&
+                                    s._source.archive?.page && (
+                                      <>Sida {s._source.archive.page - 1}. </>
+                                    )}
+                                  <span
+                                    dangerouslySetInnerHTML={{
+                                      __html: s._source.title || "",
+                                    }}
+                                  />
+                                </Link>
+                              </small>
+                            </li>
+                          );
+                        })}
+                    </ul>
+                  </div>
+
+                  {/* subtle fade at the bottom when scrollable */}
+                  {subrecords.length > 5 && (
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent" />
+                  )}
+                </div>
               )}
             </div>
           )}
