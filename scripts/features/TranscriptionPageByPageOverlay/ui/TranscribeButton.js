@@ -25,6 +25,9 @@ export default function TranscribeButton({
   transcribeCancel,
   disabled = false,
   variant = "primary",
+  // optional info about which page to open first
+  initialPageIndex,
+  initialPageSource,
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -35,8 +38,6 @@ export default function TranscribeButton({
     if (typeof window !== "undefined" && window.eventBus) {
       window.eventBus.dispatch(eventName, payload);
     } else {
-      // Keep silent in UI; useful for debugging non-browser contexts.
-      // eslint-disable-next-line no-console
       console.warn("eventBus is not available on window.");
     }
   }, []);
@@ -52,6 +53,13 @@ export default function TranscribeButton({
       transcriptionType: opts.transcriptionType ?? "",
       placeString: getPlaceString(opts.places || []),
       random: !!opts.random,
+
+      // pass through page hint (optional)
+      initialPageIndex:
+        typeof opts.initialPageIndex === "number"
+          ? opts.initialPageIndex
+          : undefined,
+      initialPageSource: opts.initialPageSource ?? undefined,
     }),
     []
   );
@@ -63,7 +71,7 @@ export default function TranscribeButton({
       const payload = buildPayload(opts);
       dispatchOverlay(payload, eventFor(opts.transcriptionType));
     },
-    [buildPayload, dispatchOverlay, eventFor]
+    [buildPayload, dispatchOverlay]
   );
 
   const fetchRandomAndStart = useCallback(async () => {
@@ -140,6 +148,8 @@ export default function TranscribeButton({
       transcriptionType,
       places,
       random: false,
+      initialPageIndex,
+      initialPageSource,
     });
   }, [
     archiveId,
@@ -154,6 +164,8 @@ export default function TranscribeButton({
     transcriptionType,
     type,
     transcribeCancel,
+    initialPageIndex,
+    initialPageSource,
   ]);
 
   const effectiveOnClick = onClick || defaultOnClick;
@@ -211,4 +223,6 @@ TranscribeButton.propTypes = {
   transcribeCancel: PropTypes.func,
   disabled: PropTypes.bool,
   variant: PropTypes.oneOf(["primary", "listLike"]),
+  initialPageIndex: PropTypes.number,
+  initialPageSource: PropTypes.string,
 };

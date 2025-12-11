@@ -299,9 +299,12 @@ export default function RecordTextPanel({
               recordId={recordId}
               archiveId={archive?.archive_id}
               places={places}
-              images={media}
+              images={media} // all pages
               transcriptionType={transcriptiontype}
               random={false}
+              // tell the overlay which page to open
+              initialPageIndex={absoluteIndex}
+              initialPageSource={mediaItem.source}
             />
           </div>
         );
@@ -339,9 +342,11 @@ export default function RecordTextPanel({
       <section aria-labelledby={headingId} className="space-y-3">
         {/* Header */}
         <header className="flex items-center justify-between mb-1">
-          {segments && (<h2 id={headingId} className="px-4">
-            {l("Text och bild")}
-          </h2>)}
+          {segments && (
+            <h2 id={headingId} className="px-4">
+              {l("Text och bild")}
+            </h2>
+          )}
 
           {hasHighlights && (
             <HighlightSwitcher
@@ -379,7 +384,7 @@ export default function RecordTextPanel({
                     })
                   : null
               }
-              persons={seg.persons} // ← NEW
+              persons={seg.persons}
             />
           ))}
         </div>
@@ -398,9 +403,11 @@ export default function RecordTextPanel({
   return (
     <section aria-labelledby={headingId} className="space-y-3">
       <header className="flex items-center justify-between mb-1">
-        {segments && (<h2 id={headingId} className="sr-only">
-          {l("Text och bild")}
-        </h2>)}
+        {segments && (
+          <h2 id={headingId} className="sr-only">
+            {l("Text och bild")}
+          </h2>
+        )}
 
         {hasHighlights && (
           <HighlightSwitcher

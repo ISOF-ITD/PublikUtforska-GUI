@@ -199,8 +199,6 @@ export default function TranscriptionPageByPageOverlay() {
       const isPdfPage = (p) =>
         p?.type === "pdf" || p?.source?.toLowerCase().endsWith(".pdf");
 
-      // ...
-
       /* prep page array with per-page meta */
       const initialPages = (t.images || [])
         // 1) drop all PDF pages
@@ -234,18 +232,40 @@ export default function TranscriptionPageByPageOverlay() {
 
       setPages(initialPages);
 
-      const startIdx = initialPages.findIndex(
-        (p) => p.transcriptionstatus === "readytotranscribe"
-      );
-      setCurrentPageIndex(startIdx !== -1 ? startIdx : 0);
-      requestAnimationFrame(() =>
-        scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0)
-      );
+      // Choose start index using payload hint first
+      const resolveStartIndex = () => {
+        if (!initialPages.length) return 0;
 
-      setCurrentPageIndex(startIdx !== -1 ? startIdx : 0);
-      requestAnimationFrame(() =>
-        scrollToActiveThumbnail(startIdx !== -1 ? startIdx : 0)
-      );
+        // 1) Exact index from payload
+        if (
+          typeof t.initialPageIndex === "number" &&
+          t.initialPageIndex >= 0 &&
+          t.initialPageIndex < initialPages.length
+        ) {
+          return t.initialPageIndex;
+        }
+
+        // 2) Match by source, if provided
+        if (t.initialPageSource) {
+          const idx = initialPages.findIndex(
+            (p) => p.source === t.initialPageSource
+          );
+          if (idx !== -1) return idx;
+        }
+
+        // 3) Fallback to first ready-to-transcribe page
+        const readyIdx = initialPages.findIndex(
+          (p) => p.transcriptionstatus === "readytotranscribe"
+        );
+        if (readyIdx !== -1) return readyIdx;
+
+        // 4) Ultimate fallback
+        return 0;
+      };
+
+      const startIdx = resolveStartIndex();
+      setCurrentPageIndex(startIdx);
+      requestAnimationFrame(() => scrollToActiveThumbnail(startIdx));
 
       setShowMetaFields(t.transcriptionType === "uppteckningsblankett");
 
@@ -268,7 +288,7 @@ export default function TranscriptionPageByPageOverlay() {
       );
       window.eventBus.removeEventListener("overlay.close", hideHandler);
     };
-  }, [start, handleHideOverlay, scrollToActiveThumbnail]);
+  }, [start, handleHideOverlay, scrollToActiveThumbnail, setFields]);
 
   // whenever index changes, (re)hydrate the form from pages[index]
   useEffect(() => {
