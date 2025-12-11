@@ -1,4 +1,3 @@
-// src/views/record/RecordTextPanel.jsx
 import PropTypes from "prop-types";
 import { memo, useState, useMemo, useCallback, useId } from "react";
 import config from "../../config";
@@ -8,12 +7,10 @@ import TranscribeButton from "../TranscriptionPageByPageOverlay/ui/TranscribeBut
 import { computeStatus } from "./utils/computeStatus.js";
 import ContributorInfo, { PageContributor } from "./ui/ContributorInfo";
 import TranscribedText from "./ui/TranscribedText";
-import { splitPages } from "./utils/splitPages";
 import { StatusIndicator } from "./ui/TranscriptionStatusIndicator";
 import HighlightSwitcher from "./ui/HighlightSwitcher";
 import RecordSegment from "./ui/RecordSegment";
 import { buildSegments } from "./utils/buildSegments";
-import { buildTextPages } from "./utils/buildTextPages";
 import { useRecordHighlights } from "./hooks/useRecordHighlights";
 import { useDownloadAllText } from "./hooks/useDownloadAllText";
 

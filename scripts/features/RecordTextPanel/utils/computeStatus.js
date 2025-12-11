@@ -17,6 +17,14 @@ export function computeStatus(obj = {}) {
       icon: faAsterisk,
     };
   }
+  if (isSent && transcriptionstatus === "published") {
+    return {
+      key: "published",
+      label: "Sidan har publicerats",
+      color: "bg-isof",
+      icon: faNewspaper,
+    };
+  }
   if (isSent) {
     return {
       key: "sent",
