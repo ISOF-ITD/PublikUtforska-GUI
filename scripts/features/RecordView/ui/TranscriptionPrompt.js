@@ -74,7 +74,11 @@ export default function TranscriptionPrompt({ data }) {
   } = data || {};
 
   // 1. Hide for audio & already published & if no transcription type explicitly defined
-  if (transcriptionstatus === "published" || transcriptiontype === "audio" || !transcriptiontype)
+  if (
+    transcriptionstatus === "published" ||
+    transcriptiontype === "audio" ||
+    !transcriptiontype
+  )
     return null;
 
   // 2. Hide for records that only have PDF media, no page images
@@ -94,11 +98,16 @@ export default function TranscriptionPrompt({ data }) {
 
   // ---- derived state ----
   const derived = useMemo(() => {
-    const total = Array.isArray(media) ? media.length : 0;
+    // Exclude PDFs from progress calculations
+    const pageMedia = Array.isArray(media)
+      ? media.filter((m) => (m?.type || "").toLowerCase() !== "pdf")
+      : [];
+
+    const total = pageMedia.length;
 
     let done = 0;
     let ready = 0;
-    for (const m of media) {
+    for (const m of pageMedia) {
       const s = (m?.transcriptionstatus || "").toLowerCase();
       if (s === "transcribed" || s === "published") done += 1;
       if (s === "readytotranscribe") ready += 1;
