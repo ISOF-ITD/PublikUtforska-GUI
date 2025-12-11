@@ -19,10 +19,23 @@ function RecordSegment({
   defaultOpen = false,
   segmentStatus,
   persons = [],
+  isOpen,
+  onToggle,
 }) {
   const segId = useId();
-  const [open, setOpen] = useState(defaultOpen);
-  const toggle = useCallback(() => setOpen((o) => !o), []);
+
+  // Uncontrolled fallback
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const controlled = typeof isOpen === "boolean";
+  const open = controlled ? isOpen : internalOpen;
+
+  const toggle = useCallback(() => {
+    if (controlled) {
+      onToggle?.();
+    } else {
+      setInternalOpen((o) => !o);
+    }
+  }, [controlled, onToggle]);
 
   return (
     <section className="bg-white shadow-sm border border-black/5 overflow-hidden relative">
@@ -44,7 +57,6 @@ function RecordSegment({
             />
           )}
 
-          {/* This is the bit that will truncate nicely */}
           <span className="font-medium truncate max-w-full">
             {title || l("Segment")}
           </span>
@@ -56,7 +68,7 @@ function RecordSegment({
           )}
         </span>
 
-        {/* RIGHT SIDE: "Visa/Dölj" + chevron, never shrink */}
+        {/* RIGHT SIDE: "Visa/Dölj" + chevron */}
         <span className="flex items-center gap-2 shrink-0">
           <span className="text-gray-500 shrink-0">
             {open ? (
@@ -73,6 +85,7 @@ function RecordSegment({
           </span>
         </span>
       </button>
+
       {open && (
         <div id={`seg-panel-${segId}`} className="lg:p-2 p-4 space-y-3">
           {mediaItems.map((mediaItem, i) => {
@@ -112,6 +125,9 @@ RecordSegment.propTypes = {
     color: PropTypes.string.isRequired,
     icon: PropTypes.any,
   }),
+  persons: PropTypes.array,
+  isOpen: PropTypes.bool,
+  onToggle: PropTypes.func,
 };
 
 export default RecordSegment;
