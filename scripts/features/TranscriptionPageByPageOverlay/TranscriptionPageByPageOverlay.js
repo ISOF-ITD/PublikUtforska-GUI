@@ -266,9 +266,6 @@ export default function TranscriptionPageByPageOverlay() {
       const startIdx = resolveStartIndex();
       setCurrentPageIndex(startIdx);
       requestAnimationFrame(() => scrollToActiveThumbnail(startIdx));
-
-      setShowMetaFields(t.transcriptionType === "uppteckningsblankett");
-
       start(t.id);
       setVisible(true);
     };
