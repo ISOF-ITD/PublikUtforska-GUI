@@ -23,7 +23,7 @@ const STRINGS = {
   lockedInfo:
     "Alla sidor är upptagna just nu. Testa en slumpmässig uppteckning!",
   noPagesInfo: "Den här uppteckningen saknar skannade sidor.",
-  tipStartFirstFree: "Tips: Öppna för att starta på första lediga sidan.",
+  tipStartFirstFree: "Tips: Tryck för att starta på den första otranskriberade sidan.",
   recordLabel: "Uppteckning",
 };
 
