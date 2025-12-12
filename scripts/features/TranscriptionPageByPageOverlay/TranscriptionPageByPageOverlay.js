@@ -54,6 +54,7 @@ export default function TranscriptionPageByPageOverlay() {
 
     // update central form state
     handleInputChange(e);
+
     // Define which fields are page-specific
     const pageLevelFields = [
       "messageInput",
@@ -61,6 +62,10 @@ export default function TranscriptionPageByPageOverlay() {
       "pagenumberInput",
       "foneticSignsInput",
       "unreadableInput",
+      "informantNameInput",
+      "informantBirthDateInput",
+      "informantBirthPlaceInput",
+      "informantInformationInput",
     ];
 
     if (!pageLevelFields.includes(name)) return;
@@ -78,6 +83,13 @@ export default function TranscriptionPageByPageOverlay() {
       else if (name === "pagenumberInput") updateObj.pagenumber = val;
       else if (name === "foneticSignsInput") updateObj.fonetic_signs = val;
       else if (name === "unreadableInput") updateObj.unreadable = val;
+      else if (name === "informantNameInput") updateObj.informantName = val;
+      else if (name === "informantBirthDateInput")
+        updateObj.informantBirthDate = val;
+      else if (name === "informantBirthPlaceInput")
+        updateObj.informantBirthPlace = val;
+      else if (name === "informantInformationInput")
+        updateObj.informantInformation = val;
 
       next[currentPageIndex] = {
         ...page,
@@ -124,6 +136,10 @@ export default function TranscriptionPageByPageOverlay() {
         pagenumber: fields.pagenumberInput,
         fonetic_signs: fields.foneticSignsInput,
         unreadable: fields.unreadableInput,
+        informantName: fields.informantNameInput,
+        informantBirthDate: fields.informantBirthDateInput,
+        informantBirthPlace: fields.informantBirthPlaceInput,
+        informantInformation: fields.informantInformationInput,
       };
       return next;
     });
@@ -134,6 +150,10 @@ export default function TranscriptionPageByPageOverlay() {
     fields.pagenumberInput,
     fields.foneticSignsInput,
     fields.unreadableInput,
+    fields.informantNameInput,
+    fields.informantBirthDateInput,
+    fields.informantBirthPlaceInput,
+    fields.informantInformationInput,
   ]);
 
   const navigatePages = useCallback(
@@ -228,6 +248,10 @@ export default function TranscriptionPageByPageOverlay() {
             pagenumber: calculatedPageNum,
             fonetic_signs: p.fonetic_signs || false,
             unreadable: p.unreadable || false,
+            informantName: p.informantName || "",
+            informantBirthDate: p.informantBirthDate || "",
+            informantBirthPlace: p.informantBirthPlace || "",
+            informantInformation: p.informantInformation || "",
           };
         });
 
@@ -303,14 +327,30 @@ export default function TranscriptionPageByPageOverlay() {
         page.transcriptionstatus !== "readytotranscribe") ||
       page.unsavedChanges;
 
-    setFields((prev) => ({
-      ...prev,
-      messageInput: shouldPrefill ? page.text || "" : "",
-      messageCommentInput: shouldPrefill ? page.comment || "" : "",
-      pagenumberInput: page.pagenumber || "",
-      foneticSignsInput: page.fonetic_signs || false,
-      unreadableInput: page.unreadable || false,
-    }));
+    const isFreshReadyPage =
+      page.transcriptionstatus === "readytotranscribe" && !page.unsavedChanges;
+
+    setFields((prev) => {
+      const next = {
+        ...prev,
+        messageInput: shouldPrefill ? page.text || "" : "",
+        messageCommentInput: shouldPrefill ? page.comment || "" : "",
+        pagenumberInput: page.pagenumber || "",
+        foneticSignsInput: page.fonetic_signs || false,
+        unreadableInput: page.unreadable || false,
+        informantNameInput: page.informantName || "",
+        informantBirthDateInput: page.informantBirthDate || "",
+        informantBirthPlaceInput: page.informantBirthPlace || "",
+        informantInformationInput: page.informantInformation || "",
+      };
+
+      if (isFreshReadyPage) {
+        next.nameInput = "";
+        next.emailInput = "";
+      }
+
+      return next;
+    });
 
     // Only scroll when we actually changed page
     if (prevPageIndexRef.current !== currentPageIndex) {
