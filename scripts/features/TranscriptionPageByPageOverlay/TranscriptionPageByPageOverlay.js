@@ -25,6 +25,8 @@ export default function TranscriptionPageByPageOverlay() {
   /* thumbnails need a ref to auto-scroll the active one into view */
   const thumbnailContainerRef = useRef(null);
 
+  const prevPageIndexRef = useRef(0);
+
   /* Centralised API + form handling */
   const { session, sending, start, cancel, send } = useTranscriptionApi();
   const {
@@ -310,7 +312,12 @@ export default function TranscriptionPageByPageOverlay() {
       foneticSignsInput: page.fonetic_signs || false,
       unreadableInput: page.unreadable || false,
     }));
-    requestAnimationFrame(() => scrollToActiveThumbnail(currentPageIndex));
+
+    // Only scroll when we actually changed page
+    if (prevPageIndexRef.current !== currentPageIndex) {
+      requestAnimationFrame(() => scrollToActiveThumbnail(currentPageIndex));
+      prevPageIndexRef.current = currentPageIndex;
+    }
   }, [currentPageIndex, pages, setFields]);
 
   const goToPreviousPage = () => {
