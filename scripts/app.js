@@ -70,7 +70,10 @@ function normalizeRecordId(recordId) {
 
   // Only treat as an "uppteckning suffix" if there are at least 2 underscores
   // and the last segment is all digits (the "_1", "_2", ... part).
-  if (parts.length > 2) {
+  // Only replace when id for outdated one_record starts with ifgh, vff, liu to avoid:
+  // Do not replace last part for ids that may be part of valid IDs, 
+  // for example: s03781:b_f_128340
+  if (parts.length > 2 && /^(ifgh|vff|liu)/.test(parts[0])) {
     const last = parts[parts.length - 1];
     if (/^\d+$/.test(last)) {
       return parts.slice(0, -1).join('_');
