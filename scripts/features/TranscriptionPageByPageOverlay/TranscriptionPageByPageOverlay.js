@@ -124,7 +124,6 @@ export default function TranscriptionPageByPageOverlay() {
         pagenumber: fields.pagenumberInput,
         fonetic_signs: fields.foneticSignsInput,
         unreadable: fields.unreadableInput,
-        unsavedChanges: false,
       };
       return next;
     });
