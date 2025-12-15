@@ -283,17 +283,12 @@ export default function MapMenu({
           {expanded ? l("Meny öppen") : l("Meny stängd")}
         </span>
       </div>
-      <div className="w-full bg-gray-300 text-center py-2 gap-2 rounded-sm">
-        <FontAwesomeIcon icon={faClock} /> {"   "}
-        Data uppdateras...
-      </div>
-      {/*<div
-        className="overflow-y-auto w-full min-w-0 max-w-full p-3 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white"
-      >
+
+      <div className="overflow-y-auto w-full min-w-0 max-w-full p-3 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white">
         <div>
           <StatisticsContainer />
 
-          <h3 className="!my-2">Senast avskrivna uppteckningar</h3>
+          {/* <h3 className="!my-2">Senast avskrivna uppteckningar</h3>
           <div>
             <RecordList
               key="latest-RecordList"
@@ -306,17 +301,17 @@ export default function MapMenu({
               params={latestParams}
               interval={60_000}
             />
-          </div>
-          </div>
-          */}
+          </div> */}
+        </div>
 
-      {activateIntroOverlay && (
-        <IntroOverlay
-          id="intro-overlay"
-          show={showIntroOverlay}
-          onClose={handleCloseOverlay}
-        />
-      )}
+        {activateIntroOverlay && (
+          <IntroOverlay
+            id="intro-overlay"
+            show={showIntroOverlay}
+            onClose={handleCloseOverlay}
+          />
+        )}
+      </div>
     </div>
   );
 }
