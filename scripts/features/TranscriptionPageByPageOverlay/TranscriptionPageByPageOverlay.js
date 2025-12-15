@@ -548,7 +548,7 @@ export default function TranscriptionPageByPageOverlay() {
               {currentPage && !isPdf && (
                 <ImageMap
                   image={`${config.imageUrl}${currentPage.source}`}
-                  height={380}
+                  height={450}
                 />
               )}
 

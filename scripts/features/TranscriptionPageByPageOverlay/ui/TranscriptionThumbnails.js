@@ -48,7 +48,7 @@ export default function TranscriptionThumbnails({
               <img
                 src={`${config.imageUrl}${page.source}`}
                 alt={`Miniatyr ${index + 1}`}
-                className="block w-24 object-cover"
+                className="block w-24 max-h-20 object-cover"
                 loading="lazy"
               />
             </div>
