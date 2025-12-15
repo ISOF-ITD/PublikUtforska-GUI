@@ -48,12 +48,12 @@ export default function TranscriptionThumbnails({
               <img
                 src={`${config.imageUrl}${page.source}`}
                 alt={`Miniatyr ${index + 1}`}
-                className="block w-36 object-cover"
+                className="block w-24 object-cover"
                 loading="lazy"
               />
             </div>
 
-            <div className="mt-2 text-center text-gray-600">
+            <div className="mt-1 text-center text-gray-600">
               {`${index + 1} av ${pages.length}`}
             </div>
           </div>

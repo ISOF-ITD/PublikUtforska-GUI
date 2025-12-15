@@ -164,26 +164,23 @@ export default function TranscriptionPageByPageOverlay() {
     [saveCurrentPageDraft]
   );
 
+  const leftScrollRef = useRef(null);
+  const rightScrollRef = useRef(null);
+
   useEffect(() => {
     setRecordDetails((prev) =>
       prev ? { ...prev, title: fields.titleInput || prev.title } : prev
     );
   }, [fields.titleInput]);
 
-  /* ------------------------------------------------------------ */
-  /* Scroll helper: ensure active thumbnail stays in view         */
-  /* ------------------------------------------------------------ */
-  const scrollToActiveThumbnail = (index) => {
-    const cont = thumbnailContainerRef.current;
-    if (!cont) return;
-    const el = cont.querySelector(`#thumb-${index}`);
-    if (!el) return;
-    el.scrollIntoView({
-      block: "nearest",
-      inline: "center",
-      behavior: "smooth",
-    });
-  };
+  useEffect(() => {
+    if (leftScrollRef.current) {
+      leftScrollRef.current.scrollTo({ top: 0, behavior: "instant" });
+    }
+    if (rightScrollRef.current) {
+      rightScrollRef.current.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [currentPageIndex]);
 
   const handleHideOverlay = useCallback(() => {
     if (pages.some((p) => p.unsavedChanges)) {
@@ -290,7 +287,6 @@ export default function TranscriptionPageByPageOverlay() {
 
       const startIdx = resolveStartIndex();
       setCurrentPageIndex(startIdx);
-      requestAnimationFrame(() => scrollToActiveThumbnail(startIdx));
       start(t.id);
       setVisible(true);
     };
@@ -310,7 +306,7 @@ export default function TranscriptionPageByPageOverlay() {
       );
       window.eventBus.removeEventListener("overlay.close", hideHandler);
     };
-  }, [start, handleHideOverlay, scrollToActiveThumbnail, setFields]);
+  }, [start, handleHideOverlay, setFields]);
 
   // whenever index changes, (re)hydrate the form from pages[index]
   useEffect(() => {
@@ -351,12 +347,6 @@ export default function TranscriptionPageByPageOverlay() {
 
       return next;
     });
-
-    // Only scroll when we actually changed page
-    if (prevPageIndexRef.current !== currentPageIndex) {
-      requestAnimationFrame(() => scrollToActiveThumbnail(currentPageIndex));
-      prevPageIndexRef.current = currentPageIndex;
-    }
   }, [currentPageIndex, pages, setFields]);
 
   const goToPreviousPage = () => {
@@ -481,8 +471,8 @@ export default function TranscriptionPageByPageOverlay() {
   const isPdf = currentPage?.source?.toLowerCase().endsWith(".pdf");
 
   return (
-    <div className="overlay-container visible transcription-page-by-page-overlay">
-      <div className="overlay-window large">
+    <div className="overlay-container overlay-container--transcription visible">
+      <div className="overlay-window large flex max-h-[100vh] flex-col">
         {/* ── header ────────────────────────────────────────── */}
         <div className="overlay-header">
           <OverlayHeader
@@ -500,7 +490,7 @@ export default function TranscriptionPageByPageOverlay() {
             onClick={handleHideOverlay}
             aria-label="Stäng"
           />
-          <div className="relative h-2">
+          <div className="relative h-2 max-sm:hidden">
             <TranscribeButton
               className="button button-primary absolute right-0 top-2"
               random
@@ -511,9 +501,16 @@ export default function TranscriptionPageByPageOverlay() {
         </div>
 
         {/* ── content ───────────────────────────────────────── */}
-        <div className="row">
+        <div
+          className="flex w-full flex-1 min-h-0 flex-col lg:flex-row items-stretch gap-4 
+        overflow-y-auto lg:overflow-y-hidden overflow-x-hidden"
+        >
           {/* -------- Left column: the form ---------- */}
-          <div className="four columns">
+          <div
+            ref={leftScrollRef}
+            className="order-2 lg:order-1 w-full lg:w-2/5 min-h-0 pr-0 lg:pr-2 lg:overflow-y-auto lg:max-h-full 
+          max-sm:mt-[520px]"
+          >
             <TranscriptionForm
               sending={sending}
               recordDetails={{
@@ -542,41 +539,54 @@ export default function TranscriptionPageByPageOverlay() {
           </div>
 
           {/* -------- Right column: image + nav ------ */}
-          <div className="eight columns">
-            {currentPage && !isPdf && (
-              <ImageMap image={`${config.imageUrl}${currentPage.source}`} />
-            )}
-            {currentPage && isPdf && (
-              <p>
-                Den här sidan är en PDF.{" "}
-                <a
-                  href={`${config.imageUrl}${currentPage.source}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Öppna i ny flik
-                </a>
-              </p>
-            )}
+          <div
+            ref={rightScrollRef}
+            className="order-1 lg:order-2 w-full lg:w-3/5 min-h-0 flex flex-col"
+          >
+            {/* Scrollable part: image + thumbnails */}
+            <div className="flex-1 lg:px-4 min-h-0 lg:overflow-y-auto">
+              {currentPage && !isPdf && (
+                <ImageMap
+                  image={`${config.imageUrl}${currentPage.source}`}
+                  height={380}
+                />
+              )}
 
-            <div className="row">
-              <NavigationPanel
-                currentPageIndex={currentPageIndex}
+              {currentPage && isPdf && (
+                <p>
+                  Den här sidan är en PDF{" "}
+                  <a
+                    href={`${config.imageUrl}${currentPage.source}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Öppna i ny flik
+                  </a>
+                </p>
+              )}
+
+              <TranscriptionThumbnails
+                thumbnailContainerRef={thumbnailContainerRef}
                 pages={pages}
-                goToPreviousPage={goToPreviousPage}
-                goToNextPage={goToNextPage}
-                goToNextTranscribePage={goToNextTranscribePage}
-              />
+                navigatePages={navigatePages}
+                currentPageIndex={currentPageIndex}
+              >
+                {thumbnails}
+              </TranscriptionThumbnails>
             </div>
 
-            <TranscriptionThumbnails
-              thumbnailContainerRef={thumbnailContainerRef}
-              pages={pages}
-              navigatePages={navigatePages}
-              currentPageIndex={currentPageIndex}
-            >
-              {thumbnails}
-            </TranscriptionThumbnails>
+            {/* Footer stays visible inside the overlay-window */}
+            <div className="border-t pt-2 bg-white/90 flex-shrink-0 max-sm:hidden">
+              <div className="flex w-full items-center">
+                <NavigationPanel
+                  currentPageIndex={currentPageIndex}
+                  pages={pages}
+                  goToPreviousPage={goToPreviousPage}
+                  goToNextPage={goToNextPage}
+                  goToNextTranscribePage={goToNextTranscribePage}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

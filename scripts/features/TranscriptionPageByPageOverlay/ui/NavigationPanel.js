@@ -7,7 +7,7 @@ import {
 
 const Btn = ({ children, ...props }) => (
   <button
-    className="inline-flex items-center gap-2 hover:cursor-pointer disabled:hover:cursor-not-allowed disabled:opacity-60"
+    className="inline-flex !mb-0 items-center gap-2 hover:cursor-pointer disabled:hover:cursor-not-allowed disabled:opacity-60"
     type="button"
     {...props}
   >

@@ -20,7 +20,7 @@ export default function ContributorInfoFields({
       {/* GDPR blurb */}
       <aside
         role="note"
-        className="text-sm leading-relaxed space-y-1 bg-isof/5 p-3 rounded flex flex-col gap-2"
+        className="text-sm leading-relaxed space-y-1 bg-isof/5 p-3 rounded flex flex-col gap-2 !sm:mb-12"
       >
         <span>
           {l(

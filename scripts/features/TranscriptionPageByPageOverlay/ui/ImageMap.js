@@ -134,7 +134,7 @@ export default function ImageMap({
   }, [image]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div ref={containerRef} className="mb-5 relative">
+    <div ref={containerRef} className="relative">
       {/* Map container */}
       <div
         ref={mapRef}

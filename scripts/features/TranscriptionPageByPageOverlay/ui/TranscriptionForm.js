@@ -93,20 +93,20 @@ export default function TranscriptionForm({
   const formValid = wordCount >= 2 && emailValid;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 min-w-0 max-w-full px-2 flex flex-col items-stretch">
       <div className="flex items-center justify-center w-full">
         <button
           type="button"
           onClick={onToggleMetaFields}
-          className="text-sm w-full flex items-center gap-2 !my-0"
+          className="text-sm w-full flex items-center gap-2 !m-0"
         >
           {showMetaFields ? (
-            <span className="w-full flex items-center justify-between">
+            <span className="w-full flex items-center lg:justify-between">
               {l("Dölj uppgifter om uppteckningen")}{" "}
               <FontAwesomeIcon className="text-lg" icon={faCircleChevronUp} />
             </span>
           ) : (
-            <span className="w-full flex items-center justify-between">
+            <span className="w-full flex items-center lg:justify-between">
               {l("Visa uppgifter om uppteckningen")}{" "}
               <FontAwesomeIcon className="text-lg" icon={faCircleChevronDown} />
             </span>
@@ -126,7 +126,7 @@ export default function TranscriptionForm({
 
       {/* 2) TEXT: always visible */}
       <fieldset
-        className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
+        className="space-y-2 bg-white shadow-sm rounded-lg p-3 border border-gray-200"
         disabled={disableInput}
       >
         {/* Only in state readytotranscribe */}
@@ -159,7 +159,7 @@ export default function TranscriptionForm({
           spellCheck="false"
           value={transcriptionText}
           onChange={inputChangeHandler}
-          className="w-full min-h-[18rem] max-h-96 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100"
+          className="w-full min-h-[14rem] max-h-80 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100"
         />
         <span className="text-sm text-gray-600 self-end" aria-live="polite">
           {wordCount} {l("ord")}
@@ -170,7 +170,7 @@ export default function TranscriptionForm({
       {/* Only in state readytotranscribe */}
       {isReadyToTranscribe && (
         <fieldset
-          className="space-y-3 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
+          className="space-y-3 bg-white shadow-sm rounded-lg p-3 border border-gray-200"
           disabled={disableInput}
         >
           <div className="flex flex-col">
@@ -213,7 +213,7 @@ export default function TranscriptionForm({
                 checked={!!unreadableInput}
                 onChange={inputChangeHandler}
               />
-              <span>Sidan är svårläst eller delvis oläslig</span>
+              <span>Sidan är svårläst eller delvis oläslig (###)</span>
             </label>
           </div>
         </fieldset>
@@ -222,7 +222,7 @@ export default function TranscriptionForm({
       {/* 3) Comment + contributor + send */}
       {(isReadyToTranscribe || isSent) && (
         <fieldset
-          className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"
+          className="space-y-6 bg-white shadow-sm rounded-lg p-5 border border-gray-200"
           disabled={disableInput}
         >
           <div>
@@ -243,7 +243,7 @@ export default function TranscriptionForm({
               spellCheck="false"
               value={comment}
               onChange={inputChangeHandler}
-              className={field + " h-40 resize-y"}
+              className={field + " h-20 resize-y"}
             />
             <span className="text-xs text-gray-500">
               {l(
