@@ -235,7 +235,6 @@ export default function RecordTextPanel({
 
       // If record is ready to be transcribed, show CTA
       if (
-        mediaItem.transcriptionstatus === "readytotranscribe" ||
         transcriptionstatus === "readytotranscribe"
       ) {
         return (
