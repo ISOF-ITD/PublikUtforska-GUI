@@ -17,11 +17,34 @@ const labels = {
   // readytocontribute: "Redo att bidra",
 };
 
+const DONE_PAGE_STATUSES = new Set([
+  "undertranscription",
+  "transcribed",
+  "reviewing",
+  "needsimprovement",
+  "approved",
+  "published",
+]);
+
+function countPageProgressFromMedia(media = []) {
+  const pages = (Array.isArray(media) ? media : []).filter(
+    (m) => m && m.type !== "pdf" // PDFs are not transcribable
+  );
+
+  const done = pages.reduce((acc, m) => {
+    const st = m?.transcriptionstatus;
+    return acc + (DONE_PAGE_STATUSES.has(st) ? 1 : 0);
+  }, 0);
+
+  return { total: pages.length, done };
+}
+
 export default function TranscriptionStatus({
   status,
   type,
   total,
   done,
+  media,
   pillClasses,
   transcriptiontype,
 }) {
@@ -46,44 +69,61 @@ export default function TranscriptionStatus({
   }
 
   /* ─────────────────────────────────────────────────────────────
-     RECORD-LEVEL pill for handwritten/text pages 
+     ACCESSION progress bar for scanned pages (derived from media[])
+     - excludes PDFs
   ───────────────────────────────────────────────────────────── */
-  if (status && status !== "accession" && status !== "accession" && status !== "readytocontribute" && status !== "readytotranscribe")  {
+  if (type === "accession" && transcriptiontype !== "audio") {
+    const fromMedia = countPageProgressFromMedia(media);
+    const pageTotal = total ?? fromMedia.total;
+    const pageDone = done ?? fromMedia.done;
+
+    if (pageTotal > 0) {
+      const safeTotal = Math.max(pageTotal, 1);
+      const clampedDone = Math.min(pageDone || 0, safeTotal);
+      const pct = Math.round((clampedDone / safeTotal) * 100);
+
+      const pageWord = pageTotal === 1 ? "sida" : "sidor";
+
+      return (
+        <div className="mr-2 space-y-1" role="group" aria-label={l("Förlopp")}>
+          <span className="text-xs break-words">
+            {`${clampedDone} av ${pageTotal} ${pageWord}`}
+          </span>
+
+          <div
+            className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-isof border-solid bg-white"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={safeTotal}
+            aria-valuenow={clampedDone}
+            aria-label={l("Avskrivna sidor")}
+            title={`${pct}%`}
+          >
+            <span
+              className={classNames(
+                "absolute inset-0 h-full bg-lighter-isof",
+                pct === 100 ? "rounded" : "rounded-l"
+              )}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+      );
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     RECORD-LEVEL pill (non-accession)
+  ───────────────────────────────────────────────────────────── */
+  if (status && status !== "accession" && status !== "readytocontribute") {
     return (
       <span
         className={`${
           status === "published" ? "bg-gray-300" : "!bg-lighter-isof"
         } ${pillClasses} text-center`}
       >
-        {labels[status]}
+        {labels[status] ?? status}
       </span>
-    );
-  }
-
-  /* ─────────────────────────────────────────────────────────────
-     ACCESSION progress bar for scanned pages 
-  ───────────────────────────────────────────────────────────── */
-  if (type === "accession" && total && transcriptiontype !== "audio") {
-    const safeTotal = total > 0 ? total : 1;
-    const pct = Math.round(((done || 0) / safeTotal) * 100);
-    return (
-      <div className="mr-2 space-y-1" role="group" aria-label={l("Förlopp")}>
-        <span className="text-sm">{`${done} av ${total}`}</span>
-        <div
-          className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-isof border-solid bg-white"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={safeTotal}
-          aria-valuenow={done || 0}
-          aria-label={l("Avskrivna sidor")}
-          title={`${pct}%`}
-        >
-          <span
-            className="absolute inset-0 h-full bg-lighter-isof rounded-l"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      </div>
     );
   }
 
@@ -95,6 +135,7 @@ TranscriptionStatus.propTypes = {
   type: PropTypes.string,
   total: PropTypes.number,
   done: PropTypes.number,
+  media: PropTypes.array,
   pillClasses: PropTypes.string.isRequired,
   transcriptiontype: PropTypes.string,
 };

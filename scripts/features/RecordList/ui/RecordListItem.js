@@ -465,19 +465,16 @@ export default function RecordListItem(props) {
           <TranscriptionStatus
             status={transcriptionstatus}
             type={recordtype === "one_accession_row" ? "accession" : "record"}
+            media={media} // progress is derived from media[] (excluding pdf)
             total={
               transcriptiontype === "audio" || descriptionCount > 0
                 ? descriptionCount
-                : transcriptiontype === "sida"
-                ? mediaCount
-                : count
+                : undefined
             }
             done={
               transcriptiontype === "audio" || descriptionCount > 0
                 ? descriptionCount
-                : transcriptiontype === "sida"
-                ? mediaCountDone
-                : countDone
+                : undefined
             }
             transcriptiontype={
               transcriptiontype === "audio" || descriptionCount > 0
