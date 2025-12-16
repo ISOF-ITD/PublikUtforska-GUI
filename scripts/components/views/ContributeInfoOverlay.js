@@ -1,3 +1,4 @@
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import React, {
   useCallback,
@@ -12,19 +13,13 @@ import { useLocation, Link } from "react-router-dom";
 import config from "../../config";
 import { l } from "../../lang/Lang";
 import { toastOk, toastError } from "../../utils/toast";
+import { IconButton } from "../IconButton";
 
 /**
  * Drop‑in modal with focus management, ESC + backdrop close,
  * scroll lock and createPortal. No external deps.
  */
-function Modal({
-  open,
-  onClose,
-  titleId,
-  descId,
-  children,
-  className,
-}) {
+function Modal({ open, onClose, titleId, descId, children, className }) {
   const dialogRef = useRef(null);
   const restoreFocusRef = useRef(null);
 
@@ -66,7 +61,9 @@ function Modal({
           node.querySelectorAll(
             'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'
           )
-        ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
+        ).filter(
+          (el) => !el.hasAttribute("disabled") && el.offsetParent !== null
+        );
         if (els.length === 0) return;
         const first = els[0];
         const last = els[els.length - 1];
@@ -100,7 +97,7 @@ function Modal({
       className={classNames(
         "overlay-container visible",
         "grid place-items-center fixed inset-0 p-4",
-        "bg-[rgba(0,0,0,.5)] backdrop-blur-[2px]",
+        "bg-[rgba(0,0,0,.5)] backdrop-blur-[2px]"
       )}
       onMouseDown={onBackdropClick}
       role="presentation"
@@ -241,7 +238,9 @@ export default function ContributeInfoOverlay() {
       recordid: ctx.id,
       message:
         `${ctx.type}: ${ctx.title}\n${location.pathname}\n\n` +
-        `Från: ${nameInput || l("Anonym")} (${emailInput || l("ingen e-post")})\n\n` +
+        `Från: ${nameInput || l("Anonym")} (${
+          emailInput || l("ingen e-post")
+        })\n\n` +
         `${messageInput}`,
     };
 
@@ -303,17 +302,21 @@ export default function ContributeInfoOverlay() {
   const headerDescId = descId;
 
   return (
-    <Modal open={open} onClose={close} titleId={headerTitleId} descId={headerDescId}>
+    <Modal
+      open={open}
+      onClose={close}
+      titleId={headerTitleId}
+      descId={headerDescId}
+    >
       <div className="overlay-header m-0 p-0">
         <div className="flex items-center justify-between !m-0 bg-center text-white font-bold text-[1.2rem] rounded-t-md">
           <h2 id={headerTitleId} className="m-0">
             {l("Vet du mer?")}
           </h2>
-          <button
-            className="close-button white"
-            type="button"
-            aria-label={l("stäng")}
-            title={l("stäng")}
+          <IconButton
+            icon={faXmark}
+            label={l("stäng")}
+            tone="light"
             onClick={close}
           />
         </div>
@@ -321,7 +324,7 @@ export default function ContributeInfoOverlay() {
 
       <form onSubmit={handleSubmit} noValidate className="">
         {/* Intro / description */}
-        <span id={headerDescId} >
+        <span id={headerDescId}>
           {config.siteOptions.contributeInfoText ||
             l(
               "Känner du till någon av personerna som nämns eller har mer sammanhang? " +
@@ -371,7 +374,10 @@ export default function ContributeInfoOverlay() {
           id={emailId}
           name="email"
           autoComplete="email"
-          className={classNames("u-full-width w-full", !emailValid && "invalid")}
+          className={classNames(
+            "u-full-width w-full",
+            !emailValid && "invalid"
+          )}
           type="email"
           value={emailInput}
           disabled={sending}
@@ -385,7 +391,11 @@ export default function ContributeInfoOverlay() {
         />
         <div className="min-h-[1.25rem]">
           {!emailValid && (
-            <span id={`${emailId}-help`} className="form-help error" aria-live="polite">
+            <span
+              id={`${emailId}-help`}
+              className="form-help error"
+              aria-live="polite"
+            >
               {l("Ogiltig e-postadress")}
             </span>
           )}
@@ -433,15 +443,27 @@ export default function ContributeInfoOverlay() {
 
         {/* Actions */}
         <div className="mt-2 flex w-full justify-end gap-2 items-center">
-          <button type="button" className="button-secondary" onClick={close} disabled={sending}>
+          <button
+            type="button"
+            className="button-secondary"
+            onClick={close}
+            disabled={sending}
+          >
             {l("Avbryt")}
           </button>
           <button
-            className={classNames("primary", !formValid && "hover:cursor-not-allowed")}
+            className={classNames(
+              "primary",
+              !formValid && "hover:cursor-not-allowed"
+            )}
             type="submit"
             disabled={!formValid || sending}
             aria-busy={sending || undefined}
-            title={!formValid ? l("Knappen aktiveras när du har skrivit minst två ord.") : undefined}
+            title={
+              !formValid
+                ? l("Knappen aktiveras när du har skrivit minst två ord.")
+                : undefined
+            }
           >
             {sending ? l("Skickar…") : l("Skicka")}
           </button>

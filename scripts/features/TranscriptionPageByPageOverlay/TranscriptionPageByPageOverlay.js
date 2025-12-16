@@ -10,6 +10,8 @@ import TranscribeButton from "./ui/TranscribeButton";
 import useTranscriptionApi from "./hooks/useTranscriptionApi";
 import useTranscriptionForm from "./hooks/useTranscriptionForm";
 import { toastOk } from "../../utils/toast";
+import { IconButton } from "../../components/IconButton";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 /* 
 TranscriptionPageByPageOverlay feature is handling the transcribe page-by-page use case for users. 
@@ -493,12 +495,12 @@ export default function TranscriptionPageByPageOverlay() {
             progressTotal={pages.length}
           />
           {/* Stäng-knapp */}
-          <button
-            type="button"
-            title="stäng"
-            className="close-button white"
+          <IconButton
+            icon={faXmark}
+            label={l("Stäng")}
+            tone="light"
             onClick={handleHideOverlay}
-            aria-label="Stäng"
+            className="absolute right-4 top-3"
           />
           <div className="relative h-2">
             <TranscribeButton
