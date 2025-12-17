@@ -72,7 +72,7 @@ export default function TranscriptionStatus({
      ACCESSION progress bar for scanned pages (derived from media[])
      - excludes PDFs
   ───────────────────────────────────────────────────────────── */
-  if (type === "accession" && transcriptiontype !== "audio") {
+  if (type === "accession" && transcriptiontype !== "audio" && status !== "readytocontribute" && transcriptiontype) {
     const fromMedia = countPageProgressFromMedia(media);
     const pageTotal = total ?? fromMedia.total;
     const pageDone = done ?? fromMedia.done;
