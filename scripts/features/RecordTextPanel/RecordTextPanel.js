@@ -347,20 +347,11 @@ export default function RecordTextPanel({
 
               {/* Highlight switch */}
               {hasHighlights && (
-                <div className="flex items-center gap-1">
-                  <FontAwesomeIcon
-                    icon={faHighlighter}
-                    className="text-xs"
-                    aria-hidden="true"
-                  />
-                  <HighlightSwitcher
-                    id={switchId}
-                    highlight={highlight}
-                    setHighlight={setHighlight}
-                    count={totalHits}
-                    ariaLabel={l("Markera träffar")}
-                  />
-                </div>
+                <HighlightSwitcher
+                  id={switchId}
+                  highlight={highlight}
+                  setHighlight={setHighlight}
+                />
               )}
             </div>
           </div>
