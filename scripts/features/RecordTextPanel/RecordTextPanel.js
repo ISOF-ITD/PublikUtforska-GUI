@@ -115,6 +115,14 @@ export default function RecordTextPanel({
     [media]
   );
 
+  // Calculate the offset of the first media that is of type image
+  // to adjust for skipped PDF media items when building text sides.
+  // This works because PDFs are always before images in the media array
+  const firstImageOffset = useMemo(
+    () => media.findIndex((item) => item?.type === "image"),
+    [media],
+  );
+
   // -------------- Segment grouping --------------
   /**
    * Build segments from data.segments (with start_media_id) or fallback to a single segment.
@@ -202,12 +210,13 @@ export default function RecordTextPanel({
   // -------------- Side (text) builder, now works with absolute index --------------
   const buildTextSide = useCallback(
     (mediaItem, absoluteIndex) => {
+      const adjustedAbsoluteIndex = absoluteIndex + firstImageOffset;
       // If page has text and isn't awaiting transcription, show HTML (with optional highlight)
       if (
         mediaItem.text &&
         mediaItem.transcriptionstatus !== "readytotranscribe"
       ) {
-        const key = String(absoluteIndex);
+        const key = String(adjustedAbsoluteIndex);
         const html =
           highlight && highlightedMediaTexts[key]
             ? highlightedMediaTexts[key]
@@ -217,9 +226,9 @@ export default function RecordTextPanel({
           <div className="space-y-2">
             <TranscribedText
               html={sanitizeHtml(html)}
-              expanded={!!expandedTextByIndex[absoluteIndex]}
-              onToggle={() => toggleExpanded(absoluteIndex)}
-              contentId={`page-by-page-text-${recordId}-${absoluteIndex}`}
+              expanded={!!expandedTextByIndex[adjustedAbsoluteIndex]}
+              onToggle={() => toggleExpanded(adjustedAbsoluteIndex)}
+              contentId={`page-by-page-text-${recordId}-${adjustedAbsoluteIndex}`}
             />
             {/* compact contributor under the text */}
             <PageContributor
@@ -253,7 +262,7 @@ export default function RecordTextPanel({
               transcriptionType={transcriptiontype}
               random={false}
               // tell the overlay which page to open
-              initialPageIndex={absoluteIndex}
+              initialPageIndex={adjustedAbsoluteIndex}
               initialPageSource={mediaItem.source}
             />
           </div>
