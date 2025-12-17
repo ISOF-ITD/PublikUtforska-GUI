@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { l } from '../../../lang/Lang';
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { useState, useEffect } from "react";
+import { IconButton } from "../../../components/IconButton";
+import { l } from "../../../lang/Lang";
 
 function TranscriptionHelpOverlay() {
   const [state, setState] = useState({
@@ -52,7 +54,13 @@ function TranscriptionHelpOverlay() {
         <p>Meddelande skickat. Tack.</p>
         <p>
           <br />
-          <button className="button-primary" onClick={closeButtonClickHandler}>Stäng</button>
+          <IconButton
+            icon={faXmark}
+            label={l("Stäng")}
+            tone="light"
+            onClick={closeButtonClickHandler}
+            className="absolute right-4 top-3"
+          />
         </p>
       </div>
     );
@@ -205,8 +213,14 @@ function TranscriptionHelpOverlay() {
     <div className={`overlay-container z-[3100] ${state.visible ? ' visible' : ''}`}>
       <div className="overlay-window">
         <div className="overlay-header">
-          {l('Instruktioner')}
-          <button title="stäng" className="close-button white" onClick={closeButtonClickHandler} type='button' />
+          {l("Instruktioner")}
+          <IconButton
+            icon={faXmark}
+            label={l("Stäng")}
+            tone="light"
+            onClick={closeButtonClickHandler}
+            className="absolute right-4 top-3"
+          />
         </div>
         {overlayContent}
       </div>
