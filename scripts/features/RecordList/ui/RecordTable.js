@@ -98,7 +98,7 @@ export default function RecordTable({
                   >
                     {sort === "transcriptionstatus" &&
                       (order === "asc" ? "▼" : "▲")}{" "}
-                    {l("Klara")}
+                    {l("Avskrivna")}
                   </a>
                 </th>
               )}
@@ -116,7 +116,7 @@ export default function RecordTable({
             <th>{l("Ort")}</th>
             <th>{l("Insamlare")}</th>
             <th>{l("År")}</th>
-            <th>{l("Klara")}</th>
+            <th>{l("Avskrivna")}</th>
           </tr>
           {items}
         </tbody>
