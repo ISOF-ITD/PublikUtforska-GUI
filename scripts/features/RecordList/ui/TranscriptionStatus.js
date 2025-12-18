@@ -57,7 +57,11 @@ export default function TranscriptionStatus({
 
     return (
       <span
-        className={classNames(bg,  pillClasses, "flex items-center gap-1 flex-nowrap")}
+        className={classNames(
+          bg,
+          pillClasses,
+          "flex items-center gap-1 flex-nowrap"
+        )}
         title={`${count} ${l("beskrivningar")}`}
         aria-label={`${count} ${l("beskrivningar")}`}
       >
@@ -72,7 +76,10 @@ export default function TranscriptionStatus({
      ACCESSION progress bar for scanned pages (derived from media[])
      - excludes PDFs
   ───────────────────────────────────────────────────────────── */
-  if (type === "accession" && transcriptiontype !== "audio" && status !== "readytocontribute" && transcriptiontype) {
+  if (
+    transcriptiontype !== "audio" &&
+    status !== "readytocontribute"
+  ) {
     const fromMedia = countPageProgressFromMedia(media);
     const pageTotal = total ?? fromMedia.total;
     const pageDone = done ?? fromMedia.done;
@@ -110,21 +117,6 @@ export default function TranscriptionStatus({
         </div>
       );
     }
-  }
-
-  /* ─────────────────────────────────────────────────────────────
-     RECORD-LEVEL pill (non-accession)
-  ───────────────────────────────────────────────────────────── */
-  if (status && status !== "accession" && status !== "readytocontribute") {
-    return (
-      <span
-        className={`${
-          status === "published" ? "bg-gray-300" : "!bg-lighter-isof"
-        } ${pillClasses} text-center`}
-      >
-        {labels[status] ?? status}
-      </span>
-    );
   }
 
   return <span className="transcriptionstatus empty" />;

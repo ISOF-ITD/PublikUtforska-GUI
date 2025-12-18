@@ -19,6 +19,7 @@ import { createSearchRoute } from "../../../utils/routeHelper";
 import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
+import { useMemo } from "react";
 
 export default function RecordListItem(props) {
   const {
@@ -143,6 +144,66 @@ export default function RecordListItem(props) {
   const recordHref = `${
     mode === "transcribe" ? "/transcribe" : ""
   }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
+
+  const mediaImages = useMemo(
+    () => media.filter((m) => m?.type === "image"),
+    [media]
+  );
+
+  const getPageNo = (m, idx) => {
+    const n = Number(m?.pagenumber);
+    if (Number.isFinite(n) && n > 0) return n;
+    return idx >= 0 ? idx + 1 : null; // <-- prevents 0 from idx === -1
+  };
+
+  const segmentPageRangesByStartMediaId = useMemo(() => {
+    if (!Array.isArray(segments) || segments.length === 0) return new Map();
+    if (!Array.isArray(mediaImages) || mediaImages.length === 0)
+      return new Map();
+
+    // Robust id lookup (handles number vs string mismatches)
+    const indexById = new Map(
+      mediaImages.map((img, i) => [String(img?.id), i])
+    );
+
+    const rawStarts = segments
+      .map((seg) => ({
+        startMediaId: seg.start_media_id,
+        startIndex: indexById.get(String(seg.start_media_id)) ?? -1,
+      }))
+      .filter((x) => x.startIndex >= 0)
+      .sort((a, b) => a.startIndex - b.startIndex);
+
+    // Optional: dedupe by startIndex (prevents endIndex going “backwards”)
+    const starts = rawStarts.filter(
+      (s, i) => i === 0 || s.startIndex !== rawStarts[i - 1].startIndex
+    );
+
+    const map = new Map();
+
+    starts.forEach((cur, i) => {
+      // find the next strictly-later start index
+      const nextStartIndex =
+        starts.slice(i + 1).find((s) => s.startIndex > cur.startIndex)
+          ?.startIndex ?? mediaImages.length;
+
+      const endIndex = Math.max(cur.startIndex, nextStartIndex - 1); // never < cur, never -1 if cur>=0
+
+      const from = getPageNo(mediaImages[cur.startIndex], cur.startIndex);
+      const to = getPageNo(mediaImages[endIndex], endIndex);
+
+      if (from != null && to != null) {
+        map.set(cur.startMediaId, { from, to });
+      }
+    });
+
+    return map;
+  }, [segments, mediaImages]);
+
+  const formatPageRange = (from, to) => {
+    if (!Number.isFinite(from) || !Number.isFinite(to)) return null;
+    return from === to ? `${l("Sida")} ${from}` : `${l("Sidor")} ${from}–${to}`;
+  };
 
   /* ---------- render ---------- */
   return (
@@ -326,52 +387,68 @@ export default function RecordListItem(props) {
                     }`}
                   >
                     <ul className="list-disc list-inside !space-y-0.5">
-                      {subrecords
-                        .sort((a, b) => {
-                          const pa = Number(a?._source?.archive?.page);
-                          const pb = Number(b?._source?.archive?.page);
-                          return (
-                            (isFinite(pa) ? pa : Infinity) -
-                            (isFinite(pb) ? pb : Infinity)
-                          );
-                        })
-                        .map((s, idx) => {
-                          const pub =
-                            s._source.transcriptionstatus === "published";
+                      {subrecords.sort(/* ... */).map((s, idx) => {
+                        const pub =
+                          s._source.transcriptionstatus === "published";
 
-                          const parentHref = `${
-                            mode === "transcribe" ? "/transcribe" : ""
-                          }/records/${id}`;
+                        const parentHref = `${
+                          mode === "transcribe" ? "/transcribe" : ""
+                        }/records/${id}`;
+                        const href =
+                          s._source.href ??
+                          (s._source.media_id
+                            ? `${parentHref}?media=${s._source.media_id}`
+                            : parentHref);
 
-                          const href =
-                            s._source.href ??
-                            (s._source.media_id
-                              ? `${parentHref}?media=${s._source.media_id}`
-                              : parentHref);
+                        // compute range ONCE (so it can be used for both page label + fallback title)
+                        const startMediaId =
+                          s?._source?.start_media_id ??
+                          s?._source?.media_id ??
+                          s?._source?.media?.find((m) => m?.type === "image")
+                            ?.id;
 
-                          return (
-                            <li key={s._source.id || idx}>
-                              <small>
-                                <Link
-                                  to={href}
-                                  className={`${
-                                    pub ? "font-semibold" : ""
-                                  } hover:underline text-isof`}
-                                >
-                                  {transcriptiontype !== "audio" &&
-                                    s._source.archive?.page && (
-                                      <>Sida {s._source.archive.page - 1}. </>
-                                    )}
-                                  <span
-                                    dangerouslySetInnerHTML={{
-                                      __html: s._source.title || "",
-                                    }}
-                                  />
-                                </Link>
-                              </small>
-                            </li>
-                          );
-                        })}
+                        const range = startMediaId
+                          ? segmentPageRangesByStartMediaId.get(startMediaId)
+                          : null;
+
+                        const pageLabel =
+                          range?.from != null
+                            ? formatPageRange(range.from, range.to)
+                            : s?._source?.archive?.page
+                            ? `${l("Sida")} ${s._source.archive.page}`
+                            : null;
+
+                        const isPlural =
+                          Number.isFinite(range?.from) &&
+                          Number.isFinite(range?.to) &&
+                          range.from !== range.to;
+
+                        const titleHtml =
+                          s._source.title ??
+                          (isPlural ? "Ej avskrivna" : "Ej avskriven");
+
+                        return (
+                          <li key={s._source.id || idx}>
+                            <small>
+                              <Link
+                                to={href}
+                                className={`${
+                                  pub ? "font-semibold" : ""
+                                } hover:underline text-isof`}
+                              >
+                                {transcriptiontype !== "audio" && pageLabel ? (
+                                  <>{pageLabel}. </>
+                                ) : null}
+                                <span
+                                  dangerouslySetInnerHTML={{
+                                    __html: titleHtml,
+                                  }}
+                                />
+                              </Link>
+                            </small>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
 
