@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useId } from "react";
+import { useCallback, useMemo, useState, useId, useEffect } from "react";
 import Uppteckningsblankett from "./Uppteckningsblankett";
 import { l } from "../../../lang/Lang";
 import ContributorInfoFields from "./ContributorInfoFields";
@@ -7,6 +7,7 @@ import {
   faCircleChevronDown,
   faCircleChevronUp,
   faInfoCircle,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 const field =
@@ -49,6 +50,26 @@ export default function TranscriptionForm({
   const disableInput = page.transcriptionstatus !== "readytotranscribe";
   const isSent = !!page.isSent;
   const isReadyToTranscribe = page.transcriptionstatus === "readytotranscribe";
+
+  const SNABBGUIDE_KEY = "transcription.snabbguide.dismissed.v1";
+  const [showSnabbguide, setShowSnabbguide] = useState(false);
+
+  useEffect(() => {
+    if (!isReadyToTranscribe) return;
+    try {
+      const dismissed = localStorage.getItem(SNABBGUIDE_KEY) === "1";
+      setShowSnabbguide(!dismissed);
+    } catch {
+      setShowSnabbguide(true); // if localStorage is blocked
+    }
+  }, [isReadyToTranscribe]);
+
+  const dismissSnabbguide = () => {
+    setShowSnabbguide(false);
+    try {
+      localStorage.setItem(SNABBGUIDE_KEY, "1");
+    } catch {}
+  };
 
   const sendButtonLabel = isSent
     ? l("Sidan har skickats")
@@ -130,8 +151,16 @@ export default function TranscriptionForm({
         disabled={disableInput}
       >
         {/* Only in state readytotranscribe */}
-        {isReadyToTranscribe && (
-          <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
+        {isReadyToTranscribe && showSnabbguide && (
+          <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2 relative">
+            <a
+              type="button"
+              onClick={dismissSnabbguide}
+              className="absolute right-2 top-2 !p-1 rounded hover:bg-black/5 hover:cursor-pointer"
+              aria-label={l("Stäng snabbguide")}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </a>
             <strong className="flex items-center mb-1 gap-2">
               <FontAwesomeIcon icon={faInfoCircle} />
               {l("Snabbguide (se även gärna instruktionerna ovanför)")}
