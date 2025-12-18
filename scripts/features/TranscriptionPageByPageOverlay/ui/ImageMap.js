@@ -20,6 +20,21 @@ export default function ImageMap({
   const [error, setError] = useState(null);
   const lastBoundsRef = useRef(null);
 
+  const fitToBounds = (bounds) => {
+    const map = mapInstance.current;
+    if (!map) return;
+
+    // Make sure Leaflet measures the real container size
+    map.invalidateSize({ pan: false });
+
+    // "Contain" behavior: biggest zoom that still shows whole image
+    map.fitBounds(bounds, {
+      animate: false,
+      padding: [8, 8], // tweak or set [0,0] for tighter fit
+      maxZoom, // respect prop
+    });
+  };
+
   const applyImageToMap = (img) => {
     const bounds = latLngBounds([
       [0, 0],
@@ -39,7 +54,10 @@ export default function ImageMap({
     // Keep users inside the image and fit it nicely
     mapInstance.current.setMaxBounds(bounds.pad(0.1));
     if (fitOnImageChange || !mapInstance.current._loadedOnce) {
-      mapInstance.current.fitBounds(bounds, { animate: false });
+      // Defer 1–2 frames so layout is settled (especially in modals/tabs)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => fitToBounds(bounds));
+      });
       mapInstance.current._loadedOnce = true;
     }
   };
@@ -76,7 +94,7 @@ export default function ImageMap({
       wheelDebounceTime: 40,
       wheelPxPerZoomLevel: 100,
       scrollWheelZoom: true,
-      zoomSnap: 0.25, // allow zoom levels like 0, 0.25, 0.5, 0.75, 1, etc
+      zoomSnap: 0.1, // allow zoom levels like 0, 0.25, 0.5, 0.75, 1, etc
       zoomDelta: 0.25,
     });
 
