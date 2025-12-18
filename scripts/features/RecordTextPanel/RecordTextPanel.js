@@ -115,6 +115,14 @@ export default function RecordTextPanel({
     [media]
   );
 
+  // Calculate the offset of the first media that is of type image
+  // to adjust for skipped PDF media items when building text sides.
+  // This works because PDFs are always before images in the media array
+  const firstImageOffset = useMemo(
+    () => media.findIndex((item) => item?.type === "image"),
+    [media],
+  );
+
   // -------------- Segment grouping --------------
   /**
    * Build segments from data.segments (with start_media_id) or fallback to a single segment.
@@ -202,12 +210,13 @@ export default function RecordTextPanel({
   // -------------- Side (text) builder, now works with absolute index --------------
   const buildTextSide = useCallback(
     (mediaItem, absoluteIndex) => {
+      const adjustedAbsoluteIndex = absoluteIndex + firstImageOffset;
       // If page has text and isn't awaiting transcription, show HTML (with optional highlight)
       if (
         mediaItem.text &&
         mediaItem.transcriptionstatus !== "readytotranscribe"
       ) {
-        const key = String(absoluteIndex);
+        const key = String(adjustedAbsoluteIndex);
         const html =
           highlight && highlightedMediaTexts[key]
             ? highlightedMediaTexts[key]
@@ -217,9 +226,9 @@ export default function RecordTextPanel({
           <div className="space-y-2">
             <TranscribedText
               html={sanitizeHtml(html)}
-              expanded={!!expandedTextByIndex[absoluteIndex]}
-              onToggle={() => toggleExpanded(absoluteIndex)}
-              contentId={`page-by-page-text-${recordId}-${absoluteIndex}`}
+              expanded={!!expandedTextByIndex[adjustedAbsoluteIndex]}
+              onToggle={() => toggleExpanded(adjustedAbsoluteIndex)}
+              contentId={`page-by-page-text-${recordId}-${adjustedAbsoluteIndex}`}
             />
             {/* compact contributor under the text */}
             <PageContributor
@@ -235,7 +244,6 @@ export default function RecordTextPanel({
 
       // If record is ready to be transcribed, show CTA
       if (
-        mediaItem.transcriptionstatus === "readytotranscribe" ||
         transcriptionstatus === "readytotranscribe"
       ) {
         return (
@@ -254,7 +262,7 @@ export default function RecordTextPanel({
               transcriptionType={transcriptiontype}
               random={false}
               // tell the overlay which page to open
-              initialPageIndex={absoluteIndex}
+              initialPageIndex={adjustedAbsoluteIndex}
               initialPageSource={mediaItem.source}
             />
           </div>
@@ -294,7 +302,7 @@ export default function RecordTextPanel({
         {/* Header */}
         <header className="mb-1 px-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {segments && <h2 id={headingId}>{l("Text och bild")}</h2>}
+            {segments.length > 0 && <h2 id={headingId}>{l("Text och bild")}</h2>}
 
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
               {/* Segment controls */}
@@ -348,20 +356,11 @@ export default function RecordTextPanel({
 
               {/* Highlight switch */}
               {hasHighlights && (
-                <div className="flex items-center gap-1">
-                  <FontAwesomeIcon
-                    icon={faHighlighter}
-                    className="text-xs"
-                    aria-hidden="true"
-                  />
-                  <HighlightSwitcher
-                    id={switchId}
-                    highlight={highlight}
-                    setHighlight={setHighlight}
-                    count={totalHits}
-                    ariaLabel={l("Markera träffar")}
-                  />
-                </div>
+                <HighlightSwitcher
+                  id={switchId}
+                  highlight={highlight}
+                  setHighlight={setHighlight}
+                />
               )}
             </div>
           </div>
@@ -423,7 +422,7 @@ export default function RecordTextPanel({
   return (
     <section aria-labelledby={headingId} className="space-y-3">
       <header className="flex items-center justify-between mb-1 px-4">
-        {segments && (
+        {segments.length > 0 && (
           <h2 id={headingId} className="mr-4">
             {l("Text och bild")}
           </h2>

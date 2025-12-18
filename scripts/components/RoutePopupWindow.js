@@ -7,6 +7,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { l } from '../lang/Lang';
 import { NavigationContext } from '../NavigationContext';
 import { removeViewParamsFromRoute } from '../utils/routeHelper';
+import { IconButton } from './IconButton';
+import { faArrowLeft, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 // Main CSS: ui-components/popupwindow.less
 
@@ -121,35 +123,38 @@ const RoutePopupWindow = memo(({
   if (windowOpen || manualOpen) {
     return (
       <div
-        className={`popup-wrapper${windowOpen || manualOpen ? ' visible' : ''}`}
+        className={`popup-wrapper${windowOpen || manualOpen ? " visible" : ""}`}
       >
-        {/* eslint-disable jsx-a11y/click-events-have-key-events */ }
+        {/* eslint-disable jsx-a11y/click-events-have-key-events */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           className="popup-content-wrapper"
           // klick utanför page content stänger popup
-          onClick={(e) => { if (e.target.classList?.contains('popup-content-wrapper')) { closeButtonClick(); }}}
+          onClick={(e) => {
+            if (e.target.classList?.contains("popup-content-wrapper")) {
+              closeButtonClick();
+            }
+          }}
         >
           <div className="page-content">
-            <button
-              type="button"
-              tabIndex={0}
-              aria-label="Close"
-              title={l('Stäng')}
-              className={`close-button${closeButtonStyle === 'dark' ? '' : ' white'}`}
+            <IconButton
+              icon={faXmark}
+              label={l("Stäng")}
+              tone={closeButtonStyle === "dark" ? "dark" : "light"}
               onClick={closeButtonClick}
-              onKeyUp={closeButtonKeyUp}
+              className="absolute top-8 right-8"
             />
-            {shouldShowBackButton && !(children.props.manuallyOpenPopup || manuallyOpenPopup) && (
-              <button
-                type="button"
-                aria-label="Back"
-                title={l('Gå tillbaka')}
-                className="back-button white"
-                onClick={backButtonClick}
-                onKeyUp={backButtonKeyUp}
-              />
-            )}
+
+            {shouldShowBackButton &&
+              !(children.props.manuallyOpenPopup || manuallyOpenPopup) && (
+                <IconButton
+                  icon={faArrowLeft}
+                  label={l("Gå tillbaka")}
+                  tone="light"
+                  onClick={backButtonClick}
+                  className="absolute top-8 right-20"
+                />
+              )}
             {children}
           </div>
         </div>

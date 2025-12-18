@@ -1,5 +1,8 @@
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect, useCallback } from 'react';
 import config from '../../config';
+import { l } from '../../lang/Lang';
+import { IconButton } from '../IconButton';
 
 function HelpTextOverlay() {
   const [visible, setVisible] = useState(false);
@@ -36,16 +39,16 @@ function HelpTextOverlay() {
   const overlayTitle = config.siteOptions.helpTexts[kind].title;
 
   return (
-    <div className={`overlay-container z-[3100] ${visible ? ' visible' : ''}`}>
+    <div className={`overlay-container z-[3100] ${visible ? " visible" : ""}`}>
       <div className="overlay-window">
         <div className="overlay-header">
           {overlayTitle}
-          <button
-            type="button"
-            title="Stäng"
-            aria-label="Stäng overlay"
-            className="close-button white"
+          <IconButton
+            icon={faXmark}
+            label={l("Stäng")}
+            tone="light"
             onClick={closeButtonClickHandler}
+            className="absolute right-4 top-3"
           />
         </div>
         <div dangerouslySetInnerHTML={{ __html: overlayContent }} />

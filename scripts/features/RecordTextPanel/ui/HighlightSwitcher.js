@@ -1,16 +1,21 @@
 /* eslint-disable react/prop-types */
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHighlighter } from "@fortawesome/free-solid-svg-icons";
 
 export default function HighlightSwitcher({ highlight, setHighlight, id = 'highlight' }) {
   return (
-    <label htmlFor={id}>
+    <label htmlFor={id} className="flex items-center gap-1">
       <input
         type="checkbox"
         id={id}
         checked={highlight}
         onChange={() => setHighlight(!highlight)}
       />
-      <span className='ml-3 select-none'>Markera träffar</span>
+      <span className="flex items-center gap-1">
+        <FontAwesomeIcon icon={faHighlighter} aria-hidden="true" />
+        <span className="select-none">Markera träffar</span>
+      </span>
     </label>
 
   );

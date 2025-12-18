@@ -52,29 +52,6 @@
     .transform(translate(-50%, -50%));
   }
 
-  > .close-button {
-    position: fixed;
-
-    top: 30px;
-    right: 50px;
-
-    @media (max-width: 750px) {
-      position: fixed;
-
-      top: 15px;
-      right: 15px;
-
-      width: 30px;
-      height: 30px;
-
-      background: rgba(0, 0, 0, 0.45);
-
-      border: 5px solid rgba(0, 0, 0, 0);
-      border-radius: 0;
-      box-sizing: border-box;
-    }
-  }
-
   .overlay-window {
     position: relative;
     pointer-events: auto;
@@ -140,13 +117,6 @@
       margin-left: 0;
     }
 
-    .close-button {
-      position: absolute;
-
-      top: 20px;
-      right: 20px;
-    }
-
     h2,
     h3 {
       display: block;
@@ -199,13 +169,6 @@
           padding-top: 31px;
           font-size: 1rem;
           font-weight: normal;
-        }
-
-        .close-button {
-          margin-bottom: 0;
-          position: relative;
-          right: auto;
-          top: auto;
         }
 
         // För att lägga till mer specifik layout om det behövs

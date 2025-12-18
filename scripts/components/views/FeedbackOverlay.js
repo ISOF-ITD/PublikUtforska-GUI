@@ -1,7 +1,9 @@
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
+import { IconButton } from '../IconButton';
 
 // Main CSS: ui-components/overlay.less
 
@@ -155,11 +157,17 @@ export default function FeedbackOverlay() {
   }
 
   return (
-    <div className={`overlay-container !z-[4100] ${visible ? ' visible' : ''}`}>
+    <div className={`overlay-container !z-[4100] ${visible ? " visible" : ""}`}>
       <div className="overlay-window">
         <div className="overlay-header">
-          {l('Frågor och synpunkter')}
-          <button title="stäng" className="close-button white" type="button" onClick={closeButtonClickHandler} />
+          {l("Frågor och synpunkter")}
+          <IconButton
+            icon={faXmark}
+            label={l("Stäng")}
+            tone="light"
+            onClick={closeButtonClickHandler}
+            className="absolute right-4 top-3"
+          />
         </div>
         {overlayContent}
       </div>
