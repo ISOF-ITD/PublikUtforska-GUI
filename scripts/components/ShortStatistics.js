@@ -40,13 +40,16 @@ export default function ShortStatistics({
       const queryParams = { ...config.requiredParams, ...params };
       const paramString = new URLSearchParams(queryParams).toString();
 
-      const res = await fetch(`${config.apiUrl}count?${paramString}`, {
+      const res = await fetch(`${config.apiUrl}media_count?${paramString}`, {
         signal: controller.signal,
       });
       if (!res.ok) throw new Error(l("Fel vid hämtning av statistik"));
 
       const json = await res.json();
-      const v = Number(json?.data?.value ?? 0);
+      let v = Number(json?.data?.value ?? 0);
+      if (label.toLowerCase().includes("bidragsgivare")) {
+        v = Number(json?.data?.aggresult?.value ?? 0);
+      }
       compareAndUpdateStat?.(v);
       setValue(v);
       setError("");

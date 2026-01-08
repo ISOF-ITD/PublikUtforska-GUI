@@ -67,7 +67,7 @@ export default function StatisticsContainer() {
 
   // memoize param objects to avoid needless re-renders
   const base = useMemo(
-    () => ({ transcriptionstatus: "published" }),
+    () => ({ media_transcriptionstatus: "published" }),
     []
   );
   const monthRange = "transcriptiondate,now/M,now+2h";
@@ -77,7 +77,7 @@ export default function StatisticsContainer() {
   const pMonthPages = useMemo(
     () => ({
       ...base,
-      range: monthRange,
+      mediarange: monthRange,
       aggregation: "sum,archive.total_pages",
     }),
     [base]
@@ -100,7 +100,7 @@ export default function StatisticsContainer() {
       <ShortStatistics
         params={{
           ...base,
-          range: monthRange,
+          mediarange: monthRange,
           aggregation: "cardinality,transcribedby.keyword",
         }}
         label={`bidragsgivare i ${monthOrFallback}`}
@@ -114,7 +114,7 @@ export default function StatisticsContainer() {
       />
 
       <StatisticsList
-        params={{ ...base, range: monthRange }}
+        params={{ ...base, mediarange: monthRange }}
         type="topTranscribersByPages"
         label={`Topplista bidragsgivare i ${monthOrFallback}`}
         shouldFetch={dataChanged}
