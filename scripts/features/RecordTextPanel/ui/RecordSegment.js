@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { StatusIndicator } from "./TranscriptionStatusIndicator";
 import SegmentPersons from "./SegmentPersons";
+import { getSegmentTitle } from "../../../utils/helpers";
 
 function RecordSegment({
   title,
@@ -58,7 +59,7 @@ function RecordSegment({
           )}
 
           <span className="font-medium truncate max-w-full">
-            {title || l("Segment")}
+            {getSegmentTitle(mediaItems) || l("Segment")}
           </span>
 
           {persons.length > 0 && (

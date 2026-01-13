@@ -169,6 +169,54 @@ export function removeUnderscoresBeforeFirstNumber(input = ''){
   return input.replace(/^([^0-9]*)_+/g, '$1');
 }
 
+export function getSegmentTitle(mediaItems) {
+  /* Funktion för att skapa titel för segment
+  Input: mediaItems (array av mediaItem objekt som hör till segmentet)
+
+  Regler:
+  1. Sida X eller Sidor X-Y (från pagenumber eller source) för första och sista mediaitem
+  2. Titel från första mediaitem (om finns)
+  3. Om transcriptionstatus = readytotranscribe lägg till "kan skrivas av"
+  */
+  if (!mediaItems || mediaItems.length === 0) return '';
+
+  let title = '';
+  let startpage = '';
+  let endpage = '';
+  if (mediaItems[0].pagenumber && mediaItems[0].pagenumber.trim()) {
+    startpage = mediaItems[0].pagenumber.trim();
+  }
+  if (startpage === '') {
+    if (mediaItems[0].source) {
+      startpage = String(
+        parseInt(mediaItems[0].source.split("_").pop().split(".")[0], 10)
+      );
+    }
+  }
+  if (mediaItems[mediaItems.length - 1].pagenumber && mediaItems[mediaItems.length - 1].pagenumber.trim()) {
+    endpage = mediaItems[0].pagenumber.trim();
+  }
+  if (endpage === '') {
+    if (mediaItems[mediaItems.length - 1].source) {
+      endpage = String(
+        parseInt(mediaItems[mediaItems.length - 1].source.split("_").pop().split(".")[0], 10)
+      );
+    }
+  }
+  if (mediaItems.length === 1) {
+    title = `Sida ${startpage}`;
+  } else {
+    title = `Sidor ${startpage}-${endpage}`;
+  }
+  if (mediaItems[0].title && mediaItems[0].title.trim()) {
+    title += (mediaItems[0].title ? ` ${mediaItems[0].title}` : '');
+  }
+  if (mediaItems[0].transcriptionstatus && mediaItems[0].transcriptionstatus === 'readytotranscribe') {
+    title = title + ' kan skrivas av';
+  }
+  return title;
+}
+
 /* Funktion för att skapa titel för ljudfil
 
 Mediafil Titel
