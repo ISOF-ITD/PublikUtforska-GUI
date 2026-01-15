@@ -208,9 +208,11 @@ The layers Widgets, here called components, and features are used but not pages.
 The features have only one slice (or are without slices)
 
 Each feature have segments, mainly:
-hooks: logic, mostly written as custom React hooks
-ui: presentation, mostly jsx
-utils (sometimes): helper functions
+- hooks: logic, mostly written as custom React hooks
+- ui: presentation, mostly jsx
+- utils (sometimes): helper functions not using any React hook
+
+If too many lines (500): Refactoring to new file in suitable folder (hooks, ui, utils)
 
 ### Example of components and feature with the reasoning behind
 
