@@ -179,7 +179,7 @@ We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
 * **New or rewritten components must use Tailwind** utility classes.
 * Old `.less` files stay only until their component is migrated.
 * There are a lot of old LESS styles that directly apply CSS rules to all HTML elements of one type (for example, all <button> elements), which can result in unpredictable behaviour, since they take precedence over Tailwind styles, for now. This is an anti-pattern and should be addressed in the future.
-** Due to the fact that general less classes have compotibility issues with tailwind-css v 4 this application uses Tailwind 3.4 instead
+   * Due to the fact that general less classes have compotibility issues with tailwind-css v 4 this application uses Tailwind 3.4 instead
 * Tailwind JIT is configured in `tailwind.config.js`; just run `npm run start` as usual.
 * For conditional or dynamic styling, compose your Tailwind classes with the **classnames** utility (e.g. classnames('p-4', isActive && 'bg-blue-500')) instead of manual string concatenation.
 * For lightweight, non-blocking notifications, use **react-hot-toast** utility via our `toastOk()` / `toastError()` helpers in utils/toast.js (see Toast.js's own documentation for styling/use cases).
