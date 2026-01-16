@@ -185,6 +185,8 @@ We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
 * For lightweight, non-blocking notifications, use **react-hot-toast** utility via our `toastOk()` / `toastError()` helpers in utils/toast.js (see Toast.js's own documentation for styling/use cases).
 * Set z-index by tailwind. Example: z-[23]
 Folke uses custom z-index values with tailwind and not tailwind built-in values, as Folkes z-index values are higher
+* To override old less styles use !-sign before class name like: !mt-2
+* VS Code plugin: Tailwind CSS intellisense
 
 ### Popups (modals)
 
