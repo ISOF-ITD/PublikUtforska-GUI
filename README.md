@@ -179,11 +179,14 @@ We are **gradually replacing legacy LESS** with **Tailwind CSS v 3.4**.
 * **New or rewritten components must use Tailwind** utility classes.
 * Old `.less` files stay only until their component is migrated.
 * There are a lot of old LESS styles that directly apply CSS rules to all HTML elements of one type (for example, all <button> elements), which can result in unpredictable behaviour, since they take precedence over Tailwind styles, for now. This is an anti-pattern and should be addressed in the future.
+   * Due to the fact that general less classes have compotibility issues with tailwind-css v 4 this application uses Tailwind 3.4 instead
 * Tailwind JIT is configured in `tailwind.config.js`; just run `npm run start` as usual.
 * For conditional or dynamic styling, compose your Tailwind classes with the **classnames** utility (e.g. classnames('p-4', isActive && 'bg-blue-500')) instead of manual string concatenation.
 * For lightweight, non-blocking notifications, use **react-hot-toast** utility via our `toastOk()` / `toastError()` helpers in utils/toast.js (see Toast.js's own documentation for styling/use cases).
 * Set z-index by tailwind. Example: z-[23]
 Folke uses custom z-index values with tailwind and not tailwind built-in values, as Folkes z-index values are higher
+* To override old less styles use !-sign before class name like: !mt-2
+* VS Code plugin: Tailwind CSS intellisense
 
 ### Popups (modals)
 
@@ -208,9 +211,11 @@ The layers Widgets, here called components, and features are used but not pages.
 The features have only one slice (or are without slices)
 
 Each feature have segments, mainly:
-hooks: logic, mostly written as custom React hooks
-ui: presentation, mostly jsx
-utils (sometimes): helper functions
+- hooks: logic, mostly written as custom React hooks
+- ui: presentation, mostly jsx
+- utils (sometimes): helper functions not using any React hook
+
+If too many lines (500): Refactoring to new file in suitable folder (hooks, ui, utils)
 
 ### Example of components and feature with the reasoning behind
 
