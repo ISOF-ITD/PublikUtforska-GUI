@@ -76,6 +76,7 @@ export default function CorrectionEditor({
   const {
     utterances,
     setUtterances,
+    metadata,
     filterState,
     searchState,
     visibleUtterances,
@@ -224,6 +225,7 @@ export default function CorrectionEditor({
     }),
     [
       visibleUtterances,
+      metadata,
       editingId,
       editedText,
       isPlaying,
@@ -259,6 +261,7 @@ export default function CorrectionEditor({
         searchState={searchState}
         searchHits={searchHits}
         visibleUtterances={visibleUtterances}
+        metadata={metadata}
         followActive={followActive}
         setFollowActive={setFollowActive}
         onSearchPrev={() => goToMatch(-1)}

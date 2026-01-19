@@ -27,6 +27,12 @@ export default function useUtterances(audioItem, activeId) {
     }));
   }, [audioItem]);
 
+  // pull utterances-metadata from the media item
+  const metadata = useMemo(
+    () => audioItem?.utterances?.metadata ?? null,
+    [audioItem]
+  );
+
   const [utterances, setUtterances] = useState(buildUtterances);
   useEffect(() => setUtterances(buildUtterances()), [buildUtterances]);
 
@@ -123,6 +129,7 @@ export default function useUtterances(audioItem, activeId) {
   return {
     utterances,
     setUtterances,
+    metadata, // expose media.utterances.metadata here
     filterState: { filter, setFilter },
     searchState: {
       queryRaw,

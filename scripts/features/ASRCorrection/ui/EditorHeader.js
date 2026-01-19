@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -21,6 +22,7 @@ export default function EditorHeader({
   filterState,
   searchState,
   visibleUtterances,
+  metadata,
   searchHits,
   followActive,
   setFollowActive,
@@ -44,10 +46,11 @@ export default function EditorHeader({
           {audioTitle || "Transkribering"}
         </h1>
 
-        {showAutoWarning && (
+        {/* Do not show automatic generated text warning for manual transcriptions (OCR-aligned content) */}
+        {showAutoWarning && !metadata?.process[0]?.type.includes("ocr") && (
           <p className="flex items-center gap-2 text-orange-600">
             <FontAwesomeIcon icon={faInfoCircle} />
-            OBS! Automat­genererad text – kan innehålla fel
+            {l('OBS! Automat­genererad text – kan innehålla fel')}
           </p>
         )}
       </section>
@@ -302,3 +305,58 @@ function TextActions({ visibleUtterances, audioTitle }) {
     </div>
   );
 }
+
+EditorHeader.propTypes = {
+  audioTitle: PropTypes.string,
+
+  progress: PropTypes.shape({
+    complete: PropTypes.number.isRequired,
+    total: PropTypes.number.isRequired,
+    percent: PropTypes.number.isRequired,
+  }).isRequired,
+
+  readOnly: PropTypes.bool,
+
+  counts: PropTypes.shape({
+    needsWork: PropTypes.number.isRequired,
+    completed: PropTypes.number.isRequired,
+  }).isRequired,
+
+  filterState: PropTypes.shape({
+    filter: PropTypes.string.isRequired,
+    setFilter: PropTypes.func.isRequired,
+  }).isRequired,
+
+  searchState: PropTypes.shape({
+    queryRaw: PropTypes.string.isRequired,
+    setQueryRaw: PropTypes.func.isRequired,
+    showOnlyMatches: PropTypes.bool.isRequired,
+    setShowOnlyMatches: PropTypes.func.isRequired,
+  }).isRequired,
+
+  visibleUtterances: PropTypes.arrayOf(
+    PropTypes.shape({
+      text: PropTypes.string.isRequired,
+      start: PropTypes.number,
+      end: PropTypes.number,
+    })
+  ).isRequired,
+
+  metadata: PropTypes.shape({
+    process: PropTypes.arrayOf(
+      PropTypes.shape({
+        type: PropTypes.string,
+      })
+    ),
+  }),
+
+  searchHits: PropTypes.number.isRequired,
+
+  followActive: PropTypes.bool.isRequired,
+  setFollowActive: PropTypes.func.isRequired,
+
+  onSearchPrev: PropTypes.func,
+  onSearchNext: PropTypes.func,
+
+  showAutoWarning: PropTypes.bool,
+};
