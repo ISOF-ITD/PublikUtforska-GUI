@@ -86,7 +86,7 @@ export default function StatisticsList({
               const valueNum = Number(item.value) || 0;
               return (
                 <li key={`${item.key}-${item.value}`}>
-                  <span className="font-bold">{item.key}</span>:{" "}
+                  <span className="font-bold">{item.key.replace('crowdsource-anonymous',l('Anonyma bidragsgivare'))}</span>:{" "}
                   {valueNum.toLocaleString("sv-SE")}{" "}
                   {valueNum === 1 ? "sida" : "sidor"}
                 </li>
