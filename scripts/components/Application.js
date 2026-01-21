@@ -137,6 +137,18 @@ useEffect(() => {
     addToNavigationHistory(`${location.pathname}${location.search}`);
   }, [location]);
 
+  // If parameter showlist in url show record list using routePopup event
+  // Seems to have to be placed here BUT why? Seems it could be placed anywhere in the code? 
+  // But in RecordList it does not work. This code in RoutePopupWindow stopped to work.
+  useEffect(() => {
+    const paramsHere = new URLSearchParams(location.search);
+    if (paramsHere.has("showlist")) {
+      if (window.eventBus) {
+        window.eventBus.dispatch("routePopup.show");
+      }
+    }
+  }, [location]);
+
   return (
     <AudioProvider>
       <div className="app">
