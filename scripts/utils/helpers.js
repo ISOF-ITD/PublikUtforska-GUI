@@ -194,7 +194,7 @@ export function getSegmentTitle(mediaItems) {
     }
   }
   if (mediaItems[mediaItems.length - 1].pagenumber && mediaItems[mediaItems.length - 1].pagenumber.trim()) {
-    endpage = mediaItems[0].pagenumber.trim();
+    endpage = mediaItems[mediaItems.length - 1].pagenumber.trim();
   }
   if (endpage === '') {
     if (mediaItems[mediaItems.length - 1].source) {
