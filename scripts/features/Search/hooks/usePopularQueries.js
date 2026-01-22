@@ -23,7 +23,10 @@ export default function usePopularQueries(suggestionsVisible) {
       .then((json) => {
         if (!Array.isArray(json)) return;
         const items = json
+          // exclude "start" searches
           .filter((row) => !/^start/i.test(row.label))
+          // exclude "person:", "place:" and "archive_id:" prefixed searches
+          .filter((row) => !/^(person:|place:|archive_id:)/i.test(row.label))
           .map((row) => ({ value: row.label, label: row.label }));
         CACHE = items;
         setPopularQueries(items);
