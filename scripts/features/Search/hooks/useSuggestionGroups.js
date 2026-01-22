@@ -9,7 +9,7 @@ export default function useSuggestionGroups({
   people,
   places,
   provinces,
-  archives,
+  archiveIds,
   navigateToSearch,
 }) {
   const suggestionGroups = useMemo(
@@ -47,8 +47,8 @@ export default function useSuggestionGroups({
       {
         title: "ArchiveId",
         label: l("Arkivsignum"),
-        items: archives,
-        click: (p) => navigateToSearch(p.value),
+        items: archiveIds,
+        click: (p) => navigateToSearch(p.value, "archive_id"),
       },
     ],
     [
@@ -56,7 +56,7 @@ export default function useSuggestionGroups({
       people,
       places,
       provinces,
-      archives,
+      archiveIds,
       navigateToSearch,
       query,
     ]

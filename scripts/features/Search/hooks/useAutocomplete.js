@@ -3,11 +3,11 @@ import config from "../../../config";
 import { makeArchiveIdHumanReadable } from "../../../utils/helpers";
 
 export default function useAutocomplete(query) {
-  const [{ people, places, provinces, archives }, setSuggestions] = useState({
+  const [{ people, places, provinces, archiveIds }, setSuggestions] = useState({
     people: [],
     places: [],
     provinces: [],
-    archives: [],
+    archiveIds: [],
   });
 
   const fetchJson = (endpoint, mapFn, signal) =>
@@ -24,7 +24,7 @@ export default function useAutocomplete(query) {
         people: [],
         places: [],
         provinces: [],
-        archives: [],
+        archiveIds: [],
       });
     }
 
@@ -64,7 +64,7 @@ export default function useAutocomplete(query) {
         const [pe, pl, pr, ar] = results.map((r) =>
           r.status === "fulfilled" ? r.value : []
         );
-        setSuggestions({ people: pe, places: pl, provinces: pr, archives: ar });
+        setSuggestions({ people: pe, places: pl, provinces: pr, archiveIds: ar });
       })
       .catch((err) => {
         if (err?.name !== "AbortError") console.error(err);
@@ -72,5 +72,5 @@ export default function useAutocomplete(query) {
     return () => controller.abort();
   }, [query]);
 
-  return { people, places, provinces, archives };
+  return { people, places, provinces, archiveIds };
 }

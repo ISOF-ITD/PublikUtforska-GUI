@@ -80,6 +80,10 @@ function Timeline({
         queryParams.place = queryParams.search;
         delete queryParams.search;
       }
+      if (queryParams.search_field === 'archive_id') {
+        queryParams.archive_id = queryParams.search;
+        delete queryParams.search;
+      }
       delete queryParams.search_field;
     }
 

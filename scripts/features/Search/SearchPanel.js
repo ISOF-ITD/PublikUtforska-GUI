@@ -81,7 +81,7 @@ export default function SearchPanel({
   };
 
   // data
-  const { people, places, provinces, archives } = useAutocomplete(query);
+  const { people, places, provinces, archiveIds } = useAutocomplete(query);
   const popularQueries = usePopularQueries(suggestionsVisible);
 
   // routing helpers
@@ -109,11 +109,13 @@ export default function SearchPanel({
   const {
     selectedPerson,
     selectedPlace,
+    selectedArchiveId,
     hasSelection,
     labelPrefix,
     labelValue,
     setSelectedPerson,
     setSelectedPlace,
+    setSelectedArchiveId,
   } = useSelectionFromRoute(qParam, search_field);
 
   // suggestions model
@@ -124,7 +126,7 @@ export default function SearchPanel({
       people,
       places,
       provinces,
-      archives,
+      archiveIds,
       navigateToSearch,
     });
 
@@ -176,17 +178,18 @@ export default function SearchPanel({
     }
   };
   const clearSearch = useCallback(() => {
-    if (!qParam && !inputValue && !selectedPerson && !selectedPlace) {
+    if (!qParam && !inputValue && !selectedPerson && !selectedPlace && !selectedArchiveId) {
       inputRef.current?.focus();
       return;
     }
     setSelectedPerson(null);
     setSelectedPlace(null);
+    setSelectedArchiveId(null);
     setQuery("");
     navigateToSearch("", null);
     setInputValue("");
     inputRef.current?.focus();
-  }, [navigateToSearch, qParam, inputValue, selectedPerson, selectedPlace]);
+  }, [navigateToSearch, qParam, inputValue, selectedPerson, selectedPlace, selectedArchiveId]);
 
   // keep categories in sync with the route
   useEffect(() => {
@@ -287,7 +290,7 @@ export default function SearchPanel({
 
             {/* Keep only clear + loader inside the input */}
             <div className="absolute inset-y-0 right-2 flex items-center gap-2">
-              {(query || selectedPerson || selectedPlace) && (
+              {(query || selectedPerson || selectedPlace || selectedArchiveId) && (
                 <button
                   type="button"
                   className="pointer-events-auto rounded-full !py-0 !border-none !m-0 text-gray-500 hover:text-gray-700 focus-visible:outline-none"

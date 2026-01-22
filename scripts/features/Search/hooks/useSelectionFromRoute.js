@@ -7,6 +7,7 @@ import {
 export default function useSelectionFromRoute(qParam, search_field) {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [selectedArchiveId, setSelectedArchiveId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,14 +30,20 @@ export default function useSelectionFromRoute(qParam, search_field) {
             setSelectedPlace(json);
             setSelectedPerson(null);
           }
+        } else if (search_field === "archive_id" && qParam) {
+          setSelectedArchiveId(qParam);
+          setSelectedPerson(null);
+          setSelectedPlace(null);
         } else if (!cancelled) {
           setSelectedPerson(null);
           setSelectedPlace(null);
+          setSelectedArchiveId(null);
         }
       } catch {
         if (!cancelled) {
           setSelectedPerson(null);
           setSelectedPlace(null);
+          setSelectedArchiveId(null);
         }
       }
     }
@@ -47,21 +54,33 @@ export default function useSelectionFromRoute(qParam, search_field) {
     };
   }, [qParam, search_field]);
 
-  const hasSelection = !!(selectedPerson || selectedPlace);
+  const hasSelection = !!(selectedPerson || selectedPlace || selectedArchiveId);
   const labelPrefix = selectedPerson
     ? "Person: "
     : selectedPlace
     ? "Ort: "
+    : selectedArchiveId
+    ? "Arkivsignum: "
     : "";
-  const labelValue = selectedPerson?.name ?? selectedPlace?.name ?? "";
+  // const labelValue = selectedPerson?.name ?? selectedPlace?.name ?? "";
+  const labelValue = selectedPerson
+    ? selectedPerson.name
+    : selectedPlace
+    ? selectedPlace.name
+    : selectedArchiveId
+    ? selectedArchiveId
+    : "";
+
 
   return {
     selectedPerson,
     selectedPlace,
+    selectedArchiveId,
     hasSelection,
     labelPrefix,
     labelValue,
     setSelectedPerson,
     setSelectedPlace,
+    setSelectedArchiveId,
   };
 }
