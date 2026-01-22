@@ -102,6 +102,11 @@ function ArchiveImage({
 
     glass.style.left = `${px}px`;
     glass.style.top = `${py}px`;
+    // Set size of magnifying glass here 
+    // (Seems not to work to set in renderMagnifyingGlass-div below: class w- and h-)
+    // Corner shape is set at renderMagnifyingGlass-div below with tailwind rounded-..
+    glass.style.width = `400px`;
+    glass.style.height = `200px`;
     glass.style.backgroundPosition = `${rx}px ${ry}px`;
   };
 
@@ -163,7 +168,7 @@ function ArchiveImage({
           <div
             ref={glassRef}
             aria-hidden="true"
-            className="absolute hidden rounded-full border-2 border-solid border-white border-offset-2 border-offset-black/30 shadow-xl w-52 h-52 pointer-events-none"
+            className="absolute hidden rounded-3xl border-2 border-solid border-white border-offset-2 border-offset-black/30 shadow-xl w-52 h-52 pointer-events-none"
           />
         )}
       </div>

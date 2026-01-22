@@ -286,5 +286,6 @@ export default {
 
   // för intro-overlayen
   kontextBasePath: 'https://www.isof.se/folke/',
+  // värde för k-parametern i URL:en som anger vilken sida som ska visas i intro-overlayen
   kontextStartPage: 'start',
 };
