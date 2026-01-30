@@ -16,10 +16,17 @@ import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
 import { l } from "../../../lang/Lang";
 import config from "../../../config";
 import { createSearchRoute } from "../../../utils/routeHelper";
-import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
+//import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
 import { useMemo } from "react";
+import {
+  getTitle,
+  getPlaceString,
+  pageFromTo,
+  getSegmentTitle,
+} from "../../../utils/helpers";
+import buildSegments from "../../../utils/buildSegments";
 
 export default function RecordListItem(props) {
   const {
@@ -149,6 +156,33 @@ export default function RecordListItem(props) {
     () => media.filter((m) => m?.type === "image"),
     [media]
   );
+
+  // Build segments the same way as RecordTextPanel does
+  const builtSegments = useMemo(
+    () =>
+      buildSegments({
+        mediaImages,
+        rawSegments: segments, // <- from record _source
+        transcriptionstatus,
+        persons,
+      }),
+    [mediaImages, segments, transcriptionstatus, persons]
+  );
+
+  // startMediaId -> derived segment title (same logic as RecordSegment)
+  const segmentTitleByStartMediaId = useMemo(() => {
+    const map = new Map();
+    builtSegments.forEach((seg) => {
+      const startMediaId = seg?.items?.[0]?.id;
+      if (startMediaId != null) {
+        map.set(
+          String(startMediaId),
+          getSegmentTitle(seg.items) || l("Segment")
+        );
+      }
+    });
+    return map;
+  }, [builtSegments]);
 
   const getPageNo = (m, idx) => {
     const n = Number(m?.pagenumber);
