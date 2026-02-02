@@ -414,6 +414,15 @@ function AudioItems({ data, highlightData = null }) {
     <div className="mx-auto border-none">
       <div className="overflow-x-auto mb-4 rounded">
         <table className="w-full table-auto border-collapse lg:text-sm text-xs" aria-label={l("Inspelningar")}>
+          {// Hide header but keep for screen readers 
+          } 
+          <thead className="hidden">
+            <tr>
+              <th>Spela upp</th>
+              <th>Titel</th>
+              <th>Övrig information</th>
+            </tr>
+          </thead>
           <tbody>
             {audioDataItems.map((item) => {
               const audioTitle = getAudioTitle(
