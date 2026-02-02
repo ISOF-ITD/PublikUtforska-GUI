@@ -16,17 +16,14 @@ import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
 import { l } from "../../../lang/Lang";
 import config from "../../../config";
 import { createSearchRoute } from "../../../utils/routeHelper";
-//import { getTitle, getPlaceString, pageFromTo } from "../../../utils/helpers";
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
-import { useMemo } from "react";
 import {
   getTitle,
   getPlaceString,
   pageFromTo,
   getSegmentTitle,
 } from "../../../utils/helpers";
-import buildSegments from "../../../utils/buildSegments";
 
 export default function RecordListItem(props) {
   const {
@@ -124,7 +121,15 @@ export default function RecordListItem(props) {
   const descriptionCountSubrecords =
     recordtype === "one_accession_row"
       ? subrecords.reduce(
-          (acc, sr) => acc + countDescriptionsInMedia(sr._source.media),
+          (acc, sr) =>
+            acc +
+            countDescriptionsInMedia(
+              // new model (segments): items
+              sr?.items ??
+                // old model (ES one_record): _source.media
+                sr?._source?.media ??
+                []
+            ),
           0
         )
       : 0;
@@ -151,93 +156,6 @@ export default function RecordListItem(props) {
   const recordHref = `${
     mode === "transcribe" ? "/transcribe" : ""
   }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
-
-  const mediaImages = useMemo(
-    () => media.filter((m) => m?.type === "image"),
-    [media]
-  );
-
-  // Build segments the same way as RecordTextPanel does
-  const builtSegments = useMemo(
-    () =>
-      buildSegments({
-        mediaImages,
-        rawSegments: segments, // <- from record _source
-        transcriptionstatus,
-        persons,
-      }),
-    [mediaImages, segments, transcriptionstatus, persons]
-  );
-
-  // startMediaId -> derived segment title (same logic as RecordSegment)
-  const segmentTitleByStartMediaId = useMemo(() => {
-    const map = new Map();
-    builtSegments.forEach((seg) => {
-      const startMediaId = seg?.items?.[0]?.id;
-      if (startMediaId != null) {
-        map.set(
-          String(startMediaId),
-          getSegmentTitle(seg.items) || l("Segment")
-        );
-      }
-    });
-    return map;
-  }, [builtSegments]);
-
-  const getPageNo = (m, idx) => {
-    const n = Number(m?.pagenumber);
-    if (Number.isFinite(n) && n > 0) return n;
-    return idx >= 0 ? idx + 1 : null; // <-- prevents 0 from idx === -1
-  };
-
-  const segmentPageRangesByStartMediaId = useMemo(() => {
-    if (!Array.isArray(segments) || segments.length === 0) return new Map();
-    if (!Array.isArray(mediaImages) || mediaImages.length === 0)
-      return new Map();
-
-    // Robust id lookup (handles number vs string mismatches)
-    const indexById = new Map(
-      mediaImages.map((img, i) => [String(img?.id), i])
-    );
-
-    const rawStarts = segments
-      .map((seg) => ({
-        startMediaId: seg.start_media_id,
-        startIndex: indexById.get(String(seg.start_media_id)) ?? -1,
-      }))
-      .filter((x) => x.startIndex >= 0)
-      .sort((a, b) => a.startIndex - b.startIndex);
-
-    // Optional: dedupe by startIndex (prevents endIndex going “backwards”)
-    const starts = rawStarts.filter(
-      (s, i) => i === 0 || s.startIndex !== rawStarts[i - 1].startIndex
-    );
-
-    const map = new Map();
-
-    starts.forEach((cur, i) => {
-      // find the next strictly-later start index
-      const nextStartIndex =
-        starts.slice(i + 1).find((s) => s.startIndex > cur.startIndex)
-          ?.startIndex ?? mediaImages.length;
-
-      const endIndex = Math.max(cur.startIndex, nextStartIndex - 1); // never < cur, never -1 if cur>=0
-
-      const from = getPageNo(mediaImages[cur.startIndex], cur.startIndex);
-      const to = getPageNo(mediaImages[endIndex], endIndex);
-
-      if (from != null && to != null) {
-        map.set(cur.startMediaId, { from, to });
-      }
-    });
-
-    return map;
-  }, [segments, mediaImages]);
-
-  const formatPageRange = (from, to) => {
-    if (!Number.isFinite(from) || !Number.isFinite(to)) return null;
-    return from === to ? `${l("Sida")} ${from}` : `${l("Sidor")} ${from}–${to}`;
-  };
 
   /* ---------- render ---------- */
   return (
@@ -421,68 +339,70 @@ export default function RecordListItem(props) {
                     }`}
                   >
                     <ul className="list-disc list-inside !space-y-0.5">
-                      {subrecords.sort(/* ... */).map((s, idx) => {
-                        const pub =
-                          s._source.transcriptionstatus === "published";
+                      {[...subrecords]
+                        .sort((a, b) => {
+                          // new model (segments): sort by startIndex
+                          if (a?.startIndex != null || b?.startIndex != null) {
+                            return (a?.startIndex ?? 0) - (b?.startIndex ?? 0);
+                          }
+                          // old model: keep stable
+                          return 0;
+                        })
+                        .map((s, idx) => {
+                          const isNew = Array.isArray(s?.items);
 
-                        const parentHref = `${
-                          mode === "transcribe" ? "/transcribe" : ""
-                        }/records/${id}`;
-                        const href =
-                          s._source.href ??
-                          (s._source.media_id
-                            ? `${parentHref}?media=${s._source.media_id}`
-                            : parentHref);
+                          const pub = isNew
+                            ? s.segmentTranscriptionstatus === "published"
+                            : s._source.transcriptionstatus === "published";
 
-                        // compute range ONCE (so it can be used for both page label + fallback title)
-                        const startMediaId =
-                          s?._source?.start_media_id ??
-                          s?._source?.media_id ??
-                          s?._source?.media?.find((m) => m?.type === "image")
-                            ?.id;
+                          const parentHref = `${
+                            mode === "transcribe" ? "/transcribe" : ""
+                          }/records/${id}`;
 
-                        const range = startMediaId
-                          ? segmentPageRangesByStartMediaId.get(startMediaId)
-                          : null;
+                          const href = isNew
+                            ? Number.isFinite(s.startIndex)
+                              ? `${parentHref}?media=${s.startIndex}` // <-- use startIndex
+                              : parentHref
+                            : s._source.href ??
+                              (s._source.media_id
+                                ? `${parentHref}?media=${s._source.media_id}`
+                                : parentHref);
 
-                        const pageLabel =
-                          range?.from != null
-                            ? formatPageRange(range.from, range.to)
+                          const pageLabel = isNew
+                            ? getSegmentTitle(s.items) || l("Segment")
                             : s?._source?.archive?.page
                             ? `${l("Sida")} ${s._source.archive.page}`
                             : null;
 
-                        const isPlural =
-                          Number.isFinite(range?.from) &&
-                          Number.isFinite(range?.to) &&
-                          range.from !== range.to;
+                          // No page number order within current segment:
+                          const titleHtml = '';
+                          // In case we need page number order within current segment:
+                          //const titleHtml = isNew
+                          //  ? s.title ?? l("Segment")
+                          //  : s._source.title ?? "";
 
-                        const titleHtml =
-                          s._source.title ??
-                          (isPlural ? "Ej avskrivna" : "Ej avskriven");
-
-                        return (
-                          <li key={s._source.id || idx}>
-                            <small>
-                              <Link
-                                to={href}
-                                className={`${
-                                  pub ? "font-semibold" : ""
-                                } hover:underline text-isof`}
-                              >
-                                {transcriptiontype !== "audio" && pageLabel ? (
-                                  <>{pageLabel}. </>
-                                ) : null}
-                                <span
-                                  dangerouslySetInnerHTML={{
-                                    __html: titleHtml,
-                                  }}
-                                />
-                              </Link>
-                            </small>
-                          </li>
-                        );
-                      })}
+                          return (
+                            <li key={(isNew ? s.id : s._source.id) || idx}>
+                              <small>
+                                <Link
+                                  to={href}
+                                  className={`${
+                                    pub ? "font-semibold" : ""
+                                  } hover:underline text-isof`}
+                                >
+                                  {transcriptiontype !== "audio" && pageLabel ? (
+                                    <>{pageLabel}. </>
+                                  ) : null}
+                                  <span
+                                    dangerouslySetInnerHTML={{
+                                      __html: titleHtml,
+                                    }}
+                                  />
+                                </Link>
+                              </small>
+                            </li>
+                          );
+                        })}
                     </ul>
                   </div>
 

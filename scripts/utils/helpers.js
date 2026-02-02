@@ -4,6 +4,9 @@ import archiveLogoIsof from '../../img/archive-logo-isof.png';
 import archiveLogoIkos from '../../img/archive-logo-ikos.png';
 
 export function pageFromTo(input = {}) {
+  /*
+  Funktion för att skapa sidintervall från archive.page och archive.total_pages
+  */
   const page = input?._source?.archive?.page;
   const totalPages = input?._source?.archive?.total_pages;
 
@@ -131,6 +134,9 @@ export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
 // OBS: om `highlight` skickas medså innehåller return-strängen HTML-taggar
 // använd då `dangerouslySetInnerHTML`!
 export function getTitle(title, contents, archive, highlight) {
+  /*
+  Funktion för att skapa titel för mediafil
+  */
   // om det finns en träff i `title`, visa med highlight
   if (highlight?.title) {
     const highlightedTitle = highlight.title[0];

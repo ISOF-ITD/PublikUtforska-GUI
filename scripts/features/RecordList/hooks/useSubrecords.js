@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import RecordsApiClient from "../api/RecordsApiClient";
 import { fetchRecordMediaCount } from "../../../utils/helpers";
 import config from "../../../config";
+import buildSegments from "../../../utils/buildSegments";
 
 /**
  * Loads sub-records + derived counters for a one_accession_row.
@@ -16,6 +17,8 @@ export default function useSubrecords({
   numberoftranscribedonerecord,
   numberoftranscribedpages,
   transcriptiontype,
+  transcriptionstatus,
+  persons = [],
   // new fields that now arrive on the accession
   segments = [],
   media = [],
@@ -42,36 +45,28 @@ export default function useSubrecords({
 
     //  everything lives on the accession
     if (hasEmbeddedSegments) {
-      // map media by id so we can pick titles / transcriptionstatus
-      const mediaById = new Map(media.map((m) => [m.id, m]));
+      const mediaImages =
+        transcriptiontype === "audio"
+          ? media
+          : media.filter((m) => m?.type === "image");
 
-      const virtualSubs = segments.map((seg) => {
-        const m = mediaById.get(seg.start_media_id);
-        const mediaIndex = m ? media.findIndex((mm) => mm.id === m.id) : -1;
+      const base = mediaImages.length ? mediaImages : media;
 
-        return {
-          // we mimic the shape we previously got from ES
-          _source: {
-            // this ID will never be requested from the backend, it’s just for React keys
-            id: `${id}#segment-${seg.id}`,
-            archive: {
-              // we don’t really have pages per segment, so use media position as page
-              page: mediaIndex >= 0 ? mediaIndex + 1 : null,
-            },
-            title: m?.title ?? null,
-            media_id: seg.start_media_id,
-            transcriptionstatus: m?.transcriptionstatus ?? "readytotranscribe",
-          },
-        };
+      // Use global buildSegments util
+      const virtualSubs = buildSegments({
+        mediaImages: base,
+        rawSegments: segments,
+        transcriptionstatus,
+        persons,
       });
 
       setSubrecords(virtualSubs);
       setLoaded(true);
 
       // counts
-      setCount(segments.length);
+      setCount(virtualSubs.length);
       setCountDone(
-        virtualSubs.filter((s) => s._source.transcriptionstatus === "published")
+        virtualSubs.filter((s) => s.segmentTranscriptionstatus === "published")
           .length
       );
 
@@ -130,6 +125,8 @@ export default function useSubrecords({
     numberOfSegments,
     numberoftranscribedonerecord,
     transcriptiontype,
+    transcriptionstatus,
+    persons,
   ]);
 
   /* ---------- list (old model) ---------- */
