@@ -229,8 +229,9 @@ export default function MapMenu({
       {/* <SurveyLink />  enable when needed */}
       {/*<Warning /> */}
 
-      <img src={Folkelogga} alt="Folkelogga" className="h-20 w-full" />
-
+      <h1>
+      <img src={Folkelogga} alt={l("Folkelogga")} className="h-20 w-full" />
+      </h1>
       <SearchPanel
         params={params}
         mode={mode}

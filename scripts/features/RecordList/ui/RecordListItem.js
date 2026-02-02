@@ -322,8 +322,8 @@ export default function RecordListItem(props) {
                   />
                   {!visible && " Visa "}
                   {transcriptiontype === "audio"
-                    ? "Inspelningar"
-                    : "Uppteckningar"}
+                    ? l("Inspelningar")
+                    : l("Uppteckningar")}
                   {visible && " i den här accessionen"} ({count})
                   {visible && ":"}
                 </a>
