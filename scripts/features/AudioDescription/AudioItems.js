@@ -5,6 +5,7 @@ import AudioItemRow from "./AudioItemRow";
 import "./DescriptionForm";
 import config from "../../config";
 import { getAudioTitle } from "../../utils/helpers";
+import { l } from "../../lang/Lang";
 
 function AudioItems({ data, highlightData = null }) {
   // Initialize localData state with the prop data
@@ -412,7 +413,7 @@ function AudioItems({ data, highlightData = null }) {
   return (
     <div className="mx-auto border-none">
       <div className="overflow-x-auto mb-4 rounded">
-        <table className="w-full table-auto border-collapse lg:text-sm text-xs">
+        <table className="w-full table-auto border-collapse lg:text-sm text-xs" aria-label={l("Inspelningar")}>
           <tbody>
             {audioDataItems.map((item) => {
               const audioTitle = getAudioTitle(
