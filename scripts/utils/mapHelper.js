@@ -112,7 +112,7 @@ export default {
       minZoom: 6,
       options: {
         attribution:
-          '&copy; <a href="https://www.lantmateriet.se/sv/Kartor-och-geografisk-information/geodataprodukter/produktlista/historiska-ortofoton-visning/">Lantmäteriverket</a> Ortofoto 1960',
+          '&copy; <a href="https://www.lantmateriet.se/sv/Kartor-och-geografisk-information/geodataprodukter/produktlista/historiska-ortofoton-visning/">Lantmäteriet</a> Ortofoto 1960',
         crossOrigin: true,
       },
     },
@@ -131,7 +131,7 @@ export default {
       minZoom: 6,
       options: {
         attribution:
-          '&copy; <a href="https://www.lantmateriet.se/sv/Kartor-och-geografisk-information/geodataprodukter/produktlista/ortofoto-visning/">Lantmäteriverket</a> Ortofoto',
+          '&copy; <a href="https://www.lantmateriet.se/sv/Kartor-och-geografisk-information/geodataprodukter/produktlista/ortofoto-visning/">Lantmäteriet</a> Ortofoto',
         crossOrigin: true,
       },
     },
@@ -149,7 +149,7 @@ export default {
       minZoom: 11,
       options: {
         attribution:
-          '&copy; <a href="https://www.raa.se">Riksankikvarieämbetet</a> Sockenkarta',
+          '&copy; <a href="https://www.raa.se">Riksantikvarieämbetet</a> Sockenkarta',
         crossOrigin: true,
       },
     },
