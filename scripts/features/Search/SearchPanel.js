@@ -239,6 +239,7 @@ export default function SearchPanel({
               className={classNames(
                 "w-full h-20 sm:h-16 rounded-lg border bg-white !p-2 text-gray-900 placeholder-gray-500 shadow-sm",
                 "border-gray-300 focus:border-isof focus:ring-2 focus:ring-isof/60 focus:outline-none !mb-0",
+                "text-[16px]",
                 hasSelection ? "opacity-0 pointer-events-none" : "opacity-100"
               )}
               placeholder={l("Sök i Folke")}
