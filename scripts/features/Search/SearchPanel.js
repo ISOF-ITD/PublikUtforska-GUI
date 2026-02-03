@@ -207,23 +207,6 @@ export default function SearchPanel({
   const onFiltersToggle = (categoryId) =>
     toggleCategory(categoryId, inputValue || qParam || "");
 
-  const [showSurvey, setShowSurvey] = useState(() => {
-    try {
-      return window.localStorage?.getItem("folkeSurveyDismissed") !== "1";
-    } catch {
-      return true;
-    }
-  });
-
-  const handleDismissSurvey = useCallback(() => {
-    setShowSurvey(false);
-    try {
-      window.localStorage?.setItem("folkeSurveyDismissed", "1");
-    } catch {
-      // ignore
-    }
-  }, []);
-
   return (
     <>
       <FilterSwitch mode={mode} />
@@ -416,20 +399,12 @@ export default function SearchPanel({
           </span>
         </button>
       )}
-      <div className="relative w-full !mb-4">
-        {/* Red dot indicator */}
-        {showSurvey && (
-          <span
-            className="pointer-events-none absolute -top-1 -right-1 inline-flex h-3 w-3 rounded-full bg-red-500 ring-2 ring-white"
-            aria-hidden="true"
-          />
-        )}
-
+      {/* SURVEY */}
+      <div className="hidden relative w-full !mb-4">
         <a
           href="https://www.isof.se/enkatfolke"
           target="_blank"
           rel="noopener noreferrer"
-          onClick={handleDismissSurvey}
           className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white border-4 border-solid border-lighter-isof py-2 !text-base font-medium text-gray-700 shadow "
           title={l("Tyck till om Folke – svara på vår enkät")}
           aria-label={l("Tyck till om Folke – svara på vår enkät!")}
