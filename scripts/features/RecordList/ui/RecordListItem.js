@@ -157,9 +157,22 @@ export default function RecordListItem(props) {
     mode === "transcribe" ? "/transcribe" : ""
   }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
 
+  const onRowKeyDown = (e) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const row = e.currentTarget;
+    const target =
+      e.key === "ArrowDown"
+        ? row.nextElementSibling
+        : row.previousElementSibling;
+    if (target && target.focus) target.focus();
+  };
+
   /* ---------- render ---------- */
   return (
     <tr
+      tabIndex={0}
+      onKeyDown={onRowKeyDown}
       className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-100 ${
         displayTextSummary ? "bg-gray-100" : ""
       }`}
