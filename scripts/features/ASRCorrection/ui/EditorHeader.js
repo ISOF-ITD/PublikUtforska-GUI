@@ -209,6 +209,7 @@ export default function EditorHeader({
             onClick={onSearchPrev}
             disabled={!queryRaw || searchHits === 0}
             title="Föregående träff"
+            aria-label="Föregående träff"
           >
             <FontAwesomeIcon icon={faChevronUp} />
           </button>
@@ -218,6 +219,7 @@ export default function EditorHeader({
             onClick={onSearchNext}
             disabled={!queryRaw || searchHits === 0}
             title="Nästa träff"
+            aria-label="Nästa träff"
           >
             <FontAwesomeIcon icon={faChevronDown} />
           </button>

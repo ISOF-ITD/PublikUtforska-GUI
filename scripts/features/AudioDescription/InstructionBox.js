@@ -68,12 +68,12 @@ const InstructionStep = ({ title, shortPoints, details }) => {
       </ul>
 
       {/* “Visa fler tips & exempel” / “Dölj” toggle button */}
-      <a
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="ml-4 mt-2 text-isof underline cursor-pointer inline-block text-sm"
       >
         {isOpen ? "Dölj" : "Visa fler tips & exempel"}
-      </a>
+      </button>
 
       {/* Reveal full details when isOpen = true */}
       {isOpen && (

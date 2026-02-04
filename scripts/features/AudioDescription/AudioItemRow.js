@@ -213,7 +213,7 @@ function AudioItemRow({
         </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
           {canContribute && config.activateAudioDescription && (
-            <a
+            <button type="button"
               className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               aria-expanded={openItems[item.source] ? "true" : "false"}
               aria-controls={`descriptions-${item.source}`}
@@ -234,7 +234,7 @@ function AudioItemRow({
                   <FontAwesomeIcon icon={faCaretDown} />
                 </span>
               )}
-            </a>
+            </button>
           )}
           <a
             href={`${config.audioUrl}${item.source}`}
@@ -313,9 +313,7 @@ function AudioItemRow({
                   </div>
                 ) : (
                   <div className="flex justify-center my-4">
-                    <a
-                      type="button"
-                      className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
+                    <button type="button" className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
                         showAddForm[item.source]
                           ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
                           : "bg-isof hover:bg-darker-isof text-white"
@@ -339,7 +337,7 @@ function AudioItemRow({
                           </span>
                         </>
                       )}
-                    </a>
+                    </button>
                   </div>
                 )}
 

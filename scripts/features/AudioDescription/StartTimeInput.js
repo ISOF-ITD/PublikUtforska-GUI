@@ -11,7 +11,7 @@ const mmssToSeconds = (str) => {
 };
 
 /* ----------  component  ---------- */
-function StartTimeInput({ value, onChange, maxSeconds }) {
+function StartTimeInput({ value, onChange, maxSeconds, inputId, autoFocus, required }) {
   const [error, setError] = useState("");
 
   const validate = (raw) => {
@@ -67,6 +67,10 @@ function StartTimeInput({ value, onChange, maxSeconds }) {
   return (
     <div>
       <InputMask
+        id={inputId}
+        autoFocus={autoFocus}
+        required={required}
+        aria-invalid={Boolean(error)}
         mask="99:99"
         value={value}
         replacement={{ 9: /\d/ }} // only digits in the slots
@@ -87,9 +91,12 @@ StartTimeInput.propTypes = {
   onChange: PropTypes.func.isRequired,
   /** Recording length (in seconds).  If omitted, no upper-limit check is applied. */
   maxSeconds: PropTypes.number,
+  inputId: PropTypes.string,
+  autoFocus: PropTypes.bool,
+  required: PropTypes.bool,
 };
 
-export default function StartTimeInputWithPlayer({ value, onChange }) {
+export default function StartTimeInputWithPlayer({ value, onChange, inputId, autoFocus, required }) {
   const { currentTime, visible, durationTime } = useContext(AudioContext);
 
   /* handler memoisation */
@@ -108,25 +115,25 @@ export default function StartTimeInputWithPlayer({ value, onChange }) {
       <StartTimeInput
         value={value}
         onChange={handleChange}
+        inputId={inputId}
+        autoFocus={autoFocus}
+        required={required}
         /* enforce upper limit once metadata has loaded */
         maxSeconds={
           durationTime > 0 ? Math.floor(durationTime / 1000) : undefined
         }
       />
 
-      <a
-        className={`px-4 py-2 rounded text-white ${
+      <button type="button"className={`px-4 py-2 rounded text-white ${
           visible
             ? "bg-isof hover:bg-darker-isof hover:cursor-pointer"
             : "bg-gray-400 hover:cursor-not-allowed"
-        }`}
-        type="button"
-        title="Kopiera aktuell tid från ljudspelaren"
+        }`}        title="Kopiera aktuell tid från ljudspelaren"
         disabled={!visible}
         onClick={handleInsertCurrentTime}
       >
         Använd tid från ljudspelaren
-      </a>
+      </button>
     </div>
   );
 }

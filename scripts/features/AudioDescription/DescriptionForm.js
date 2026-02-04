@@ -163,25 +163,27 @@ function DescriptionForm({
 
       <ExplanationSection />
 
-      <FormSection title="Starttid (MM:SS) *">
+      <FormSection title="Starttid (MM:SS) *" labelFor="audio-desc-starttime">
         <InfoMessage>
           Steg 1 av 3. Ange den tidpunkt då samtalsämnet börjar. Du kan använda
           ljudspelaren för att hitta exakt tid eller ange tiden manuellt.
         </InfoMessage>
         <StartTimeInputWithPlayer
           autoFocus={!editingDesc}
+          inputId="audio-desc-starttime"
           value={dataForSource.start || ""}
           onChange={(val) => handleChangeField("start", val)}
           required
         />
       </FormSection>
 
-      <FormSection title="Beskrivning *">
+      <FormSection title="Beskrivning *" labelFor="audio-desc-text">
         <InfoMessage>
           Steg 2 av 3. Beskriv kortfattat vad som sägs i ljudintervallet. Har du
           fler detaljer eller ytterligare insikter, dela gärna med dig av dem.
         </InfoMessage>
         <textarea
+          id="audio-desc-text"
           className="border p-2 w-full mb-2"
           rows="4"
           value={dataForSource.descriptionText || ""}
@@ -225,9 +227,15 @@ function DescriptionForm({
 }
 
 // Sub-components
-const FormSection = ({ title, children }) => (
+const FormSection = ({ title, children, labelFor }) => (
   <div className="mb-4">
-    <label className="block font-semibold mb-1">{title}</label>
+    {labelFor ? (
+      <label htmlFor={labelFor} className="block font-semibold mb-1">
+        {title}
+      </label>
+    ) : (
+      <div className="block font-semibold mb-1">{title}</div>
+    )}
     {children}
   </div>
 );
@@ -254,6 +262,7 @@ const TermSection = ({
 
     <div className="relative">
       <input
+          id="audio-desc-name"
         type="text"
         className="border p-1 w-full"
         placeholder="Skriv t.ex. 'Musik' eller 'Mat'"
@@ -374,7 +383,7 @@ const UserInfoSection = ({ data, onChange }) => (
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
       <div>
-        <label className="block font-semibold mb-1">
+        <label htmlFor="audio-desc-name" className="block font-semibold mb-1">
           Ditt namn (ej obligatoriskt)
         </label>
         <input
@@ -386,10 +395,11 @@ const UserInfoSection = ({ data, onChange }) => (
         />
       </div>
       <div>
-        <label className="block font-semibold mb-1">
+        <label htmlFor="audio-desc-email" className="block font-semibold mb-1">
           Din e-post (ej obligatoriskt)
         </label>
         <input
+          id="audio-desc-email"
           type="email"
           placeholder="Ange din e-post"
           className="border p-2 w-full"
@@ -416,22 +426,22 @@ const UserInfoSection = ({ data, onChange }) => (
 const FormActions = ({ isValid, isEditing, onCancel, onSave, onDelete }) => (
   <div className="flex items-center justify-end gap-4 mt-4">
     {isEditing && (
-      <a
+      <button
         type="button"
         className="text-red-600 hover:text-red-800 underline  hover:cursor-pointer"
         onClick={onDelete}
       >
         Ta bort beskrivning
-      </a>
+      </button>
     )}
-    <a
+    <button
       type="button"
       className="underline text-gray-600 hover:text-gray-900 hover:cursor-pointer"
       onClick={onCancel}
     >
       Avbryt
-    </a>
-    <a
+    </button>
+    <button
       type="button"
       className={`px-4 py-2 rounded text-white ${
         isValid
@@ -442,7 +452,7 @@ const FormActions = ({ isValid, isEditing, onCancel, onSave, onDelete }) => (
       disabled={!isValid}
     >
       {isEditing ? "Spara ändringar" : "Spara"}
-    </a>
+    </button>
   </div>
 );
 

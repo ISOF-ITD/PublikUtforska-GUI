@@ -181,7 +181,7 @@ export default React.memo(function UtteranceRow({
       <header className="flex items-center justify-between">
         <span className="flex items-center gap-3">
           <StatusDot status={utterance.status} />
-          <a
+          <button type="button"
             className="w-11 h-11 flex items-center justify-center rounded-full
                        bg-isof/10 text-isof focus:outline-none focus:ring-2
                        focus:ring-isof/70"
@@ -196,7 +196,7 @@ export default React.memo(function UtteranceRow({
               icon={isCurrentPlaying ? faPause : faPlay}
               className="w-5 h-5"
             />
-          </a>
+          </button>
         </span>
 
         <time
@@ -330,9 +330,7 @@ export default React.memo(function UtteranceRow({
       </span>
       {/* timestamp & play */}
       <span className="flex items-center gap-3">
-        <a
-          type="button"
-          onClick={(e) => {
+        <button type="button" onClick={(e) => {
             e.stopPropagation();
             handlePlay(utterance.start, utterance.id);
           }}
@@ -346,7 +344,7 @@ export default React.memo(function UtteranceRow({
             icon={isCurrentPlaying ? faPause : faPlay}
             className="w-4 h-4"
           />
-        </a>
+        </button>
         <time
           dateTime={formatTimestamp(utterance.start)}
           className="font-mono text-xs text-gray-500 sm:text-sm"

@@ -57,13 +57,11 @@ function ListPlayButton({
   const sizeClasses = isSubList ? 'w-3 h-3 text-darker-isof' : 'text-isof w-6 h-6';
 
   return (
-    <a
-      type="button"
-      onClick={playButtonClickHandler}
+    <button type="button" onClick={playButtonClickHandler}
       className="hover:cursor-pointer"
     >
       <FontAwesomeIcon icon={iconToShow} className={sizeClasses} />
-    </a>
+    </button>
   );
 }
 

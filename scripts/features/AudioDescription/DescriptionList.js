@@ -102,14 +102,12 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
                   ))}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <a
-                    type="button"
-                    className="text-isof hover:cursor-pointer hover:text-darker-isof hover:bg-gray-100 rounded-md px-2 py-1 flex gap-1 items-center justify-end transition-colors"
+                  <button type="button" className="text-isof hover:cursor-pointer hover:text-darker-isof hover:bg-gray-100 rounded-md px-2 py-1 flex gap-1 items-center justify-end transition-colors"
                     onClick={() => onEditDesc(desc)}
                   >
                     <FontAwesomeIcon icon={faPenToSquare} />
                     <span className="underline">Ändra</span>
-                  </a>
+                  </button>
                 </td>
               </tr>
             );

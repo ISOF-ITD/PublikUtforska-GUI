@@ -17,16 +17,14 @@ export function TermNode({ node, selectedTags, onToggle, source }) {
       <div className="flex items-center py-0.5">
         {/* Toggle button if children exist */}
         {hasChildren ? (
-          <a
-            type="button"
-            onClick={() => setExpanded(!expanded)}
+          <button type="button" onClick={() => setExpanded(!expanded)}
             aria-label="Toggle expand/collapse"
             className="border border-gray-500 text-gray-500 hover:text-gray-700 mb-2 mr-1 p-2
                transition-transform duration-200 transform hover:cursor-pointer"
             style={{ transform: expanded ? "rotate(0deg)" : "rotate(-90deg)" }}
           >
             <FontAwesomeIcon icon={faCaretDown} />
-          </a>
+          </button>
         ) : (
           // Render an empty placeholder with the same width/height as the toggle button
           <span
