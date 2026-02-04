@@ -33,20 +33,20 @@ export default function AccessionIdCell({
     );
   }
 
-  // child-level → link UP to accession (this can stay for old data)
+  // child-level → link UP to accession (kept so this data structure can be used)
   if (recordtype === "one_record")
     return (
       <td
         data-title={`${l("Arkivnummer")}:`}
         className="py-2 whitespace-nowrap md:whitespace-normal"
       >
-        <a
+        <button type="button"
           data-archiveidrow={archive.archive_id_row}
           onClick={archiveIdClick}
           className={`${pillClasses} bg-white text-isof underline hover:bg-gray-100 cursor-pointer`}
         >
           {base}
-        </a>
+        </button>
       </td>
     );
 

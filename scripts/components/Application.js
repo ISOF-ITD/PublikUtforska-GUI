@@ -152,6 +152,9 @@ useEffect(() => {
   return (
     <AudioProvider>
       <div className="app">
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white text-isof underline px-3 py-2 rounded">
+          Hoppa till innehåll
+        </a>
         <RoutePopupWindow manuallyOpenPopup>
           <RecordListWrapper
             openButtonLabel="Visa sökträffar som lista"
@@ -159,6 +162,7 @@ useEffect(() => {
             mode={mode}
           />
         </RoutePopupWindow>
+        <main id="main" tabIndex={-1}>
         <Outlet />
         <MapWrapper
           mapMarkerClick={mapMarkerClick}
@@ -170,6 +174,8 @@ useEffect(() => {
           pictureRecordsData={pictureRecordsData}
           loading={loading}
         />
+
+        </main>
 
         <GlobalAudioPlayer />
         <ImageOverlay />

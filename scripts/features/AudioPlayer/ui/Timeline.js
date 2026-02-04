@@ -22,13 +22,15 @@ export default function Timeline({
       <span
         role="button"
         tabIndex={0}
+        aria-label={`Hoppa till ${msToTime(m.start * 1000)}`}
         onClick={() => onSeek(m.start * 1000)} // jump to marker
         onKeyDown={(e) =>
           (e.key === " " || e.key === "Enter") && onSeek(m.start * 1000)
         }
         key={m.id}
         className={classNames(
-          "absolute bottom-0 w-px h-1 sm:h-1.5",
+          //"absolute bottom-0 w-px h-1 sm:h-1.5",
+          "absolute bottom-0 w-3 -translate-x-1.5 h-3",
           m.id === activeId ? "bg-isof" : "bg-gray-400/60"
         )}
         style={{ left: `${(m.start / duration) * 100}%` }}

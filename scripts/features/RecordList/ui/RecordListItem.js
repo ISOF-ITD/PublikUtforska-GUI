@@ -311,9 +311,7 @@ export default function RecordListItem(props) {
           {recordtype === "one_accession_row" && count !== 0 && (
             <div className="subrecords mt-1">
               <small>
-                <a
-                  type="button"
-                  onClick={toggle}
+                <button type="button" onClick={toggle}
                   className="inline-flex items-center text-isof hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-isof/60 rounded-sm"
                 >
                   <FontAwesomeIcon
@@ -326,7 +324,7 @@ export default function RecordListItem(props) {
                     : l("Uppteckningar")}
                   {visible && " i den här accessionen"} ({count})
                   {visible && ":"}
-                </a>
+                </button>
               </small>
 
               {visible && (

@@ -43,41 +43,41 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
 
   return (
     <div className="flex items-center gap-3 sm:gap-4">
-      <a
+      <button
+        type="button"
         ref={backwardBtn}
-        role="button"
         aria-label={`Spola −${JUMP_SEC} sek`}
         onClick={() => seekRelative(-JUMP_SEC)}
         className={BTN}
       >
         <FontAwesomeIcon icon={faRotateLeft} />
         <span className="absolute bottom-0.5 right-1 text-sm">{JUMP_SEC}</span>
-      </a>
+      </button>
 
-      <a
+      <button
+        type="button"
         aria-label={playing ? "Pausa" : "Spela"}
         aria-pressed={playing}
         onClick={togglePlay}
-        role="button"
         className={`${BTN} !bg-isof bg-opacity-90 hover:bg-darker-isof 
         text-white shadow-darker-isof`}
       >
         <FontAwesomeIcon icon={playing ? faPause : faPlay} />
-      </a>
+      </button>
 
-      <a
+      <button
+        type="button"
         ref={forwardBtn}
-        role="button"
         aria-label={`Spola +${JUMP_SEC} sek`}
         onClick={() => seekRelative(JUMP_SEC)}
         className={BTN}
       >
         <FontAwesomeIcon icon={faRotateRight} />
         <span className="absolute bottom-0.5 left-1 text-sm">{JUMP_SEC}</span>
-      </a>
+      </button>
 
       {/* hide speed picker where width < 430 px */}
-      <div className="hidden min-[430px]:block">
+      <div className="hidden pb-[15px] min-[430px]:block">
         <SpeedSelector audioRef={audioRef} />
       </div>
     </div>

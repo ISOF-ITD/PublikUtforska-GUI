@@ -100,7 +100,7 @@ function IntroOverlay({ show = false, onClose }) {
           <iframe
             ref={iframeRef}
             id="iframe"
-            title="iframe"
+            title="Introduktion och hjälp"
             src={iframeSrc}
             style={{
               border: "none",

@@ -35,6 +35,15 @@ export default function RecordTable({
     />
   ));
 
+
+  const ariaSortValue = (key) => {
+    if (sort !== key) return "none";
+    // aria-sort expects: "ascending" | "descending" | "other" | "none"
+    if (order === "asc") return "ascending";
+    if (order === "desc") return "descending";
+    return "none";
+  };
+
   return (
     <div className="hidden md:block">
       <table
@@ -50,18 +59,16 @@ export default function RecordTable({
 
             {shouldRenderColumn("archive_id") &&
               !config.siteOptions.recordList?.hideAccessionpage && (
-                <th className="text-left">
-                  <a
+                <th className="text-left" aria-sort={ariaSortValue("archive.archive_id_row.keyword")}>
+                  <button
+                    type="button"
                     onClick={() => handleSort("archive.archive_id_row.keyword")}
                     className="flex items-center gap-1 text-sky-900 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-isof-lighter"
-                    aria-sort={
-                      sort === "archive.archive_id_row.keyword" ? order : "none"
-                    }
                   >
                     {l("Arkivnummer")}
                     {sort === "archive.archive_id_row.keyword" &&
                       (order === "asc" ? "▼" : "▲")}
-                  </a>
+                  </button>
                 </th>
               )}
 
@@ -74,13 +81,14 @@ export default function RecordTable({
                 false && <th className="text-center">{l("Insamlare")}</th>}
 
             {shouldRenderColumn("year") && (
-              <th className="text-center">
-                <a
+              <th className="text-center" aria-sort={ariaSortValue("year")}>
+                <button
+                  type="button"
                   className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
                   onClick={() => handleSort("year")}
                 >
                   {sort === "year" && (order === "asc" ? "▼" : "▲")} {l("År")}
-                </a>
+                </button>
               </th>
             )}
 
@@ -91,15 +99,16 @@ export default function RecordTable({
 
             {shouldRenderColumn("transcriptionstatus") &&
               !config.siteOptions.recordList?.hideTranscriptionStatus && (
-                <th className="text-center">
-                  <a
+                <th className="text-center" aria-sort={ariaSortValue("transcriptionstatus")}>
+                  <button
+                    type="button"
                     className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
                     onClick={() => handleSort("transcriptionstatus")}
                   >
                     {sort === "transcriptionstatus" &&
                       (order === "asc" ? "▼" : "▲")}{" "}
                     {l("Avskrivna")}
-                  </a>
+                  </button>
                 </th>
               )}
 
