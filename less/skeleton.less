@@ -152,7 +152,12 @@ input[type="reset"]:focus,
 input[type="button"]:focus {
   color: #333;
   border-color: #888;
-  outline: 0; }
+  outline: 2px solid @color-red;
+  outline-offset: 2px; }
+
+/* Hide focus ring when it isn't keyboard-driven (keeps mouse UX clean) */
+.button:focus:not(:focus-visible),
+button:focus:not(:focus-visible) { outline: none; }
 
 .button.button-primary,
 button.button-primary,
