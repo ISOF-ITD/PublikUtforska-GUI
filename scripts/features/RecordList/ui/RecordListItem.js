@@ -446,27 +446,32 @@ export default function RecordListItem(props) {
       {shouldRenderColumn("place", columns) && (
         <td data-title={`${l("Ort")}:`} className="py-2">
           {places?.length > 0 && (
-            <div className={pillClasses}>
-              {places[0].specification && (
-                <span className="mr-1">{places[0].specification} i</span>
-              )}
-              <Link
-                to={`${mode === "transcribe" ? "/transcribe" : ""}/places/${
-                  places[0].id
-                }${createSearchRoute({
-                  category: searchParams.category,
-                  search: searchParams.search,
-                  search_field: searchParams.search_field,
-                })}`}
-                className="text-isof hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate(`/places/${places[0].id}`);
-                }}
-              >
-                {getPlaceString(places)}
-              </Link>
-            </div>
+            <>
+              {places.map((place) => (
+                <div key={place.id} className={pillClasses}>
+                  {place.specification && (
+                    <span className="mr-1">{place.specification} i</span>
+                  )}
+
+                  <Link
+                    to={`${mode === "transcribe" ? "/transcribe" : ""}/places/${
+                      place.id
+                    }${createSearchRoute({
+                      category: searchParams.category,
+                      search: searchParams.search,
+                      search_field: searchParams.search_field,
+                    })}`}
+                    className="text-isof hover:underline"
+                    // onClick={(e) => {
+                    //   e.preventDefault();
+                    //   navigate(`/places/${place.id}`);
+                    // }}
+                  >
+                    {getPlaceString([place])}
+                  </Link>
+                </div>
+              ))}
+            </>
           )}
         </td>
       )}
