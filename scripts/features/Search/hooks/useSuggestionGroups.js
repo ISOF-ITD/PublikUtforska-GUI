@@ -74,7 +74,7 @@ export default function useSuggestionGroups({
   const flatSuggestions = useMemo(
     () =>
       visibleSuggestionGroups.flatMap((g) =>
-        g.items.map((it) => ({ ...it, group: g }))
+        g.items.map((it) => ({ ...it, click: g.click }))
       ),
     [visibleSuggestionGroups]
   );

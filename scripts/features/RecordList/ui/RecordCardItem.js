@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import { l } from "../../../lang/Lang";
 import {
   getTitle,
-  makeArchiveIdHumanReadable,
   getPlaceString,
   pageFromTo,
 } from "../../../utils/helpers";
@@ -75,9 +74,8 @@ export const RecordCardItem = ({
   );
   const archiveId = useMemo(
     () =>
-      makeArchiveIdHumanReadable(archive?.archive_id, archive?.archive_org) ||
-      "",
-    [archive?.archive_id, archive?.archive_org]
+      archive?.archive_id_display_search?.join(", ") || "",
+    [archive, archive.archive_id_display_search]
   );
   const placeString = useMemo(() => getPlaceString(places || []), [places]);
 

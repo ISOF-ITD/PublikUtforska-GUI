@@ -1,7 +1,7 @@
-import config from '../config';
-import { l } from '../lang/Lang';
-import archiveLogoIsof from '../../img/archive-logo-isof.png';
-import archiveLogoIkos from '../../img/archive-logo-ikos.png';
+import config from "../config";
+import { l } from "../lang/Lang";
+import archiveLogoIsof from "../../img/archive-logo-isof.png";
+import archiveLogoIkos from "../../img/archive-logo-ikos.png";
 
 export function pageFromTo(input = {}) {
   /*
@@ -21,114 +21,6 @@ export function pageFromTo(input = {}) {
     return `${start}-${toPage}`;
   }
   return `${start}`;
-}
-
-// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
-// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
-export function makeArchiveIdElementHumanReadable(str, archiveOrg = null) {
-  // Matcha första delen av strängen som inte är en siffra (bokstäver)
-  // och andra delen som är minst en siffra (0 eller flera siffror)
-  // och behåll alla tecken efter siffran/siffrorna i andra delen
-  if (!str) return '';
-  const match = str.match(/^(\D*)([0-9:]+.*)?/);
-
-  // Om ingen matchning hittades, returnera en tom sträng
-  if (!match) return '';
-
-  let [letterPart = '', numberPart = ''] = match.slice(1);
-
-  //Vid behov lägg till prefix för arkiv om inga bokstäver i accessionsnummer (letterPart == '')
-  let prefix = '';
-
-  // OBS: Delen efter kolon ingår i accessionsnummer
-
-  // inga dubbla bokstavsprefix (prefix + letterPart) hanteras genom:
-  // 1. Arkivort Göteborg ska inte få prefix då prefix ingår i id, d.v.s har letterpart
-  // 2. För övriga arkivorter: 
-  //    Får prefix enligt ortens regler
-  //    Om numberpart inte tom så sätts letterpart till tom sträng
-  if (archiveOrg === 'Lund') {
-    // Visa alltid bokstavsprefix/letterpart - fråga AFG!
-    // if (numberPart && numberPart.length > 0) letterPart = ''
-    prefix = 'DAL';
-  }
-  if (archiveOrg === 'Umeå') {
-    if (numberPart && numberPart.length > 0) letterPart = ''
-    // getFirstNonAlpha(str) {
-    for (var i = 0; i<str.length;i++) {
-      if (!isNaN(str[i])) {
-        break;
-      }
-    }
-    // return false;
-    if (i < str.length) {
-      // Non numeric exists
-      var numericPart = str.substring(i);
-      var numericId = parseInt(numericPart)
-      if (numericId < 1166) {
-        prefix = 'FFÖN';
-      } else {
-        prefix = 'DAUM';
-      }
-    }
-  }
-  if (archiveOrg === 'Uppsala') {
-    // ULMA -> 39080
-    // SOFI 39081 – 39383
-    // DFU 39384 ->
-    prefix = "ULMA";
-    // getFirstNonAlpha(str)
-    let i = 0;
-    for (; i < str.length; i += 1) {
-      if (!isNaN(str[i])) {
-        break;
-      }
-    }
-    // return false;
-    if (i < str.length) {
-      // Non numeric exists
-      var numericPart = str.substring(i);
-      var numericId = parseInt(numericPart)
-      if (numericId >= 39081 && numericId <= 39383) {
-        prefix = 'SOFI';
-      }
-      if (numericId > 39383) {
-        prefix = 'DFU';
-      }
-      if (numberPart && numberPart.length > 0) {
-        // Alla med letterPart som ljud ska alltid ha prefix ULMA
-        if (letterPart.toLowerCase().includes('b') || letterPart.toLowerCase().includes('gr') || letterPart.toLowerCase().includes('ss')) {
-          prefix = 'ULMA';
-        }
-        // Visa alltid bokstavsprefix/letterpart
-        //letterPart = ''
-      }
-    }
-  }
-
-  // Omvandla bokstäver till versaler och ta bort inledande nollor
-  const parts = [
-    prefix,
-    letterPart.toUpperCase(),
-    String(numberPart || '').replace(/^0+/, ''),
-  ];
-
-  // Returnera en sträng med båda delarna separerade med ett mellanslag
-  return parts.join(' ').trim();
-}
-
-// Funktion för att splitta en sträng i två delar. e.g. "ifgh00010" blir "IFGH 10"
-// OBS: kan inte hantera strängar som avviker fån mönstret "bokstäver + siffror"
-export function makeArchiveIdHumanReadable(str, archiveOrg = null) {
-  // Kontrollera att str är definierad
-  if (!str) return '';
-
-  // Loopa över alla accessionsnummer utifall det finns flera accessionsnummer med separator semikolon ';'
-  return str
-    .split(';')
-    .map(p => makeArchiveIdElementHumanReadable(p.trim(), archiveOrg))
-    .filter(Boolean)
-    .join('; ');
 }
 
 // OBS: om `highlight` skickas medså innehåller return-strängen HTML-taggar
@@ -162,7 +54,7 @@ export function getTitle(title, contents, archive, highlight) {
   }
   if (archive) {
     // Default fallback for title to archive id and pages if archive.page exists
-    const humanReadableId = makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org);
+    const humanReadableId = archive.archive_id_display_search?.join(", ") || "";
     const pageInfo = archive.page ? `:${pageFromTo({ _source: { archive } })}` : '';
     return `${humanReadableId}${pageInfo}`;
   }
@@ -533,6 +425,16 @@ export function getArchiveLogo(archive) {
   );
 }
 
+function toQueryString(params) {
+  return Object.entries(params)
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([k, v]) => {
+      const val = k === "search" ? v : encodeURIComponent(v);
+      return `${k}=${val}`;
+    })
+    .join("&");
+}
+
 // används inte i nuläget, istället används getRecordsCountLocation
 // i loaders på routen
 export function getRecordsFetchLocation(params = {}) {
@@ -545,12 +447,16 @@ export function getRecordsFetchLocation(params = {}) {
 
     // Anpassa params till ES Djangi api
     if (queryParams.search) {
-      if (queryParams.search_field === 'person') {
+      if (queryParams.search_field === "person") {
         queryParams.person = queryParams.search;
         delete queryParams.search;
       }
-      if (queryParams.search_field === 'place') {
+      if (queryParams.search_field === "place") {
         queryParams.place = queryParams.search;
+        delete queryParams.search;
+      }
+      if (queryParams.search_field === "archive_id") {
+        queryParams.archive_id = queryParams.search;
         delete queryParams.search;
       }
       delete queryParams.search_field;
@@ -576,11 +482,11 @@ export function getRecordsCountLocation(params = {}) {
 
     // Anpassa params till ES Djangi api
     if (queryParams.search) {
-      if (queryParams.search_field === 'person') {
+      if (queryParams.search_field === "person") {
         queryParams.person = queryParams.search;
         delete queryParams.search;
       }
-      if (queryParams.search_field === 'place') {
+      if (queryParams.search_field === "place") {
         queryParams.place = queryParams.search;
         delete queryParams.search;
       }
@@ -594,7 +500,7 @@ export function getRecordsCountLocation(params = {}) {
     paramStrings = toQueryString(queryParams);
   }
 
-  const paramString = Array.isArray(paramStrings) ? paramStrings.join('&') : paramStrings;
+  const paramString = Array.isArray(paramStrings) ? paramStrings.join("&") : paramStrings;
   return `${url}?${paramString}`;
 }
 
@@ -615,16 +521,6 @@ function cleanParams(params) {
   return validParams;
 }
 
-function toQueryString(params) {
-  return Object.entries(params)
-    .filter(([, v]) => v !== null && v !== undefined && v !== '')
-    .map(([k, v]) => {
-      const val = k === 'search' ? v : encodeURIComponent(v);
-      return `${k}=${val}`;
-    })
-    .join('&');
-}
-
 export function getMapFetchLocation(params = {}) {
   const url = `${config.apiUrl}socken/`;
   let paramStrings = [];
@@ -636,12 +532,16 @@ export function getMapFetchLocation(params = {}) {
 
     // Anpassa params till ES Djangi api
     if (newParams.search) {
-      if (newParams.search_field === 'person') {
+      if (newParams.search_field === "person") {
         newParams.person = newParams.search;
         delete newParams.search;
       }
-      if (newParams.search_field === 'place') {
+      if (newParams.search_field === "place") {
         newParams.place = newParams.search;
+        delete newParams.search;
+      }
+      if (newParams.search_field === "archive_id") {
+        newParams.archive_id = newParams.search;
         delete newParams.search;
       }
       delete newParams.search_field;
@@ -650,7 +550,7 @@ export function getMapFetchLocation(params = {}) {
     paramStrings = toQueryString(newParams);
   }
 
-  const paramString = Array.isArray(paramStrings) ? paramStrings.join('&') : paramStrings;
+  const paramString = Array.isArray(paramStrings) ? paramStrings.join("&") : paramStrings;
   return `${url}?${paramString}`;
 }
 
@@ -702,6 +602,35 @@ export const fetchRecordMediaCount = async (functionScopeParams, setValue, setVa
   }
 };
 
+export function getPages(data) {
+  let pages = "";
+
+  if (data?.archive?.page) {
+    pages = data.archive.page;
+
+    // Kontrollera om 'pages' inte är ett intervall och hantera det
+    if (pages && String(pages).indexOf("-") === -1) {
+      if (data.archive.total_pages) {
+        // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
+        if (typeof pages === "string") {
+          const m = pages.match(/\d+/); // take the first number only (e.g. "10a" -> 10)
+          pages = m ? parseInt(m[0], 10) : NaN;
+        }
+
+        const totalPages = parseInt(data.archive.total_pages, 10);
+
+        // Om det finns fler än en sida, skapa intervall
+        if (Number.isFinite(pages) && Number.isFinite(totalPages) && totalPages > 1) {
+          const endPage = pages + totalPages - 1;
+          pages = `${pages}-${endPage}`;
+        }
+      }
+    }
+  }
+
+  return pages;
+}
+
 export function getTitleText(
   data,
   numberOfSubrecordsMedia,
@@ -745,36 +674,6 @@ export function getTitleText(
   }
   // Default: just show the best title we can construct
   return baseTitle || l("(Utan titel)");
-}
-
-
-export function getPages(data) {
-  let pages = '';
-
-  if (data?.archive?.page) {
-    pages = data.archive.page;
-
-    // Kontrollera om 'pages' inte är ett intervall och hantera det
-    if (pages && String(pages).indexOf('-') === -1) {
-      if (data.archive.total_pages) {
-        // Rensa bort icke-numeriska tecken som "10a" och gör om till siffra
-        if (typeof pages === 'string') {
-          const m = pages.match(/\d+/); // take the first number only (e.g. "10a" -> 10)
-          pages = m ? parseInt(m[0], 10) : NaN;
-        }
-
-        const totalPages = parseInt(data.archive.total_pages, 10);
-
-        // Om det finns fler än en sida, skapa intervall
-        if (Number.isFinite(pages) && Number.isFinite(totalPages) && totalPages > 1) {
-          const endPage = pages + totalPages - 1;
-          pages = `${pages}-${endPage}`;
-        }
-      }
-    }
-  }
-
-  return pages;
 }
 
 export function getRecordtypeLabel(recordType) {

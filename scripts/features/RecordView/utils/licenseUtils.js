@@ -1,13 +1,13 @@
 import config from "../../../config";
-import { getArchiveName, getPages, makeArchiveIdHumanReadable } from "../../../utils/helpers";
+import { getArchiveName, getPages } from "../../../utils/helpers";
 
 export function buildCitation(data) {
   const {
-    archive: { archive_id: archiveId, archive_org: archiveOrg },
+    archive: { archive_id_display_search: archiveIdDisplaySearch, archive_org: archiveOrg },
   } = data;
 
   const pages = getPages(data);
-  const idHuman = makeArchiveIdHumanReadable(archiveId, archiveOrg);
+  const idHuman = archiveIdDisplaySearch.join(", ");
   const orgName = getArchiveName(archiveOrg);
 
   // Example: "A123:45, s. 12–14, Arkivnamn"

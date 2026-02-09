@@ -121,6 +121,11 @@ function buildQueryString(inputParams = {}, requiredParams = {}) {
         delete merged.search; // we’ve moved it to place
         break;
 
+      case "archive_id":
+        merged.archive_id = value;
+        delete merged.search; // we’ve moved it to archive_id
+        break;
+
       default:
         // For “any”, “text”, or unknown search_field:
         // keep merged.search so the backend can do a normal full-text search

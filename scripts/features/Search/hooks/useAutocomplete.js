@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import config from "../../../config";
-import { makeArchiveIdHumanReadable } from "../../../utils/helpers";
 
 export default function useAutocomplete(query) {
   const [{ people, places, provinces, archiveIds }, setSuggestions] = useState({
@@ -54,8 +53,9 @@ export default function useAutocomplete(query) {
       fetchJson(`${apiUrl}autocomplete/archive_ids?search=${query}`, (data) =>
         data.map((r) => ({
           value: r.id,
-          label: makeArchiveIdHumanReadable(r.id),
-          secondaryLabel: `(${r.id})`,
+          label: r.id,
+          // secondarylabel behövs inte längre?
+          // secondaryLabel: `(${r.id})`,
         }))
       ),
     ])

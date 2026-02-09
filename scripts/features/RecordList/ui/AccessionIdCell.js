@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
-import { makeArchiveIdHumanReadable, pageFromTo } from "../../../utils/helpers";
+import { pageFromTo } from "../../../utils/helpers";
 
 export default function AccessionIdCell({
   archive,
@@ -11,7 +11,7 @@ export default function AccessionIdCell({
 }) {
   const base = (
     <span className="whitespace-nowrap md:whitespace-normal">
-      {makeArchiveIdHumanReadable(archive.archive_id, archive.archive_org)}
+      {archive.archive_id_display_search?.join(", ") || ""}
       {archive.page &&
         `:${
           recordtype === "one_record"
