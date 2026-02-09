@@ -139,68 +139,71 @@ input[type="button"] {
   border: 1px solid #bbb;
   cursor: pointer;
   box-sizing: border-box;
-  .transition(all 200ms ease-in-out); }
-.button:hover,
-button:hover,
-input[type="submit"]:hover,
-input[type="reset"]:hover,
-input[type="button"]:hover,
-.button:focus,
-button:focus,
-input[type="submit"]:focus,
-input[type="reset"]:focus,
-input[type="button"]:focus {
-  color: #333;
-  border-color: #888;
-  outline: 2px solid @color-red;
-  outline-offset: 2px; }
+  // .transition(all 200ms ease-in-out);
+}
+// .button:hover,
+// button:hover,
+// input[type="submit"]:hover,
+// input[type="reset"]:hover,
+// input[type="button"]:hover,
+
+// .button:focus,
+// button:focus,
+// input:focus,
+// textarea:focus,
+// select:focus
+// {
+//   color: #333;
+//   border-color: #888;
+//   outline: 2px solid @color-red;
+//   outline-offset: 2px; }
 
 /* Hide focus ring when it isn't keyboard-driven (keeps mouse UX clean) */
-.button:focus:not(:focus-visible),
-button:focus:not(:focus-visible) { outline: none; }
+// .button:focus:not(:focus-visible),
+// button:focus:not(:focus-visible) { outline: none; }
 
-.button.button-primary,
-button.button-primary,
-input[type="submit"].button-primary,
-input[type="reset"].button-primary,
-input[type="button"].button-primary {
-  color: #FFF;
-  background-color: @color-red;
-  border: none; }
-.button.button-primary:hover,
-button.button-primary:hover,
-input[type="submit"].button-primary:hover,
-input[type="reset"].button-primary:hover,
-input[type="button"].button-primary:hover,
-.button.button-primary:focus,
-button.button-primary:focus,
-input[type="submit"].button-primary:focus,
-input[type="reset"].button-primary:focus,
-input[type="button"].button-primary:focus {
-  color: #FFF;
-  background-color: darken(@color-red, 10%); }
+// .button.button-primary,
+// button.button-primary,
+// input[type="submit"].button-primary,
+// input[type="reset"].button-primary,
+// input[type="button"].button-primary {
+//   color: #FFF;
+//   background-color: @color-red;
+//   border: none; }
+// .button.button-primary:hover,
+// button.button-primary:hover,
+// input[type="submit"].button-primary:hover,
+// input[type="reset"].button-primary:hover,
+// input[type="button"].button-primary:hover,
+// .button.button-primary:focus,
+// button.button-primary:focus,
+// input[type="submit"].button-primary:focus,
+// input[type="reset"].button-primary:focus,
+// input[type="button"].button-primary:focus {
+//   color: #FFF;
+//   background-color: darken(@color-red, 10%); }
 
-.button.button-gray,
-button.button-gray,
-input[type="submit"].button-gray,
-input[type="reset"].button-gray,
-input[type="button"].button-gray {
-  color: #FFF;
-  background-color: #79847f;
-  box-shadow: inset 0px -3px 0px #515955;
-  border: none; }
-.button.button-gray:hover,
-button.button-gray:hover,
-input[type="submit"].button-gray:hover,
-input[type="reset"].button-gray:hover,
-input[type="button"].button-gray:hover,
-.button.button-gray:focus,
-button.button-gray:focus,
-input[type="submit"].button-gray:focus,
-input[type="reset"].button-gray:focus,
-input[type="button"].button-gray:focus {
-  color: #FFF;
-  background-color: #97a19c; }
+// .button.button-gray,
+// button.button-gray,
+// input[type="submit"].button-gray,
+// input[type="reset"].button-gray,
+// input[type="button"].button-gray {
+//   color: #FFF;
+//   background-color: #79847f;
+//   box-shadow: inset 0px -3px 0px #515955;
+//   border: none; }
+// .button.button-gray:hover,
+// button.button-gray:hover,
+// input[type="submit"].button-gray:hover,
+// input[type="reset"].button-gray:hover,
+// input[type="button"].button-gray:hover,
+// .button.button-gray:focus,
+// button.button-gray:focus,
+// input[type="submit"].button-gray:focus,
+// input[type="reset"].button-gray:focus,
+// input[type="button"].button-gray:focus {
+//   color: #FFF;
+//   background-color: #97a19c; }
 
 .button.button-small,
 button.button-small,
@@ -264,17 +267,6 @@ textarea {
   min-height: 65px;
   padding-top: 6px;
   padding-bottom: 6px; }
-input[type="email"]:focus,
-input[type="number"]:focus,
-input[type="search"]:focus,
-input[type="text"]:focus,
-input[type="tel"]:focus,
-input[type="url"]:focus,
-input[type="password"]:focus,
-textarea:focus,
-select:focus {
-  border: 1px solid #A5865A;
-  outline: 0; }
 label,
 legend {
   display: block;
