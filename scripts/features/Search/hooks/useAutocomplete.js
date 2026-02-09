@@ -30,27 +30,27 @@ export default function useAutocomplete(query) {
     const { apiUrl } = config;
 
     Promise.allSettled([
-      fetchJson(`${apiUrl}autocomplete/persons?search=${query}`, (data) =>
-        data
+      fetchJson(
+        `${apiUrl}autocomplete/persons/?search=${query}&count=${config.numberOfPersonSuggestions}`, (data) => data
           .filter((p) => !/^p\d+$/.test(p.id))
           .map((p) => ({
             value: p.id,
             label: `${p.name}${p.birth_year ? ` (född ${p.birth_year})` : ""}`,
           }))
       ),
-      fetchJson(`${apiUrl}autocomplete/socken?search=${query}`, (data) =>
+      fetchJson(`${apiUrl}autocomplete/socken/?search=${query}`, (data) =>
         data.map((p) => ({
-          value: p.id,
+          value: p.name,
           label: `${p.name}${p.landskap ? ` (${p.landskap})` : ""}`,
         }))
       ),
-      fetchJson(`${apiUrl}autocomplete/landskap?search=${query}`, (data) =>
+      fetchJson(`${apiUrl}autocomplete/landskap/?search=${query}`, (data) =>
         data.map((p) => ({
           value: p.name,
           label: p.name,
         }))
       ),
-      fetchJson(`${apiUrl}autocomplete/archive_ids?search=${query}`, (data) =>
+      fetchJson(`${apiUrl}autocomplete/archive_ids/?search=${query}`, (data) =>
         data.map((r) => ({
           value: r.id,
           label: r.id,
