@@ -241,7 +241,7 @@ export default function RecordListItem(props) {
             if (!highlighted) return null;
 
             return (
-              <div className="flex flex-col mt-2" key={descHit._id}>
+              <div className="flex flex-col mt-2" key={`test-${descHit._id}`}>
                 <span className="mr-1">Innehållsbeskrivning:</span>
                 <HighlightedText
                   text={highlighted}
@@ -261,14 +261,17 @@ export default function RecordListItem(props) {
 
               if (!highlighted) return null;
 
-              const startLabel =
-                descHit._source?.start !== undefined
-                  ? ` (${secondsToMMSS(descHit._source.start)})`
-                  : "";
+              const startLabel = descHit._source?.start !== undefined
+                ? ` (${secondsToMMSS(descHit._source.start)})`
+                : "";
 
               return (
-                <div className="flex flex-col mt-2" key={descHit._id}>
-                  <span className="mr-1">Ljudavskrift{startLabel}:</span>
+                <div className="flex flex-col mt-2" key={`test2-${descHit._id}-${startLabel}`}>
+                  <span className="mr-1">
+                    Ljudavskrift
+                    {startLabel}
+                    :
+                  </span>
                   <HighlightedText
                     text={highlighted}
                     className="inline"
@@ -309,7 +312,7 @@ export default function RecordListItem(props) {
             if (!highlighted) return null;
 
             return (
-              <div className="flex flex-col mt-2" key={hit._id}>
+              <div className="flex flex-col mt-2" key={`media-${hit._id}-${highlighted}`}>
                 <span className="mr-1">Transkribering:</span>
                 <HighlightedText
                   text={highlighted}
