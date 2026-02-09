@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   getPersonFetchLocation,
-  getPlaceFetchLocation,
 } from "../../../utils/helpers";
 
 export default function useSelectionFromRoute(qParam, search_field) {
@@ -17,17 +16,16 @@ export default function useSelectionFromRoute(qParam, search_field) {
         if (search_field === "person" && qParam) {
           const r = await fetch(getPersonFetchLocation(qParam));
           if (!r.ok) throw new Error("Failed to fetch person");
+          console.log("Fetched person:", r, qParam);
           const json = await r.json();
           if (!cancelled) {
             setSelectedPerson(json);
             setSelectedPlace(null);
           }
         } else if (search_field === "place" && qParam) {
-          const r = await fetch(getPlaceFetchLocation(qParam));
-          if (!r.ok) throw new Error("Failed to fetch place");
-          const json = await r.json();
           if (!cancelled) {
-            setSelectedPlace(json);
+            console.log("Setting selected place:", qParam);
+            setSelectedPlace(qParam);
             setSelectedPerson(null);
           }
         } else if (search_field === "archive_id" && qParam) {
@@ -66,7 +64,7 @@ export default function useSelectionFromRoute(qParam, search_field) {
   const labelValue = selectedPerson
     ? selectedPerson.name
     : selectedPlace
-    ? selectedPlace.name
+    ? selectedPlace
     : selectedArchiveId
     ? selectedArchiveId
     : "";
