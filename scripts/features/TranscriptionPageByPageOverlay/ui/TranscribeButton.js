@@ -183,7 +183,7 @@ export default function TranscribeButton({
       <button
         className={classNames(
           // base
-          "flex items-center justify-center gap-2 h-10 !p-3 !text-base leading-normal tracking-normal border border-solid",
+          "flex items-center justify-center gap-2 h-10 px-3 !text-base leading-none tracking-normal border border-solid",
           "no-underline cursor-pointer mb-4 print:hidden transition-opacity duration-500",
           // variants
           variant === "primary" && "border-white !text-white",
