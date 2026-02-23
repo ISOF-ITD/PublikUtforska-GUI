@@ -17,6 +17,7 @@ Recommended extensions:
 * Code style: We use [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) to enforce a consistent code style. The rules are defined in [.eslintrc.js](.eslintrc.js) and are based on [Airbnb's JavaScript Style Guide](https://github.com/airbnb/javascript). With ESLint you 
 get code style warnings and errors while you type. You can run "Fix all auto-fixable Problems" (`Ctrl+Shift+P`) to fix most of the code style issues
 * (optional) [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode): with Prettier you can run "Format Document" (`Shift+Alt+F`) to format the code
+* AI coding instructions: `AGENTS.md` and `copilot-instructions.md` contain project-specific instructions for coding assistants (for example Codex and GitHub Copilot), so generated changes follow this repository's conventions.
 
 ## Start watching code with webpack
 
