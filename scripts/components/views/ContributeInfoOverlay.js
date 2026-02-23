@@ -453,7 +453,7 @@ export default function ContributeInfoOverlay() {
           </button>
           <button
             className={classNames(
-              "primary",
+              "button-primary",
               !formValid && "hover:cursor-not-allowed"
             )}
             type="submit"
