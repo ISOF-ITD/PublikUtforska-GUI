@@ -1,5 +1,8 @@
 # Tillgänglighet
 
+> **Notering:** Denna granskning är inte aktuell. Vi kommer att genomföra en ny granskning under 2026.
+
+
 Se https://webbriktlinjer.se/riktlinjer/?filter=on&guidelineorder=a&freetext-filter=&query-vlwebb-wcag%5B%5D=304&query-vlwebb-wcag%5B%5D=305&query-vlwebb-target%5B%5D=280&query-vlwebb-target%5B%5D=279
 
 |Symbol|Status|
