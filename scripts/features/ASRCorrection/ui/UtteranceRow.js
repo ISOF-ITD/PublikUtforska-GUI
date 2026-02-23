@@ -1,4 +1,4 @@
-﻿import { useRef } from "react";
+﻿import { useRef, memo } from "react";
 import {
   faCheck,
   faChevronLeft,
@@ -50,7 +50,7 @@ function renderWithItalics(text, query, allowItalics) {
       ital ? (
         <em key={i}>{node}</em>
       ) : (
-        <React.Fragment key={i}>{node}</React.Fragment>
+        <Fragment key={i}>{node}</Fragment>
       )
     );
   }
@@ -58,7 +58,7 @@ function renderWithItalics(text, query, allowItalics) {
 }
 
 /* ─────────────────── READ-ONLY ROW ─────────────────── */
-export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
+export const ReadOnlyUtteranceRow = memo(function ReadOnlyUtteranceRow({
   index,
   style = {},
   data,
@@ -126,7 +126,7 @@ export const ReadOnlyUtteranceRow = React.memo(function ReadOnlyUtteranceRow({
   );
 });
 
-export default React.memo(function UtteranceRow({
+export default memo(function UtteranceRow({
   index,
   style = {}, // from react-window (desktop only)
   data,
