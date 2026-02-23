@@ -132,7 +132,11 @@ function TranscriptionHelpOverlay() {
           skrivet som ett o med ^ över.
           <br />
           Landsmålsalfabetet kan du läsa mer om{" "}
-          <a target="_blank" href="https://sok.folke.isof.se/?k=start/anvanda-folke/landsmalsalfabetet">
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://sok.folke.isof.se/?k=start/anvanda-folke/landsmalsalfabetet"
+          >
             här
           </a>
           . När dessa fonetiska tecken förekommer i texten, skriv då{" "}
