@@ -22,9 +22,6 @@ module.exports = {
     'react',
   ],
   rules: {
-    // Avoid quotes rule that is deprecated
-    //"avoidEscape": true,
-    'quotes': ['error', 'double', { avoidEscape: true }],
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],

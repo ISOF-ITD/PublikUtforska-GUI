@@ -7,7 +7,8 @@
     "start": "webpack serve --open --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
     "create-sitemap": "node create-sitemap.js",
-    "analyze-bundle": "webpack --config webpack.analyze.js"
+    "analyze-bundle": "webpack --config webpack.analyze.js",
+    "lint": "eslint . --ext .js,.jsx --max-warnings 0"
   },
   "author": "",
   "license": "ISC",
