@@ -52,12 +52,17 @@ function ListPlayButton({
   
   // Decide which icon to show
   const iconToShow = isActiveAndPlaying ? pauseIcon : playIcon;
+  const controlLabel = isActiveAndPlaying ? "Pausa uppspelning" : "Spela upp";
 
   // Smaller button for sub-list, default for main.
-  const sizeClasses = isSubList ? 'w-3 h-3 text-darker-isof' : 'text-isof w-6 h-6';
+  const sizeClasses = isSubList ? "w-3 h-3 text-darker-isof" : "text-isof w-6 h-6";
 
   return (
-    <button type="button" onClick={playButtonClickHandler}
+    <button
+      type="button"
+      onClick={playButtonClickHandler}
+      aria-label={controlLabel}
+      aria-pressed={isActiveAndPlaying}
       className="hover:cursor-pointer"
     >
       <FontAwesomeIcon icon={iconToShow} className={sizeClasses} />

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from "react";
+﻿import { useRef } from "react";
 import {
   faCheck,
   faChevronLeft,

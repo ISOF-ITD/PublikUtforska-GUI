@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { TermList, TermNode } from "./TermList";
+import { useEffect, useState, useCallback } from "react";
 import StartTimeInputWithPlayer from "./StartTimeInput";
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
+import { TermList, TermNode } from "./TermList";
 
 // Memoize flattenTermList as it's static data
 const allTerms = (() => {
@@ -19,21 +19,31 @@ const allTerms = (() => {
   return flattenTermList(TermList);
 })();
 
-const InfoMessage = ({ children }) => (
+function InfoMessage({ children }) {
+  return (
   <div className="mb-2 text-sm bg-isof bg-opacity-10 p-2 rounded flex items-start">
     <FontAwesomeIcon icon={faInfoCircle} className="mr-2 my-1 text-isof" />
     {children}
   </div>
-);
+  );
+}
 
-const Tag = ({ tag, onRemove }) => (
+function Tag({ tag, onRemove }) {
+  return (
   <span className="flex items-center gap-1 bg-isof text-white px-2 py-1 rounded">
     {tag.term}
-    <span className="hover:cursor-pointer ml-1" onClick={() => onRemove(tag)}>
+    <button
+      type="button"
+      className="hover:cursor-pointer ml-1"
+      onClick={() => onRemove(tag)}
+      aria-label={`Ta bort ämnesord ${tag.term}`}
+      title={`Ta bort ${tag.term}`}
+    >
       ×
-    </span>
+    </button>
   </span>
-);
+  );
+}
 
 function DescriptionForm({
   source,
@@ -227,7 +237,8 @@ function DescriptionForm({
 }
 
 // Sub-components
-const FormSection = ({ title, children, labelFor }) => (
+function FormSection({ title, children, labelFor }) {
+  return (
   <div className="mb-4">
     {labelFor ? (
       <label htmlFor={labelFor} className="block font-semibold mb-1">
@@ -238,22 +249,26 @@ const FormSection = ({ title, children, labelFor }) => (
     )}
     {children}
   </div>
-);
+  );
+}
 
-const CharacterCount = ({ count }) => (
+function CharacterCount({ count }) {
+  return (
   <div className="text-right text-xs text-gray-500">
     {count || 0}/500 tecken
   </div>
-);
+  );
+}
 
-const TermSection = ({
+function TermSection({
   data,
   showTermNode,
   onToggleTerm,
   onAddTag,
   onChange,
   onToggleTree,
-}) => (
+}) {
+  return (
   <FormSection title="Ämnesord *">
     <InfoMessage>
       Steg 3 av 3. Välj eller skriv minst ett ämnesord som bäst beskriver
@@ -300,9 +315,10 @@ const TermSection = ({
 
     <SelectedTags tags={data.selectedTags} onRemove={onToggleTerm} />
   </FormSection>
-);
+  );
+}
 
-const TermSuggestions = ({ typedTag, onSelect, onChange }) => {
+function TermSuggestions({ typedTag, onSelect, onChange }) {
   if (!typedTag) return null;
 
   const matches = allTerms
@@ -325,9 +341,10 @@ const TermSuggestions = ({ typedTag, onSelect, onChange }) => {
       ))}
     </div>
   );
-};
+}
 
-const SelectedTags = ({ tags, onRemove }) => (
+function SelectedTags({ tags, onRemove }) {
+  return (
   <>
     {tags?.length > 0 && (
       <div className="flex flex-wrap gap-2 mt-2">
@@ -337,9 +354,10 @@ const SelectedTags = ({ tags, onRemove }) => (
       </div>
     )}
   </>
-);
+  );
+}
 
-const ExplanationSection = () => {
+function ExplanationSection() {
   return (
     <div className="mb-4">
       <details className="text-sm text-gray-600">
@@ -356,9 +374,10 @@ const ExplanationSection = () => {
       </details>
     </div>
   );
-};
+}
 
-const UserInfoSection = ({ data, onChange }) => (
+function UserInfoSection({ data, onChange }) {
+  return (
   <div className="mt-4">
     <div className="mt-2">
       <details className="text-sm text-gray-600">
@@ -421,9 +440,11 @@ const UserInfoSection = ({ data, onChange }) => (
       </label>
     </div>
   </div>
-);
+  );
+}
 
-const FormActions = ({ isValid, isEditing, onCancel, onSave, onDelete }) => (
+function FormActions({ isValid, isEditing, onCancel, onSave, onDelete }) {
+  return (
   <div className="flex items-center justify-end gap-4 mt-4">
     {isEditing && (
       <button
@@ -454,7 +475,8 @@ const FormActions = ({ isValid, isEditing, onCancel, onSave, onDelete }) => (
       {isEditing ? "Spara ändringar" : "Spara"}
     </button>
   </div>
-);
+  );
+}
 
 DescriptionForm.propTypes = {
   source: PropTypes.string.isRequired,
