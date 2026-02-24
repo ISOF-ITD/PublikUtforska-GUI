@@ -154,7 +154,7 @@ function ArchiveImage({
         <img
           ref={imageRef}
           src={imageUrl + mediaItem.source}
-          alt={mediaItem.title || ""}
+          alt={mediaItem.title?.trim() || mediaItem.comment?.trim() || 'Arkivbild'}
           className={imageClasses}
           {...imgProps}
         />

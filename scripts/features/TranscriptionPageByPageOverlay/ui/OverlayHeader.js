@@ -40,10 +40,11 @@ function OverlayHeader({
           <div
             className="h-1 bg-gray-200 rounded overflow-hidden"
             role="progressbar"
+            aria-label={l('Transkriberingsprogress')}
             aria-valuenow={progressCurrent}
             aria-valuemin={0}
             aria-valuemax={progressTotal}
-            title={`${l("Sida")}: ${progressLabel}`}
+            title={`${l('Sida')}: ${progressLabel}`}
           >
             <div
               className="h-full bg-lighter-isof transition-all"
