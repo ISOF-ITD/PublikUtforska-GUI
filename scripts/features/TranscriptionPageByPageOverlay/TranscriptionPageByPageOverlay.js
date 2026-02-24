@@ -464,21 +464,6 @@ export default function TranscriptionPageByPageOverlay() {
   /* ------------------------------------------------------------ */
   if (!visible || !recordDetails) return null;
 
-  /* thumbnail list */
-  const thumbnails = pages.map((p, idx) =>
-    p?.source?.toLowerCase().endsWith(".pdf") ? null : (
-      <img
-        key={idx}
-        id={`thumb-${idx}`}
-        data-index={idx}
-        className="image-item"
-        src={`${config.imageUrl}${p.source}`}
-        alt={`Uppteckning ${recordDetails.id} – ${l("sida")} ${idx}`}
-        loading="lazy"
-        onClick={() => navigatePages(idx)}
-      />
-    )
-  );
   const currentPage = pages[currentPageIndex];
   const isPdf = currentPage?.source?.toLowerCase().endsWith(".pdf");
 
@@ -576,9 +561,7 @@ export default function TranscriptionPageByPageOverlay() {
               pages={pages}
               navigatePages={navigatePages}
               currentPageIndex={currentPageIndex}
-            >
-              {thumbnails}
-            </TranscriptionThumbnails>
+            />
           </div>
         </div>
       </div>
