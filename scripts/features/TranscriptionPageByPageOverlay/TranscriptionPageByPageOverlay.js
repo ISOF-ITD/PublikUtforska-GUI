@@ -466,6 +466,13 @@ export default function TranscriptionPageByPageOverlay() {
 
   const currentPage = pages[currentPageIndex];
   const isPdf = currentPage?.source?.toLowerCase().endsWith(".pdf");
+  const imageDescription = currentPage
+    ? currentPage.text?.trim()
+      || currentPage.comment?.trim()
+      || `${recordDetails.title || 'Uppteckning'}, ${l('sida')} ${
+        currentPageIndex + 1
+      }`
+    : '';
 
   return (
     <div className="overlay-container visible transcription-page-by-page-overlay">
@@ -531,7 +538,10 @@ export default function TranscriptionPageByPageOverlay() {
           {/* -------- Right column: image + nav ------ */}
           <div className="eight columns">
             {currentPage && !isPdf && (
-              <ImageMap image={`${config.imageUrl}${currentPage.source}`} />
+              <ImageMap
+                image={`${config.imageUrl}${currentPage.source}`}
+                description={imageDescription}
+              />
             )}
             {currentPage && isPdf && (
               <p>

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo, useId } from "react";
 import L, { marker, circleMarker, DivIcon, Point, layerGroup } from "leaflet";
 import "leaflet.markercluster";
 import "../../lib/leaflet-heat";
@@ -41,6 +41,15 @@ export default function MapView({
       );
     });
   }, [mapData]);
+  const mapSummaryId = useId();
+  const mapSummaryText = useMemo(() => {
+    if (!points.length) {
+      return 'Kartan visar inga platser for nuvarande urval.';
+    }
+    return `Kartan visar ${points.length} platser i ${
+      currentView === 'clusters' ? 'klustervy' : 'cirkelvy'
+    }. Valj en markör för att visa relaterade sökresultat.`;
+  }, [points.length, currentView]);
 
   const removeOverlays = useCallback((map) => {
     if (clusterGroupRef.current) {
@@ -187,6 +196,9 @@ export default function MapView({
 
   return (
     <div>
+      <p id={mapSummaryId} className="sr-only">
+        {mapSummaryText}
+      </p>
       <button
         type="button"
         tabIndex={0}
@@ -215,6 +227,8 @@ export default function MapView({
       <MapBase
         ref={mapView}
         className="absolute top-0 h-screen w-screen opacity-0 transition-opacity duration-300 ease-in-out [.app-initialized_&]:opacity-100"
+        ariaLabel="Interaktiv sokkarta"
+        ariaDescribedBy={mapSummaryId}
         layersControlPosition={layersControlPosition}
         zoomControlPosition={zoomControlPosition}
         disableLocateControl

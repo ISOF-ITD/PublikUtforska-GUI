@@ -32,12 +32,23 @@ function MapWrapper({
 
   const hasMapData = mapData && Object.keys(mapData).length > 0;
   const stableMapData = hasMapData ? mapData : lastMapDataRef.current;
+  const mapResultCount = Array.isArray(stableMapData?.data)
+    ? stableMapData.data.length
+    : 0;
+  const mapSummaryText = mapResultCount > 0
+    ? `Kartan visar ${mapResultCount} platser i nuvarande urval.`
+    : 'Kartan visar inga platser i nuvarande urval.';
 
   return (
     <div
       className="relative h-screen w-screen print:hidden"
+      role='region'
+      aria-label='Kartvy för sökresultat'
       aria-busy={uiLoading || undefined}
     >
+      <span className="sr-only" aria-live="polite">
+        {mapSummaryText}
+      </span>
       <MapMenu
         mode={mode}
         params={params}

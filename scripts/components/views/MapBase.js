@@ -235,9 +235,9 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     return () => {
       try {
         if (
-          typeof window !== "undefined" &&
-          window.eventBus &&
-          window.__mapbase_nordic_handler__
+          typeof window !== 'undefined'
+          && window.eventBus
+          && window.__mapbase_nordic_handler__
         ) {
           window.eventBus.removeEventListener(
             "nordicLegendsUpdate",
@@ -278,12 +278,19 @@ const MapBase = forwardRef(function MapBase(props, ref) {
           : `${props.mapHeight}px`,
       }
     : undefined;
+  const mapAriaLabel = props.ariaLabel
+    || (props.disableInteraction
+      ? 'Karta över vald plats'
+      : 'Interaktiv karta med sökresultat');
 
   return (
     <div
       className={props.className || "mb-5 h-52"}
       ref={containerRef}
       style={style}
+      role="region"
+      aria-label={mapAriaLabel}
+      aria-describedby={props.ariaDescribedBy}
     />
   );
 });

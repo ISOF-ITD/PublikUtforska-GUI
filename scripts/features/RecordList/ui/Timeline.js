@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect, useId, useMemo, useRef, useState,
+} from 'react';
 import PropTypes from 'prop-types';
 import config from '../../../config';
 
@@ -18,8 +20,36 @@ function Timeline({
   // fetch data med params när params ändras
   const [data, setData] = useState([]);
   const abortRef = useRef(null);
+  const headingId = useId();
+  const summaryId = useId();
 
   const svgHeight = 60;
+  const timelineSummary = useMemo(() => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return 'Tidslinjen saknar data i nuvarande urval.';
+    }
+
+    const firstYear = data[0]?.year;
+    const lastYear = data[data.length - 1]?.year;
+    const totalHits = data.reduce(
+      (sum, item) => sum + (Number(item?.doc_count) || 0),
+      0
+    );
+
+    const peak = data.reduce((best, item) => {
+      const count = Number(item?.doc_count) || 0;
+      if (!best || count > best.doc_count) {
+        return { year: item?.year, doc_count: count };
+      }
+      return best;
+    }, null);
+
+    if (!peak) {
+      return `Tidslinjen visar söktraffar mellan ${firstYear} och ${lastYear}.`;
+    }
+
+    return `Tidslinjen visar ${totalHits} söktraffar mellan ${firstYear} och ${lastYear}. Flest traffar finns år ${peak.year} med ${peak.doc_count} träffar.`;
+  }, [data]);
 
   function selectionTextPosition(dragStart, dragEnd) {
     let dragStartOffset = 0;
@@ -155,6 +185,8 @@ function Timeline({
 
     svg
       .attr("role", "slider")
+      .attr('aria-label', 'Interaktiv tidslinje över söktraffar per år')
+      .attr('aria-describedby', summaryId)
       .attr("aria-valuemin", minYear)
       .attr("aria-valuemax", maxYear)
       .attr("aria-valuenow", filter?.from ?? minYear)
@@ -395,7 +427,7 @@ function Timeline({
       svg.on('.drag', null).on('mousemove', null).on('mouseleave', null);
     }; 
 
-  }, [data, containerWidth]);
+  }, [data, containerWidth, summaryId]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -415,11 +447,22 @@ function Timeline({
   }, [containerRef]);
 
   return (
-    <div className='lg:visible max-sm:hidden'>
+    <div
+      className='lg:visible max-sm:hidden'
+      role="region"
+      aria-labelledby={headingId}
+      aria-describedby={summaryId}
+    >
+      <span id={headingId} className="sr-only">
+        Tidslinje över söktraffar per år
+      </span>
       {!data.length && (
         <p className="text-center text-gray-500">Laddar tidslinje…</p>
       )}
       <svg ref={svgRef} width={containerWidth} height={svgHeight + 30} />
+      <span id={summaryId} className="sr-only">
+        {timelineSummary}
+      </span>
       <span role="status" aria-live="polite" className="sr-only">
         {filter?.from && `Visar ${filter.from}–${filter.to}`}
       </span>

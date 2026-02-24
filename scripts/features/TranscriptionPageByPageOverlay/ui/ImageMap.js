@@ -1,10 +1,11 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from 'react';
 import PropTypes from "prop-types";
 import { Map, imageOverlay, CRS, latLngBounds, DomEvent } from "leaflet";
 
 export default function ImageMap({
   image = null,
+  description = '',
   maxZoom = 3,
   minZoom = -5,
   fitOnImageChange = true, // fit-to-image whenever the `image` prop changes
@@ -19,6 +20,9 @@ export default function ImageMap({
   const [loading, setLoading] = useState(!!image);
   const [error, setError] = useState(null);
   const lastBoundsRef = useRef(null);
+  const descriptionId = useId();
+  const imageDescriptionText = description?.trim()
+    || 'Skannad arkivbild. Zooma for att granska detaljer i bilden.';
 
   const applyImageToMap = (img) => {
     const bounds = latLngBounds([
@@ -142,8 +146,12 @@ export default function ImageMap({
         style={{ height }}
         role="region"
         aria-label="Bildvisare"
+        aria-describedby={descriptionId}
         aria-busy={loading}
       />
+      <p id={descriptionId} className="sr-only">
+        {imageDescriptionText}
+      </p>
 
       {/* Loader overlay */}
       {loading && (
@@ -176,6 +184,7 @@ ImageMap.propTypes = {
   maxZoom: PropTypes.number,
   minZoom: PropTypes.number,
   image: PropTypes.string,
+  description: PropTypes.string,
   fitOnImageChange: PropTypes.bool,
   wheelZoomOnHover: PropTypes.bool,
   height: PropTypes.number,
