@@ -11,50 +11,44 @@ import FeedbackButton from "../../../components/views/FeedbackButton";
 import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
 import config from "../../../config";
 
+const renderMetadataItem = (label, value) => (
+  <div key={label} className="mr-2.5 inline">
+    <dt className="inline m-0 font-semibold">{label}</dt>
+    <dd className="inline m-0">{`: ${value}`}</dd>
+  </div>
+);
+
 const renderArchiveName = (archive) => {
   if (!archive?.archive_org) return null;
-  return (
-    <span className="mr-2.5">
-      <strong>{l("Arkiv")}</strong>
-      {`: ${getArchiveName(archive.archive_org)}`}
-    </span>
-  );
+  return renderMetadataItem(l("Arkiv"), getArchiveName(archive.archive_org));
 };
 
-const renderSubrecordCount = (recordtype, subrecordsCount) =>
-  recordtype === "one_accession_row" &&
-  (subrecordsCount?.value ?? subrecordsCount) ? (
-    <span className="mr-2.5">
-      <strong>{l("Antal uppteckningar")}</strong>
-      {`: ${subrecordsCount?.value ?? subrecordsCount}`}
-    </span>
-  ) : null;
+const renderSubrecordCount = (recordtype, subrecordsCount) => (
+  recordtype === "one_accession_row" && (subrecordsCount?.value ?? subrecordsCount)
+    ? renderMetadataItem(
+        l("Antal uppteckningar"),
+        subrecordsCount?.value ?? subrecordsCount,
+      )
+    : null
+);
 
-const renderAccessionsNumber = (recordtype, archive) => (
-  <span className="mr-2.5">
-    <strong>{l("Accessionsnummer")}</strong>
-    :&nbsp;
-    { archive.archive_id_display_search?.join(", ") || "" }
-  </span>
+const renderAccessionsNumber = (archive) => (
+  archive?.archive_id_display_search?.length
+    ? renderMetadataItem(
+        l("Accessionsnummer"),
+        archive.archive_id_display_search.join(", "),
+      )
+    : null
 );
 
 const renderYear = (year) => {
   if (!year) return null;
-  return (
-    <span className="mr-2.5">
-      <strong>{l("År")}</strong>
-      {`: ${String(year).padStart(4, "0").slice(0, 4)}`}
-    </span>
-  );
+  return renderMetadataItem(l("År"), String(year).padStart(4, "0").slice(0, 4));
 };
 
-const renderPageCount = (pages) =>
-  pages ? (
-    <span className="mr-2.5">
-      <strong>{l("Sidnummer")}</strong>
-      {`: ${pages}`}
-    </span>
-  ) : null;
+const renderPageCount = (pages) => (
+  pages ? renderMetadataItem(l("Sidnummer"), pages) : null
+);
 
 export default function RecordViewHeader({ data, subrecordsCount }) {
   const {
@@ -101,20 +95,16 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
               ?
             </span>
           </p>
-          <p>
-            {renderAccessionsNumber(recordtype, archive)}
+          <dl className="m-0">
+            {renderAccessionsNumber(archive)}
             {renderYear(year)}
             {renderSubrecordCount(recordtype, subrecordsCount)}
             {renderPageCount(pages)}
-            {shouldShowMaterialType && (
-              <span className="mr-2.5">
-                <strong>Materialtyp</strong>
-                {": "}
-                {materialtype}
-              </span>
-            )}
+            {shouldShowMaterialType &&
+              materialtype &&
+              renderMetadataItem(l("Materialtyp"), materialtype)}
             {renderArchiveName(archive)}
-          </p>
+          </dl>
         </div>
       </div>
       <FeedbackButton title={title} type="Uppteckning" country={country} />
