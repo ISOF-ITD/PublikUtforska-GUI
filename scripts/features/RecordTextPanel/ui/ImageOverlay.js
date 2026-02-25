@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useId, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useId, useMemo } from 'react';
 import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faChevronRight, faClose } from "@fortawesome/free-solid-svg-icons";
@@ -31,7 +31,13 @@ export default function ImageOverlay() {
   const hasNext = currentIndex < total - 1;
   const current = mediaList?.[currentIndex] ?? {};
 
-  const altText = useMemo(() => current?.text || current?.title || "", [current]);
+  const altText = useMemo(
+    () => current?.text?.trim()
+      || current?.title?.trim()
+      || current?.comment?.trim()
+      || 'Arkivbild',
+    [current],
+  );
 
   const assetUrl = useCallback((item) => {
     if (!item) return null;
@@ -195,17 +201,31 @@ export default function ImageOverlay() {
     touchStartY.current = null;
   }, [showNext, showPrev]);
 
-  const overlayClickHandler = useCallback((e) => {
-    // Close only when clicking the backdrop itself
-    if (e.target === e.currentTarget) closeOverlay();
-  }, [closeOverlay]);
-
   // When we change the src, show a loader until onLoad/onError fires
   useEffect(() => {
     if (!imageUrl) return;
     setHasError(false);
     setIsLoading(true);
   }, [imageUrl, type, reloadKey]);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    const onDocumentKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeOverlay();
+        return;
+      }
+
+      onKeyDownTrap(e);
+    };
+
+    document.addEventListener('keydown', onDocumentKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onDocumentKeyDown);
+    };
+  }, [visible, onKeyDownTrap, closeOverlay]);
 
   // Render nothing when hidden (portal unmounted)
   if (!visible) return null;
@@ -215,11 +235,17 @@ export default function ImageOverlay() {
       className={
         "fixed inset-0 z-[3000] bg-neutral-900/80 supports-[backdrop-filter]:bg-black/65 supports-[backdrop-filter]:backdrop-blur-sm"
       }
-      onClick={overlayClickHandler}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
     >
+      <button
+        type="button"
+        aria-label="Stäng overlay"
+        className="absolute inset-0 h-full w-full border-0 bg-transparent p-0"
+        onClick={closeOverlay}
+      />
+
       {/* Visually hidden title for screen readers */}
       <h2 id={titleId} className="sr-only">{`Bildvisning: ${currentIndex + 1} / ${total}`}</h2>
 
@@ -241,7 +267,6 @@ export default function ImageOverlay() {
         <div
           ref={dialogRef}
           tabIndex={-1}
-          onKeyDown={onKeyDownTrap}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
           className="relative max-w-[95vw] max-h-[92vh] outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-xl"

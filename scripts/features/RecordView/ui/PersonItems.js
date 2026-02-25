@@ -78,12 +78,12 @@ function PersonItems({ data, routeParams = "" }) {
       <h3 className="text-xl font-bold">{l("Personer")}</h3>
       <div className="overflow-x-auto border rounded">
         <table className="w-full text-left border-collapse table-auto">
-          <thead className="hidden md:table-header-group">
+          <thead className="sr-only md:table-header-group">
             <tr>
-              <th className="py-2 px-4 font-semibold">{l("Namn")}</th>
-              <th className="py-2 px-4 font-semibold">{l("Födelseår")}</th>
-              <th className="py-2 px-4 font-semibold">{l("Födelseort")}</th>
-              <th className="py-2 px-4 font-semibold">{l("Roll")}</th>
+              <th scope="col" className="py-2 px-4 font-semibold">{l('Namn')}</th>
+              <th scope="col" className="py-2 px-4 font-semibold">{l('Födelseår')}</th>
+              <th scope="col" className="py-2 px-4 font-semibold">{l('Födelseort')}</th>
+              <th scope="col" className="py-2 px-4 font-semibold">{l('Roll')}</th>
             </tr>
           </thead>
           <tbody>

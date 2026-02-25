@@ -388,9 +388,6 @@ export default function RecordTextPanel({
                 onMediaClick={(item, _arr, absIndex) =>
                   handleMediaClick(item, mediaImagesAbsolute, absIndex)
                 }
-                onKeyDown={(e, item, absIndex) =>
-                  handleKeyDown(e, item, absIndex)
-                }
                 buildTextSide={buildTextSide}
                 defaultOpen={i === 0}
                 segmentStatus={

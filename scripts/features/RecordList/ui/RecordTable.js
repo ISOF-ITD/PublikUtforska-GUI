@@ -48,18 +48,17 @@ export default function RecordTable({
     <div className="hidden md:block">
       <table
         className="mobile-table w-full text-sm border-collapse"
-        role="table"
       >
         {/* ---------- header ---------- */}
         <thead>
           <tr className="border-b border-gray-300 last:border-0">
             {shouldRenderColumn("title") && (
-              <th className="text-left w-1/2">{l("Titel")}</th>
+              <th scope="col" className="text-left w-1/2">{l('Titel')}</th>
             )}
 
             {shouldRenderColumn("archive_id") &&
               !config.siteOptions.recordList?.hideAccessionpage && (
-                <th className="text-left" aria-sort={ariaSortValue("archive.archive_id_row.keyword")}>
+                <th scope="col" className="text-left" aria-sort={ariaSortValue('archive.archive_id_row.keyword')}>
                   <button
                     type="button"
                     onClick={() => handleSort("archive.archive_id_row.keyword")}
@@ -73,15 +72,15 @@ export default function RecordTable({
               )}
 
             {shouldRenderColumn("place") && (
-              <th className="text-center">{l("Ort")}</th>
+              <th scope="col" className="text-center">{l('Ort')}</th>
             )}
 
             {shouldRenderColumn("collector") &&
               config.siteOptions.recordList?.visibleCollecorPersons !==
-                false && <th className="text-center">{l("Insamlare")}</th>}
+                false && <th scope="col" className="text-center">{l('Insamlare')}</th>}
 
             {shouldRenderColumn("year") && (
-              <th className="text-center" aria-sort={ariaSortValue("year")}>
+              <th scope="col" className="text-center" aria-sort={ariaSortValue('year')}>
                 <button
                   type="button"
                   className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
@@ -94,12 +93,12 @@ export default function RecordTable({
 
             {shouldRenderColumn("material_type") &&
               !config.siteOptions.recordList?.hideMaterialType && (
-                <th className="text-left">{l("Materialtyp")}</th>
+                <th scope="col" className="text-left">{l('Materialtyp')}</th>
               )}
 
             {shouldRenderColumn("transcriptionstatus") &&
               !config.siteOptions.recordList?.hideTranscriptionStatus && (
-                <th className="text-center" aria-sort={ariaSortValue("transcriptionstatus")}>
+                <th scope="col" className="text-center" aria-sort={ariaSortValue("transcriptionstatus")}>
                   <button
                     type="button"
                     className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
@@ -113,7 +112,7 @@ export default function RecordTable({
               )}
 
             {columns?.includes("transcribedby") && (
-              <th className="text-left">{l("Bidrag av")}</th>
+              <th scope="col" className="text-left">{l('Bidrag av')}</th>
             )}
           </tr>
         </thead>

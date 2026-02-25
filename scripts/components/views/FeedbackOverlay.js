@@ -1,6 +1,6 @@
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
 import { IconButton } from '../IconButton';
@@ -82,7 +82,7 @@ export default function FeedbackOverlay() {
 
   const sendButtonClickHandler = () => {
     let subject = appUrl;
-    if (subject.charAt(subject.length - 1) == '/') subject = subject.substr(0, subject.length - 1);
+    if (subject.charAt(subject.length - 1) === '/') subject = subject.substr(0, subject.length - 1);
     const data = {
       from_email: emailInputValue,
       from_name: nameInputValue,
@@ -137,21 +137,41 @@ export default function FeedbackOverlay() {
       <div>
         <p>{config.siteOptions.feedbackText || 'Har du frågor eller synpunkter på hur applikationen fungerar? Har du hittat fel, till exempel i avskrifterna? Kontakta oss gärna!'}</p>
         <hr />
-        <label htmlFor="feedback_name">Ditt namn:</label>
-        <input id="feedback_name" autoComplete="name" className="u-full-width" type="text" value={nameInputValue} onChange={nameInputChangeHandler} />
-        <label htmlFor="feedback_email">Din e-post adress:</label>
-        <input 
-          id="feedback_email" 
-          autoComplete="email" 
-          className={`u-full-width ${emailValid ? '' : 'invalid'}`} 
-          type="email" 
-          onBlur={handleEmailBlur}
-          value={emailInputValue} 
-          onChange={emailInputChangeHandler} 
-        />
-        <label htmlFor="feedback_message">Meddelande:</label>
-        <textarea lang="sv" spellCheck="false" id="feedback_message" className="u-full-width" value={messageInputValue} onChange={messageInputChangeHandler} />
-        <button className="button-primary" onClick={sendButtonClickHandler}>Skicka</button>
+        <label htmlFor="feedback_name">
+          Ditt namn:
+          <input
+            id="feedback_name"
+            autoComplete="name"
+            className="u-full-width"
+            type="text"
+            value={nameInputValue}
+            onChange={nameInputChangeHandler}
+          />
+        </label>
+        <label htmlFor="feedback_email">
+          Din e-post adress:
+          <input
+            id="feedback_email"
+            autoComplete="email"
+            className={`u-full-width ${emailValid ? '' : 'invalid'}`}
+            type="email"
+            onBlur={handleEmailBlur}
+            value={emailInputValue}
+            onChange={emailInputChangeHandler}
+          />
+        </label>
+        <label htmlFor="feedback_message">
+          Meddelande:
+          <textarea
+            lang="sv"
+            spellCheck="false"
+            id="feedback_message"
+            className="u-full-width"
+            value={messageInputValue}
+            onChange={messageInputChangeHandler}
+          />
+        </label>
+        <button className="button-primary" onClick={sendButtonClickHandler} type="button">Skicka</button>
       </div>
     );
   }

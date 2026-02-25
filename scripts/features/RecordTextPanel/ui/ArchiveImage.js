@@ -18,7 +18,6 @@ function ArchiveImage({
   mediaItem,
   index,
   onMediaClick,
-  onKeyDown,
   imageUrl,
   renderIndicator = null,
   renderMagnifyingGlass = false,
@@ -125,8 +124,8 @@ function ArchiveImage({
   const handleClick = () => onMediaClick(mediaItem, index);
 
   const containerClasses = classNames(
-    "group relative flex gap-3 overflow-hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-isof focus-visible:ring-offset-2 focus-visible:ring-offset-white cursor-zoom-in",
-    isThumb ? "w-28 sm:w-32 md:w-36" : "w-full",
+    "group relative flex gap-3 overflow-hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-isof focus-visible:ring-offset-2 focus-visible:ring-offset-white cursor-zoom-in appearance-none block w-full h-auto m-0 p-0 border-0 bg-transparent text-left align-top leading-none",
+    isThumb ? "w-28 sm:w-32 md:w-36 shrink-0" : "w-full",
     className
   );
 
@@ -141,12 +140,11 @@ function ArchiveImage({
   return (
     <div className="relative">
       {/* Click target: use a real button for semantics */}
-      <div
+      <button
         type="button"
         className={containerClasses}
-        aria-label={mediaItem.title || "Visa bild"}
+        aria-label={mediaItem.title || 'Visa bild'}
         onClick={handleClick}
-        onKeyDown={(e) => onKeyDown(e, mediaItem, index)}
         onMouseMove={isThumb ? undefined : handleMouseMove}
         onMouseLeave={isThumb ? undefined : handleMouseLeave}
         ref={containerRef}
@@ -171,7 +169,7 @@ function ArchiveImage({
             className="absolute hidden rounded-3xl border-2 border-solid border-white border-offset-2 border-offset-black/30 shadow-xl w-52 h-52 pointer-events-none"
           />
         )}
-      </div>
+      </button>
 
       {/* Caption (visible) */}
       {showCaption && (mediaItem.title || mediaItem.comment) && (
@@ -201,7 +199,6 @@ ArchiveImage.propTypes = {
   mediaItem: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
   onMediaClick: PropTypes.func.isRequired,
-  onKeyDown: PropTypes.func.isRequired,
   imageUrl: PropTypes.string.isRequired,
   renderIndicator: PropTypes.func,
   renderMagnifyingGlass: PropTypes.bool,

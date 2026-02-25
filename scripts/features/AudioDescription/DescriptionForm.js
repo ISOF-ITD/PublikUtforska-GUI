@@ -1,8 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
-import StartTimeInputWithPlayer from "./StartTimeInput";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from 'react';
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
+import StartTimeInputWithPlayer from './StartTimeInput';
 import { TermList, TermNode } from "./TermList";
 
 // Memoize flattenTermList as it's static data
@@ -18,6 +23,16 @@ const allTerms = (() => {
   };
   return flattenTermList(TermList);
 })();
+
+// Convert any string to a lowercase, URL/ID-safe format
+const toIdSafe = (value) => {
+  const safeValue = String(value || 'item')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return safeValue || 'item';
+};
 
 function InfoMessage({ children }) {
   return (
@@ -62,7 +77,19 @@ function DescriptionForm({
 }) {
   const [showTermNode, setShowTermNode] = useState(false);
   const dataForSource = formData[source] || {};
-  const [error, setError] = useState(null);
+  // Create a unique prefix for form field IDs based on the source
+  const idPrefix = useMemo(() => `audio-desc-${toIdSafe(source)}`, [source]);
+  const fieldIds = useMemo(
+    () => ({
+      start: `${idPrefix}-starttime`,
+      text: `${idPrefix}-text`,
+      term: `${idPrefix}-term`,
+      name: `${idPrefix}-name`,
+      email: `${idPrefix}-email`,
+      rememberMe: `${idPrefix}-remember`,
+    }),
+    [idPrefix],
+  );
 
   // Only set the form data once when `editingDesc` first appears or changes.
   useEffect(() => {
@@ -76,7 +103,7 @@ function DescriptionForm({
         prev[source]?.descriptionText === editingDesc.text;
 
       if (alreadyMatches) {
-        return prev; // Don’t overwrite user’s ongoing edits
+        return prev; // Don't overwrite user's ongoing edits
       }
 
       // Otherwise, fill the form with the existing description + user info
@@ -167,33 +194,34 @@ function DescriptionForm({
   return (
     <div className="border border-gray-300 p-4 mb-4 bg-white text-sm relative">
       <p className="text-lg font-semibold pb-4 text-isof">
-        Din kunskap kan hjälpa andra -{" "}
-        {editingDesc ? "Redigera beskrivning" : "Lägg till en beskrivning"}
+        Din kunskap kan hjälpa andra -
+        {' '}
+        {editingDesc ? 'Redigera beskrivning' : 'Lägg till en beskrivning'}
       </p>
 
       <ExplanationSection />
 
-      <FormSection title="Starttid (MM:SS) *" labelFor="audio-desc-starttime">
+      <FormSection title="Starttid (MM:SS) *" labelFor={fieldIds.start}>
         <InfoMessage>
           Steg 1 av 3. Ange den tidpunkt då samtalsämnet börjar. Du kan använda
           ljudspelaren för att hitta exakt tid eller ange tiden manuellt.
         </InfoMessage>
         <StartTimeInputWithPlayer
           autoFocus={!editingDesc}
-          inputId="audio-desc-starttime"
+          inputId={fieldIds.start}
           value={dataForSource.start || ""}
           onChange={(val) => handleChangeField("start", val)}
           required
         />
       </FormSection>
 
-      <FormSection title="Beskrivning *" labelFor="audio-desc-text">
+      <FormSection title="Beskrivning *" labelFor={fieldIds.text}>
         <InfoMessage>
           Steg 2 av 3. Beskriv kortfattat vad som sägs i ljudintervallet. Har du
           fler detaljer eller ytterligare insikter, dela gärna med dig av dem.
         </InfoMessage>
         <textarea
-          id="audio-desc-text"
+          id={fieldIds.text}
           className="border p-2 w-full mb-2"
           rows="4"
           value={dataForSource.descriptionText || ""}
@@ -211,25 +239,28 @@ function DescriptionForm({
         onAddTag={handleAddTypedTag}
         onChange={handleChangeField}
         onToggleTree={() => setShowTermNode(!showTermNode)}
+        fieldIds={fieldIds}
       />
 
-      <UserInfoSection data={dataForSource} onChange={handleChangeField} />
+      <UserInfoSection
+        data={dataForSource}
+        onChange={handleChangeField}
+        fieldIds={fieldIds}
+      />
 
       <FormActions
         isValid={isValid}
         isEditing={Boolean(editingDesc)}
         onCancel={onCancel}
-        onSave={() =>
-          onSave({
-            source,
-            start: dataForSource.start,
-            text: dataForSource.descriptionText,
-            terms: dataForSource.selectedTags || [],
-            email: dataForSource.email || "",
-            name: dataForSource.name || "",
-            rememberMe: dataForSource.rememberMe || false,
-          })
-        }
+        onSave={() => onSave({
+          source,
+          start: dataForSource.start,
+          text: dataForSource.descriptionText,
+          terms: dataForSource.selectedTags || [],
+          email: dataForSource.email || '',
+          name: dataForSource.name || '',
+          rememberMe: dataForSource.rememberMe || false,
+        })}
         onDelete={onDelete}
       />
     </div>
@@ -267,6 +298,7 @@ function TermSection({
   onAddTag,
   onChange,
   onToggleTree,
+  fieldIds,
 }) {
   return (
   <FormSection title="Ämnesord *">
@@ -277,9 +309,10 @@ function TermSection({
 
     <div className="relative">
       <input
-          id="audio-desc-name"
+        id={fieldIds.term}
         type="text"
         className="border p-1 w-full"
+        aria-label="Ämnesord"
         placeholder="Skriv t.ex. 'Musik' eller 'Mat'"
         value={data.typedTag || ""}
         onChange={(e) => onChange("typedTag", e.target.value)}
@@ -289,6 +322,7 @@ function TermSection({
         typedTag={data.typedTag}
         onSelect={onToggleTerm}
         onChange={onChange}
+        inputId={fieldIds.term}
       />
     </div>
 
@@ -297,19 +331,22 @@ function TermSection({
       className="mt-4 text-sm text-white hover:text-white bg-isof hover:bg-darker-isof px-2 py-1"
       onClick={onToggleTree}
     >
-      {showTermNode ? "Dölj termlista ▲" : "Visa termlista ▼"}
+      {showTermNode ? 'Dölj termlista ▲' : 'Visa termlista ▼'}
     </button>
 
     {showTermNode && (
       <div className="border p-2 mt-2">
-        {TermList.map((rootNode) => (
-          <TermNode
-            key={rootNode.termid}
-            node={rootNode}
-            selectedTags={data.selectedTags}
-            onToggle={onToggleTerm}
-          />
-        ))}
+        <ul className="space-y-1" aria-label="Tillgängliga ämnesord">
+          {TermList.map((rootNode) => (
+            <TermNode
+              key={rootNode.termid}
+              node={rootNode}
+              selectedTags={data.selectedTags}
+              onToggle={onToggleTerm}
+              idPrefix={`${fieldIds.term}-node`}
+            />
+          ))}
+        </ul>
       </div>
     )}
 
@@ -318,7 +355,7 @@ function TermSection({
   );
 }
 
-function TermSuggestions({ typedTag, onSelect, onChange }) {
+function TermSuggestions({ typedTag, onSelect, onChange, inputId }) {
   if (!typedTag) return null;
 
   const matches = allTerms
@@ -326,20 +363,26 @@ function TermSuggestions({ typedTag, onSelect, onChange }) {
     .slice(0, 15);
 
   return (
-    <div className="absolute z-10 bg-white border border-gray-300 mt-1 w-full max-h-48 overflow-y-auto">
+    <ul
+      className="absolute z-10 bg-white border border-gray-300 mt-1 w-full max-h-48 overflow-y-auto"
+      aria-label="Föreslagna ämnesord"
+      aria-controls={inputId}
+    >
       {matches.map((match) => (
-        <div
-          key={match.termid}
-          className="px-2 py-1 hover:bg-gray-100 cursor-pointer"
-          onClick={() => {
-            onSelect(match);
-            onChange("typedTag", "");
-          }}
-        >
-          {match.term}
-        </div>
+        <li key={match.termid}>
+          <button
+            type="button"
+            className="block w-full px-2 py-1 text-left hover:bg-gray-100"
+            onClick={() => {
+              onSelect(match);
+              onChange('typedTag', '');
+            }}
+          >
+            {match.term}
+          </button>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 
@@ -376,7 +419,7 @@ function ExplanationSection() {
   );
 }
 
-function UserInfoSection({ data, onChange }) {
+function UserInfoSection({ data, onChange, fieldIds }) {
   return (
   <div className="mt-4">
     <div className="mt-2">
@@ -389,7 +432,7 @@ function UserInfoSection({ data, onChange }) {
           Vill du att vi anger att det är du som har skrivit av uppteckningen?
           Ange i så fall ditt namn och din e-postadress nedan. E-postadressen
           publiceras inte. Vi hanterar personuppgifter enligt
-          dataskyddsförordningen.{" "}
+          dataskyddsförordningen.{' '}
           <a
             href="https://www.isof.se/om-oss/om-webbplatsen/hantering-av-personuppgifter"
             target="_blank"
@@ -402,36 +445,38 @@ function UserInfoSection({ data, onChange }) {
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
       <div>
-        <label htmlFor="audio-desc-name" className="block font-semibold mb-1">
+        <label htmlFor={fieldIds.name} className="block font-semibold mb-1">
           Ditt namn (ej obligatoriskt)
+          <input
+            id={fieldIds.name}
+            type="text"
+            placeholder="Ange ditt namn"
+            className="border p-2 w-full mt-1"
+            value={data?.name || ""}
+            onChange={(e) => onChange("name", e.target.value)}
+          />
         </label>
-        <input
-          type="text"
-          placeholder="Ange ditt namn"
-          className="border p-2 w-full"
-          value={data?.name || ""}
-          onChange={(e) => onChange("name", e.target.value)}
-        />
       </div>
       <div>
-        <label htmlFor="audio-desc-email" className="block font-semibold mb-1">
+        <label htmlFor={fieldIds.email} className="block font-semibold mb-1">
           Din e-post (ej obligatoriskt)
+          <input
+            id={fieldIds.email}
+            type="email"
+            placeholder="Ange din e-post"
+            className="border p-2 w-full mt-1"
+            value={data?.email || ''}
+            onChange={(e) => onChange('email', e.target.value)}
+          />
         </label>
-        <input
-          id="audio-desc-email"
-          type="email"
-          placeholder="Ange din e-post"
-          className="border p-2 w-full"
-          value={data?.email || ""}
-          onChange={(e) => onChange("email", e.target.value)}
-        />
       </div>
     </div>
 
     {/* remember me */}
     <div className="my-4">
-      <label className="inline-flex items-center gap-2">
+      <label htmlFor={fieldIds.rememberMe} className="inline-flex items-center gap-2">
         <input
+          id={fieldIds.rememberMe}
           type="checkbox"
           checked={data?.rememberMe || false}
           onChange={(e) => onChange("rememberMe", e.target.checked)}

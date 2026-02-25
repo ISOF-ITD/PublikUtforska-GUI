@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import PropTypes from "prop-types";
 import ConfirmationModal from "./ConfirmationModal";
 import AudioItemRow from "./AudioItemRow";
@@ -415,11 +420,11 @@ function AudioItems({ data, highlightData = null }) {
         <table className="w-full table-auto border-collapse lg:text-sm text-xs" aria-label={l("Inspelningar")}>
           {// Hide header but keep for screen readers 
           } 
-          <thead className="hidden">
+          <thead className="sr-only">
             <tr>
-              <th>Spela upp</th>
-              <th>Titel</th>
-              <th>Övrig information</th>
+              <th scope="col">Spela upp</th>
+              <th scope="col">Titel</th>
+              <th scope="col">Övrig information</th>
             </tr>
           </thead>
           <tbody>

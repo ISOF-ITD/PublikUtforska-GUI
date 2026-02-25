@@ -102,12 +102,12 @@ export default function TranscriptionForm({
         >
           {showMetaFields ? (
             <span className="w-full flex items-center justify-between">
-              {l("Dölj uppgifter om uppteckningen")}{" "}
+              {l('Dölj uppgifter om uppteckningen')}
               <FontAwesomeIcon className="text-lg" icon={faCircleChevronUp} />
             </span>
           ) : (
             <span className="w-full flex items-center justify-between">
-              {l("Visa uppgifter om uppteckningen")}{" "}
+              {l('Visa uppgifter om uppteckningen')}
               <FontAwesomeIcon className="text-lg" icon={faCircleChevronDown} />
             </span>
           )}
@@ -119,7 +119,7 @@ export default function TranscriptionForm({
         <Uppteckningsblankett
           {...uppteckningsProps}
           disableInput={false}
-          showMeta={true}
+          showMeta
           showText={false}
         />
       )}
@@ -129,19 +129,22 @@ export default function TranscriptionForm({
         className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
         disabled={disableInput}
       >
+        <legend className="sr-only">
+          Transkriberingstext
+        </legend>
         {/* Only in state readytotranscribe */}
         {isReadyToTranscribe && (
           <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
             <strong className="flex items-center mb-1 gap-2">
               <FontAwesomeIcon icon={faInfoCircle} />
-              {l("Snabbguide (se även gärna instruktionerna ovanför)")}
+              {l('Snabbguide (se även gärna instruktionerna ovanför)')}
             </strong>
             <ul className="list-disc list-inside space-y-0.5 !my-0">
-              <li>{l("Skriv av texten precis som den står, även stavfel.")}</li>
+              <li>{l('Skriv av texten precis som den står, även stavfel.')}</li>
               <li>
-                {l("Skriv av texten rad för rad, med samma radbrytningar.")}
+                {l('Skriv av texten rad för rad, med samma radbrytningar.')}
               </li>
-              <li>{l("Använd ### för ord du inte kan läsa.")}</li>
+              <li>{l('Använd ### för ord du inte kan läsa.')}</li>
             </ul>
           </div>
         )}
@@ -150,7 +153,7 @@ export default function TranscriptionForm({
           htmlFor="transcription_text_always"
           className="font-semibold block"
         >
-          {l("Text på sidan")} {currentPageIndex + 1} {l("(av")} {pages.length})
+          {l('Text på sidan')} {currentPageIndex + 1} {l('(av')} {pages.length})
         </label>
         <textarea
           id="transcription_text_always"
@@ -162,7 +165,7 @@ export default function TranscriptionForm({
           className="w-full min-h-[18rem] max-h-96 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100"
         />
         <span className="text-sm text-gray-600 self-end" aria-live="polite">
-          {wordCount} {l("ord")}
+          {wordCount} {l('ord')}
         </span>
       </fieldset>
 
@@ -173,30 +176,37 @@ export default function TranscriptionForm({
           className="space-y-3 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
           disabled={disableInput}
         >
+          <legend className="sr-only">
+            Metadata
+          </legend>
           <div className="flex flex-col">
             <label
               htmlFor="transcription_pagenumber"
               className="font-semibold mb-1"
             >
               Sidnummer
+              <input
+                id="transcription_pagenumber"
+                name="pagenumberInput"
+                type="text"
+                value={pagenumberInput ?? ""}
+                onChange={inputChangeHandler}
+                className="w-32 rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+              />
             </label>
-            <input
-              id="transcription_pagenumber"
-              name="pagenumberInput"
-              type="text"
-              value={pagenumberInput ?? ""}
-              onChange={inputChangeHandler}
-              className="w-32 rounded border p-2 font-serif disabled:bg-gray-100"
-            />
             <span className="text-xs text-gray-500 mt-1">
               Du kan ändra sidnummer om det inte stämmer
             </span>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="inline-flex items-center gap-2">
+            <label
+              htmlFor="transcription_fonetic_signs"
+              className="inline-flex items-center gap-2"
+            >
               <input
                 type="checkbox"
+                id="transcription_fonetic_signs"
                 name="foneticSignsInput"
                 checked={!!foneticSignsInput}
                 onChange={inputChangeHandler}
@@ -206,9 +216,13 @@ export default function TranscriptionForm({
               </span>
             </label>
 
-            <label className="inline-flex items-center gap-2">
+            <label
+              htmlFor="transcription_unreadable"
+              className="inline-flex items-center gap-2"
+            >
               <input
                 type="checkbox"
+                id="transcription_unreadable"
                 name="unreadableInput"
                 checked={!!unreadableInput}
                 onChange={inputChangeHandler}
@@ -225,6 +239,9 @@ export default function TranscriptionForm({
           className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"
           disabled={disableInput}
         >
+          <legend className="sr-only">
+            Kommentar och bidragsgivare
+          </legend>
           <div>
             <label
               htmlFor={commentId}
@@ -247,7 +264,7 @@ export default function TranscriptionForm({
             />
             <span className="text-xs text-gray-500">
               {l(
-                "Har du stött på något problem med avskriften eller har du någon annan kommentar till den? Skriv då i kommentarsfältet."
+                'Har du stött på något problem med avskriften eller har du någon annan kommentar till den? Skriv då i kommentarsfältet.',
               )}
             </span>
           </div>
@@ -284,12 +301,12 @@ export default function TranscriptionForm({
                 title={
                   !formValid
                     ? l(
-                        "Knappen aktiveras när du har skrivit minst två ord i Text-fältet"
+                        'Knappen aktiveras när du har skrivit minst två ord i Text-fältet',
                       )
                     : undefined
                 }
               >
-                {sending ? l("Skickar…") : sendButtonLabel}
+                {sending ? l('Skickar…') : sendButtonLabel}
               </button>
             </>
           )}
@@ -297,7 +314,7 @@ export default function TranscriptionForm({
           {isSent && (
             <p className="mt-4" aria-live="polite">
               {l(
-                "Tack för din avskrift. Efter granskning kommer den att publiceras."
+                'Tack för din avskrift. Efter granskning kommer den att publiceras.',
               )}
             </p>
           )}

@@ -10,7 +10,6 @@ const MediaCard = memo(function MediaCard({
   imageUrl,
   renderIndicator,
   onMediaClick,
-  onKeyDown,
   right,
 }) {
   return (
@@ -23,7 +22,6 @@ const MediaCard = memo(function MediaCard({
               mediaItem={mediaItem}
               index={index}
               onMediaClick={onMediaClick}
-              onKeyDown={onKeyDown}
               imageUrl={imageUrl}
               renderIndicator={renderIndicator}
               renderMagnifyingGlass
@@ -56,7 +54,6 @@ MediaCard.propTypes = {
   imageUrl: PropTypes.string.isRequired,
   renderIndicator: PropTypes.func.isRequired,
   onMediaClick: PropTypes.func.isRequired,
-  onKeyDown: PropTypes.func.isRequired,
   right: PropTypes.node.isRequired,
 };
 export default MediaCard;

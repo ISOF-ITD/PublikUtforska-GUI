@@ -510,7 +510,7 @@ export default function RecordListItem(props) {
           </td>
         )}
 
-      {shouldRenderColumn("transcription_status", columns) && (
+      {shouldRenderColumn('transcriptionstatus', columns) && (
         <td data-title={`${l("Avskriven")}:`} className="py-2">
           <TranscriptionStatus
             status={transcriptionstatus}

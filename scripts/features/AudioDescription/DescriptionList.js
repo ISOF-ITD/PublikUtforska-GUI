@@ -43,7 +43,7 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
         <thead>
           <tr>
             <th
-              colSpan="5"
+              colSpan="4"
               className="text-left bg-gray-200 py-3 px-4 font-semibold"
               scope="colgroup"
             >
@@ -60,7 +60,9 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
             <th scope="col" className="py-3 px-4">
               Termer
             </th>
-            <th scope="col" className="py-3 px-4 text-right"></th>
+            <th scope="col" className="py-3 px-4 text-right">
+              <span className="sr-only">Åtgärder</span>
+            </th>
           </tr>
         </thead>
         <tbody>

@@ -30,9 +30,9 @@ export default function RecordListWrapper({
       <div className="container-header">
         <div className="row">
           <div className="twelve columns">
-            <h2>
+            <h1>
               {l('Sökträffar som lista')}
-            </h2>
+            </h1>
           </div>
         </div>
       </div>

@@ -1,27 +1,47 @@
-import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 
-export function TermNode({ node, selectedTags, onToggle, source }) {
+const toIdSafe = (value) => {
+  const safeValue = String(value || 'term')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return safeValue || 'term';
+};
+
+export function TermNode({
+  node,
+  selectedTags,
+  onToggle,
+  idPrefix = 'term-node',
+}) {
   const [expanded, setExpanded] = useState(false);
 
   const isSelected = selectedTags?.some((t) => t.termid === node.termid);
   const hasChildren = node.children && node.children.length > 0;
+  const checkboxId = `${idPrefix}-${toIdSafe(node.termid || node.term)}`;
+  const childrenId = `${checkboxId}-children`;
 
   const handleCheckboxChange = () => {
     onToggle({ term: node.term, termid: node.termid });
   };
 
   return (
-    <div className="text-sm">
+    <li className="text-sm list-none">
       <div className="flex items-center py-0.5">
         {/* Toggle button if children exist */}
         {hasChildren ? (
-          <button type="button" onClick={() => setExpanded(!expanded)}
-            aria-label="Toggle expand/collapse"
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            aria-label="Visa eller dölj undernivåer"
+            aria-expanded={expanded}
+            aria-controls={childrenId}
             className="border border-gray-500 text-gray-500 hover:text-gray-700 mb-2 mr-1 p-2
                transition-transform duration-200 transform hover:cursor-pointer"
-            style={{ transform: expanded ? "rotate(0deg)" : "rotate(-90deg)" }}
+            style={{ transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
           >
             <FontAwesomeIcon icon={faCaretDown} />
           </button>
@@ -29,23 +49,24 @@ export function TermNode({ node, selectedTags, onToggle, source }) {
           // Render an empty placeholder with the same width/height as the toggle button
           <span
             className="mb-2 mr-1 p-2 border border-transparent"
-            style={{ visibility: "hidden" }}
+            style={{ visibility: 'hidden' }}
           >
             <FontAwesomeIcon icon={faCaretDown} />
           </span>
         )}
 
-        {/* Label + checkbox */}
+        <input
+          id={checkboxId}
+          type="checkbox"
+          checked={isSelected}
+          onChange={handleCheckboxChange}
+          className="form-checkbox h-4 w-4 text-isof rounded focus:ring-isof cursor-pointer transition-colors duration-200"
+        />
         <label
+          htmlFor={checkboxId}
           className={`cursor-pointer flex items-center gap-1 px-2 rounded-lg transition-all duration-200 
-            ${isSelected ? "bg-isof text-white" : "hover:bg-gray-100"}`}
+            ${isSelected ? 'bg-isof text-white' : 'hover:bg-gray-100'}`}
         >
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={handleCheckboxChange}
-            className="form-checkbox h-4 w-4 text-isof rounded focus:ring-isof cursor-pointer transition-colors duration-200"
-          />
           <span className="font-medium">
             {node.termid} - {node.term}
           </span>
@@ -54,19 +75,22 @@ export function TermNode({ node, selectedTags, onToggle, source }) {
 
       {/* Recursively render children if expanded */}
       {expanded && hasChildren && (
-        <div className="ml-6 pl-3 border-l border-gray-300 transition-all duration-200">
+        <ul
+          id={childrenId}
+          className="ml-6 pl-3 border-l border-gray-300 transition-all duration-200 space-y-1"
+        >
           {node.children.map((child) => (
             <TermNode
               key={child.termid}
               node={child}
               selectedTags={selectedTags}
               onToggle={onToggle}
-              source={source}
+              idPrefix={idPrefix}
             />
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </li>
   );
 }
 

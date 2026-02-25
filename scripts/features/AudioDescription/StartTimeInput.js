@@ -13,6 +13,7 @@ const mmssToSeconds = (str) => {
 /* ----------  component  ---------- */
 function StartTimeInput({ value, onChange, maxSeconds, inputId, autoFocus, required }) {
   const [error, setError] = useState("");
+  const errorId = `${inputId || 'audio-desc-starttime'}-error`;
 
   const validate = (raw) => {
     if (raw === "") {
@@ -71,6 +72,7 @@ function StartTimeInput({ value, onChange, maxSeconds, inputId, autoFocus, requi
         autoFocus={autoFocus}
         required={required}
         aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
         mask="99:99"
         value={value}
         replacement={{ 9: /\d/ }} // only digits in the slots
@@ -81,7 +83,7 @@ function StartTimeInput({ value, onChange, maxSeconds, inputId, autoFocus, requi
           error ? "border-red-500" : ""
         }`}
       />
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {error && <p id={errorId} className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
   );
 }

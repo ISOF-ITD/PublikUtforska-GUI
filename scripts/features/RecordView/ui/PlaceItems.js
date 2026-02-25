@@ -44,7 +44,7 @@ function PlaceItems({ data, routeParams = '' }) {
           <table className="w-full text-left border-collapse">
             <thead className="md:table-header-group">
               <tr>
-                <th className="hidden py-2 px-4 font-semibold">{l('Namn')}</th>
+                <th scope="col" className="sr-only py-2 px-4 font-semibold">{l('Namn')}</th>
               </tr>
             </thead>
             <tbody>{placeItems}</tbody>

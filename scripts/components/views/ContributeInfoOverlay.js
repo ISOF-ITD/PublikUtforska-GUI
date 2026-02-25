@@ -310,9 +310,9 @@ export default function ContributeInfoOverlay() {
     >
       <div className="overlay-header m-0 p-0">
         <div className="flex items-center justify-between !m-0 bg-center text-white font-bold text-[1.2rem] rounded-t-md">
-          <h2 id={headerTitleId} className="m-0">
+          <h1 id={headerTitleId} className="m-0">
             {l("Vet du mer?")}
-          </h2>
+          </h1>
           <IconButton
             icon={faXmark}
             label={l("stäng")}

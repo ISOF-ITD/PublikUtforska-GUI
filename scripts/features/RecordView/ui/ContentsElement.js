@@ -1,4 +1,4 @@
-import React, { useState, useId, useEffect } from "react";
+import { useEffect, useId, useState } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,12 +8,168 @@ import {
 import ListPlayButton from "../../AudioDescription/ListPlayButton";
 import useLegacyContents from "../hooks/useLegacyContents";
 
+/** Renderers */
+const renderHeaderBand = () => (
+  <div className="flex items-center justify-between bg-gray-200 rounded-t-md px-4 py-3">
+    <span className="font-semibold">Innehållsbeskrivningar</span>
+  </div>
+);
+
+const renderRecordingBadge = (tag) => (
+  <span
+    className="text-[11px] rounded bg-gray-100 px-1 text-gray-600 uppercase"
+    title={`Inspelning ${tag.toUpperCase()}`}
+    aria-label={`Inspelning ${tag.toUpperCase()}`}
+  >
+    {tag.toUpperCase()}
+  </span>
+);
+
+const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
+  if (!rows.length) return null;
+
+  return (
+    <div className="overflow-x-auto rounded-md border border-gray-200">
+      <table className="w-full table-auto border-collapse text-xs mb-0">
+        <thead>
+          <tr>
+            <th colSpan={3} className="p-0 text-left" scope="colgroup">
+              {renderHeaderBand()}
+            </th>
+          </tr>
+          <tr className="border-b border-gray-300 flex">
+            <th scope="col" className="py-3 px-4 w-12">
+              Starttid
+            </th>
+            <th scope="col" className="py-3 px-4">
+              Beskrivning
+            </th>
+            {/* spacer th for alignment parity with editable list */}
+            <th scope="col" className="py-3 px-4 text-right w-10" />
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => {
+            const isHighlighted = Array.isArray(highlightData)
+              ? highlightData.some((hit) => hit?._source?.start === row.start)
+              : false;
+            const rowMedia = row.media || defaultAudio;
+
+            return (
+              <tr
+                key={`${row.tag || "_"}-${row.start}-${index}`}
+                className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200 flex w-full"
+              >
+                <td className="py-3 px-4 w-12">
+                  <div className="flex items-center">
+                    {rowMedia ? (
+                      <ListPlayButton
+                        media={rowMedia}
+                        recordId={id}
+                        ariaLabel={`${audioTitle} – spela från ${row.start}`}
+                        recordTitle={audioTitle}
+                        startTime={row.seconds}
+                        isSubList
+                      />
+                    ) : (
+                      <span className="w-3 h-3 inline-block" />
+                    )}
+                    <span className="ml-2 font-mono tabular-nums">
+                      {row.start}
+                    </span>
+                  </div>
+                </td>
+                <td
+                  className={`py-3 px-4 ${
+                    isHighlighted ? "bg-yellow-200" : ""
+                  }`}
+                >
+                  <span className="truncate block break-words" title={row.text}>
+                    {row.tag && renderRecordingBadge(row.tag)}{" "}
+                    {row.text || (
+                      <span className="text-gray-500 italic">—</span>
+                    )}
+                  </span>
+                </td>
+                <td className="py-3 px-4 text-right" />
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+/** Compact chip layout for ultra-short notes */
+const renderCompact = ({
+  rows,
+  highlightData,
+  defaultAudio,
+  id,
+  audioTitle,
+}) => {
+  if (!rows.length) return null;
+
+  return (
+    <div className="rounded-md border border-gray-200">
+      {renderHeaderBand()}
+      <div className="p-3">
+        <div className="flex flex-wrap gap-2">
+          {rows.map((row, i) => {
+            const isHighlighted = Array.isArray(highlightData)
+              ? highlightData.some((hit) => hit?._source?.start === row.start)
+              : false;
+            const rowMedia = row.media || defaultAudio;
+
+            return (
+              <div
+                key={`${row.tag || "_"}-${row.start}-${i}`}
+                className={`group inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs ${
+                  isHighlighted
+                    ? "border-yellow-400 bg-yellow-50"
+                    : "border-gray-200 bg-white hover:bg-gray-50"
+                }`}
+                title={row.text}
+              >
+                {rowMedia ? (
+                  <ListPlayButton
+                    media={rowMedia}
+                    recordId={id}
+                    recordTitle={audioTitle}
+                    startTime={row.seconds}
+                    isSubList
+                  />
+                ) : (
+                  <span className="w-3 h-3 inline-block" />
+                )}
+                <span className="font-mono tabular-nums">{row.start}</span>
+                {row.tag && renderRecordingBadge(row.tag)}
+                <span className="text-gray-700 whitespace-nowrap">
+                  {row.text || '—'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Fallback renderer: the original preformatted text
+const renderPlain = (contents) => (
+  <div className="mt-2 whitespace-pre-line text-sm leading-relaxed">
+    {contents}
+  </div>
+);
+
 /**
  * ContentsElement (legacy annotations)
  * - Parses legacy read-only text into structured rows when *recording tags* and/or timestamps exist.
- * - Supports blocks like:  "Gr3702:a2 00:00 Foo; 00:57 Bar | Bd1234:b 00:00 Baz …"
+ * - Supports blocks like:  "Gr3702:a2 00:00 Foo; 00:57 Bar | Bd1234:b 00:00 Baz ..."
  * - Renders either a DescriptionList-style table OR a compact chip layout
- *   when descriptions are very short (1–5 words).
+ *   when descriptions are very short (1-5 words).
  * - Falls back to the original text block if nothing structured detected.
  */
 export default function ContentsElement({ data, highlightData = [] }) {
@@ -41,160 +197,9 @@ export default function ContentsElement({ data, highlightData = [] }) {
       persons,
     });
 
-  /** Renderers */
-  const HeaderBand = () => (
-    <div className="flex items-center justify-between bg-gray-200 rounded-t-md px-4 py-3">
-      <span className="font-semibold">Innehållsbeskrivningar</span>
-    </div>
-  );
-
-  const RecordingBadge = ({ tag }) => (
-    <span
-      className="text-[11px] rounded bg-gray-100 px-1 text-gray-600 uppercase"
-      title={`Inspelning ${tag.toUpperCase()}`}
-      aria-label={`Inspelning ${tag.toUpperCase()}`}
-    >
-      {tag.toUpperCase()}
-    </span>
-  );
-
-  const RenderTable = () => {
-    if (!rows.length) return null;
-    return (
-      <div className="overflow-x-auto rounded-md border border-gray-200">
-        <table className="w-full table-auto border-collapse text-xs mb-0">
-          <thead>
-            <tr>
-              <th colSpan={3} className="p-0 text-left" scope="colgroup">
-                <HeaderBand />
-              </th>
-            </tr>
-            <tr className="border-b border-gray-300 flex">
-              <th scope="col" className="py-3 px-4 w-12">
-                Starttid
-              </th>
-              <th scope="col" className="py-3 px-4">
-                Beskrivning
-              </th>
-              {/* spacer th for alignment parity with editable list */}
-              <th scope="col" className="py-3 px-4 text-right w-10"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => {
-              const isHighlighted = Array.isArray(highlightData)
-                ? highlightData.some((hit) => hit?._source?.start === row.start)
-                : false;
-
-              const rowMedia = row.media || defaultAudio;
-
-              return (
-                <tr
-                  key={`${row.tag || "_"}-${row.start}-${index}`}
-                  className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200 flex w-full"
-                >
-                  <td className="py-3 px-4 w-12">
-                    <div className="flex items-center">
-                      {rowMedia ? (
-                        <ListPlayButton
-                          media={rowMedia}
-                          recordId={id}
-                          ariaLabel={`${audioTitle} – spela från ${row.start}`}
-                          recordTitle={audioTitle}
-                          startTime={row.seconds}
-                          isSubList
-                        />
-                      ) : (
-                        <span className="w-3 h-3 inline-block" />
-                      )}
-                      <span className="ml-2 font-mono tabular-nums">
-                        {row.start}
-                      </span>
-                    </div>
-                  </td>
-                  <td
-                    className={`py-3 px-4 ${
-                      isHighlighted ? "bg-yellow-200" : ""
-                    }`}
-                  >
-                    <span
-                      className="truncate block break-words"
-                      title={row.text}
-                    >
-                      {row.tag && <RecordingBadge tag={row.tag} />}{" "}
-                      {row.text || (
-                        <span className="text-gray-500 italic">—</span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right" />
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  /** Compact chip layout for ultra-short notes */
-  const RenderCompact = () => {
-    if (!rows.length) return null;
-    return (
-      <div className="rounded-md border border-gray-200">
-        <HeaderBand />
-        <div className="p-3">
-          <div className="flex flex-wrap gap-2">
-            {rows.map((row, i) => {
-              const isHighlighted = Array.isArray(highlightData)
-                ? highlightData.some((hit) => hit?._source?.start === row.start)
-                : false;
-              const rowMedia = row.media || defaultAudio;
-
-              return (
-                <div
-                  key={`${row.tag || "_"}-${row.start}-${i}`}
-                  className={`group inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs ${
-                    isHighlighted
-                      ? "border-yellow-400 bg-yellow-50"
-                      : "border-gray-200 bg-white hover:bg-gray-50"
-                  }`}
-                  title={row.text}
-                >
-                  {rowMedia ? (
-                    <ListPlayButton
-                      media={rowMedia}
-                      recordId={id}
-                      recordTitle={audioTitle}
-                      startTime={row.seconds}
-                      isSubList
-                    />
-                  ) : (
-                    <span className="w-3 h-3 inline-block" />
-                  )}
-                  <span className="font-mono tabular-nums">{row.start}</span>
-                  {row.tag && <RecordingBadge tag={row.tag} />}
-                  <span className="text-gray-700 whitespace-nowrap">
-                    {row.text || "—"}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Fallback renderer: the original preformatted text
-  const RenderPlain = () => (
-    <div className="mt-2 whitespace-pre-line text-sm leading-relaxed">
-      {contents}
-    </div>
-  );
-
   const storageKey = `rv:${data?.id || "unknown"}:contents:expanded`;
   // persist expanded state per record/section
+
   useEffect(() => {
     const saved = sessionStorage.getItem(storageKey);
     if (saved !== null) setExpanded(saved === "1");
@@ -230,15 +235,23 @@ export default function ContentsElement({ data, highlightData = [] }) {
         hidden={!expanded}
         aria-hidden={!expanded}
       >
-        {hasStructured ? (
-          isCompact ? (
-            <RenderCompact />
-          ) : (
-            <RenderTable />
-          )
-        ) : (
-          <RenderPlain />
-        )}
+        {hasStructured
+          ? isCompact
+            ? renderCompact({
+                rows,
+                highlightData,
+                defaultAudio,
+                id,
+                audioTitle,
+              })
+            : renderTable({
+                rows,
+                highlightData,
+                defaultAudio,
+                id,
+                audioTitle,
+              })
+          : renderPlain(contents)}
       </div>
     </section>
   );

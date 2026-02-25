@@ -15,7 +15,6 @@ function RecordSegment({
   imageUrl,
   renderIndicator,
   onMediaClick,
-  onKeyDown,
   buildTextSide,
   defaultOpen = false,
   segmentStatus,
@@ -99,7 +98,6 @@ function RecordSegment({
                 imageUrl={imageUrl}
                 renderIndicator={renderIndicator}
                 onMediaClick={onMediaClick}
-                onKeyDown={onKeyDown}
                 right={buildTextSide(mediaItem, absoluteIndex)}
               />
             );
@@ -117,7 +115,6 @@ RecordSegment.propTypes = {
   imageUrl: PropTypes.string.isRequired,
   renderIndicator: PropTypes.func.isRequired,
   onMediaClick: PropTypes.func.isRequired,
-  onKeyDown: PropTypes.func.isRequired,
   buildTextSide: PropTypes.func.isRequired,
   defaultOpen: PropTypes.bool,
   segmentStatus: PropTypes.shape({

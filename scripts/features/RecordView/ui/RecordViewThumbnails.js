@@ -124,12 +124,6 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
               onMediaClick={(item, idx) =>
                 mediaImageClickHandler?.(item, images, idx)
               }
-              onKeyDown={(e, item, idx) => {
-                if (e.key === " " || e.key === "Enter") {
-                  e.preventDefault();
-                  mediaImageClickHandler?.(item, images, idx);
-                }
-              }}
               renderIndicator={renderIndicator}
             />
           ))}
