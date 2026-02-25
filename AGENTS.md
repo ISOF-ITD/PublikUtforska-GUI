@@ -32,3 +32,6 @@ Before you say the work is done:
 ## When blocked
 - If you cannot run commands in the environment, still write code that is consistent with `.eslintrc.js` and explain what you expect `npm run lint` to report.
 - If rules appear contradictory, report the conflict and propose the smallest fix that restores consistency.
+
+## Enforcement
+- At the end of every change, always enforce Airbnb style conventions for the lines you have modified.
