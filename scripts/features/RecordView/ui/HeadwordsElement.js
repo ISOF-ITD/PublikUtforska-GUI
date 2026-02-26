@@ -90,7 +90,7 @@ export default function HeadwordsElement({ data }) {
         title={expanded ? "Dölj" : "Visa"}
         aria-expanded={expanded}
         aria-controls={contentId}
-        className="flex items-center gap-2 underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+        className="flex items-center gap-2 rounded-sm px-1 py-0.5 underline hover:no-underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
         onClick={() => setExpanded((v) => !v)}
       >
         <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
