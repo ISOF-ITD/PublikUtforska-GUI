@@ -43,14 +43,14 @@ export function getTitle(title, contents, archive, highlight) {
     // här behövs ingen teckenbegräsning eftersom es-api levererar highlights
     // med max 300 tecken
     const highlightedContents = highlight.contents[0].replace(/\r/g, ' ');
-    return `[${highlightedContents}]`;
+    return `${highlightedContents}`;
   }
   // annars, testa med `contents`, och förkorta om nödvändigt
   if (contents) {
     if (contents.length > 300) {
-      return `[${contents.substring(0, 282).replace(/\r/g, ' ')} ${' (FÖRKORTAD TITEL)'}]`;
+      return `${contents.substring(0, 282).replace(/\r/g, ' ')} ${' (...)'}`;
     }
-    return `[${contents.replace(/\r/g, ' ')}]`;
+    return `${contents.replace(/\r/g, ' ')}`;
   }
   if (archive) {
     // Default fallback for title to archive id and pages if archive.page exists
@@ -270,8 +270,8 @@ if (archiveOrg === 'Uppsala') {
 
   // No exact row match (or no fileId). Use a collision-proof fallback:
   const base = basenameNoExt(fileName || '');
-  const short = contents.length > 100 ? contents.substring(0, 84) + ' (FÖRKORTAD TITEL)' : contents;
-  return `[${base} → ${short}]`;
+  const short = contents.length > 100 ? contents.substring(0, 84) + ' (...)' : contents;
+  return `${base} → ${short}`;
 }
           // SVN isof/kod/databasutveckling/alltiallo/accessionsregister/statusAccessionsregister.sql:
           // -- Find titel_allt types by DAG acc_nr_ny_prefix iod:
