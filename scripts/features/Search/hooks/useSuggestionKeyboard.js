@@ -4,6 +4,7 @@ export default function useSuggestionKeyboard({
   enabled,
   flatSuggestions,
   onPick,
+  onClose,
 }) {
   const [activeIdx, setActiveIdx] = useState(-1);
 
@@ -11,7 +12,12 @@ export default function useSuggestionKeyboard({
 
   const handleGlobalKey = useCallback(
     (e) => {
-      if (!enabled || flatSuggestions.length === 0) return;
+      if (!enabled) return;
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (flatSuggestions.length === 0) return;
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
         setActiveIdx((prev) =>
@@ -26,7 +32,7 @@ export default function useSuggestionKeyboard({
         onPick(() => group.click(item));
       }
     },
-    [enabled, flatSuggestions, activeIdx, onPick]
+    [enabled, flatSuggestions, activeIdx, onPick, onClose],
   );
 
   useEffect(() => {

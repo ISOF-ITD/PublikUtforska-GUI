@@ -140,6 +140,7 @@ export default function SearchPanel({
       // return focus to the input for good a11y
       inputRef.current?.focus();
     },
+    onClose: () => setSuggestionsVisible(false),
   });
 
   // When pressing Enter on the input, prefer selecting the active suggestion
@@ -169,11 +170,13 @@ export default function SearchPanel({
     setSuggestionsVisible(true);
   };
   const onKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       if (pickActiveSuggestion()) return;
       navigateToSearch(inputValue);
       setSuggestionsVisible(false);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Tab') {
+      setSuggestionsVisible(false);
+    } else if (e.key === 'Escape') {
       setSuggestionsVisible(false);
     }
   };
