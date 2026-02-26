@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { useContext, useEffect } from "react";
+import { useContext } from 'react';
 import { AudioContext } from "../../contexts/AudioContext";
 import PlayerButtons from "./ui/PlayerButtons";
 import Timeline from "./ui/Timeline";
@@ -10,7 +10,6 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import useViewportWidth from "./hooks/useViewportWidth";
 import useMarquee from "./hooks/useMarquee";
 import useSwipeSeek from "./hooks/useSwipeSeek";
-import useKeyboardShortcuts from "./hooks/useKeyboardShortcuts";
 
 export default function GlobalAudioPlayer() {
   const {
@@ -43,8 +42,6 @@ export default function GlobalAudioPlayer() {
     setCurrentAudio(null);
     window.eventBus.dispatch("audio.playerhidden");
   };
-  useKeyboardShortcuts(audioRef, togglePlay, handleClose);
-
   /* ——  render  —— */
   return (
     <div
