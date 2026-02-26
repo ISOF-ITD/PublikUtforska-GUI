@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { l } from "../../lang/Lang";
@@ -9,10 +9,66 @@ import RecordTable from "./ui/RecordTable";
 import RecordViewToggle from "./ui/RecordViewToggle";
 import { createSearchRoute } from "../../utils/routeHelper";
 import useRecords from "./hooks/useRecords";
-import config from "../../config";
 import classNames from "classnames";
 
-const { hitsPerPage, siteOptions } = config;
+const SCROLL_STORAGE_PREFIX = 'recordListScroll:';
+const ACTIVE_RECORD_STORAGE_SUFFIX = ':activeRecord';
+
+function getScrollTopValue(container) {
+  if (container === window) {
+    return (
+      window.scrollY
+      || window.pageYOffset
+      || document.documentElement?.scrollTop
+      || 0
+    );
+  }
+
+  return container?.scrollTop || 0;
+}
+
+// För att kunna återställa scrollpositionen på rätt sätt behöver vi veta 
+// vilken container som scrollas.
+function getScrollableContainer(rootElement) {
+  if (rootElement?.closest) {
+    const popupContainer = rootElement.closest(".popup-content-wrapper");
+    if (popupContainer) return popupContainer;
+  }
+
+  return window;
+}
+
+// Skapa en unik nyckel för att lagra scrollpositionen i sessionStorage, baserat på mode och params.
+function createScrollStorageKey(mode, params = {}) {
+  return `${SCROLL_STORAGE_PREFIX}${mode}:${JSON.stringify(params)}`;
+}
+
+// En enkel wrapper runt sessionStorage som tyst fångar eventuella fel
+function readSessionItem(key) {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+// En enkel wrapper runt sessionStorage som tyst fångar eventuella fel
+function writeSessionItem(key, value) {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // Ignore storage failures (private mode / disabled storage).
+  }
+}
+
+// En enkel wrapper runt sessionStorage som tyst fångar eventuella fel
+function removeSessionItem(key) {
+  try {
+    sessionStorage.removeItem(key);
+  } catch {
+    // Ignore storage failures (private mode / disabled storage).
+  }
+}
 
 export default function RecordList(props) {
   const {
@@ -34,6 +90,12 @@ export default function RecordList(props) {
 
   const navigate = useNavigate();
   const location = useLocation();
+  // För att kunna återställa scrollpositionen på rätt sätt behöver vi veta
+  // vilken container som scrollas. rootRef pekar på den översta nivån i RecordList
+  const rootRef = useRef(null);
+  const hasRestoredScrollRef = useRef(false);
+  const scrollStorageKey = createScrollStorageKey(mode, params);
+  const activeRecordStorageKey = `${scrollStorageKey}${ACTIVE_RECORD_STORAGE_SUFFIX}`;
 
   /* ------- business logic extracted to hook ------- */
   // RecordList.jsx
@@ -56,6 +118,8 @@ export default function RecordList(props) {
 
   /* ------- desktop view mode (table|cards) ------- */
   const [view, setView] = useState("table"); // desktop default remains table
+  const [selectedRecordId, setSelectedRecordId] = useState(null);
+  const isRecordViewOpen = /\/records\/[^/]+(?:\/|$)/.test(location.pathname);
 
   // initialize from URL or localStorage on mount
   useEffect(() => {
@@ -121,12 +185,108 @@ export default function RecordList(props) {
     setCurrentPage(1);
   };
 
+  const markRecordAsActive = useCallback(
+    (recordId) => {
+      if (!recordId) return;
+      const normalized = String(recordId);
+      setSelectedRecordId(normalized);
+      writeSessionItem(activeRecordStorageKey, normalized);
+    },
+    [activeRecordStorageKey],
+  );
+
+  const clearActiveRecord = useCallback(() => {
+    setSelectedRecordId(null);
+    removeSessionItem(activeRecordStorageKey);
+  }, [activeRecordStorageKey]);
+
   const archiveIdClick = (e) => {
     const { archiveidrow } = e.target.dataset;
     if (archiveidrow) {
       navigate(`/records/${archiveidrow}`);
     }
   };
+
+  const saveScrollPosition = useCallback(() => {
+    const scrollableContainer = getScrollableContainer(rootRef.current);
+    const top = getScrollTopValue(scrollableContainer);
+    if (top > 0) {
+      writeSessionItem(scrollStorageKey, String(top));
+    } else {
+      removeSessionItem(scrollStorageKey);
+    }
+  }, [scrollStorageKey]);
+
+  const restoreScrollPosition = useCallback(() => {
+    if (hasRestoredScrollRef.current) return;
+
+    let savedTop = null;
+    const raw = readSessionItem(scrollStorageKey);
+    if (raw == null) return;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) return;
+    savedTop = parsed;
+
+    const scrollableContainer = getScrollableContainer(rootRef.current);
+
+    const restore = () => {
+      if (scrollableContainer === window) {
+        window.scrollTo(0, savedTop);
+      } else {
+        scrollableContainer.scrollTop = savedTop;
+      }
+      hasRestoredScrollRef.current = true;
+      removeSessionItem(scrollStorageKey);
+    };
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(restore);
+    });
+  }, [scrollStorageKey]);
+
+  useEffect(() => {
+    hasRestoredScrollRef.current = false;
+  }, [scrollStorageKey]);
+
+  useEffect(() => {
+    const saved = readSessionItem(activeRecordStorageKey);
+    setSelectedRecordId(saved ? String(saved) : null);
+  }, [activeRecordStorageKey]);
+
+  useEffect(() => {
+    if (!selectedRecordId || isRecordViewOpen) return undefined;
+
+    const handleDocumentClick = () => {
+      clearActiveRecord();
+    };
+
+    const handleDocumentKeyDown = (event) => {
+      if (event.key === "Tab") {
+        clearActiveRecord();
+      }
+    };
+
+    document.addEventListener("click", handleDocumentClick, true);
+    document.addEventListener("keydown", handleDocumentKeyDown, true);
+
+    return () => {
+      document.removeEventListener("click", handleDocumentClick, true);
+      document.removeEventListener("keydown", handleDocumentKeyDown, true);
+    };
+  }, [selectedRecordId, isRecordViewOpen, clearActiveRecord]);
+
+  useEffect(
+    () => () => {
+      saveScrollPosition();
+    },
+    [saveScrollPosition]
+  );
+
+  useEffect(() => {
+    if (!fetching && records.length > 0) {
+      restoreScrollPosition();
+    }
+  }, [fetching, records.length, restoreScrollPosition]);
 
   /* ------- side-effect: url hash “showlist” ------- */
   useEffect(() => {
@@ -137,8 +297,10 @@ export default function RecordList(props) {
   }, [location]);
 
   /* ------- render ------- */
+  const hasVisibleRecords = records.length > 0;
+
   return (
-    <>
+    <div ref={rootRef}>
       {hasTimeline && (
         <Timeline
           containerRef={containerRef}
@@ -150,7 +312,7 @@ export default function RecordList(props) {
         />
       )}
 
-      {!fetching && (
+      {(!fetching || hasVisibleRecords) && (
         <div
           className={classNames(
             "mb-10 md:mb-2 rounded",
@@ -177,6 +339,8 @@ export default function RecordList(props) {
             highlightRecordsWithMetadataField={
               highlightRecordsWithMetadataField
             }
+            selectedRecordId={selectedRecordId}
+            onRecordActivate={markRecordAsActive}
             layout="mobile-only"
           />
 
@@ -196,6 +360,8 @@ export default function RecordList(props) {
                 highlightRecordsWithMetadataField={
                   highlightRecordsWithMetadataField
                 }
+                selectedRecordId={selectedRecordId}
+                onRecordActivate={markRecordAsActive}
                 layout="desktop-grid"
               />
             ) : (
@@ -215,6 +381,8 @@ export default function RecordList(props) {
                 useRouteParams={useRouteParams}
                 smallTitle={smallTitle}
                 columns={columns}
+                selectedRecordId={selectedRecordId}
+                onRecordActivate={markRecordAsActive}
               />
             )}
           </div>
@@ -230,7 +398,7 @@ export default function RecordList(props) {
         </div>
       )}
 
-      {fetching && (
+      {fetching && !hasVisibleRecords && (
         <p className="text-center">
           <strong>{l("Söker...")}</strong>
         </p>
@@ -240,7 +408,7 @@ export default function RecordList(props) {
           <h3>{l("Inga sökträffar.")}</h3>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

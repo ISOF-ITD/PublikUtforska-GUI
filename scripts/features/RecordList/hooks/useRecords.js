@@ -1,10 +1,58 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  useState, useEffect, useCallback, useMemo, useRef,
+} from 'react';
 import RecordsApiClient from "../api/RecordsApiClient";
 import config from "../../../config";
 
 const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
   config;
+const RECORDS_CACHE_TTL_MS = 5 * 60 * 1000;
+const RECORDS_CACHE_MAX_ENTRIES = 100;
+const recordsCache = new Map();
+
+function createCacheKey(fetchParams) {
+  return JSON.stringify(fetchParams || {});
+}
+
+function pruneExpiredCacheEntries() {
+  const now = Date.now();
+  recordsCache.forEach((entry, key) => {
+    if (now - entry.timestamp > RECORDS_CACHE_TTL_MS) {
+      recordsCache.delete(key);
+    }
+  });
+}
+
+function trimCacheSize() {
+  while (recordsCache.size > RECORDS_CACHE_MAX_ENTRIES) {
+    const oldestKey = recordsCache.keys().next().value;
+    if (oldestKey === undefined) return;
+    recordsCache.delete(oldestKey);
+  }
+}
+
+function readCached(fetchParams) {
+  pruneExpiredCacheEntries();
+  const cacheKey = createCacheKey(fetchParams);
+  const cached = recordsCache.get(cacheKey);
+  if (!cached) return null;
+
+  return {
+    cacheKey,
+    ...cached,
+  };
+}
+
+function writeCached(cacheKey, records, total) {
+  if (!cacheKey) return;
+  pruneExpiredCacheEntries();
+  recordsCache.set(cacheKey, {
+    records,
+    total,
+    timestamp: Date.now(),
+  });
+  trimCacheSize();
+}
 
 /**
  * Handles all data-layer concerns for <RecordList/>.
@@ -22,6 +70,7 @@ export default function useRecords(params, mode, interval) {
   const [sort, setSort] = useState("archive.archive_id_row.keyword");
   const [order, setOrder] = useState("asc");
   const [fetching, setFetching] = useState(false);
+  const activeCacheKeyRef = useRef(null);
 
   /* ---------------- helpers ---------------- */
   const uniqueId = useMemo(
@@ -38,6 +87,12 @@ export default function useRecords(params, mode, interval) {
           setRecords(json.data);
           setTotal(json.metadata.total.value);
           setFetching(false);
+          writeCached(
+            activeCacheKeyRef.current,
+            json.data,
+            json.metadata.total.value,
+          );
+          activeCacheKeyRef.current = null;
 
           window.eventBus?.dispatch(
             "recordList.totalRecords",
@@ -49,6 +104,7 @@ export default function useRecords(params, mode, interval) {
           // Optional: log, show toast, etc.
           console.error("Failed to fetch records", err);
           setFetching(false);
+          activeCacheKeyRef.current = null;
           window.eventBus?.dispatch("recordList.fetchingPage", false);
         }
       ),
@@ -121,11 +177,30 @@ export default function useRecords(params, mode, interval) {
   );
 
   /* ---------------- fetch ---------------- */
-  const fetchData = useCallback(() => {
-    setFetching(true);
-    window.eventBus?.dispatch("recordList.fetchingPage", true);
-    collections.fetch(getFetchParams());
-  }, [collections, getFetchParams]);
+  const fetchData = useCallback(
+    ({ force = false } = {}) => {
+      collections.abort();
+      activeCacheKeyRef.current = null;
+
+      const fetchParams = getFetchParams();
+      const cached = force ? null : readCached(fetchParams);
+      if (cached) {
+        setRecords(cached.records);
+        setTotal(cached.total);
+        setFetching(false);
+        window.eventBus?.dispatch('recordList.totalRecords', cached.total);
+        window.eventBus?.dispatch('recordList.fetchingPage', false);
+        return;
+      }
+
+      const cacheKey = createCacheKey(fetchParams);
+      activeCacheKeyRef.current = cacheKey;
+      setFetching(true);
+      window.eventBus?.dispatch('recordList.fetchingPage', true);
+      collections.fetch(fetchParams);
+    },
+    [collections, getFetchParams],
+  );
 
   useEffect(() => {
     fetchData();
@@ -135,7 +210,7 @@ export default function useRecords(params, mode, interval) {
   useEffect(() => {
     if (!interval) return;
     const id = setInterval(() => {
-      fetchData();
+      fetchData({ force: true });
     }, interval);
 
     return () => clearInterval(id);

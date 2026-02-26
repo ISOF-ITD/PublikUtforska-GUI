@@ -1,11 +1,13 @@
 import PropTypes from "prop-types";
-import { RecordCardItem } from "./RecordCardItem";
+import RecordCardItem from './RecordCardItem';
 
 export default function RecordCards({
   records,
   params,
   mode,
   highlightRecordsWithMetadataField,
+  selectedRecordId,
+  onRecordActivate,
   layout = "mobile-only", // 'mobile-only' | 'desktop-grid'
 }) {
   const wrapperClass =
@@ -22,6 +24,8 @@ export default function RecordCards({
           searchParams={params}
           mode={mode}
           highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
+          isSelected={String(rec._source.id) === String(selectedRecordId)}
+          onRecordActivate={onRecordActivate}
         />
       ))}
     </div>
@@ -33,5 +37,7 @@ RecordCards.propTypes = {
   params: PropTypes.object.isRequired,
   mode: PropTypes.string,
   highlightRecordsWithMetadataField: PropTypes.string,
+  selectedRecordId: PropTypes.string,
+  onRecordActivate: PropTypes.func,
   layout: PropTypes.oneOf(["mobile-only", "desktop-grid"]),
 };

@@ -26,12 +26,14 @@ import { createSearchRoute } from "../../../utils/routeHelper";
 const pill =
   "inline-flex items-center border rounded-full px-3 py-1 text-xs font-medium";
 
-export const RecordCardItem = ({
+export default function RecordCardItem({
   item,
   searchParams,
   mode = "material",
   highlightRecordsWithMetadataField,
-}) => {
+  isSelected,
+  onRecordActivate,
+}) {
   const src = item?._source ?? {};
 
   const {
@@ -50,7 +52,7 @@ export const RecordCardItem = ({
   } = src;
 
   const highlight = item?.highlight ?? {};
-  const inner_hits = item?.inner_hits ?? {};
+  const innerHits = item?.inner_hits ?? {};
   const itemText = item?.text;
 
   /* ───────────────── sub-records (needed for the counters) ─────────────── */
@@ -94,40 +96,6 @@ export const RecordCardItem = ({
       ),
     [media]
   );
-
-  const toText = (v) => {
-    const s = v == null ? "" : String(v);
-    return s.trim();
-  };
-
-  // inner hits -> show up to 3; memoize to avoid work each render
-  const innerHitsToShow = useMemo(() => {
-    const descriptionHits = inner_hits?.["media.description"]?.hits?.hits ?? [];
-    const utteranceHits =
-      inner_hits?.["media.utterances.utterances"]?.hits?.hits ?? [];
-
-    const rows = [
-      ...descriptionHits.map((h, i) => {
-        const pre = h?._source?.start != null ? `${h._source.start} ` : "";
-        const hi = h?.highlight?.["media.description.text"]?.[0];
-        const body = toText(hi ?? h?._source?.text);
-        const text = body ? `Innehållsbeskrivning: ${pre}${body}` : "";
-        return { key: `${h?._index || "desc"}:${h?._id || i}`, text };
-      }),
-      ...utteranceHits.map((h, i) => {
-        const pre =
-          h?._source?.start != null ? `${secondsToMMSS(h._source.start)} ` : "";
-        const hi = h?.highlight?.["media.utterances.utterances.text"]?.[0];
-        const body = toText(hi ?? h?._source?.text);
-        const text = body ? `Ljudavskrift: ${pre}${body}` : "";
-        return { key: `${h?._index || "utt"}:${h?._id || i}`, text };
-      }),
-    ]
-      .filter((x) => x.text)
-      .slice(0, 3);
-
-    return rows;
-  }, [inner_hits]);
 
   // ───────── highlight / summary
   const displayTextSummary =
@@ -193,8 +161,18 @@ export const RecordCardItem = ({
       ? String(year)
       : null;
 
+  const handleRecordClick = () => {
+    onRecordActivate?.(id);
+  };
+
   return (
-    <article className="group relative rounded-lg !border !border-gray-200 bg-white p-4 shadow transition-all hover:shadow-md">
+    <article
+      className={`group relative rounded-lg !border bg-white p-4 shadow transition-all hover:shadow-md ${
+        isSelected
+          ? "!border-black ring-2 ring-black ring-offset-1"
+          : "!border-gray-200"
+      }`}
+    >
       {/* Header Section */}
       <header className="flex items-center gap-2">
         <MediaIcons media={media || []} />
@@ -203,6 +181,7 @@ export const RecordCardItem = ({
             <Link
               to={recordUrl}
               className="!text-isof focus:outline-none focus:ring-2 focus:ring-isof"
+              onClick={handleRecordClick}
             >
               <span
                 // ensure string
@@ -314,7 +293,7 @@ export const RecordCardItem = ({
         </span>
       )}
 
-      {innerHitsToShow?.["media.description"]?.hits?.hits.map((descHit) => {
+      {innerHits?.['media.description']?.hits?.hits.map((descHit) => {
             const highlighted =
               descHit.highlight?.["media.description.text"]?.[0] ??
               descHit._source?.text ??
@@ -334,7 +313,7 @@ export const RecordCardItem = ({
               </div>
             );
           })}
-          {innerHitsToShow?.["media.utterances.utterances"]?.hits?.hits.map(
+          {innerHits?.['media.utterances.utterances']?.hits?.hits.map(
             (descHit) => {
               const highlighted =
                 descHit.highlight?.["media.utterances.utterances.text"]?.[0] ??
@@ -385,7 +364,7 @@ export const RecordCardItem = ({
               />
             </div>
           )}
-          {innerHitsToShow?.media?.hits?.hits.map((hit) => {
+          {innerHits?.media?.hits?.hits.map((hit) => {
             const highlighted = hit.highlight?.["media.text"]?.[0];
             if (!highlighted) return null;
 
@@ -445,4 +424,6 @@ RecordCardItem.propTypes = {
   searchParams: PropTypes.object,
   mode: PropTypes.string,
   highlightRecordsWithMetadataField: PropTypes.string,
+  isSelected: PropTypes.bool,
+  onRecordActivate: PropTypes.func,
 };

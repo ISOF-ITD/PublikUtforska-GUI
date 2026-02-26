@@ -17,6 +17,8 @@ export default function RecordTable({
   useRouteParams,
   smallTitle,
   columns,
+  selectedRecordId,
+  onRecordActivate,
 }) {
   const items = records.map((item) => (
     <RecordListItem
@@ -32,6 +34,8 @@ export default function RecordTable({
       mode={mode}
       useRouteParams={useRouteParams}
       smallTitle={smallTitle}
+      isSelected={String(item._source.id) === String(selectedRecordId)}
+      onRecordActivate={onRecordActivate}
     />
   ));
 
@@ -147,4 +151,6 @@ RecordTable.propTypes = {
   useRouteParams: PropTypes.bool,
   smallTitle: PropTypes.bool,
   columns: PropTypes.array,
+  selectedRecordId: PropTypes.string,
+  onRecordActivate: PropTypes.func,
 };

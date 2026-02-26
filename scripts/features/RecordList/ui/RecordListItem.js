@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolder,
@@ -37,6 +37,8 @@ export default function RecordListItem(props) {
     highlightRecordsWithMetadataField,
     mode,
     smallTitle,
+    isSelected,
+    onRecordActivate,
   } = props;
 
   const {
@@ -64,8 +66,6 @@ export default function RecordListItem(props) {
     inner_hits: innerHits,
   } = item;
 
-  const navigate = useNavigate();
-  const params = useParams();
   // Re-use same Tailwind classes in similar many elements
   const pillClasses =
     "inline-flex flex-wrap max-w-full shadow border border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs bg-white";
@@ -168,6 +168,10 @@ export default function RecordListItem(props) {
     if (target && target.focus) target.focus();
   };
 
+  const handleRecordLinkClick = () => {
+    onRecordActivate?.(id);
+  };
+
   /* ---------- render ---------- */
   return (
     <tr
@@ -175,6 +179,8 @@ export default function RecordListItem(props) {
       onKeyDown={onRowKeyDown}
       className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-100 ${
         displayTextSummary ? "bg-gray-100" : ""
+      } ${
+        isSelected ? 'outline outline-2 outline-black outline-offset-[-2px]' : ""
       }`}
     >
       {/* ---------- title (mobile+desktop) ---------- */}
@@ -188,6 +194,7 @@ export default function RecordListItem(props) {
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
             className="item-title text-isof hover:underline"
+            onClick={handleRecordLinkClick}
           >
             {audioItem && (
               <ListPlayButton
@@ -403,6 +410,7 @@ export default function RecordListItem(props) {
                                   className={`${
                                     pub ? "font-semibold" : ""
                                   } hover:underline text-isof`}
+                                  onClick={handleRecordLinkClick}
                                 >
                                   {transcriptiontype !== "audio" && pageLabel ? (
                                     <>{pageLabel}. </>
@@ -556,4 +564,6 @@ RecordListItem.propTypes = {
   mode: PropTypes.string,
   useRouteParams: PropTypes.bool,
   smallTitle: PropTypes.bool,
+  isSelected: PropTypes.bool,
+  onRecordActivate: PropTypes.func,
 };
