@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  lazy, Suspense, useCallback, useEffect, useRef, useState,
+} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { l } from "../../lang/Lang";
-import Timeline from "./ui/Timeline.js";
 import Pagination from "./ui/Pagination";
 import RecordCards from "./ui/RecordCards";
 import RecordTable from "./ui/RecordTable";
@@ -13,6 +14,7 @@ import classNames from "classnames";
 
 const SCROLL_STORAGE_PREFIX = 'recordListScroll:';
 const ACTIVE_RECORD_STORAGE_SUFFIX = ':activeRecord';
+const Timeline = lazy(() => import("./ui/Timeline"));
 
 function getScrollTopValue(container) {
   if (container === window) {
@@ -302,14 +304,16 @@ export default function RecordList(props) {
   return (
     <div ref={rootRef}>
       {hasTimeline && (
-        <Timeline
-          containerRef={containerRef}
-          params={params}
-          filter={filter}
-          mode={mode}
-          onYearFilter={(f, l) => setYearFilter([f, l])}
-          resetOnYearFilter={() => setYearFilter(null)}
-        />
+        <Suspense fallback={<p className="text-center text-gray-500">Laddar tidslinje...</p>}>
+          <Timeline
+            containerRef={containerRef}
+            params={params}
+            filter={filter}
+            mode={mode}
+            onYearFilter={(f, l) => setYearFilter([f, l])}
+            resetOnYearFilter={() => setYearFilter(null)}
+          />
+        </Suspense>
       )}
 
       {(!fetching || hasVisibleRecords) && (
