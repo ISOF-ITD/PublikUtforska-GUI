@@ -17,9 +17,9 @@ export default function RecordCards({
 
   return (
     <div className={wrapperClass}>
-      {records.map((rec) => (
+      {records.map((rec, index) => (
         <RecordCardItem
-          key={rec._source.id}
+          key={`${rec?._id || rec?._source?.id || 'record'}-${index}`}
           item={rec}
           searchParams={params}
           mode={mode}

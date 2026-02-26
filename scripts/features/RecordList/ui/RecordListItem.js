@@ -403,7 +403,7 @@ export default function RecordListItem(props) {
                           //  : s._source.title ?? "";
 
                           return (
-                            <li key={(isNew ? s.id : s._source.id) || idx}>
+                            <li key={`${isNew ? s.id : s._source.id}-${idx}`}>
                               <small>
                                 <Link
                                   to={href}

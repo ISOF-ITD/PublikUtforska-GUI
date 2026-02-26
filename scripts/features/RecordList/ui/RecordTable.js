@@ -20,9 +20,9 @@ export default function RecordTable({
   selectedRecordId,
   onRecordActivate,
 }) {
-  const items = records.map((item) => (
+  const items = records.map((item, index) => (
     <RecordListItem
-      key={`${uniqueId}-${item._source.id}`}
+      key={`${uniqueId}-${item?._id || item?._source?.id || 'record'}-${index}`}
       id={item._source.id}
       item={item}
       routeParams={params}
