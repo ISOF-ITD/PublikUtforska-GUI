@@ -58,11 +58,16 @@ export default function RecordTextPanel({
   const switchId = useId();
   const headingId = `text-${recordId}`;
 
+  // All image media (absolute order)
+  const mediaImagesAbsolute = useMemo(
+    () => media.filter((m) => m?.type === 'image'),
+    [media],
+  );
+
   // handlers for media open
   const handleMediaClick = useCallback(
-    (mediaItem, allMedia, index) =>
-      mediaImageClickHandler(mediaItem, allMedia, index),
-    [mediaImageClickHandler]
+    (mediaItem, index) => mediaImageClickHandler(mediaItem, mediaImagesAbsolute, index),
+    [mediaImageClickHandler, mediaImagesAbsolute],
   );
   const handleKeyDown = useCallback(
     (e, mediaItem, index) => {
@@ -108,12 +113,6 @@ export default function RecordTextPanel({
     totalHits,
     textParts,
   } = useRecordHighlights({ highlightData, text, isPageByPage });
-
-  // All image media (absolute order)
-  const mediaImagesAbsolute = useMemo(
-    () => media.filter((m) => m?.type === "image"),
-    [media]
-  );
 
   // Calculate the offset of the first media that is of type image
   // to adjust for skipped PDF media items when building text sides.
@@ -385,9 +384,7 @@ export default function RecordTextPanel({
                 startIndex={seg.startIndex}
                 imageUrl={imageUrl}
                 renderIndicator={renderIndicator}
-                onMediaClick={(item, _arr, absIndex) =>
-                  handleMediaClick(item, mediaImagesAbsolute, absIndex)
-                }
+                onMediaClick={handleMediaClick}
                 buildTextSide={buildTextSide}
                 defaultOpen={i === 0}
                 segmentStatus={
@@ -438,16 +435,14 @@ export default function RecordTextPanel({
 
       <div className="space-y-3">
         {segments.map((seg, i) => (
-          <Segment
+          <RecordSegment
             key={seg.id || `seg-${i}`}
             title={seg.title}
             mediaItems={seg.items}
             startIndex={seg.startIndex}
             imageUrl={imageUrl}
             renderIndicator={renderIndicator}
-            onMediaClick={(item, _arr, absIndex) =>
-              handleMediaClick(item, mediaImagesAbsolute, absIndex)
-            }
+            onMediaClick={handleMediaClick}
             onKeyDown={(e, item, absIndex) => handleKeyDown(e, item, absIndex)}
             buildTextSide={(mediaItem, absoluteIndex) => (
               <TranscribedText
