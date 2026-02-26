@@ -12,7 +12,6 @@ import Folkelogga from "../../img/folke-white.svg";
 import { l } from "../lang/Lang";
 import SearchPanel from "../features/Search/SearchPanel";
 import StatisticsContainer from "./StatisticsContainer";
-import RecordList from "../features/RecordList/RecordList";
 import classNames from "classnames";
 import IntroOverlay from "./views/IntroOverlay";
 import config from "../config";

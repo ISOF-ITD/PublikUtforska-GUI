@@ -1,5 +1,5 @@
 import {
-  useState, useEffect, useContext,
+  lazy, Suspense, useState, useEffect, useContext,
 } from 'react';
 import {
   useNavigate,
@@ -12,7 +12,6 @@ import {
 import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
-import RecordListWrapper from '../features/RecordList/RecordListWrapper';
 import FeedbackOverlay from './views/FeedbackOverlay';
 import ContributeInfoOverlay from './views/ContributeInfoOverlay';
 import TranscriptionHelpOverlay from '../features/TranscriptionPageByPageOverlay/ui/TranscriptionHelpOverlay';
@@ -28,6 +27,8 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 import config from '../config';
 import { toastError, toastOk } from '../utils/toast';
 import ImageOverlay from '../features/RecordTextPanel/ui/ImageOverlay';
+
+const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
 
 
 export default function Application({
@@ -156,11 +157,13 @@ useEffect(() => {
           Hoppa till innehåll
         </a>
         <RoutePopupWindow manuallyOpenPopup>
-          <RecordListWrapper
-            openButtonLabel="Visa sökträffar som lista"
-            disableRouterPagination
-            mode={mode}
-          />
+          <Suspense fallback={<p className="p-4 text-center">Laddar lista...</p>}>
+            <RecordListWrapper
+              openButtonLabel="Visa sökträffar som lista"
+              disableRouterPagination
+              mode={mode}
+            />
+          </Suspense>
         </RoutePopupWindow>
         <main id="main" tabIndex={-1}>
         <Outlet />

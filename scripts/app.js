@@ -1,11 +1,10 @@
 import { createRoot } from 'react-dom/client';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, defer, redirect } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
 import RecordView from './features/RecordView/RecordView';
-import PersonView from './components/views/PersonView';
-import PlaceView from './components/views/PlaceView';
 import CorrectionView from './features/ASRCorrection/CorrectionView';
 import "../tw.css";
 import { Toaster } from "react-hot-toast";
@@ -25,6 +24,9 @@ import {
 
 import '../less/style-basic.less';
 import NavigationContextProvider from './NavigationContext';
+
+const PlaceView = lazy(() => import('./components/views/PlaceView'));
+const PersonView = lazy(() => import('./components/views/PersonView'));
 
 const container = document.getElementById('app');
 const root = createRoot(container);
@@ -95,7 +97,9 @@ function createPopupRoutes(prefix) {
         defer({ results: fetchPlace(params.placeId, request.signal) }),
       element: (
         <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}place`}>
-          <PlaceView mode={prefix.slice(0, -1) || "material"} />
+          <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+            <PlaceView mode={prefix.slice(0, -1) || "material"} />
+          </Suspense>
         </RoutePopupWindow>
       ),
     },
@@ -152,7 +156,9 @@ function createPopupRoutes(prefix) {
         fetchPerson(personId, request.signal),
       element: (
         <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}person`}>
-          <PersonView mode={prefix.slice(0, -1) || "material"} />
+          <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+            <PersonView mode={prefix.slice(0, -1) || "material"} />
+          </Suspense>
         </RoutePopupWindow>
       ),
     },
