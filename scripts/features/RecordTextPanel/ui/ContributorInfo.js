@@ -91,7 +91,7 @@ export function PageContributor({ transcribedby, transcriptiondate, comment }) {
   return (
     <div className="mt-2 border-t border-gray-100 pt-2 text-xs text-gray-600 space-y-1">
       {transcribedby && (
-        <span className="m-0 flex items-center gap-1">
+        <span className="m-0 flex items-center gap-1 select-none pointer-events-none">
           <FontAwesomeIcon icon={faUserPen} />
           <span className="font-medium">Bidrag av:</span> {transcribedby}
           {dateStr ? ` • ${dateStr}` : null}
