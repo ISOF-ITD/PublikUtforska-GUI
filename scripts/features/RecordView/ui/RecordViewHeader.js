@@ -81,19 +81,15 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
           </h1>
           <p className="mr-2.5">
             {recordTypeLabel}
-            <span
-              className="switcher-help-button"
+            <button
+              type="button"
+              className="relative -top-px mx-2 !mb-0 inline-block !h-[18px] !w-[18px] cursor-pointer !align-baseline !rounded-full !border !border-solid !border-white !bg-isof !p-0 !text-base !font-bold !leading-[18px] !text-white !ring-1 !ring-white appearance-none"
               onClick={openSwitcherHelptext}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") openSwitcherHelptext();
-              }}
               title="Om accessioner och uppteckningar"
-              role="button"
-              tabIndex={0}
               aria-label={l("Om accessioner och uppteckningar")}
             >
               ?
-            </span>
+            </button>
           </p>
           <dl className="m-0">
             {renderAccessionsNumber(archive)}
