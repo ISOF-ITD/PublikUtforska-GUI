@@ -79,11 +79,6 @@ function IntroOverlay({ show = false, onClose, focusSearchOnClose = false }) {
     // Flytta in fokus i overlayn direkt när den visas.
     restoreFocusRef.current = document.activeElement;
     const animationFrameId = window.requestAnimationFrame(() => {
-      const focusableElements = getFocusableElements(introRef.current);
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-        return;
-      }
       introRef.current?.focus();
     });
 
@@ -152,7 +147,7 @@ function IntroOverlay({ show = false, onClose, focusSearchOnClose = false }) {
       role="dialog"
       aria-modal="true"
     >
-      <div className="intro" ref={introRef} tabIndex={-1}>
+      <div className="intro focus:outline-none" ref={introRef} tabIndex={-1}>
         <div className="overlay-header">
           <span
             className="overflow-hidden text-ellipsis whitespace-nowrap mr-4"
