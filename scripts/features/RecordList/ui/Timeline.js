@@ -187,6 +187,7 @@ function Timeline({
       .attr("role", "slider")
       .attr('aria-label', 'Interaktiv tidslinje över söktraffar per år')
       .attr('aria-describedby', summaryId)
+      .attr('tabindex', 0)
       .attr("aria-valuemin", minYear)
       .attr("aria-valuemax", maxYear)
       .attr("aria-valuenow", filter?.from ?? minYear)
@@ -224,21 +225,13 @@ function Timeline({
       .on('blur', function () {
         select(this).attr('fill', '#01535d');
       })
-      .attr('tabindex', 0) // focusable
-      .attr('role', 'button') // semantic
       .attr('aria-label', (d) =>
     `${d.year}: ${d.doc_count} sökträffar`)
       .attr('x', (d) => xScale(d.year))
       .attr('y', (d) => (d.doc_count > 0 ? Math.min(yScale(d.doc_count), svgHeight - minBarHeight) : yScale(d.doc_count)))
       .attr('height', (d) => (d.doc_count > 0 ? Math.max(svgHeight - yScale(d.doc_count), minBarHeight) : svgHeight - yScale(d.doc_count)))
       .attr('width', xScale.bandwidth())
-      .attr('fill', '#01535d')
-      .on('keydown', (event, d) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onYearFilter(d.year, d.year); // single-year filter
-        }
-      });
+      .attr('fill', '#01535d');
 
     const verticalLine = svg.append('line')
       .style('display', 'none')
