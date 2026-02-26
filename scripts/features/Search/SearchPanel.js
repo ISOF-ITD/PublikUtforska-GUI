@@ -309,9 +309,9 @@ export default function SearchPanel({
           <button
             type="button"
             className={classNames(
-              "pointer-events-auto gap-1 flex items-center justify-center self-center rounded-md p-2 text-sm font-medium",
-              "bg-isof !text-white hover:bg-darker-isof focus:outline-none focus:ring-2 focus:ring-isof/60 focus:ring-offset-1 focus:ring-offset-white",
-              "shrink-0 !mb-0"
+              'pointer-events-auto gap-1 flex items-center justify-center self-center rounded-md p-2 text-sm font-medium',
+              'bg-isof !text-white border-2 border-transparent hover:bg-darker-isof focus:bg-darker-isof focus:border-black focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-neutral-100 focus:outline-none',
+              'shrink-0 !mb-0',
             )}
             onClick={() => {
               navigateToSearch(inputValue);
