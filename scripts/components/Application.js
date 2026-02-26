@@ -1,5 +1,5 @@
 import {
-  lazy, Suspense, useState, useEffect, useContext,
+  lazy, Suspense, useState, useEffect, useContext, useRef,
 } from 'react';
 import {
   useNavigate,
@@ -12,11 +12,6 @@ import {
 import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import RoutePopupWindow from './RoutePopupWindow';
-import FeedbackOverlay from './views/FeedbackOverlay';
-import ContributeInfoOverlay from './views/ContributeInfoOverlay';
-import TranscriptionHelpOverlay from '../features/TranscriptionPageByPageOverlay/ui/TranscriptionHelpOverlay';
-import TranscriptionPageByPageOverlay  from '../features/TranscriptionPageByPageOverlay/TranscriptionPageByPageOverlay';
-import HelpTextOverlay from './views/HelpTextOverlay';
 import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
 import MapWrapper from './MapWrapper';
@@ -25,10 +20,70 @@ import Footer from './Footer';
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 
 import config from '../config';
-import { toastError, toastOk } from '../utils/toast';
-import ImageOverlay from '../features/RecordTextPanel/ui/ImageOverlay';
+import { toastError } from '../utils/toast';
 
 const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
+const FeedbackOverlay = lazy(() => import('./views/FeedbackOverlay'));
+const ContributeInfoOverlay = lazy(() => import('./views/ContributeInfoOverlay'));
+const TranscriptionHelpOverlay = lazy(() => import('../features/TranscriptionPageByPageOverlay/ui/TranscriptionHelpOverlay'));
+const TranscriptionPageByPageOverlay = lazy(() => import('../features/TranscriptionPageByPageOverlay/TranscriptionPageByPageOverlay'));
+const HelpTextOverlay = lazy(() => import('./views/HelpTextOverlay'));
+const ImageOverlay = lazy(() => import('../features/RecordTextPanel/ui/ImageOverlay'));
+
+// DeferredEventOverlay is a wrapper
+// that listens for specific events on the event bus and only renders its children
+// when one of those events has been dispatched. This is useful for overlays that
+// are rendered in response to an event, for example the image overlay that is rendered
+// when the user clicks on an image in a record.
+// We use it in conjunction with React.lazy.
+function DeferredEventOverlay({
+  events,
+  fallback = null,
+  children,
+}) {
+  const [enabled, setEnabled] = useState(false);
+  const pendingEventRef = useRef(null);
+
+  useEffect(() => {
+    if (enabled || !window.eventBus) return undefined;
+
+    const handler = (event) => {
+      pendingEventRef.current = {
+        type: event?.type,
+        payload: event?.detail ?? event?.target ?? {},
+      };
+      setEnabled(true);
+    };
+
+    events.forEach((name) => window.eventBus.addEventListener(name, handler));
+    return () => {
+      events.forEach((name) => window.eventBus.removeEventListener(name, handler));
+    };
+  }, [enabled, events]);
+
+  useEffect(() => {
+    if (!enabled || !window.eventBus || !pendingEventRef.current) return undefined;
+
+    const pending = pendingEventRef.current;
+    const replayId = window.requestAnimationFrame(() => {
+      window.eventBus.dispatch(pending.type, pending.payload);
+      pendingEventRef.current = null;
+    });
+
+    return () => {
+      window.cancelAnimationFrame(replayId);
+    };
+  }, [enabled]);
+
+  if (!enabled) return null;
+  return <Suspense fallback={fallback}>{children}</Suspense>;
+}
+
+DeferredEventOverlay.propTypes = {
+  events: PropTypes.arrayOf(PropTypes.string).isRequired,
+  fallback: PropTypes.node,
+  children: PropTypes.node.isRequired,
+};
 
 
 export default function Application({
@@ -181,12 +236,24 @@ useEffect(() => {
         </main>
 
         <GlobalAudioPlayer />
-        <ImageOverlay />
-        <FeedbackOverlay />
-        <ContributeInfoOverlay />
-        <TranscriptionPageByPageOverlay />
-        <TranscriptionHelpOverlay />
-        <HelpTextOverlay />
+        <DeferredEventOverlay events={['overlay.viewimage']}>
+          <ImageOverlay />
+        </DeferredEventOverlay>
+        <DeferredEventOverlay events={['overlay.feedback']}>
+          <FeedbackOverlay />
+        </DeferredEventOverlay>
+        <DeferredEventOverlay events={['overlay.contributeinfo']}>
+          <ContributeInfoOverlay />
+        </DeferredEventOverlay>
+        <DeferredEventOverlay events={['overlay.transcribePageByPage']}>
+          <TranscriptionPageByPageOverlay />
+        </DeferredEventOverlay>
+        <DeferredEventOverlay events={['overlay.transcriptionhelp']}>
+          <TranscriptionHelpOverlay />
+        </DeferredEventOverlay>
+        <DeferredEventOverlay events={['overlay.HelpText']}>
+          <HelpTextOverlay />
+        </DeferredEventOverlay>
         <Footer />
       </div>
     </AudioProvider>

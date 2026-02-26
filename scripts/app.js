@@ -4,8 +4,6 @@ import { createBrowserRouter, RouterProvider, defer, redirect } from 'react-rout
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
-import RecordView from './features/RecordView/RecordView';
-import CorrectionView from './features/ASRCorrection/CorrectionView';
 import "../tw.css";
 import { Toaster } from "react-hot-toast";
 
@@ -27,6 +25,8 @@ import NavigationContextProvider from './NavigationContext';
 
 const PlaceView = lazy(() => import('./components/views/PlaceView'));
 const PersonView = lazy(() => import('./components/views/PersonView'));
+const RecordView = lazy(() => import('./features/RecordView/RecordView'));
+const CorrectionView = lazy(() => import('./features/ASRCorrection/CorrectionView'));
 
 const container = document.getElementById('app');
 const root = createRoot(container);
@@ -138,14 +138,20 @@ function createPopupRoutes(prefix) {
       },
       element: (
         <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}record`}>
-          <RecordView mode={prefix.slice(0, -1) || "material"} />
+          <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+            <RecordView mode={prefix.slice(0, -1) || "material"} />
+          </Suspense>
         </RoutePopupWindow>
       ),
       // This was added to point to the exact audio file, not used for text transcriptions yet
       children: [
         {
           path: "audio/:id/transcribe",
-          element: <CorrectionView />,
+          element: (
+            <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+              <CorrectionView />
+            </Suspense>
+          ),
         },
       ],
     },
