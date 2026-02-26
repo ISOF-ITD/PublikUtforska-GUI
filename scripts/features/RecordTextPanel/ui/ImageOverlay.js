@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faChevronRight, faClose } from "@fortawesome/free-solid-svg-icons";
 import config from "../../../config";
 import PdfViewer from "../../../components/PdfViewer";
+import { getFocusableElements } from "../../../utils/focusHelper";
 
 export default function ImageOverlay() {
   const [imageUrl, setImageUrl] = useState(null);
@@ -162,13 +163,10 @@ export default function ImageOverlay() {
 
   // Simple focus trap inside the dialog
   const onKeyDownTrap = useCallback((e) => {
-    if (e.key !== "Tab") return;
+    if (e.key !== 'Tab') return;
     const root = dialogRef.current;
     if (!root) return;
-    const focusables = root.querySelectorAll(
-      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-    );
-    const list = Array.from(focusables);
+    const list = getFocusableElements(root);
     if (list.length === 0) return;
     const first = list[0];
     const last = list[list.length - 1];

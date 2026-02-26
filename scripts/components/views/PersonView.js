@@ -105,16 +105,16 @@ export default function PersonView({ mode = "material" }) {
             role="group"
             aria-label={l("Hjälp oss förbättra sidan")}
           >
+            <ContributeInfoButton
+              title={name}
+              type="Person"
+              location={location}
+            />
             <FeedbackButton
               title={name}
               type="Person"
               location={location}
               country="sweden"
-            />
-            <ContributeInfoButton
-              title={name}
-              type="Person"
-              location={location}
             />
           </div>
         )}

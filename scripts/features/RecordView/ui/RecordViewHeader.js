@@ -103,13 +103,13 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
           </dl>
         </div>
       </div>
-      <FeedbackButton title={title} type="Uppteckning" country={country} />
       <ContributeInfoButton
         title={title}
         type="Uppteckning"
         country={country}
         id={id}
       />
+      <FeedbackButton title={title} type="Uppteckning" country={country} />
     </header>
   );
 }

@@ -1,8 +1,11 @@
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { useState, useEffect } from 'react';
+import {
+  useState, useEffect, useRef, useCallback, useId,
+} from 'react';
 import { useLocation } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
+import { getFocusableElements } from '../../utils/focusHelper';
 import { IconButton } from '../IconButton';
 
 // Main CSS: ui-components/overlay.less
@@ -17,6 +20,9 @@ export default function FeedbackOverlay() {
   const [type, setType] = useState(null);
   const [title, setTitle] = useState(null);
   const [appUrl, setAppUrl] = useState(null);
+  const dialogRef = useRef(null);
+  const restoreFocusRef = useRef(null);
+  const titleId = useId();
 
   const location = useLocation();
 
@@ -59,14 +65,75 @@ export default function FeedbackOverlay() {
     };
   }, []);
 
-  const closeButtonClickHandler = () => {
+  const closeOverlay = useCallback(() => {
     setVisible(false);
     setMessageSent(false);
     setMessageSentError(false);
     setMessageInputValue('');
     setNameInputValue('');
     setEmailInputValue('');
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return undefined;
+
+    restoreFocusRef.current = document.activeElement;
+    const animationFrameId = window.requestAnimationFrame(() => {
+      const focusableElements = getFocusableElements(dialogRef.current);
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus();
+        return;
+      }
+      dialogRef.current?.focus();
+    });
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeOverlay();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = getFocusableElements(dialogRef.current);
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialogRef.current?.focus();
+        return;
+      }
+
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+      const { activeElement } = document;
+      const activeInsideDialog = dialogRef.current?.contains(activeElement);
+
+      if (event.shiftKey) {
+        if (!activeInsideDialog || activeElement === first || activeElement === dialogRef.current) {
+          event.preventDefault();
+          last.focus();
+        }
+        return;
+      }
+
+      if (!activeInsideDialog || activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      window.cancelAnimationFrame(animationFrameId);
+      try {
+        restoreFocusRef.current?.focus?.();
+      } catch {
+        // Ignore restore-focus errors when previous element no longer exists.
+      }
+    };
+  }, [visible, closeOverlay]);
 
   const messageInputChangeHandler = (event) => {
     setMessageInputValue(event.target.value);
@@ -118,7 +185,7 @@ export default function FeedbackOverlay() {
         <p>{l('Vi återkommer så fort vi kan. Tack.')}</p>
         <p>
           <br />
-          <button className="button-primary" onClick={closeButtonClickHandler} type="button">Stäng</button>
+          <button className="button-primary" onClick={closeOverlay} type="button">Stäng</button>
         </p>
       </div>
     );
@@ -128,7 +195,7 @@ export default function FeedbackOverlay() {
         <p>{l('Något gick fel. Meddelande kunde inte skickas. Vänligen försök senare, eller kontakta oss på karttjanster@isof.se')}</p>
         <p>
           <br />
-          <button className="button-primary" onClick={closeButtonClickHandler} type="button">Stäng</button>
+          <button className="button-primary" onClick={closeOverlay} type="button">Stäng</button>
         </p>
       </div>
     );
@@ -177,15 +244,22 @@ export default function FeedbackOverlay() {
   }
 
   return (
-    <div className={`overlay-container !z-[4100] ${visible ? " visible" : ""}`}>
-      <div className="overlay-window">
+    <div className={`overlay-container !z-[4100] ${visible ? ' visible' : ''}`}>
+      <div
+        ref={dialogRef}
+        className="overlay-window"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <div className="overlay-header">
-          {l("Frågor och synpunkter")}
+          <span id={titleId}>{l('Frågor och synpunkter')}</span>
           <IconButton
             icon={faXmark}
-            label={l("Stäng")}
+            label={l('Stäng')}
             tone="light"
-            onClick={closeButtonClickHandler}
+            onClick={closeOverlay}
             className="absolute right-4 top-3"
           />
         </div>

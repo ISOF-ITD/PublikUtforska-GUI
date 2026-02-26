@@ -12,6 +12,7 @@ import { createPortal } from "react-dom";
 import { useLocation, Link } from "react-router-dom";
 import config from "../../config";
 import { l } from "../../lang/Lang";
+import { getFocusableElements } from "../../utils/focusHelper";
 import { toastOk, toastError } from "../../utils/toast";
 import { IconButton } from "../IconButton";
 
@@ -45,9 +46,7 @@ function Modal({ open, onClose, titleId, descId, children, className }) {
 
     // autofocus first control
     const node = dialogRef.current;
-    const focusables = node?.querySelectorAll(
-      'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'
-    );
+    const focusables = getFocusableElements(node);
     focusables?.[0]?.focus?.();
 
     const onKeyDown = (e) => {
@@ -57,16 +56,10 @@ function Modal({ open, onClose, titleId, descId, children, className }) {
         return;
       }
       if (e.key === "Tab" && node) {
-        const els = Array.from(
-          node.querySelectorAll(
-            'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'
-          )
-        ).filter(
-          (el) => !el.hasAttribute("disabled") && el.offsetParent !== null
-        );
-        if (els.length === 0) return;
-        const first = els[0];
-        const last = els[els.length - 1];
+        const elements = getFocusableElements(node);
+        if (elements.length === 0) return;
+        const first = elements[0];
+        const last = elements[elements.length - 1];
         const active = document.activeElement;
         if (e.shiftKey && active === first) {
           e.preventDefault();

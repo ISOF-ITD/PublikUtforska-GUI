@@ -61,15 +61,15 @@ function OverlayHeader({
       )}
       {!config.siteOptions.hideContactButton && (
         <>
-          <FeedbackButton type="Uppteckning" title={recordDetails.title} />
-          <ContributeInfoButton
-            type="Uppteckning"
-            title={recordDetails.title}
-          />
           <TranscriptionHelpButton
             type="Uppteckning"
             title={recordDetails.title}
           />
+          <ContributeInfoButton
+            type="Uppteckning"
+            title={recordDetails.title}
+          />
+          <FeedbackButton type="Uppteckning" title={recordDetails.title} />
         </>
       )}
     </>
