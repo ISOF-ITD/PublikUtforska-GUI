@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { l } from "../../lang/Lang";
-import Filter from "./ui/Filter";
 import Timeline from "./ui/Timeline.js";
 import Pagination from "./ui/Pagination";
 import RecordCards from "./ui/RecordCards";
@@ -140,21 +139,6 @@ export default function RecordList(props) {
   /* ------- render ------- */
   return (
     <>
-      {/*
-      No longer used after removal of one_record,
-      left here as temporary reference
-      hasFilter && (
-        <Filter
-          uniqueId={uniqueId}
-          filter={filter}
-          onChange={(e) => {
-            setFilter(e.target.value);
-            setCurrentPage(1);
-          }}
-          openHelp={openSwitcherHelptext}
-        />
-        )*/}
-
       {hasTimeline && (
         <Timeline
           containerRef={containerRef}
