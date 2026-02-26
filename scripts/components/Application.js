@@ -1,5 +1,5 @@
 import {
-  lazy, Suspense, useState, useEffect, useContext, useRef,
+  lazy, Suspense, useState, useEffect, useContext, useRef, useCallback,
 } from 'react';
 import {
   useNavigate,
@@ -30,6 +30,22 @@ const TranscriptionPageByPageOverlay = lazy(() => import('../features/Transcript
 const HelpTextOverlay = lazy(() => import('./views/HelpTextOverlay'));
 const ImageOverlay = lazy(() => import('../features/RecordTextPanel/ui/ImageOverlay'));
 
+function OverlayReady({
+  onReady,
+  children,
+}) {
+  useEffect(() => {
+    onReady();
+  }, [onReady]);
+
+  return children;
+}
+
+OverlayReady.propTypes = {
+  onReady: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
+};
+
 // DeferredEventOverlay is a wrapper
 // that listens for specific events on the event bus and only renders its children
 // when one of those events has been dispatched. This is useful for overlays that
@@ -42,7 +58,11 @@ function DeferredEventOverlay({
   children,
 }) {
   const [enabled, setEnabled] = useState(false);
+  const [overlayReady, setOverlayReady] = useState(false);
   const pendingEventRef = useRef(null);
+  const markOverlayReady = useCallback(() => {
+    setOverlayReady(true);
+  }, []);
 
   useEffect(() => {
     if (enabled || !window.eventBus) return undefined;
@@ -62,21 +82,32 @@ function DeferredEventOverlay({
   }, [enabled, events]);
 
   useEffect(() => {
-    if (!enabled || !window.eventBus || !pendingEventRef.current) return undefined;
+    if (
+      !enabled
+      || !overlayReady
+      || !window.eventBus
+      || !pendingEventRef.current
+    ) return undefined;
 
     const pending = pendingEventRef.current;
-    const replayId = window.requestAnimationFrame(() => {
+    const replayId = window.setTimeout(() => {
       window.eventBus.dispatch(pending.type, pending.payload);
       pendingEventRef.current = null;
-    });
+    }, 0);
 
     return () => {
-      window.cancelAnimationFrame(replayId);
+      window.clearTimeout(replayId);
     };
-  }, [enabled]);
+  }, [enabled, overlayReady]);
 
   if (!enabled) return null;
-  return <Suspense fallback={fallback}>{children}</Suspense>;
+  return (
+    <Suspense fallback={fallback}>
+      <OverlayReady onReady={markOverlayReady}>
+        {children}
+      </OverlayReady>
+    </Suspense>
+  );
 }
 
 DeferredEventOverlay.propTypes = {
