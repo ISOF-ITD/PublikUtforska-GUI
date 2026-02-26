@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { getFocusableElements } from "../../utils/focusHelper";
 
-function IntroOverlay({ show = false, onClose }) {
+function IntroOverlay({ show = false, onClose, focusSearchOnClose = false }) {
   const location = useLocation();
   const navigate = useNavigate();
   const iframeRef = useRef(null);
@@ -131,13 +131,20 @@ function IntroOverlay({ show = false, onClose }) {
       document.removeEventListener('keydown', onDocumentKeyDown);
       window.cancelAnimationFrame(animationFrameId);
       try {
+        if (focusSearchOnClose) {
+          const searchInput = document.getElementById('searchInputMapMenu');
+          if (searchInput?.focus) {
+            searchInput.focus();
+            return;
+          }
+        }
         // Återställ fokus till tidigare element när overlayn stängs.
         restoreFocusRef.current?.focus?.();
       } catch {
         // Ignorera fel om tidigare element inte längre finns i DOM.
       }
     };
-  }, [show, handleClose]);
+  }, [show, handleClose, focusSearchOnClose]);
 
   return (
     <div
@@ -191,6 +198,7 @@ function IntroOverlay({ show = false, onClose }) {
 IntroOverlay.propTypes = {
   show: PropTypes.bool,
   onClose: PropTypes.func,
+  focusSearchOnClose: PropTypes.bool,
 };
 
 export default IntroOverlay;

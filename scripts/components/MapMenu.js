@@ -134,6 +134,7 @@ export default function MapMenu({
   const location = useLocation();
   const initialLoad = useRef(true);
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
+  const [focusSearchOnIntroClose, setFocusSearchOnIntroClose] = useState(false);
   const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
   const getIsMobile = () =>
     typeof window !== "undefined" ? window.innerWidth < 700 : false;
@@ -190,6 +191,7 @@ export default function MapMenu({
     if (initialLoad.current && isRoot && noHash) {
       // If there’s a k=... in the URL, always open the intro, even if user saw it before
       if (hasK || !hasSeen) {
+        setFocusSearchOnIntroClose(true);
         setShowIntroOverlay(true);
       }
     }
@@ -197,10 +199,14 @@ export default function MapMenu({
   }, [location, activateIntroOverlay]);
 
   const handleShowIntro = useCallback(() => {
-    if (activateIntroOverlay) setShowIntroOverlay(true);
+    if (activateIntroOverlay) {
+      setFocusSearchOnIntroClose(false);
+      setShowIntroOverlay(true);
+    }
   }, [activateIntroOverlay]);
   const handleCloseOverlay = useCallback(() => {
     setShowIntroOverlay(false);
+    setFocusSearchOnIntroClose(false);
     try {
       localStorage.setItem("folke:introSeen:v1", "1");
     } catch {}
@@ -318,6 +324,7 @@ export default function MapMenu({
           id="intro-overlay"
           show={showIntroOverlay}
           onClose={handleCloseOverlay}
+          focusSearchOnClose={focusSearchOnIntroClose}
         />
       )}
     </div>
