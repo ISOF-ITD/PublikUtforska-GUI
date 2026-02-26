@@ -130,23 +130,35 @@ function Timeline({
     const fetchUrl = `${config.apiUrl}collection_years/?${paramString}`;
 
     /* kill the previous request if params change quickly */
-  abortRef.current?.abort();
-  const ctrl = new AbortController();
-  abortRef.current = ctrl;
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
 
-  const handler = setTimeout(() => {
-    fetch(fetchUrl, { signal: ctrl.signal })
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data.data);
-      })
-      .catch((err) => console.error("Något gick fel:", err));
-  }, 250);
+    const handler = setTimeout(() => {
+      fetch(fetchUrl, { signal: ctrl.signal })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Timeline fetch failed: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((payload) => {
+          if (ctrl.signal.aborted) return;
+          setData(payload?.data || []);
+        })
+        .catch((err) => {
+          if (err?.name === 'AbortError' || ctrl.signal.aborted) return;
+          console.error('Något gick fel:', err);
+        });
+    }, 250);
 
-  return () => {
-    clearTimeout(handler);
-    ctrl.abort();
-  };
+    return () => {
+      clearTimeout(handler);
+      ctrl.abort();
+      if (abortRef.current === ctrl) {
+        abortRef.current = null;
+      }
+    };
 
   }, [params, filter, mode]);
 
@@ -226,7 +238,7 @@ function Timeline({
         select(this).attr('fill', '#01535d');
       })
       .attr('aria-label', (d) =>
-    `${d.year}: ${d.doc_count} sökträffar`)
+        `${d.year}: ${d.doc_count} sökträffar`)
       .attr('x', (d) => xScale(d.year))
       .attr('y', (d) => (d.doc_count > 0 ? Math.min(yScale(d.doc_count), svgHeight - minBarHeight) : yScale(d.doc_count)))
       .attr('height', (d) => (d.doc_count > 0 ? Math.max(svgHeight - yScale(d.doc_count), minBarHeight) : svgHeight - yScale(d.doc_count)))
@@ -290,7 +302,7 @@ function Timeline({
         const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
         const year = xScale.domain()[hoveredBand]
           || xScale.domain()[
-            dragEnd > dragStart ? xScale.domain().length - 1 : 0
+          dragEnd > dragStart ? xScale.domain().length - 1 : 0
           ];
         dragEnd = xScale(year);
 
@@ -374,38 +386,38 @@ function Timeline({
         rafId = null;
         const [x, y] = pointer(event, svg.node());
 
-      const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
-      const year = xScale.domain()[hoveredBand];
+        const hoveredBand = Math.floor((x - xScale.range()[0]) / bandWidth);
+        const year = xScale.domain()[hoveredBand];
 
-      const found = data.find((d) => d.year === year);
-      if (!found) {
-        // gör inget om vi inte hittar data för det året
-        return;
-      }
-      const value = found.doc_count;
+        const found = data.find((d) => d.year === year);
+        if (!found) {
+          // gör inget om vi inte hittar data för det året
+          return;
+        }
+        const value = found.doc_count;
 
-      const tooltipWidth = 150; // Samma bredd som du har satt på din tooltip
-      const tooltipHeight = 20; // Samma höjd som du har satt på din tooltip
+        const tooltipWidth = 150; // Samma bredd som du har satt på din tooltip
+        const tooltipHeight = 20; // Samma höjd som du har satt på din tooltip
 
-      // for tooltip:
-      const xOffset = x + tooltipWidth > containerWidth ? -tooltipWidth - 10 : 10;
-      const yOffset = y + tooltipHeight > 200 ? -tooltipHeight - 1 : 1;
+        // for tooltip:
+        const xOffset = x + tooltipWidth > containerWidth ? -tooltipWidth - 10 : 10;
+        const yOffset = y + tooltipHeight > 200 ? -tooltipHeight - 1 : 1;
 
-      // sticky vertical line:
-      verticalLine.style('display', null).attr('x1', x).attr('x2', x);
-      otherVerticalLine.style('display', 'none');
+        // sticky vertical line:
+        verticalLine.style('display', null).attr('x1', x).attr('x2', x);
+        otherVerticalLine.style('display', 'none');
 
-      tooltip.select('text')
-        .text(`${year}: ${value} ${value > 1 ? 'sökträffar' : (value === 1 ? 'sökträff' : 'sökträffar')}`);
+        tooltip.select('text')
+          .text(`${year}: ${value} ${value > 1 ? 'sökträffar' : (value === 1 ? 'sökträff' : 'sökträffar')}`);
 
-      // visa inte tooltip om muspekaren är nedanför x-axeln
-      if (y > svgHeight) {
-        tooltip.style('display', 'none');
-      } else {
-        tooltip
-          .style('display', null)
-          .attr('transform', `translate(${x + xOffset}, ${y + yOffset})`);
-      }
+        // visa inte tooltip om muspekaren är nedanför x-axeln
+        if (y > svgHeight) {
+          tooltip.style('display', 'none');
+        } else {
+          tooltip
+            .style('display', null)
+            .attr('transform', `translate(${x + xOffset}, ${y + yOffset})`);
+        }
       });
     });
 
@@ -418,7 +430,7 @@ function Timeline({
 
     return () => {
       svg.on('.drag', null).on('mousemove', null).on('mouseleave', null);
-    }; 
+    };
 
   }, [data, containerWidth, summaryId]);
 
