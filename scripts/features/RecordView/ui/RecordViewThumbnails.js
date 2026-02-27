@@ -81,7 +81,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
         title={expanded ? "Dölj" : "Visa"}
         aria-expanded={expanded}
         aria-controls={contentId}
-        className="flex items-center gap-2 underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 py-1.5"
+        className="flex items-center gap-2 rounded-sm px-1 py-1.5 underline hover:no-underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
         aria-label={`Visa översikt, ${images.length} bild${
           images.length === 1 ? "" : "er"
         }`}
@@ -114,7 +114,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
               variant="thumbnail"
               showCaption={false}
               renderMagnifyingGlass={false}
-              className="mr-4 w-28 hover:cursor-pointer sm:w-32 md:w-36"
+              className="mr-4 w-28 hover:cursor-pointer sm:w-32 md:w-36 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
               imgClassName="h-28 sm:h-32 md:h-36"
               imgProps={{
                 loading: "lazy",
