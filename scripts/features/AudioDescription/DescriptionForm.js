@@ -449,6 +449,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
           Ditt namn (ej obligatoriskt)
           <input
             id={fieldIds.name}
+            autoComplete="name"
             type="text"
             placeholder="Ange ditt namn"
             className="border p-2 w-full mt-1"
@@ -462,6 +463,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
           Din e-post (ej obligatoriskt)
           <input
             id={fieldIds.email}
+            autoComplete="email"
             type="email"
             placeholder="Ange din e-post"
             className="border p-2 w-full mt-1"
