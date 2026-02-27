@@ -1,13 +1,19 @@
-/* eslint-disable react/require-default-props */
-import { NavLink, useParams } from "react-router-dom";
-import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import { l } from "../lang/Lang";
+import classNames from 'classnames';
+import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import { NavLink, useParams } from 'react-router-dom';
+import { l } from '../lang/Lang';
 import {
   createParamsFromSearchRoute,
   createSearchRoute,
 } from "../utils/routeHelper";
-import classNames from "classnames";
+
+const renderLabel = (label, isSelected) => (
+  <>
+    {isSelected && <span aria-hidden="true" className="sr-only">[Aktiv] </span>}
+    {l(label)}
+  </>
+);
 
 export default function FilterSwitch({ mode = "material" }) {
   const params = useParams();
@@ -35,8 +41,8 @@ export default function FilterSwitch({ mode = "material" }) {
     "transition-colors duration-200 no-underline hover:underline",
   ].join(" ");
 
-  const unselected = "bg-neutral-300 text-black hover:bg-neutral-400 ";
-  const selected = "bg-neutral-100 text-black hover:bg-neutral-150";
+  const unselected = 'bg-neutral-300 text-black hover:bg-neutral-400';
+  const selected = 'bg-neutral-100 text-black hover:bg-neutral-150 font-semibold';
 
   return (
     <nav
@@ -52,7 +58,7 @@ export default function FilterSwitch({ mode = "material" }) {
           )
         }
       >
-        {l("Arkivmaterial")}
+        {({ isActive }) => renderLabel('Arkivmaterial', isActive || mode === 'material')}
       </NavLink>
 
       <NavLink
@@ -64,7 +70,7 @@ export default function FilterSwitch({ mode = "material" }) {
           ].join(" ")
         }
       >
-        {l("Skriva av")}
+        {({ isActive }) => renderLabel('Skriva av', isActive || mode === 'transcribe')}
       </NavLink>
     </nav>
   );
