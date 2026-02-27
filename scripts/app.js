@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider, defer, redirect } from 'react-rout
 import EventBus from 'eventbusjs';
 import Application from './components/Application';
 import RoutePopupWindow from './components/RoutePopupWindow';
+import RouteViewLoadingPlaceholder from './components/RouteViewLoadingPlaceholder';
 import "../tw.css";
 import { Toaster } from "react-hot-toast";
 
@@ -97,7 +98,7 @@ function createPopupRoutes(prefix) {
         defer({ results: fetchPlace(params.placeId, request.signal) }),
       element: (
         <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}place`}>
-          <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+          <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" />}>
             <PlaceView mode={prefix.slice(0, -1) || "material"} />
           </Suspense>
         </RoutePopupWindow>
@@ -138,7 +139,7 @@ function createPopupRoutes(prefix) {
       },
       element: (
         <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}record`}>
-          <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+          <Suspense fallback={<RouteViewLoadingPlaceholder kind="record" />}>
             <RecordView mode={prefix.slice(0, -1) || "material"} />
           </Suspense>
         </RoutePopupWindow>
@@ -148,7 +149,7 @@ function createPopupRoutes(prefix) {
         {
           path: "audio/:id/transcribe",
           element: (
-            <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+            <Suspense fallback={<RouteViewLoadingPlaceholder kind="correction" />}>
               <CorrectionView />
             </Suspense>
           ),
@@ -162,7 +163,7 @@ function createPopupRoutes(prefix) {
         fetchPerson(personId, request.signal),
       element: (
         <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}person`}>
-          <Suspense fallback={<div className="p-4 text-center">Laddar vy...</div>}>
+          <Suspense fallback={<RouteViewLoadingPlaceholder kind="person" />}>
             <PersonView mode={prefix.slice(0, -1) || "material"} />
           </Suspense>
         </RoutePopupWindow>
