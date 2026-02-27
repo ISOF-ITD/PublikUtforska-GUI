@@ -1,7 +1,11 @@
-import PropTypes from "prop-types";
-import { memo, useEffect, useRef, useState } from "react";
-import MapMenu from "./MapMenu";
-import MapView from "./views/MapView";
+import PropTypes from 'prop-types';
+import {
+  lazy, memo, Suspense, useEffect, useRef, useState,
+} from 'react';
+import MapMenu from './MapMenu';
+import MapLoadingPlaceholder from './MapLoadingPlaceholder';
+
+const MapView = lazy(() => import('./views/MapView'));
 
 function MapWrapper({
   mapMarkerClick,
@@ -42,8 +46,8 @@ function MapWrapper({
   return (
     <div
       className="relative h-screen w-screen print:hidden"
-      role='region'
-      aria-label='Kartvy för sökresultat'
+      role="region"
+      aria-label="Kartvy för sökresultat"
       aria-busy={uiLoading || undefined}
     >
       <span className="sr-only" aria-live="polite">
@@ -69,7 +73,9 @@ function MapWrapper({
         </div>
       )}
 
-      <MapView onMarkerClick={mapMarkerClick} mapData={stableMapData} />
+      <Suspense fallback={<MapLoadingPlaceholder />}>
+        <MapView onMarkerClick={mapMarkerClick} mapData={stableMapData} />
+      </Suspense>
     </div>
   );
 }

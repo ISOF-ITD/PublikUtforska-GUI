@@ -1,5 +1,7 @@
 /* eslint-disable react/require-default-props */
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import {
+  lazy, Suspense, useEffect, useState, useMemo, useRef, useCallback,
+} from 'react';
 import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -11,10 +13,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Folkelogga from "../../img/folke-white.svg";
 import { l } from "../lang/Lang";
 import SearchPanel from "../features/Search/SearchPanel";
-import StatisticsContainer from "./StatisticsContainer";
 import classNames from "classnames";
+import StatisticsLoadingPlaceholder from './StatisticsLoadingPlaceholder';
 import IntroOverlay from "./views/IntroOverlay";
 import config from "../config";
+
+const StatisticsContainer = lazy(() => import('./StatisticsContainer'));
 
 // Helpers
 function SurveyLink() {
@@ -298,7 +302,9 @@ export default function MapMenu({
         className="overflow-y-auto w-full min-w-0 max-w-full p-3 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white"
       >
         <div>
-          <StatisticsContainer />
+          <Suspense fallback={<StatisticsLoadingPlaceholder />}>
+            <StatisticsContainer />
+          </Suspense>
           {/* Adapt to new page by page transcription:
           <h3 className="!my-2">Senast avskrivna uppteckningar</h3>
           <div>
