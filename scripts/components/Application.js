@@ -65,21 +65,26 @@ function DeferredEventOverlay({
   }, []);
 
   useEffect(() => {
-    if (enabled || !window.eventBus) return undefined;
+    if (overlayReady || !window.eventBus) return undefined;
 
-    const handler = (event) => {
-      pendingEventRef.current = {
-        type: event?.type,
-        payload: event?.detail ?? event?.target ?? {},
+    const listeners = events.map((name) => {
+      const handler = (event, data) => {
+        pendingEventRef.current = {
+          type: name,
+          payload: event?.detail ?? event?.target ?? data ?? event ?? {},
+        };
+        setEnabled(true);
       };
-      setEnabled(true);
-    };
+      window.eventBus.addEventListener(name, handler);
+      return { name, handler };
+    });
 
-    events.forEach((name) => window.eventBus.addEventListener(name, handler));
     return () => {
-      events.forEach((name) => window.eventBus.removeEventListener(name, handler));
+      listeners.forEach(({ name, handler }) => {
+        window.eventBus.removeEventListener(name, handler);
+      });
     };
-  }, [enabled, events]);
+  }, [overlayReady, events]);
 
   useEffect(() => {
     if (
