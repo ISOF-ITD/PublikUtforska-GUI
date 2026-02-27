@@ -23,6 +23,7 @@ export default function ImageOverlay() {
   const lastFocusedRef = useRef(null);
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
+  const touchActive = useRef(false);
   const scrollYRef = useRef(0);
 
   // Derived helpers
@@ -181,23 +182,36 @@ export default function ImageOverlay() {
 
   // Touch swipe (left/right)
   const onTouchStart = useCallback((e) => {
+    if (e.touches?.length !== 1) {
+      touchActive.current = false;
+      return;
+    }
     const t = e.touches?.[0];
     if (!t) return;
+    touchActive.current = true;
     touchStartX.current = t.clientX;
     touchStartY.current = t.clientY;
   }, []);
+
   const onTouchEnd = useCallback((e) => {
     const t = e.changedTouches?.[0];
-    if (!t || touchStartX.current == null) return;
+    if (!touchActive.current || !t || touchStartX.current == null) return;
     const dx = t.clientX - touchStartX.current;
     const dy = t.clientY - touchStartY.current;
     const threshold = 40; // px
     if (Math.abs(dx) > threshold && Math.abs(dy) < threshold) {
       if (dx < 0) showNext(); else showPrev();
     }
+    touchActive.current = false;
     touchStartX.current = null;
     touchStartY.current = null;
   }, [showNext, showPrev]);
+
+  const onTouchCancel = useCallback(() => {
+    touchActive.current = false;
+    touchStartX.current = null;
+    touchStartY.current = null;
+  }, []);
 
   // When we change the src, show a loader until onLoad/onError fires
   useEffect(() => {
@@ -216,6 +230,18 @@ export default function ImageOverlay() {
         return;
       }
 
+      if (!e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        showPrev();
+        return;
+      }
+
+      if (!e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        showNext();
+        return;
+      }
+
       onKeyDownTrap(e);
     };
 
@@ -223,7 +249,7 @@ export default function ImageOverlay() {
     return () => {
       document.removeEventListener('keydown', onDocumentKeyDown);
     };
-  }, [visible, onKeyDownTrap, closeOverlay]);
+  }, [visible, onKeyDownTrap, closeOverlay, showPrev, showNext]);
 
   // Render nothing when hidden (portal unmounted)
   if (!visible) return null;
@@ -267,6 +293,7 @@ export default function ImageOverlay() {
           tabIndex={-1}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchCancel}
           className="relative max-w-[95vw] max-h-[92vh] outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-xl"
         >
           {/* IMAGE */}
