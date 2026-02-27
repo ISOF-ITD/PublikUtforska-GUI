@@ -93,6 +93,7 @@ function AudioItemRow({
   }, [item]);
 
   const descriptionsCount = item.description?.length || 0;
+  const hasStartValue = (value) => value !== undefined && value !== null && value !== '';
 
   /**
    * Called when user clicks "Ändra" on an existing description.
@@ -166,15 +167,14 @@ function AudioItemRow({
           {<TimeChip seconds={durationSec} />}
           {Array.isArray(highlightData) &&
           highlightData.some(
-            (h) =>
-              h._source &&
-              h._source.start &&
-              h.highlight &&
-              h.highlight["media.description.text"]
+            (h) => h._source
+              && hasStartValue(h._source.start)
+              && h.highlight
+              && h.highlight['media.description.text'],
           ) ? (
             <div>
               {highlightData
-                .filter((h) => h._source && h._source.start)
+                .filter((h) => h._source && hasStartValue(h._source.start))
                 .map((h, idx) => (
                   <div
                     key={idx}
@@ -188,15 +188,14 @@ function AudioItemRow({
           ) : null}
           {Array.isArray(highlightData) &&
           highlightData.some(
-            (h) =>
-              h._source &&
-              h._source.start &&
-              h.highlight &&
-              h.highlight["media.utterances.utterances.text"]
+            (h) => h._source
+              && hasStartValue(h._source.start)
+              && h.highlight
+              && h.highlight['media.utterances.utterances.text'],
           ) ? (
             <div>
               {highlightData
-                .filter((h) => h._source && h._source.start)
+                .filter((h) => h._source && hasStartValue(h._source.start))
                 .map((h, idx) => (
                   <div
                     key={idx}
