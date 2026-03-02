@@ -137,7 +137,6 @@ export default function MapMenu({
   const location = useLocation();
   const initialLoad = useRef(true);
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
-  const [focusSearchOnIntroClose, setFocusSearchOnIntroClose] = useState(false);
   const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
 
   // Auto-open intro on first load when configured.
@@ -152,7 +151,6 @@ export default function MapMenu({
     const hasSeen = typeof window !== 'undefined' && localStorage.getItem(SEEN_KEY) === '1';
     if (initialLoad.current && isRoot && noHash) {
       if (hasK || !hasSeen) {
-        setFocusSearchOnIntroClose(true);
         setShowIntroOverlay(true);
       }
     }
@@ -161,14 +159,12 @@ export default function MapMenu({
 
   const handleShowIntro = useCallback(() => {
     if (activateIntroOverlay) {
-      setFocusSearchOnIntroClose(false);
       setShowIntroOverlay(true);
     }
   }, [activateIntroOverlay]);
 
   const handleCloseOverlay = useCallback(() => {
     setShowIntroOverlay(false);
-    setFocusSearchOnIntroClose(false);
     try {
       localStorage.setItem('folke:introSeen:v1', '1');
     } catch {
@@ -259,7 +255,6 @@ export default function MapMenu({
             id="intro-overlay"
             show={showIntroOverlay}
             onClose={handleCloseOverlay}
-            focusSearchOnClose={focusSearchOnIntroClose}
           />
         )}
       </>
@@ -292,7 +287,6 @@ export default function MapMenu({
             id="intro-overlay"
             show={showIntroOverlay}
             onClose={handleCloseOverlay}
-            focusSearchOnClose={focusSearchOnIntroClose}
           />
         )}
       </div>
@@ -326,7 +320,6 @@ export default function MapMenu({
           id="intro-overlay"
           show={showIntroOverlay}
           onClose={handleCloseOverlay}
-          focusSearchOnClose={focusSearchOnIntroClose}
         />
       )}
     </div>

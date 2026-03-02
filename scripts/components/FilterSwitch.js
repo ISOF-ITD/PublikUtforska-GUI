@@ -48,6 +48,7 @@ export default function FilterSwitch({ mode = 'material', className = '' }) {
   return (
     <nav
       aria-label={l("Växla mellan arkivmaterial och 'skriva av' läge")}
+      data-focus-id="filter-switch"
       className={container}
     >
       <NavLink

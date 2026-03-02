@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { getFocusableElements } from "../../utils/focusHelper";
 
-function IntroOverlay({ show = false, onClose, focusSearchOnClose = false }) {
+function IntroOverlay({ show = false, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const iframeRef = useRef(null);
@@ -126,20 +126,20 @@ function IntroOverlay({ show = false, onClose, focusSearchOnClose = false }) {
       document.removeEventListener('keydown', onDocumentKeyDown);
       window.cancelAnimationFrame(animationFrameId);
       try {
-        if (focusSearchOnClose) {
-          const searchInput = document.getElementById('searchInputMapMenu');
-          if (searchInput?.focus) {
-            searchInput.focus();
-            return;
-          }
+        // Fokussera element när overlayn stängs
+        const activeFilterSwitchLink = document.querySelector(
+          'nav[data-focus-id="filter-switch"] a[aria-current="page"]',
+        ) || document.querySelector('nav[data-focus-id="filter-switch"] a');
+        if (activeFilterSwitchLink?.focus) {
+          activeFilterSwitchLink.focus();
+          return;
         }
-        // Återställ fokus till tidigare element när overlayn stängs.
         restoreFocusRef.current?.focus?.();
       } catch {
         // Ignorera fel om tidigare element inte längre finns i DOM.
       }
     };
-  }, [show, handleClose, focusSearchOnClose]);
+  }, [show, handleClose]);
 
   return (
     <div
@@ -194,7 +194,6 @@ function IntroOverlay({ show = false, onClose, focusSearchOnClose = false }) {
 IntroOverlay.propTypes = {
   show: PropTypes.bool,
   onClose: PropTypes.func,
-  focusSearchOnClose: PropTypes.bool,
 };
 
 export default IntroOverlay;
