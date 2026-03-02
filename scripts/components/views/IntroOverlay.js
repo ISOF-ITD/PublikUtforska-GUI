@@ -164,7 +164,8 @@ function IntroOverlay({ show = false, onClose, focusSearchOnClose = false }) {
                 if (e.key === "Enter" || e.key === " ") handleClose();
               }}
             >
-              {"Stäng och gå vidare till kartan"}{" "}
+              Stäng och gå vidare
+              {' '}
               <FontAwesomeIcon icon={faChevronRight} />
             </span>
           </div>

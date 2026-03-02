@@ -11,24 +11,34 @@ export function SearchFilters({
   onToggle,
   loading = false,
   disabled = false,
+  compact = false,
   className = "",
 }) {
   if (!filters?.length) return null;
 
+  const filtersRowClass = compact
+    ? 'flex flex-wrap items-center gap-2 pb-1 !text-white'
+    : 'flex items-center gap-1 !text-white';
+  let displayClass = 'flex';
+  if (compact) displayClass = 'block';
+  if (loading) displayClass = 'hidden';
+
   return (
     <div
       className={classNames(
-        "lg:ml-0 lg:text-base text-lg flex items-center gap-1 lg:flex-nowrap flex-wrap p-2",
-        loading ? "hidden" : "flex",
-        className
+        compact
+          ? 'w-full p-2'
+          : 'lg:ml-0 lg:text-base text-lg flex items-center gap-1 lg:flex-nowrap flex-wrap p-2',
+        displayClass,
+        className,
       )}
-      aria-label={l("Begränsa sökningen till")}
+      aria-label={l('Begränsa sökningen till')}
     >
-      <span className="whitespace-nowrap !text-white">
-        {l("Begränsa sökningen till: ")}
+      <span className={classNames('whitespace-nowrap !text-white', compact ? 'block text-sm' : '')}>
+        {l('Begränsa sökningen till: ')}
       </span>
 
-      <div className="flex items-center gap-1 !text-white">
+      <div className={filtersRowClass}>
         {filters.map(({ label, categoryId, total }) => {
           const checked = selectedCategories.includes(categoryId);
           const count = total?.value ?? 0;
@@ -50,7 +60,7 @@ export function SearchFilters({
           return (
             <div
               key={categoryId}
-              className="flex items-center select-none align-middle overflow-visible outline-none p-0 shrink-0"
+              className="flex items-center select-none align-middle overflow-visible outline-none p-0"
             >
               <button
                 type="button"
@@ -62,17 +72,25 @@ export function SearchFilters({
                 onClick={handleActivate}
                 onKeyDown={onKeyDown}
                 className={classNames(
-                  "inline-flex border-none items-center !m-0 gap-1 rounded-md !px-0 py-1 !text-white",
-                  disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+                  'inline-flex border-none items-center !m-0 gap-1 !text-white',
+                  compact
+                    ? 'rounded-full border border-solid border-white/60 bg-transparent px-2.5 py-1.5 hover:bg-darker-isof focus:bg-darker-isof'
+                    : 'rounded-md !px-0 py-1',
+                  disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
                 )}
               >
                 <FontAwesomeIcon
                   icon={checked ? faSquareCheck : faSquare}
-                  className="h-5 w-5 text-white"
+                  className={classNames('text-white', compact ? 'h-4 w-4' : 'h-5 w-5')}
                   aria-hidden="true"
                 />
-                <span id={labelId} className="whitespace-nowrap text-sm">
-                  {l(label)} {`(${count})`}
+                <span
+                  id={labelId}
+                  className={classNames('whitespace-nowrap text-sm', compact ? 'font-semibold' : '')}
+                >
+                  {l(label)}
+                  {' '}
+                  {`(${count})`}
                 </span>
               </button>
             </div>
@@ -89,13 +107,14 @@ SearchFilters.propTypes = {
       label: PropTypes.string.isRequired,
       categoryId: PropTypes.string.isRequired,
       total: PropTypes.object, // { value, relation }
-    })
+    }),
   ).isRequired,
   selectedCategories: PropTypes.arrayOf(PropTypes.string).isRequired,
   /** Called with (categoryId) when toggled */
   onToggle: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   disabled: PropTypes.bool,
+  compact: PropTypes.bool,
   className: PropTypes.string,
 };
 

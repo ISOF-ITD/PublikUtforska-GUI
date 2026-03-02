@@ -17,11 +17,19 @@
     <link rel="dns-prefetch" href="//matomo.isof.se">
 
     <style>
+        body {
+            background: white;
+        }
         .loader {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            height: 160px;
+        }
+        .loader img {
+            display: block;
+            margin: 0 auto;
             height: 80px;
         }
     </style>
@@ -113,13 +121,14 @@
      
     <!-- End Matomo Code -->
     <script type="text/javascript">
-        // This script toggles the 'tab-navigation' class on the body element.
+        // This script toggles the 'tab-navigation' class on the body element. 
         // It adds the class when the Tab key is pressed for better keyboard navigation,
         // and removes it when the mouse is clicked or touch event is fired.
 
         // We need this because we want to show the focus outline only when the user
         // is navigating with the keyboard, not when they are using the mouse or touch.
 
+        // todo: kolla om detta fortfarande används eller om det kan tas bort 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') document.body.classList.add('tab-navigation');
         }, { passive: true });
@@ -135,7 +144,10 @@
 <body>
     <!-- Page content starts here -->
     <div id="app" aria-busy="true" aria-live="polite">
-        <img src="img/loader.gif" class="loader" alt="Laddar…" role="status" aria-live="polite">
+        <div class="loader">
+        <img src="img/folke-green.svg" alt="Laddar…" role="status" aria-live="polite"> 
+        <img src="img/logotyp-isof.svg" alt="Laddar…" role="status" aria-live="polite">
+    </div>
     </div>
     <!-- Page content stops here -->
 

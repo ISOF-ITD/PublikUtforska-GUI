@@ -1,19 +1,16 @@
 /* eslint-disable react/require-default-props */
 import {
-  lazy, Suspense, useEffect, useState, useMemo, useRef, useCallback,
+  lazy, Suspense, useEffect, useState, useRef, useCallback,
 } from 'react';
 import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
-import {
-  faChevronLeft,
-  faChevronRight,
-  faClock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faQuestion } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from 'classnames';
 import Folkelogga from "../../img/folke-white.svg";
+import IsofLogoWhite from '../../img/Isof_logotyp_vit.png';
 import { l } from "../lang/Lang";
 import SearchPanel from "../features/Search/SearchPanel";
-import classNames from "classnames";
 import StatisticsLoadingPlaceholder from './StatisticsLoadingPlaceholder';
 import IntroOverlay from "./views/IntroOverlay";
 import config from "../config";
@@ -78,30 +75,34 @@ export default function MapMenu({
   audioRecordsData = { data: [], metadata: {} },
   pictureRecordsData = { data: [], metadata: {} },
   loading,
+  isMobileViewport = false,
+  mobileView = 'search',
+  onMobileViewChange = () => {},
 }) {
-  // --- Track a "just switched mode" window
+  // Track a short transition window when switching mode.
   const prevModeRef = useRef(mode);
   const [justSwitched, setJustSwitched] = useState(false);
   useEffect(() => {
+    let timeoutId;
     if (prevModeRef.current !== mode) {
-      if (prevModeRef.current === mode) return;
       prevModeRef.current = mode;
       setJustSwitched(true);
-      const t = setTimeout(() => setJustSwitched(false), 400);
-      return () => clearTimeout(t);
+      timeoutId = setTimeout(() => setJustSwitched(false), 400);
     }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [mode]);
 
-  // Remember last good data (so totals & list button don’t vanish)
+  // Remember latest non-empty totals so controls don't blink away on transitions.
   const lastGoodRef = useRef({
     recordsData,
     audioRecordsData,
     pictureRecordsData,
   });
-  const anyTotals =
-    (recordsData?.metadata?.total?.value ?? 0) +
-    (audioRecordsData?.metadata?.total?.value ?? 0) +
-    (pictureRecordsData?.metadata?.total?.value ?? 0);
+  const anyTotals = (recordsData?.metadata?.total?.value ?? 0)
+    + (audioRecordsData?.metadata?.total?.value ?? 0)
+    + (pictureRecordsData?.metadata?.total?.value ?? 0);
   useEffect(() => {
     if (anyTotals > 0) {
       lastGoodRef.current = {
@@ -112,87 +113,44 @@ export default function MapMenu({
     }
   }, [anyTotals, recordsData, audioRecordsData, pictureRecordsData]);
 
-  // While switching (and only for a short time), keep showing last good data
-  const stable =
-    justSwitched && loading
-      ? lastGoodRef.current
-      : {
-          recordsData,
-          audioRecordsData,
-          pictureRecordsData,
-        };
-  // Debounce loading inside the panel to prevent gray flash
+  const stable = justSwitched && loading
+    ? lastGoodRef.current
+    : {
+      recordsData,
+      audioRecordsData,
+      pictureRecordsData,
+    };
+
+  // Debounce loading inside panel to reduce flashing.
   const [panelLoading, setPanelLoading] = useState(!!loading);
   useEffect(() => {
-    let t;
-    // During the brief "justSwitched" phase, don’t show loading at all
+    let timeoutId;
     if (justSwitched && loading) {
       setPanelLoading(false);
-      return;
+      return undefined;
     }
-    if (loading) t = setTimeout(() => setPanelLoading(true), 150);
+    if (loading) timeoutId = setTimeout(() => setPanelLoading(true), 150);
     else setPanelLoading(false);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timeoutId);
   }, [loading, justSwitched]);
+
   const location = useLocation();
   const initialLoad = useRef(true);
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
   const [focusSearchOnIntroClose, setFocusSearchOnIntroClose] = useState(false);
   const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
-  const getIsMobile = () =>
-    typeof window !== "undefined" ? window.innerWidth < 700 : false;
-  const [isMobile, setIsMobile] = useState(getIsMobile());
-  const [expanded, setExpanded] = useState(true);
-  const [toggleW, setToggleW] = useState(64);
-  const toggleRef = useRef(null);
 
-  useEffect(() => {
-    const onResize = () => {
-      const mobile = getIsMobile();
-      setIsMobile(mobile);
-      if (mobile) setExpanded(true);
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  useEffect(() => {
-    const measure = () => {
-      const w = toggleRef.current?.getBoundingClientRect().width || 64;
-      setToggleW(w);
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
-  const latestParams = useMemo(
-    () => ({
-      size: 20,
-      // In requiredParams in config.js:
-      // recordtype: "one_accession_row",
-      transcriptionstatus: "published",
-      sort: "changedate",
-      order: "desc",
-    }),
-    []
-  );
-
-  // Auto-open on first load, on root path, with no hash,
-  // and only if the feature is enabled in config.
+  // Auto-open intro on first load when configured.
   useEffect(() => {
     if (!activateIntroOverlay) return;
-    const isRoot = location.pathname === "/";
-    const noHash = !location.hash || location.hash === "#/";
-    // detect shared/deep-linked intro content
-    const params = new URLSearchParams(location.search);
-    const hasK = params.has("k") && params.get("k") !== "";
+    const isRoot = location.pathname === '/';
+    const noHash = !location.hash || location.hash === '#/';
+    const locationParams = new URLSearchParams(location.search);
+    const hasK = locationParams.has('k') && locationParams.get('k') !== '';
 
-    const SEEN_KEY = "folke:introSeen:v1";
-    const hasSeen =
-      typeof window !== "undefined" && localStorage.getItem(SEEN_KEY) === "1";
+    const SEEN_KEY = 'folke:introSeen:v1';
+    const hasSeen = typeof window !== 'undefined' && localStorage.getItem(SEEN_KEY) === '1';
     if (initialLoad.current && isRoot && noHash) {
-      // If there’s a k=... in the URL, always open the intro, even if user saw it before
       if (hasK || !hasSeen) {
         setFocusSearchOnIntroClose(true);
         setShowIntroOverlay(true);
@@ -207,40 +165,150 @@ export default function MapMenu({
       setShowIntroOverlay(true);
     }
   }, [activateIntroOverlay]);
+
   const handleCloseOverlay = useCallback(() => {
     setShowIntroOverlay(false);
     setFocusSearchOnIntroClose(false);
     try {
-      localStorage.setItem("folke:introSeen:v1", "1");
-    } catch {}
+      localStorage.setItem('folke:introSeen:v1', '1');
+    } catch {
+      // Ignore write failures from private/incognito storage contexts.
+    }
   }, []);
 
-  const PANEL_WIDTH = 422;
-  const panelWidth = isMobile
-    ? typeof window !== "undefined"
-      ? window.innerWidth
-      : PANEL_WIDTH // full width on mobile
-    : PANEL_WIDTH;
+  const toggleMobileView = useCallback(() => {
+    onMobileViewChange(mobileView === 'map' ? 'search' : 'map');
+  }, [mobileView, onMobileViewChange]);
+
+  const mobileToggleLabel = mobileView === 'map' ? l('Till sök') : l('Visa karta');
+
+  const statisticsBlock = (
+    <div
+      className={classNames(
+        'box-border max-w-full overflow-x-hidden rounded-xl bg-white p-3 break-words',
+        isMobileViewport ? 'w-auto mx-2 mt-2 mb-2' : 'w-full mb-2 h-full',
+      )}
+    >
+      <Suspense fallback={<StatisticsLoadingPlaceholder />}>
+        <StatisticsContainer />
+      </Suspense>
+    </div>
+  );
+
+  const mobileHeader = (
+    <header className="max-w-full overflow-x-hidden border-b border-white/20 bg-isof">
+      <div className="flex min-h-[5rem] max-w-full flex-wrap items-center justify-between gap-2 px-3 py-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <img
+            src={Folkelogga}
+            alt={l('Folkelogga')}
+            className="h-12 w-auto max-w-[40vw] object-contain"
+          />
+          <span aria-hidden className="h-6 w-px bg-white/30" />
+          <a
+            href="https://www.isof.se"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+            aria-label={l('Öppna Institutet för språk och folkminnens webbplats i nytt fönster')}
+            title={l('Institutet för språk och folkminnen')}
+          >
+            <img
+              src={IsofLogoWhite}
+              alt={l('Institutet för språk och folkminnen')}
+              className="h-12 w-auto max-w-[40vw] object-contain"
+            />
+          </a>
+        </div>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {activateIntroOverlay && (
+            <button
+              type="button"
+              onClick={handleShowIntro}
+              aria-controls="intro-overlay"
+              aria-label={l('Hjälp och nyheter')}
+              title={l('Hjälp och nyheter')}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-darker-isof focus:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+            >
+              <FontAwesomeIcon icon={faQuestion} aria-hidden="true" className="text-lg font-bold" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={toggleMobileView}
+            className="inline-flex h-11 items-center justify-center rounded-md border border-white/70 bg-transparent px-4 text-sm font-semibold !text-white hover:bg-darker-isof focus:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+            aria-pressed={mobileView === 'map'}
+            aria-label={mobileToggleLabel}
+            title={mobileToggleLabel}
+          >
+            {mobileToggleLabel}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+
+  if (isMobileViewport && mobileView === 'map') {
+    return (
+      <>
+        <div className="pointer-events-none absolute left-0 right-0 top-0 z-[1201] print:hidden">
+          <div className="pointer-events-auto">{mobileHeader}</div>
+        </div>
+        {activateIntroOverlay && (
+          <IntroOverlay
+            id="intro-overlay"
+            show={showIntroOverlay}
+            onClose={handleCloseOverlay}
+            focusSearchOnClose={focusSearchOnIntroClose}
+          />
+        )}
+      </>
+    );
+  }
+
+  if (isMobileViewport) {
+    return (
+      <div
+        id="mapmenu-panel"
+        aria-label="Sök och filter"
+        className="absolute inset-0 z-[1201] flex flex-col overflow-x-hidden bg-isof print:hidden"
+      >
+        <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-2 pb-2">
+          {mobileHeader}
+          <SearchPanel
+            params={params}
+            mode={mode}
+            recordsData={stable.recordsData}
+            audioRecordsData={stable.audioRecordsData}
+            pictureRecordsData={stable.pictureRecordsData}
+            loading={panelLoading}
+            mobileCompact
+          />
+          {statisticsBlock}
+        </div>
+
+        {activateIntroOverlay && (
+          <IntroOverlay
+            id="intro-overlay"
+            show={showIntroOverlay}
+            onClose={handleCloseOverlay}
+            focusSearchOnClose={focusSearchOnIntroClose}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
       id="mapmenu-panel"
       aria-label="Sök och filter"
-      aria-hidden={!expanded}
-      className={classNames(
-        "bg-isof flex flex-col print:hidden absolute top-0 bottom-0 w-96 border-r-2 border-white !z-[1201]",
-        "pt-5 px-5 items-center transition-all duration-300 ease-in-out max-sm:box-border max-sm:w-full max-sm:p-2.5",
-        expanded
-          ? "left-0 pointer-events-auto"
-          : "-left-[500px] pointer-events-none"
-      )}
+      className="bg-isof absolute left-0 top-0 bottom-0 !z-[1201] flex w-[422px] flex-col items-center border-r-2 border-white pt-5 px-5 print:hidden"
     >
-      {/* <SurveyLink />  enable when needed */}
-      {/*<Warning /> */}
-
       <div>
         <img src={Folkelogga} alt={l('Folkelogga')} className="h-20 w-full" />
       </div>
+
       <SearchPanel
         params={params}
         mode={mode}
@@ -251,78 +319,7 @@ export default function MapMenu({
         onOpenIntroOverlay={handleShowIntro}
       />
 
-      <div
-        className="fixed z-[1999] pointer-events-none will-change-[left,transform] transition-[left,transform] duration-300 ease-in-out"
-        style={
-          isMobile
-            ? {
-                left: expanded ? Math.max((panelWidth ?? 0) - toggleW, 0) : 0,
-                top: 8,
-                transform: "none",
-              }
-            : {
-                left: expanded ? PANEL_WIDTH : 0,
-                top: "30%",
-                transform: "translateY(-50%)",
-              }
-        }
-      >
-        <button
-          onClick={() => setExpanded((e) => !e)}
-          type="button"
-          aria-expanded={expanded}
-          aria-controls="mapmenu-panel"
-          aria-label={expanded ? l("Dölj meny") : l("Visa meny")}
-          title={expanded ? l("Dölj meny") : l("Visa meny")}
-          className={classNames(
-            "pointer-events-auto shadow-md bg-white backdrop-blur-sm border border-gray-200",
-            "w-12 h-12 flex justify-center gap-2 items-center rounded-r",
-            isMobile ? (expanded ? "rounded-r" : "rounded-l") : "rounded-r"
-          )}
-          style={{ touchAction: "manipulation" }}
-        >
-          <FontAwesomeIcon
-            icon={expanded ? faChevronLeft : faChevronRight}
-            aria-hidden="true"
-          />
-          <span className="transform rotate-90">
-            {expanded ? l("Dölj") : l("Visa")}
-          </span>
-        </button>
-        <span className="sr-only" role="status" aria-live="polite">
-          {expanded ? l("Meny öppen") : l("Meny stängd")}
-        </span>
-      </div>
-      {/*<div className="w-full bg-gray-300 text-center py-2 gap-2 rounded-sm">
-        <FontAwesomeIcon icon={faClock} /> {"   "}
-        Data uppdateras...
-      </div>
-      */}
-      <div
-        className="overflow-y-auto w-full min-w-0 max-w-full p-3 flex flex-col mb-2 rounded-xl items-stretch h-full bg-white"
-      >
-        <div>
-          <Suspense fallback={<StatisticsLoadingPlaceholder />}>
-            <StatisticsContainer />
-          </Suspense>
-          {/* Adapt to new page by page transcription:
-          <h3 className="!my-2">Senast avskrivna uppteckningar</h3>
-          <div>
-            <RecordList
-              key="latest-RecordList"
-              showViewToggle={false}
-              disableRouterPagination
-              disableListPagination
-              disableListDownload
-              smallTitle
-              columns={["title", "year", "place", "transcribedby"]}
-              params={latestParams}
-              interval={60_000}
-            />
-          </div>
-          */}
-        </div>
-      </div>
+      {statisticsBlock}
 
       {activateIntroOverlay && (
         <IntroOverlay
@@ -343,4 +340,7 @@ MapMenu.propTypes = {
   audioRecordsData: PropTypes.object,
   pictureRecordsData: PropTypes.object,
   loading: PropTypes.bool.isRequired,
+  isMobileViewport: PropTypes.bool,
+  mobileView: PropTypes.oneOf(['search', 'map']),
+  onMobileViewChange: PropTypes.func,
 };

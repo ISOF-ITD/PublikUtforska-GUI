@@ -23,6 +23,7 @@ export default function FeedbackOverlay() {
   const dialogRef = useRef(null);
   const restoreFocusRef = useRef(null);
   const titleId = useId();
+  const emailErrorId = useId();
 
   const location = useLocation();
 
@@ -225,7 +226,14 @@ export default function FeedbackOverlay() {
             onBlur={handleEmailBlur}
             value={emailInputValue}
             onChange={emailInputChangeHandler}
+            aria-invalid={!emailValid}
+            aria-describedby={!emailValid ? emailErrorId : undefined}
           />
+          {!emailValid && (
+            <span id={emailErrorId} className="form-help error" aria-live="polite">
+              {l('Ogiltig e-postadress')}
+            </span>
+          )}
         </label>
         <label htmlFor="feedback_message">
           Meddelande:

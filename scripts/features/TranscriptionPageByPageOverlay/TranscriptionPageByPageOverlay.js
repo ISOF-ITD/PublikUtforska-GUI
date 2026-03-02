@@ -536,7 +536,7 @@ export default function TranscriptionPageByPageOverlay() {
           </div>
 
           {/* -------- Right column: image + nav ------ */}
-          <div className="eight columns">
+          <div className="eight columns transcription-image-column">
             {currentPage && !isPdf && (
               <ImageMap
                 image={`${config.imageUrl}${currentPage.source}`}

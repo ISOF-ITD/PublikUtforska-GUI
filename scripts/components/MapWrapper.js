@@ -17,8 +17,44 @@ function MapWrapper({
   audioRecordsData,
   pictureRecordsData,
 }) {
+  const getIsMobileViewport = () => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 767px)').matches;
+  };
+
   // Debounce "loading" to avoid flicker on quick transitions
   const [uiLoading, setUiLoading] = useState(!!loading);
+  const [isMobileViewport, setIsMobileViewport] = useState(getIsMobileViewport);
+  const [mobileView, setMobileView] = useState('search');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const mql = window.matchMedia('(max-width: 767px)');
+    const onViewportChange = (event) => setIsMobileViewport(event.matches);
+
+    setIsMobileViewport(mql.matches);
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', onViewportChange);
+    } else {
+      mql.addListener(onViewportChange);
+    }
+
+    return () => {
+      if (typeof mql.removeEventListener === 'function') {
+        mql.removeEventListener('change', onViewportChange);
+      } else {
+        mql.removeListener(onViewportChange);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileViewport) {
+      setMobileView('search');
+    }
+  }, [isMobileViewport]);
+
   useEffect(() => {
     let t;
     if (loading) t = setTimeout(() => setUiLoading(true), 150);
@@ -60,6 +96,9 @@ function MapWrapper({
         audioRecordsData={audioRecordsData}
         pictureRecordsData={pictureRecordsData}
         loading={uiLoading}
+        isMobileViewport={isMobileViewport}
+        mobileView={mobileView}
+        onMobileViewChange={setMobileView}
       />
 
       {uiLoading && (
@@ -74,7 +113,12 @@ function MapWrapper({
       )}
 
       <Suspense fallback={<MapLoadingPlaceholder />}>
-        <MapView onMarkerClick={mapMarkerClick} mapData={stableMapData} />
+        <MapView
+          onMarkerClick={mapMarkerClick}
+          mapData={stableMapData}
+          isMobileViewport={isMobileViewport}
+          mobileView={mobileView}
+        />
       </Suspense>
     </div>
   );

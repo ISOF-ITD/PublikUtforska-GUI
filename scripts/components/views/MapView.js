@@ -19,6 +19,8 @@ export default function MapView({
   center = undefined,
   disableSwedenMap = false,
   mapData,
+  isMobileViewport = false,
+  mobileView = 'search',
 }) {
   const [currentView, setCurrentView] = useState("clusters");
   const mapView = useRef();
@@ -33,11 +35,11 @@ export default function MapView({
     return raw.filter((obj) => {
       const loc = obj?.location;
       return (
-        Array.isArray(loc) &&
-        loc.length === 2 &&
-        Number.isFinite(loc[0]) &&
-        Number.isFinite(loc[1]) &&
-        !(loc[0] === 0 && loc[1] === 0)
+        Array.isArray(loc)
+        && loc.length === 2
+        && Number.isFinite(loc[0])
+        && Number.isFinite(loc[1])
+        && !(loc[0] === 0 && loc[1] === 0)
       );
     });
   }, [mapData]);
@@ -117,10 +119,9 @@ export default function MapView({
       } else {
         // Circles view
         const circles = points.map((obj) => {
-          const count =
-            typeof obj.doc_count === "number" && !Number.isNaN(obj.doc_count)
-              ? obj.doc_count
-              : 1;
+          const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count)
+            ? obj.doc_count
+            : 1;
 
           const circle = circleMarker([obj.location[0], obj.location[1]], {
             color: "#01666e",
@@ -182,17 +183,26 @@ export default function MapView({
   }, [handleZoomEnd]);
 
   // Cleanup overlays on unmount
-  useEffect(() => {
-    return () => {
-      const map = mapView.current?.map;
-      if (map) removeOverlays(map);
-    };
+  useEffect(() => () => {
+    const map = mapView.current?.map;
+    if (map) removeOverlays(map);
   }, [removeOverlays]);
+
+  useEffect(() => {
+    const map = mapView.current?.map;
+    if (!map) return;
+
+    map.whenReady(() => {
+      map.invalidateSize({ animate: false });
+    });
+  }, [isMobileViewport, mobileView]);
 
   const mapBaseLayerChangeHandler = useCallback(() => {
     // If the base layer changes, re-render overlays (icons/zoom scaling/etc.)
     updateMap();
   }, [updateMap]);
+
+  const showFloatingToggle = !isMobileViewport || mobileView === 'map';
 
   return (
     <div>
@@ -201,15 +211,17 @@ export default function MapView({
       </p>
       <button
         type="button"
-        tabIndex={0}
-        onClick={() =>
-          setCurrentView((v) => (v === "clusters" ? "circles" : "clusters"))
-        }
-        aria-pressed={currentView === "circles"}
+        tabIndex={showFloatingToggle ? 0 : -1}
+        onClick={() => setCurrentView((v) => (v === 'clusters' ? 'circles' : 'clusters'))}
+        aria-pressed={currentView === 'circles'}
         aria-label={`Byt till ${
-          currentView === "clusters" ? "cirkel-vy" : "kluster-vy"
+          currentView === 'clusters' ? 'cirkel-vy' : 'kluster-vy'
         }`}
-        className="!fixed lg:!bottom-72 bottom-96 right-7 z-[500] bg-white border-2 border-solid border-black/20 p-1.5 h-auto leading-normal"
+        className={`
+          !fixed z-[500] bg-white border-2 border-solid border-black/20 p-1.5 h-auto leading-normal
+          ${showFloatingToggle ? 'block' : 'hidden'}
+          ${isMobileViewport ? 'top-16 right-3' : 'lg:!bottom-72 bottom-96 right-7'}
+        `}
       >
         <img
           alt={`Byt till ${
@@ -252,4 +264,6 @@ MapView.propTypes = {
   center: PropTypes.arrayOf(PropTypes.number),
   disableSwedenMap: PropTypes.bool,
   mapData: PropTypes.object,
+  isMobileViewport: PropTypes.bool,
+  mobileView: PropTypes.oneOf(['search', 'map']),
 };

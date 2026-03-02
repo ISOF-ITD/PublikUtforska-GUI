@@ -15,7 +15,7 @@ const renderLabel = (label, isSelected) => (
   </>
 );
 
-export default function FilterSwitch({ mode = "material" }) {
+export default function FilterSwitch({ mode = 'material', className = '' }) {
   const params = useParams();
   const sharedRoute = createSearchRoute(
     createParamsFromSearchRoute(params["*"])
@@ -26,11 +26,12 @@ export default function FilterSwitch({ mode = "material" }) {
 
   // segmented-control container
   const container = classNames(
-    "sticky top-0 z-[1400]",
-    "bg-transparent backdrop-blur",
-    "transition-opacity duration-200",
-    ready ? "opacity-100" : "opacity-0",
-    "flex flex-row justify-center w-full"
+    'relative z-[1400]',
+    'bg-transparent backdrop-blur',
+    'transition-opacity duration-200',
+    ready ? 'opacity-100' : 'opacity-0',
+    'flex flex-row justify-center w-full',
+    className,
   );
 
   // shared button styles
@@ -52,23 +53,19 @@ export default function FilterSwitch({ mode = "material" }) {
       <NavLink
         to={`/${sharedRoute}`}
         end
-        className={({ isActive }) =>
-          [base, isActive || mode === "material" ? selected : unselected].join(
-            " "
-          )
-        }
+        className={({ isActive }) => [base, isActive || mode === 'material' ? selected : unselected].join(
+          ' ',
+        )}
       >
         {({ isActive }) => renderLabel('Arkivmaterial', isActive || mode === 'material')}
       </NavLink>
 
       <NavLink
         to={`/transcribe/${sharedRoute}`}
-        className={({ isActive }) =>
-          [
-            base,
-            isActive || mode === "transcribe" ? selected : unselected,
-          ].join(" ")
-        }
+        className={({ isActive }) => [
+          base,
+          isActive || mode === 'transcribe' ? selected : unselected,
+        ].join(' ')}
       >
         {({ isActive }) => renderLabel('Skriva av', isActive || mode === 'transcribe')}
       </NavLink>
@@ -78,4 +75,5 @@ export default function FilterSwitch({ mode = "material" }) {
 
 FilterSwitch.propTypes = {
   mode: PropTypes.string,
+  className: PropTypes.string,
 };
