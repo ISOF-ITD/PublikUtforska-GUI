@@ -66,7 +66,7 @@ export default function RecordTable({
                   <button
                     type="button"
                     onClick={() => handleSort("archive.archive_id_row.keyword")}
-                    className="flex items-center gap-1 text-sky-900 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-isof-lighter"
+                    className="record-table-sort-button flex items-center gap-1 text-sky-900 hover:underline"
                   >
                     {l("Arkivnummer")}
                     {sort === "archive.archive_id_row.keyword" &&
@@ -87,7 +87,7 @@ export default function RecordTable({
               <th scope="col" className="text-center" aria-sort={ariaSortValue('year')}>
                 <button
                   type="button"
-                  className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
+                  className="record-table-sort-button text-sky-900 hover:underline hover:cursor-pointer"
                   onClick={() => handleSort("year")}
                 >
                   {sort === "year" && (order === "asc" ? "▼" : "▲")} {l("År")}
@@ -105,7 +105,7 @@ export default function RecordTable({
                 <th scope="col" className="text-center" aria-sort={ariaSortValue("transcriptionstatus")}>
                   <button
                     type="button"
-                    className="text-sky-900 hover:underline hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-isof-lighter"
+                    className="record-table-sort-button text-sky-900 hover:underline hover:cursor-pointer"
                     onClick={() => handleSort("transcriptionstatus")}
                   >
                     {sort === "transcriptionstatus" &&
