@@ -175,9 +175,9 @@ function AudioItemRow({
             <div>
               {highlightData
                 .filter((h) => h._source && hasStartValue(h._source.start))
-                .map((h, idx) => (
+                .map((h) => (
                   <div
-                    key={idx}
+                    key={`desc-${h.id}-${h._source.start}`}
                     className="italic"
                     dangerouslySetInnerHTML={{
                       __html: `Innehållsbeskrivning: ${h._source.start} ${h.highlight["media.description.text"][0]}`,
@@ -193,22 +193,29 @@ function AudioItemRow({
               && h.highlight
               && h.highlight['media.utterances.utterances.text'],
           ) ? (
-            <div>
+            <div className="mt-2">
               {highlightData
                 .filter((h) => h._source && hasStartValue(h._source.start))
-                .map((h, idx) => (
+                .map((h) => (
                   <div
-                    key={idx}
-                    className="italic"
-                    dangerouslySetInnerHTML={{
-                      __html: `Ljudavskrift: ${secondsToMMSS(
-                        h._source.start
-                      )} ${h.highlight["media.utterances.utterances.text"][0]}`,
-                    }}
-                  />
+                    key={`utterance-${h.id}-${h._source.start}`}
+                  >
+                    <span className="font-mono ml-2 text-xs text-gray-500 ">
+                      Ljudavskrift
+                      {' ('}
+                      {secondsToMMSS(h._source.start)}
+                      {'): '}
+                    </span>
+                    <span
+                      className="italic"
+                      dangerouslySetInnerHTML={{
+                        __html: h.highlight['media.utterances.utterances.text'][0],
+                      }}
+                    />
+                  </div>
                 ))}
             </div>
-          ) : null}
+            ) : null}
         </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
           {canContribute && config.activateAudioDescription && (
