@@ -224,7 +224,11 @@ export default function RecordCardItem({
             <FontAwesomeIcon icon={faArchive} className="flex-shrink-0" />
             {archiveId && (
               <span className="font-medium text-isof">
-                <b>l(Arkivnummer:)</b> {archiveId}
+                <b>
+                  {l('Arkivnummer')}
+                  :
+                </b>
+                {archiveId}
               </span>
             )}
             {archive?.page &&
