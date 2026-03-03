@@ -8,10 +8,11 @@ function PlaceItems({ data, routeParams = '' }) {
 
   if (!places.length) return null;
 
-  const placeItems = places.map((place) => {
+  const placeItems = places.map((place, index) => {
     const {
       id, specification, name, fylke, harad, landskap,
     } = place;
+    const rowKey = `${id || 'place'}-${specification || name || 'unknown'}-${index}`;
 
     const placeName = `${specification ? `${specification} i ` : ''}${name}, ${fylke || harad}, ${
       landskap || ''
@@ -19,7 +20,7 @@ function PlaceItems({ data, routeParams = '' }) {
     const linkUrl = `/places/${id}${routeParams}`;
 
     return (
-      <tr key={id} className="border-b last:border-b-0 odd:bg-gray-100">
+      <tr key={rowKey} className="border-b last:border-b-0 odd:bg-gray-100">
         <td
           className="py-3 px-2 md:py-2 md:px-4"
         >
