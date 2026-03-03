@@ -183,6 +183,46 @@ function AudioItems({ data, highlightData = null }) {
   // Extract innerHits and _media_nested if present
   const hitsMediaWithDescription = highlightData?.data?.[0]?.inner_hits?.["media.description"]?.hits?.hits;
   const hitsMediaWithUtterances = highlightData?.data?.[0]?.inner_hits?.["media.utterances.utterances"]?.hits?.hits;
+  const highlightHitsBySource = useMemo(() => {
+    const groupedHits = {};
+
+    const getMediaOffsetFromHit = (hit) => {
+      let nested = hit?._nested;
+
+      while (nested) {
+        if (nested.field === 'media' && Number.isInteger(nested.offset)) {
+          return nested.offset;
+        }
+        nested = nested._nested;
+      }
+
+      return Number.isInteger(hit?._nested?.offset) ? hit._nested.offset : null;
+    };
+
+    const addHit = (hit) => {
+      const mediaOffset = getMediaOffsetFromHit(hit);
+      if (!Number.isInteger(mediaOffset)) return;
+
+      const mediaSource = media?.[mediaOffset]?.source;
+      if (!mediaSource) return;
+
+      if (!Array.isArray(groupedHits[mediaSource])) {
+        groupedHits[mediaSource] = [];
+      }
+
+      groupedHits[mediaSource].push(hit);
+    };
+
+    if (Array.isArray(hitsMediaWithDescription)) {
+      hitsMediaWithDescription.forEach(addHit);
+    }
+
+    if (Array.isArray(hitsMediaWithUtterances)) {
+      hitsMediaWithUtterances.forEach(addHit);
+    }
+
+    return groupedHits;
+  }, [hitsMediaWithDescription, hitsMediaWithUtterances, media]);
 
   // The "Add new description" toggler with concurrency check
   const handleToggleAddFormWithConcurrency = async (source) => {
@@ -438,32 +478,7 @@ function AudioItems({ data, highlightData = null }) {
                 year,
                 persons,
               );
-                // Find the matching highlightData for this audio item by comparing index and _media_nested.offset
-              let highlightForItem = [];
-              if (Array.isArray(hitsMediaWithDescription) && item && typeof item === "object") {
-                // Find if any innerHit has _media_nested.offset matching this item"s index
-                const itemIndex = audioDataItems.indexOf(item);
-                const hasMatch = hitsMediaWithDescription.some(
-                  (hit) => hit._nested.offset === itemIndex
-                );
-                if (hasMatch) {
-                  highlightForItem = hitsMediaWithDescription.filter(
-                    (hit) => hit._nested.offset === itemIndex
-                  );
-                }
-              }
-              if (Array.isArray(hitsMediaWithUtterances) && item && typeof item === "object") {
-                // Find if any innerHit has _media_nested.offset matching this item"s index
-                const itemIndex = audioDataItems.indexOf(item);
-                const hasMatch = hitsMediaWithUtterances.some(
-                  (hit) => hit._nested.offset === itemIndex
-                );
-                if (hasMatch) {
-                  highlightForItem = hitsMediaWithUtterances.filter(
-                    (hit) => hit._nested.offset === itemIndex
-                  );
-                }
-              }
+              const highlightForItem = highlightHitsBySource[item.source] || [];
 
               return (
                 <AudioItemRow
