@@ -226,6 +226,7 @@ export default function RecordCardItem({
               <span className="font-medium text-isof">
                 <b>
                   {l('Arkivnummer')}
+                  {' '}
                   :
                 </b>
                 {archiveId}
