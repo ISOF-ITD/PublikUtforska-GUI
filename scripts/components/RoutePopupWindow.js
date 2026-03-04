@@ -45,6 +45,44 @@ const RoutePopupWindow = memo(({
     location.pathname,
   );
 
+  const getOrderedFocusableElements = useCallback(() => {
+    const pageContent = pageContentRef.current;
+    const focusableElements = getFocusableElements(pageContent);
+
+    if (focusableElements.length === 0) {
+      return focusableElements;
+    }
+
+    const headerActions = focusableElements.filter(
+      (element) => element.dataset.routePopupHeaderAction,
+    );
+
+    if (headerActions.length === 0) {
+      return focusableElements;
+    }
+
+    const regularFocusableElements = focusableElements.filter(
+      (element) => !element.dataset.routePopupHeaderAction,
+    );
+
+    const contactButtons = regularFocusableElements.filter(
+      (element) => element.classList?.contains('feedback-button'),
+    );
+
+    if (contactButtons.length === 0) {
+      return [...regularFocusableElements, ...headerActions];
+    }
+
+    const lastContactButton = contactButtons[contactButtons.length - 1];
+    const insertAfterIndex = regularFocusableElements.indexOf(lastContactButton) + 1;
+
+    return [
+      ...regularFocusableElements.slice(0, insertAfterIndex),
+      ...headerActions,
+      ...regularFocusableElements.slice(insertAfterIndex),
+    ];
+  }, []);
+
   const closeButtonClick = () => {
     if (manuallyOpenPopup) {
       setWindowOpen(false);
@@ -70,7 +108,7 @@ const RoutePopupWindow = memo(({
     if (event.key !== 'Tab' || isEventFromNestedModal(event)) return;
 
     const pageContent = pageContentRef.current;
-    const focusableElements = getFocusableElements(pageContent);
+    const focusableElements = getOrderedFocusableElements();
 
     if (!pageContent) return;
     if (focusableElements.length === 0) {
@@ -79,24 +117,26 @@ const RoutePopupWindow = memo(({
       return;
     }
 
-    const first = focusableElements[0];
-    const last = focusableElements[focusableElements.length - 1];
     const { activeElement } = document;
-    const activeInsidePopup = pageContent.contains(activeElement);
+    const activeIndex = focusableElements.indexOf(activeElement);
 
-    if (event.shiftKey) {
-      if (!activeInsidePopup || activeElement === first || activeElement === pageContent) {
-        event.preventDefault();
-        last.focus();
+    event.preventDefault();
+
+    if (activeIndex < 0) {
+      if (event.shiftKey) {
+        focusableElements[focusableElements.length - 1].focus();
+      } else {
+        focusableElements[0].focus();
       }
       return;
     }
 
-    if (!activeInsidePopup || activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }, [getFocusableElements, isEventFromNestedModal]);
+    const nextIndex = event.shiftKey
+      ? (activeIndex - 1 + focusableElements.length) % focusableElements.length
+      : (activeIndex + 1) % focusableElements.length;
+
+    focusableElements[nextIndex].focus();
+  }, [getOrderedFocusableElements, isEventFromNestedModal]);
 
   const backButtonClick = () => {
     if (window.history.length > 1) {
@@ -166,7 +206,7 @@ const RoutePopupWindow = memo(({
     restoreFocusRef.current = document.activeElement;
 
     const animationFrameId = window.requestAnimationFrame(() => {
-      const focusableElements = getFocusableElements(pageContentRef.current);
+      const focusableElements = getOrderedFocusableElements();
       if (focusableElements.length > 0) {
         focusableElements[0].focus();
         return;
@@ -185,7 +225,7 @@ const RoutePopupWindow = memo(({
         // Ignore restore-focus failures when the previous node no longer exists.
       }
     };
-  }, [windowOpen, manualOpen, trapTabKey]);
+  }, [windowOpen, manualOpen, trapTabKey, getOrderedFocusableElements]);
 
   const shouldShowBackButton = previousNavigation || isNestedTranscribe;
   const showBackButtonInRail = shouldShowBackButton

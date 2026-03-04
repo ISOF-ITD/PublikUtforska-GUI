@@ -14,6 +14,11 @@ export default function HeaderActions({
   closeTone = 'light',
   className,
 }) {
+  const lightFocusClassName = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+  const closeFocusClassName = closeTone === 'dark'
+    ? 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
+    : lightFocusClassName;
+
   return (
     <div className={classNames(baseRailClassName, className)}>
       <div className={backSlotClassName}>
@@ -24,7 +29,8 @@ export default function HeaderActions({
             tone="light"
             onClick={onBack}
             size="sm"
-            className="!mt-0"
+            className={classNames('!mt-0', lightFocusClassName)}
+            data-route-popup-header-action="back"
           />
         )}
       </div>
@@ -34,7 +40,8 @@ export default function HeaderActions({
         tone={closeTone}
         onClick={onClose}
         size="sm"
-        className="!mt-0"
+        className={classNames('!mt-0', closeFocusClassName)}
+        data-route-popup-header-action="close"
       />
     </div>
   );
