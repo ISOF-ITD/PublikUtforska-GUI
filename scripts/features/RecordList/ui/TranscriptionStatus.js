@@ -1,21 +1,7 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
-
-/*  Swedish labels for page-/text-based material */
-const labels = {
-  readytotranscribe: "Redo för avskrivning",
-  undertranscription: "Skrivs av",
-  transcribed: "Granskas",
-  reviewing: "Granskas",
-  needsimprovement: "Granskas",
-  approved: "Granskas",
-  published: "Avskriven",
-  // readytocontribute: "Redo att bidra",
-};
 
 const DONE_PAGE_STATUSES = new Set([
   "undertranscription",
@@ -41,45 +27,16 @@ function countPageProgressFromMedia(media = []) {
 
 export default function TranscriptionStatus({
   status,
-  type,
   total,
   done,
   media,
-  pillClasses,
   transcriptiontype,
 }) {
-  /* ─────────────────────────────────────────────────────────────
-     AUDIO: show a passive counter
-  ───────────────────────────────────────────────────────────── */
-  if (transcriptiontype === "audio" && status === "readytocontribute") {
-    const count = done ?? 0;
-    const bg = count ? "!bg-lighter-isof" : "bg-white";
-
-    return (
-      <span
-        className={classNames(
-          bg,
-          pillClasses,
-          "flex items-center gap-1 flex-nowrap"
-        )}
-        title={`${count} ${l("beskrivningar")}`}
-        aria-label={`${count} ${l("beskrivningar")}`}
-      >
-        <FontAwesomeIcon icon={faCommentDots} />
-        {count}
-        <span className="sr-only"> {l("beskrivningar")}</span>
-      </span>
-    );
+  if (transcriptiontype === 'audio') {
+    return <span className="transcriptionstatus empty" />;
   }
 
-  /* ─────────────────────────────────────────────────────────────
-     ACCESSION progress bar for scanned pages (derived from media[])
-     - excludes PDFs
-  ───────────────────────────────────────────────────────────── */
-  if (
-    transcriptiontype !== "audio" &&
-    status !== "readytocontribute"
-  ) {
+  if (status !== 'readytocontribute') {
     const fromMedia = countPageProgressFromMedia(media);
     const pageTotal = total ?? fromMedia.total;
     const pageDone = done ?? fromMedia.done;
@@ -92,7 +49,7 @@ export default function TranscriptionStatus({
       const pageWord = pageTotal === 1 ? "sida" : "sidor";
 
       return (
-        <div className="mr-2 space-y-1" role="group" aria-label={l("Förlopp")}>
+        <div className="mr-2 space-y-1" role="group" aria-label={l('Avskrivna sidor')}>
           <span className="text-xs break-words">
             {`${clampedDone} av ${pageTotal} ${pageWord}`}
           </span>
@@ -124,10 +81,8 @@ export default function TranscriptionStatus({
 
 TranscriptionStatus.propTypes = {
   status: PropTypes.string,
-  type: PropTypes.string,
   total: PropTypes.number,
   done: PropTypes.number,
   media: PropTypes.array,
-  pillClasses: PropTypes.string.isRequired,
   transcriptiontype: PropTypes.string,
 };

@@ -59,7 +59,6 @@ export default function RecordCardItem({
   const {
     count = 0,
     countDone = 0,
-    subrecords = [],
     mediaCount = 0,
     mediaCountDone = 0,
   } = useSubrecords({
@@ -117,38 +116,23 @@ export default function RecordCardItem({
       ["c", "collector", "interviewer", "recorder"].includes(p?.relation)
     ) ?? [];
 
-  // helpers
-  const countDescriptionsInMedia = (arr = []) =>
-    arr.reduce(
-      (acc, m) =>
-        acc + (Array.isArray(m?.description) ? m.description.length : 0),
-      0
+  const isAudioRecording = transcriptiontype === 'audio'
+    || recordtype === 'one_audio_record'
+    || media.some(
+      (m) => m?.type === 'audio' || m?.source?.toLowerCase().endsWith('.mp3'),
     );
-
-  const descriptionCountSelf = countDescriptionsInMedia(media);
-  const descriptionCountSubrecords =
-    recordtype === "one_accession_row"
-      ? subrecords.reduce(
-          (acc, sr) => acc + countDescriptionsInMedia(sr?._source?.media),
-          0
-        )
-      : 0;
-
-  const descriptionCount = descriptionCountSelf + descriptionCountSubrecords;
 
   const isAccession =
     recordtype === "one_accession_row" && transcriptiontype !== "audio";
 
-  const total =
-    transcriptiontype === "audio" || descriptionCount > 0
-      ? descriptionCount
-      : transcriptiontype === "sida"
+  const total = isAudioRecording
+    ? undefined
+    : transcriptiontype === 'sida'
       ? mediaCount
       : count;
 
-  const done =
-    transcriptiontype === "audio" || descriptionCount > 0
-      ? descriptionCount
+  const done = isAudioRecording
+      ? undefined
       : transcriptiontype === "sida"
       ? mediaCountDone
       : countDone;
@@ -390,9 +374,7 @@ export default function RecordCardItem({
         status={transcriptionstatus}
         type={recordtype === "one_accession_row" ? "accession" : "record"}
         transcriptiontype={
-          transcriptiontype === "audio" || descriptionCount > 0
-            ? "audio"
-            : transcriptiontype
+          isAudioRecording ? 'audio' : transcriptiontype
         }
         done={done}
         total={total}

@@ -106,37 +106,11 @@ export default function RecordListItem(props) {
   const hasTranscription = media.some(
     (m) => m.type === "audio" && m.utterances?.utterances?.length > 0
   );
-
-  /* ---------- helper to count beskrivningar ---------- */
-  const countDescriptionsInMedia = (mediaArr = []) =>
-    mediaArr.reduce(
-      (acc, m) =>
-        acc + (Array.isArray(m.description) ? m.description.length : 0),
-      0
+  const isAudioRecording = transcriptiontype === 'audio'
+    || recordtype === 'one_audio_record'
+    || media.some(
+      (m) => m?.type === 'audio' || m?.source?.toLowerCase().endsWith('.mp3'),
     );
-
-  const descriptionCountSelf = countDescriptionsInMedia(media);
-
-  // descriptions that live in every sub-record’s media (if we have them)
-  const descriptionCountSubrecords =
-    recordtype === "one_accession_row"
-      ? subrecords.reduce(
-          (acc, sr) =>
-            acc +
-            countDescriptionsInMedia(
-              // new model (segments): items
-              sr?.items ??
-                // old model (ES one_record): _source.media
-                sr?._source?.media ??
-                []
-            ),
-          0
-        )
-      : 0;
-
-  // grand total for the badge
-  const descriptionCount = descriptionCountSelf + descriptionCountSubrecords;
-
   /* ---------- hrefs ---------- */
 
   // build a search suffix from the current list params
@@ -342,7 +316,7 @@ export default function RecordListItem(props) {
                     className="mr-1"
                   />
                   {!visible && " Visa "}
-                  {transcriptiontype === "audio"
+                  {isAudioRecording
                     ? l("Inspelningar")
                     : l("Uppteckningar")}
                   {visible && " i den här accessionen"} ({count})
@@ -412,8 +386,12 @@ export default function RecordListItem(props) {
                                   } hover:underline text-isof`}
                                   onClick={handleRecordLinkClick}
                                 >
-                                  {transcriptiontype !== "audio" && pageLabel ? (
-                                    <>{pageLabel}. </>
+                                  {!isAudioRecording && pageLabel ? (
+                                    <>
+                                      {pageLabel}
+                                      .
+                                      {' '}
+                                    </>
                                   ) : null}
                                   <span
                                     dangerouslySetInnerHTML={{
@@ -524,20 +502,8 @@ export default function RecordListItem(props) {
             status={transcriptionstatus}
             type={recordtype === "one_accession_row" ? "accession" : "record"}
             media={media} // progress is derived from media[] (excluding pdf)
-            total={
-              transcriptiontype === "audio" || descriptionCount > 0
-                ? descriptionCount
-                : undefined
-            }
-            done={
-              transcriptiontype === "audio" || descriptionCount > 0
-                ? descriptionCount
-                : undefined
-            }
             transcriptiontype={
-              transcriptiontype === "audio" || descriptionCount > 0
-                ? "audio"
-                : transcriptiontype
+              isAudioRecording ? 'audio' : transcriptiontype
             }
             pillClasses={pillClasses}
           />
