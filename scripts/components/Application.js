@@ -21,6 +21,7 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 
 import config from '../config';
 import { toastError } from '../utils/toast';
+import useTranscriptionAvailability from '../hooks/useTranscriptionAvailability';
 
 const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
 const FeedbackOverlay = lazy(() => import('./views/FeedbackOverlay'));
@@ -133,6 +134,7 @@ export default function Application({
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: {} });
   const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: {} });
   const [loading, setLoading] = useState(true);
+  const isTranscriptionAvailable = useTranscriptionAvailability();
 
   const params = useParams();
 
@@ -144,6 +146,21 @@ export default function Application({
       navigate(target);
     }
   }, []);
+
+  useEffect(() => {
+    if (mode !== 'transcribe' || isTranscriptionAvailable) return;
+
+    const { pathname, search, hash } = location;
+    if (!pathname.startsWith('/transcribe')) return;
+
+    const targetPath = pathname.replace(/^\/transcribe(?=\/|$)/, '') || '/';
+    navigate(`${targetPath}${search}${hash}`, { replace: true });
+  }, [
+    isTranscriptionAvailable,
+    location,
+    mode,
+    navigate,
+  ]);
 
   const {
     addToNavigationHistory,
@@ -281,9 +298,11 @@ useEffect(() => {
         <DeferredEventOverlay events={['overlay.contributeinfo']}>
           <ContributeInfoOverlay />
         </DeferredEventOverlay>
-        <DeferredEventOverlay events={['overlay.transcribePageByPage']}>
-          <TranscriptionPageByPageOverlay />
-        </DeferredEventOverlay>
+        {isTranscriptionAvailable && (
+          <DeferredEventOverlay events={['overlay.transcribePageByPage']}>
+            <TranscriptionPageByPageOverlay />
+          </DeferredEventOverlay>
+        )}
         <DeferredEventOverlay events={['overlay.transcriptionhelp']}>
           <TranscriptionHelpOverlay />
         </DeferredEventOverlay>

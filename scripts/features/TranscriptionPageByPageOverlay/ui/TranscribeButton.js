@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { useCallback, useState, useId } from "react";
 import config from "../../../config";
 import { getPlaceString } from "../../../utils/helpers";
+import useTranscriptionAvailability from '../../../hooks/useTranscriptionAvailability';
 
 // The TranscribeButton component is a functional component that, when clicked, dispatches
 // a 'overlay.transcribe' event via the global eventBus object. The event data contains
@@ -30,6 +31,7 @@ export default function TranscribeButton({
   initialPageSource,
 }) {
   const [busy, setBusy] = useState(false);
+  const isTranscriptionAvailable = useTranscriptionAvailability();
 
   const autoId = useId();
   const helpTextId = helptext ? `transcribe-help-${autoId}` : undefined;
@@ -170,7 +172,7 @@ export default function TranscribeButton({
 
   const effectiveOnClick = onClick || defaultOnClick;
 
-  if (!config.activateTranscription) {
+  if (!config.activateTranscription || !isTranscriptionAvailable) {
     // Ingen knapp
     return null;
   }

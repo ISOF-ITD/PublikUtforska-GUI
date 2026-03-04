@@ -13,6 +13,7 @@ import RecordSegment from "./ui/RecordSegment";
 import buildSegments from "../../utils/buildSegments.js";
 import { useRecordHighlights } from "./hooks/useRecordHighlights";
 import { useDownloadAllText } from "./hooks/useDownloadAllText";
+import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
 import {
   faCompress,
   faDownload,
@@ -44,6 +45,7 @@ export default function RecordTextPanel({
   } = data;
 
   const { imageUrl } = config;
+  const isTranscriptionAvailable = useTranscriptionAvailability();
 
   // local state
   const [expandedTextByIndex, setExpandedTextByIndex] = useState({});
@@ -241,9 +243,10 @@ export default function RecordTextPanel({
         );
       }
 
-      // If record is ready to be transcribed, show CTA
+      // If record is ready to be transcribed and transcription is available, show CTA
       if (
         transcriptionstatus === "readytotranscribe"
+        && isTranscriptionAvailable
       ) {
         return (
           <div className="flex flex-col items-center justify-between gap-2 p-2 rounded-lg bg-gray-50">
@@ -268,6 +271,14 @@ export default function RecordTextPanel({
         );
       }
 
+      // On mobile (<768px), hide the transcribe button area entirely for writable pages.
+      if (
+        transcriptionstatus === 'readytotranscribe'
+        && !isTranscriptionAvailable
+      ) {
+        return null;
+      }
+
       // Otherwise, it's being processed
       return (
         <p className="text-gray-700">
@@ -288,6 +299,7 @@ export default function RecordTextPanel({
       title,
       transcriptionstatus,
       transcriptiontype,
+      isTranscriptionAvailable,
       toggleExpanded,
       transcribedby,
       data.transcriptiondate,

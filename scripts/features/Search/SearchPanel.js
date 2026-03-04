@@ -29,6 +29,7 @@ import useSuggestionKeyboard from './hooks/useSuggestionKeyboard';
 import TranscribeButton from '../TranscriptionPageByPageOverlay/ui/TranscribeButton';
 import FilterSwitch from '../../components/FilterSwitch';
 import config from '../../config';
+import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
 
 export default function SearchPanel({
   mode,
@@ -39,6 +40,7 @@ export default function SearchPanel({
   onOpenIntroOverlay,
   mobileCompact = false,
 }) {
+  const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
   // Normalise the path so it always starts from "search/…"
   const baseSearchPath = useMemo(() => {
@@ -227,7 +229,9 @@ export default function SearchPanel({
 
   return (
     <>
-      <FilterSwitch mode={mode} className={mobileCompact ? 'mt-2' : ''} />
+      {isTranscriptionAvailable && (
+        <FilterSwitch mode={mode} className={mobileCompact ? 'mt-2' : ''} />
+      )}
       <div
         className={classNames(
           'left-0 z-[2000] flex max-w-full items-center cursor-auto relative overflow-visible text-gray-700 bg-neutral-100 rounded shadow-sm',
@@ -418,20 +422,23 @@ export default function SearchPanel({
           )}
         </div>
       )}
-      <TranscribeButton
-        className={mobileCompact ? '!h-auto !min-h-[2.75rem] !whitespace-normal !break-words !leading-snug !py-2' : ''}
-        label={(
-          <>
-            <FontAwesomeIcon icon={faPen} />{" "}
-            {l("Skriv av slumpmässig uppteckning")}
-            {config.specialEventTranscriptionCategoryLabel && <br />}
-            {config.specialEventTranscriptionCategoryLabel || ""}
-          </>
-        )}
-        random
-        title={l("Skriv av slumpmässig uppteckning")}
-        variant="listLike" // match "Visa sökträffar" look
-      />
+      {isTranscriptionAvailable && (
+        <TranscribeButton
+          className={mobileCompact ? '!h-auto !min-h-[2.75rem] !whitespace-normal !break-words !leading-snug !py-2' : ''}
+          label={(
+            <>
+              <FontAwesomeIcon icon={faPen} />
+              {' '}
+              {l('Skriv av slumpmässig uppteckning')}
+              {config.specialEventTranscriptionCategoryLabel && <br />}
+              {config.specialEventTranscriptionCategoryLabel || ''}
+            </>
+          )}
+          random
+          aria-label={l('Skriv av slumpmässig uppteckning')}
+          variant="listLike" // match "Visa sökträffar" look
+        />
+      )}
 
       {onOpenIntroOverlay && (
         <button

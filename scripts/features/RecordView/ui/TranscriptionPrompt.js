@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React, { useMemo } from "react";
 import TranscribeButton from "../../TranscriptionPageByPageOverlay/ui/TranscribeButton";
 import { l } from "../../../lang/Lang";
+import useTranscriptionAvailability from '../../../hooks/useTranscriptionAvailability';
 
 // short keys; wrap with l()
 const STRINGS = {
@@ -62,6 +63,7 @@ const statusStyles = (raw) => {
 };
 
 export default function TranscriptionPrompt({ data }) {
+  const isTranscriptionAvailable = useTranscriptionAvailability();
   const {
     transcriptiontype = null,
     transcriptionstatus,
@@ -72,6 +74,8 @@ export default function TranscriptionPrompt({ data }) {
     places = [],
     recordtype,
   } = data || {};
+
+  if (!isTranscriptionAvailable) return null;
 
   // 1. Hide for audio & already published & if no transcription type explicitly defined
   if (
