@@ -203,7 +203,9 @@ export default function MapView({
   }, [updateMap]);
 
   const showFloatingToggle = !isMobileViewport || mobileView === 'map';
-
+  const attributionControlPosition = isMobileViewport
+    ? 'bottomleft'
+    : 'bottomright';
   return (
     <div>
       <p id={mapSummaryId} className="sr-only">
@@ -220,7 +222,7 @@ export default function MapView({
         className={`
           !fixed z-[500] bg-white border-2 border-solid border-black/20 p-1.5 h-auto leading-normal
           ${showFloatingToggle ? 'block' : 'hidden'}
-          ${isMobileViewport ? 'top-16 right-3' : 'lg:!bottom-72 bottom-96 right-7'}
+          bottom-[8rem] right-[25px]
         `}
       >
         <img
@@ -238,9 +240,10 @@ export default function MapView({
 
       <MapBase
         ref={mapView}
-        className="absolute top-0 h-screen w-screen opacity-0 transition-opacity duration-300 ease-in-out [.app-initialized_&]:opacity-100"
+        className="map-wrapper absolute top-0 h-screen w-screen opacity-0 transition-opacity duration-300 ease-in-out [.app-initialized_&]:opacity-100"
         ariaLabel="Interaktiv sokkarta"
         ariaDescribedBy={mapSummaryId}
+        attributionControlPosition={attributionControlPosition}
         layersControlPosition={layersControlPosition}
         zoomControlPosition={zoomControlPosition}
         disableLocateControl

@@ -47,18 +47,22 @@
 }
 
 .leaflet-bottom {
-	@leaflet-bottom-val: 70px;
-	bottom: @leaflet-bottom-val;
-	@media screen and (max-width: 550px) {
-		bottom: 95px;
-	}
-	.leaflet-control-attribution {
-		bottom: -(@leaflet-bottom-val);
-	}
+	bottom: 0;
 }
  .leaflet-right {
 	right: 15px;
  }
+
+.leaflet-bottom.leaflet-right {
+	.leaflet-control-zoom,
+	.leaflet-control-layers {
+		margin-bottom: 8px;
+	}
+
+	.leaflet-control-layers {
+		bottom: 0;
+	}
+}
 
 .leaflet-control {
 	.map-location-icon {
@@ -88,13 +92,6 @@
 	font-size: 9px;
 }
 
-.map-wrapper .leaflet-control-zoom, .leaflet-control-layers {
-	bottom: 60px;
-	@media screen and (max-width: 550px) {
-		bottom: 100px;
-	}
-}
-
 .leaflet-control-layers-toggle {
 	background-image: url(../../img/layers.png);
 	}
@@ -106,6 +103,27 @@
 	.leaflet-control-container {
 		.leaflet-top {
 			top: 160px;
+			@media screen and (max-width: 767px) {
+				top: 92px;
+			}
+		}
+
+		@media screen and (max-width: 767px) {
+			.leaflet-top.leaflet-right {
+				.leaflet-control-layers {
+					max-height: calc(100vh - 108px);
+					max-height: calc(100dvh - 108px);
+					overflow: hidden;
+				}
+
+				.leaflet-control-layers-list {
+					max-height: calc(100vh - 116px);
+					max-height: calc(100dvh - 116px);
+					overflow-y: auto;
+					overscroll-behavior: contain;
+					-webkit-overflow-scrolling: touch;
+				}
+			}
 		}
 	}
 }

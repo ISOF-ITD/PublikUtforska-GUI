@@ -10,7 +10,20 @@ const MapBase = forwardRef(function MapBase(props, ref) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const layersControlRef = useRef(null);
+  const onBaseLayerChangeRef = useRef(props.onBaseLayerChange);
   const initializedRef = useRef(false); // guard against React 18 StrictMode double effects in dev
+
+  useEffect(() => {
+    onBaseLayerChangeRef.current = props.onBaseLayerChange;
+  }, [props.onBaseLayerChange]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.attributionControl) return;
+    map.attributionControl.setPosition(
+      props.attributionControlPosition || "bottomright"
+    );
+  }, [props.attributionControlPosition]);
 
   // Expose the instance methods to the parent via ref
   useImperativeHandle(
@@ -107,6 +120,11 @@ const MapBase = forwardRef(function MapBase(props, ref) {
 
     const map = createLeafletMap(containerRef.current, mapOptions);
     mapRef.current = map;
+    if (map.attributionControl) {
+      map.attributionControl.setPosition(
+        props.attributionControlPosition || "bottomright"
+      );
+    }
 
     // Force initial view so Leaflet flips _loaded = true
     map.setView(
@@ -139,8 +157,11 @@ const MapBase = forwardRef(function MapBase(props, ref) {
         map.options.maxZoom = 16;
         map.setView(c, z + 4, { animate: false });
       }
-      if (props.onBaseLayerChange) props.onBaseLayerChange(event);
+      if (typeof onBaseLayerChangeRef.current === "function") {
+        onBaseLayerChangeRef.current(event);
+      }
     };
+    let removeLayerOverlayListeners = () => {};
 
     map.whenReady(() => {
       map.fitBounds(SWEDEN, {
@@ -185,18 +206,52 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       const listEl = containerRef.current?.querySelector(
         ".leaflet-control-layers-list"
       );
-      if (toggleBtn && listEl) {
-        toggleBtn.style.display = "block";
-        toggleBtn.style.opacity = 1;
-        listEl.style.display = "none";
-        toggleBtn.addEventListener("click", () => {
+      const layersControlEl = containerRef.current?.querySelector(
+        ".leaflet-control-layers"
+      );
+      if (toggleBtn && listEl && layersControlEl) {
+        const showLayerList = () => {
           listEl.style.display = "block";
           toggleBtn.style.display = "none";
-        });
-        listEl.addEventListener("mouseleave", () => {
+        };
+        const hideLayerList = () => {
           listEl.style.display = "none";
           toggleBtn.style.display = "block";
-        });
+        };
+        const isLayerListOpen = () => listEl.style.display !== "none";
+        const onToggleClick = (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (isLayerListOpen()) hideLayerList();
+          else showLayerList();
+        };
+        const onListMouseLeave = () => {
+          hideLayerList();
+        };
+        const onPointerDownOutside = (event) => {
+          if (!isLayerListOpen()) return;
+          if (!(event.target instanceof Element)) return;
+          if (layersControlEl.contains(event.target)) return;
+          hideLayerList();
+        };
+        const onKeyDown = (event) => {
+          if (event.key === "Escape") hideLayerList();
+        };
+
+        toggleBtn.style.opacity = 1;
+        hideLayerList();
+
+        toggleBtn.addEventListener("click", onToggleClick);
+        listEl.addEventListener("mouseleave", onListMouseLeave);
+        document.addEventListener("pointerdown", onPointerDownOutside);
+        document.addEventListener("keydown", onKeyDown);
+
+        removeLayerOverlayListeners = () => {
+          toggleBtn.removeEventListener("click", onToggleClick);
+          listEl.removeEventListener("mouseleave", onListMouseLeave);
+          document.removeEventListener("pointerdown", onPointerDownOutside);
+          document.removeEventListener("keydown", onKeyDown);
+        };
       }
 
       map.on("baselayerchange", handleBaseLayerChange);
@@ -234,6 +289,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     // Cleanup on unmount
     return () => {
       try {
+        removeLayerOverlayListeners();
         if (
           typeof window !== 'undefined'
           && window.eventBus
