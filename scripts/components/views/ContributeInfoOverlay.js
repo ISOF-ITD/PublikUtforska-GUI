@@ -88,9 +88,9 @@ function Modal({ open, onClose, titleId, descId, children, className }) {
   return createPortal(
     <div
       className={classNames(
-        "overlay-container visible",
-        "grid place-items-center fixed inset-0 p-4",
-        "bg-[rgba(0,0,0,.5)] backdrop-blur-[2px]"
+        'overlay-container visible contributeinfo-modal',
+        '!fixed !inset-0 !grid !place-items-center !p-4',
+        'bg-[rgba(0,0,0,.5)] backdrop-blur-[2px]'
       )}
       onMouseDown={onBackdropClick}
       role="presentation"
@@ -98,17 +98,17 @@ function Modal({ open, onClose, titleId, descId, children, className }) {
       <div
         ref={dialogRef}
         className={classNames(
-          "overlay-window relative w-full max-w-[46rem] max-h-[90vh] overflow-auto",
-          "bg-white rounded-md shadow-[0_10px_30px_rgba(0,0,0,.25)]",
-          "focus:outline-none",
+          'overlay-window contributeinfo-window relative w-full',
+          'max-w-[46rem] max-h-[90vh] overflow-auto',
+          '!left-auto !m-0 !transform-none',
+          'bg-white rounded-md shadow-[0_10px_30px_rgba(0,0,0,.25)]',
+          'focus:outline-none',
           className
         )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descId}
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
       >
         {children}
       </div>

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useLocation, Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import ContactButtonGroup from './ContactButtonGroup';
 import ContributeInfoButton from "./ContributeInfoButton";
 import SimpleMap from "./SimpleMap";
 import FeedbackButton from "./FeedbackButton";
@@ -100,10 +101,9 @@ export default function PersonView({ mode = "material" }) {
         </div>
 
         {!config.siteOptions.hideContactButton && (
-          <div
-            className="action-bar"
+          <ContactButtonGroup
             role="group"
-            aria-label={l("Hjälp oss förbättra sidan")}
+            ariaLabel={l('Hjälp oss förbättra sidan')}
           >
             <ContributeInfoButton
               title={name}
@@ -116,7 +116,7 @@ export default function PersonView({ mode = "material" }) {
               location={location}
               country="sweden"
             />
-          </div>
+          </ContactButtonGroup>
         )}
       </div>
 

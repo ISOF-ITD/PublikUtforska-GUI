@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
 
 import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
+import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
 import FeedbackButton from "../../../components/views/FeedbackButton";
 import TranscriptionHelpButton from "./TranscriptionHelpButton";
 
@@ -60,7 +61,7 @@ function OverlayHeader({
         </div>
       )}
       {!config.siteOptions.hideContactButton && (
-        <>
+        <ContactButtonGroup>
           <TranscriptionHelpButton
             type="Uppteckning"
             title={recordDetails.title}
@@ -70,7 +71,7 @@ function OverlayHeader({
             title={recordDetails.title}
           />
           <FeedbackButton type="Uppteckning" title={recordDetails.title} />
-        </>
+        </ContactButtonGroup>
       )}
     </>
   );

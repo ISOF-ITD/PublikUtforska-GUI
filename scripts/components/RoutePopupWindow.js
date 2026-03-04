@@ -4,19 +4,18 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { faArrowLeft, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { l } from '../lang/Lang';
 import { NavigationContext } from '../NavigationContext';
 import { getFocusableElements } from '../utils/focusHelper';
 import { removeViewParamsFromRoute } from '../utils/routeHelper';
-import { IconButton } from './IconButton';
+import HeaderActions from './views/HeaderActions';
 
 const RoutePopupWindow = memo(({
   children,
   manuallyOpenPopup = false,
   onHide = null,
   onShow = null,
-  closeButtonStyle = 'white',
+  closeButtonStyle = 'light',
 }) => {
   const [windowOpen, setWindowOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
@@ -189,6 +188,8 @@ const RoutePopupWindow = memo(({
   }, [windowOpen, manualOpen, trapTabKey]);
 
   const shouldShowBackButton = previousNavigation || isNestedTranscribe;
+  const showBackButtonInRail = shouldShowBackButton
+    && !(children.props.manuallyOpenPopup || manuallyOpenPopup);
 
   if (windowOpen || manualOpen) {
     return (
@@ -216,24 +217,12 @@ const RoutePopupWindow = memo(({
             aria-label={l('Postdetaljer')}
             tabIndex={-1}
           >
-            <IconButton
-              icon={faXmark}
-              label={l('Stäng')}
-              tone={closeButtonStyle === 'dark' ? 'dark' : 'light'}
-              onClick={closeButtonClick}
-              className="absolute top-8 right-8"
+            <HeaderActions
+              showBack={showBackButtonInRail}
+              onBack={backButtonClick}
+              onClose={closeButtonClick}
+              closeTone={closeButtonStyle === 'dark' ? 'dark' : 'light'}
             />
-
-            {shouldShowBackButton
-              && !(children.props.manuallyOpenPopup || manuallyOpenPopup) && (
-                <IconButton
-                  icon={faArrowLeft}
-                  label={l('Gå tillbaka')}
-                  tone="light"
-                  onClick={backButtonClick}
-                  className="absolute top-8 right-20"
-                />
-            )}
             {children}
           </div>
         </div>

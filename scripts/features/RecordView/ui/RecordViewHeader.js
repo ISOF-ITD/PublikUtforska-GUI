@@ -7,6 +7,7 @@ import {
   getTitleText,
   getArchiveName,
 } from "../../../utils/helpers";
+import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
 import FeedbackButton from "../../../components/views/FeedbackButton";
 import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
 import config from "../../../config";
@@ -103,13 +104,15 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
           </dl>
         </div>
       </div>
-      <ContributeInfoButton
-        title={title}
-        type="Uppteckning"
-        country={country}
-        id={id}
-      />
-      <FeedbackButton title={title} type="Uppteckning" country={country} />
+      <ContactButtonGroup>
+        <ContributeInfoButton
+          title={title}
+          type="Uppteckning"
+          country={country}
+          id={id}
+        />
+        <FeedbackButton title={title} type="Uppteckning" country={country} />
+      </ContactButtonGroup>
     </header>
   );
 }

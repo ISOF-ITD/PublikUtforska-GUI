@@ -492,7 +492,8 @@ export default function TranscriptionPageByPageOverlay() {
             label={l("Stäng")}
             tone="light"
             onClick={handleHideOverlay}
-            className="absolute right-4 top-3"
+            size="sm"
+            className="absolute right-8 top-0 !mt-0"
           />
           <div className="relative h-2">
             <TranscribeButton
