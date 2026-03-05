@@ -10,9 +10,10 @@ import { scaleBand, scaleLinear } from 'd3-scale';
 import { axisBottom } from 'd3-axis';
 import { max } from 'd3-array';
 import { drag } from 'd3-drag';
+import { l } from '../../../lang/Lang';
 
 function Timeline({
-  containerRef, params, filter, mode, onYearFilter, resetOnYearFilter,
+  containerRef, params, filter, yearFilter, mode, onYearFilter, resetOnYearFilter,
 }) {
 
   const [containerWidth, setContainerWidth] = useState(800); // default value
@@ -197,15 +198,15 @@ function Timeline({
 
     svg
       .attr("role", "slider")
-      .attr('aria-label', 'Interaktiv tidslinje över söktraffar per år')
+      .attr('aria-label', l('Interaktiv tidslinje över söktraffar per år'))
       .attr('aria-describedby', summaryId)
       .attr('tabindex', 0)
       .attr("aria-valuemin", minYear)
       .attr("aria-valuemax", maxYear)
-      .attr("aria-valuenow", filter?.from ?? minYear)
+      .attr("aria-valuenow", Array.isArray(yearFilter) ? yearFilter[0] : minYear)
       .attr(
         "aria-valuetext",
-        filter ? `${filter.from}–${filter.to}` : `${minYear}`
+        Array.isArray(yearFilter) ? `${yearFilter[0]}-${yearFilter[1]}` : `${minYear}`,
       );
 
     // Lägg till horisontella linjer
@@ -353,12 +354,21 @@ function Timeline({
           const firstYear = xScale.domain()[hoveredBandStart];
           const hoveredBandEnd = Math.floor((dragEnd - xScale.range()[0]) / bandWidth);
           const lastYear = parseInt(xScale.domain()[hoveredBandEnd], 10);
+          const fromYear = Math.min(firstYear, lastYear);
+          const toYear = Math.max(firstYear, lastYear);
+
+          svg
+            .attr('aria-valuenow', fromYear)
+            .attr('aria-valuetext', `${fromYear}-${toYear}`);
 
           onYearFilter(
-            Math.min(firstYear, lastYear),
-            Math.max(firstYear, lastYear),
+            fromYear,
+            toYear,
           );
         } else {
+          svg
+            .attr('aria-valuenow', minYear)
+            .attr('aria-valuetext', `${minYear}`);
           resetOnYearFilter();
         }
       });
@@ -408,7 +418,7 @@ function Timeline({
         otherVerticalLine.style('display', 'none');
 
         tooltip.select('text')
-          .text(`${year}: ${value} ${value > 1 ? 'sökträffar' : (value === 1 ? 'sökträff' : 'sökträffar')}`);
+          .text(`${year}: ${value} ${value > 1 ? l('sökträffar') : (value === 1 ? l('sökträff') : l('sökträffar'))}`);
 
         // visa inte tooltip om muspekaren är nedanför x-axeln
         if (y > svgHeight) {
@@ -433,6 +443,22 @@ function Timeline({
     };
 
   }, [data, containerWidth, summaryId]);
+
+  useEffect(() => {
+    if (!svgRef.current || !data.length) return;
+
+    const minYear = data[0]?.year;
+    const maxYear = data[data.length - 1]?.year;
+    const hasYearRange = Array.isArray(yearFilter) && yearFilter.length === 2;
+    const valueText = hasYearRange ? `${yearFilter[0]}-${yearFilter[1]}` : l('inget årsintervall valt');
+    const valueNow = hasYearRange ? `${yearFilter[0]}-${yearFilter[1]}` : '';
+
+    select(svgRef.current)
+      .attr('aria-valuemin', minYear)
+      .attr('aria-valuemax', maxYear)
+      .attr('aria-valuenow', valueNow)
+      .attr('aria-valuetext', valueText);
+  }, [data, yearFilter]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -469,7 +495,7 @@ function Timeline({
         {timelineSummary}
       </span>
       <span role="status" aria-live="polite" className="sr-only">
-        {filter?.from && `Visar ${filter.from}–${filter.to}`}
+        {Array.isArray(yearFilter) && `Visar ${yearFilter[0]}-${yearFilter[1]}`}
       </span>
     </div>
   );
@@ -479,6 +505,7 @@ Timeline.propTypes = {
   containerRef: PropTypes.object.isRequired,
   params: PropTypes.object.isRequired,
   filter: PropTypes.string.isRequired,
+  yearFilter: PropTypes.arrayOf(PropTypes.number),
   mode: PropTypes.string.isRequired,
   onYearFilter: PropTypes.func.isRequired,
   resetOnYearFilter: PropTypes.func.isRequired,

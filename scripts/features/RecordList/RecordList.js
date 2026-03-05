@@ -110,6 +110,7 @@ export default function RecordList(props) {
     setCurrentPage,
     filter,
     setFilter,
+    yearFilter,
     uniqueId,
     sort,
     order,
@@ -309,6 +310,7 @@ export default function RecordList(props) {
             containerRef={containerRef}
             params={params}
             filter={filter}
+            yearFilter={yearFilter}
             mode={mode}
             onYearFilter={(f, l) => setYearFilter([f, l])}
             resetOnYearFilter={() => setYearFilter(null)}

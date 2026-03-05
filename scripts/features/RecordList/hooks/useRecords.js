@@ -235,6 +235,7 @@ export default function useRecords(params, mode, interval) {
     /* values the UI layer needs to know about */
     currentPage,
     filter,
+    yearFilter,
     sort,
     order,
   };
