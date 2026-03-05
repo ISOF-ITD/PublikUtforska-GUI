@@ -195,11 +195,13 @@ export default function MapMenu({
     <header className="max-w-full overflow-x-hidden border-b border-white/20 bg-isof">
       <div className="flex min-h-[5rem] max-w-full flex-wrap items-center justify-between gap-2 px-3 py-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <img
-            src={Folkelogga}
-            alt={l('Folkelogga')}
-            className="h-12 w-auto max-w-[40vw] object-contain"
-          />
+          <h1 className="mt-0 mb-0">
+            <img
+              src={Folkelogga}
+              alt={l('Folkelogga')}
+              className="h-12 w-auto max-w-[40vw] object-contain"
+            />
+          </h1>
           <span aria-hidden className="h-6 w-px bg-white/30" />
           <a
             href="https://www.isof.se"
@@ -299,9 +301,9 @@ export default function MapMenu({
       aria-label="Sök och filter"
       className="bg-isof absolute left-0 top-0 bottom-0 !z-[1201] flex w-[422px] flex-col items-center border-r-2 border-white pt-5 px-5 print:hidden"
     >
-      <div>
+      <h1 className="mt-0 mb-0">
         <img src={Folkelogga} alt={l('Folkelogga')} className="h-20 w-full" />
-      </div>
+      </h1>
 
       <SearchPanel
         params={params}
