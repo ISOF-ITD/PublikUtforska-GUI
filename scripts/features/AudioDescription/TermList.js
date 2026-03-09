@@ -60,7 +60,7 @@ export function TermNode({
           type="checkbox"
           checked={isSelected}
           onChange={handleCheckboxChange}
-          className="form-checkbox h-4 w-4 text-isof rounded focus:ring-isof cursor-pointer transition-colors duration-200"
+          className="form-checkbox h-4 w-4 text-isof rounded focus-visible:ring-isof cursor-pointer transition-colors duration-200"
         />
         <label
           htmlFor={checkboxId}

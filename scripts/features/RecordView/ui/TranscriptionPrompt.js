@@ -239,7 +239,7 @@ export default function TranscriptionPrompt({ data }) {
         <div className="flex flex-wrap items-center gap-2">
           {/* Primary */}
           <TranscribeButton
-            className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
+            className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
             label={`${l(STRINGS.transcribe)} ${l(STRINGS.perPage)}`}
             title={title}
             recordId={id}

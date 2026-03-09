@@ -146,7 +146,7 @@ export default function EditorHeader({
                   setQueryRaw("");
                 }
               }}
-              className="w-full pl-10 pr-28 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-isof"
+              className="w-full pl-10 pr-28 py-2 border rounded-md text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-isof"
             />
 
             {/* hit-count pill (kept clear of the ✕ button) */}

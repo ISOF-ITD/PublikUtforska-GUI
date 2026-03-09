@@ -74,7 +74,7 @@ export function SearchFilters({
                 className={classNames(
                   'inline-flex border-none items-center !m-0 gap-1 !text-white',
                   compact
-                    ? 'rounded-full border border-solid border-white/60 bg-transparent px-2.5 py-1.5 hover:bg-darker-isof focus:bg-darker-isof'
+                    ? 'rounded-full border border-solid border-white/60 bg-transparent px-2.5 py-1.5 hover:bg-darker-isof focus-visible:bg-darker-isof'
                     : 'rounded-md !px-0 py-1',
                   disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
                 )}

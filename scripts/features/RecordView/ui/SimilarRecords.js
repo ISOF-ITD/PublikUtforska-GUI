@@ -139,7 +139,7 @@ function SimilarRecords({ data }) {
 
         <details className="group max-w-[42rem]">
           <summary
-            className="cursor-pointer select-none text-sm text-isof hover:text-darker-isof focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-isof rounded"
+            className="cursor-pointer select-none text-sm text-isof hover:text-darker-isof focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-isof rounded"
             aria-label={l("Visa hjälptext för liknande uppteckningar")}
           >
             {l("Vad är detta?")}

@@ -11,8 +11,8 @@ import {
 
 const field =
   "w-full border border-gray-300 rounded-lg p-3 font-serif leading-relaxed " +
-  "disabled:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-isof " +
-  "focus:border-isof transition !mb-2";
+  "disabled:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-isof " +
+  "focus-visible:border-isof transition !mb-2";
 
 export default function TranscriptionForm({
   sending,

@@ -249,7 +249,7 @@ export default function SearchPanel({
               type="text"
               className={classNames(
                 'w-full border bg-white !p-2 text-gray-900 placeholder-gray-500 shadow-sm',
-                'border-gray-300 focus:border-isof focus:ring-2 focus:ring-isof/60 focus:outline-none !mb-0',
+                'border-gray-300 focus-visible:border-isof focus-visible:ring-2 focus-visible:ring-isof/60 focus:outline-none !mb-0',
                 'h-12 rounded-md pr-20',
                 'text-[16px]',
                 hasSelection ? 'opacity-0 pointer-events-none' : 'opacity-100',
@@ -348,7 +348,7 @@ export default function SearchPanel({
             type="button"
             className={classNames(
               'pointer-events-auto gap-1 flex items-center justify-center self-center rounded-md text-sm font-medium',
-              'bg-isof !text-white border-2 border-transparent hover:bg-darker-isof focus:bg-darker-isof focus:border-black focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-neutral-100 focus:outline-none',
+              'bg-isof !text-white border-2 border-transparent hover:bg-darker-isof focus-visible:bg-darker-isof focus-visible:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-100 focus:outline-none',
               'shrink-0 !mb-0',
               mobileCompact ? 'h-12 min-w-[3rem] px-3' : 'h-12 px-3',
             )}

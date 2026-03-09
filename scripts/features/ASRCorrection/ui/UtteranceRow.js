@@ -93,7 +93,7 @@ export const ReadOnlyUtteranceRow = memo(function ReadOnlyUtteranceRow({
       className={classNames(
         "grid grid-cols-[auto_1fr] gap-4 px-4 !py-3 rounded-md items-center",
         "relative overflow-hidden min-w-0",
-        "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-isof/70",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-isof/70",
         isActive && "bg-isof/10 ring-2 ring-inset ring-isof"
       )}
     >
@@ -183,8 +183,8 @@ export default memo(function UtteranceRow({
           <StatusDot status={utterance.status} />
           <button type="button"
             className="w-11 h-11 flex items-center justify-center rounded-full
-                       bg-isof/10 text-isof focus:outline-none focus:ring-2
-                       focus:ring-isof/70"
+                       bg-isof/10 text-isof focus:outline-none focus-visible:ring-2
+                       focus-visible:ring-isof/70"
             aria-label={isCurrentPlaying ? "Pausa uppspelning" : "Spela upp"}
             aria-pressed={isCurrentPlaying}
             onClick={(e) => {
@@ -218,8 +218,8 @@ export default memo(function UtteranceRow({
             e.currentTarget.style.height = "auto";
             e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
           }}
-          className="w-full text-base border rounded
-                     focus:border-isof focus:ring-isof resize-none"
+           className="w-full text-base border rounded
+                     focus-visible:border-isof focus-visible:ring-isof resize-none"
         />
       ) : (
         <p className="whitespace-pre-wrap break-words break-all">
@@ -314,7 +314,7 @@ export default memo(function UtteranceRow({
       }
       className={classNames(
         "m-0 hidden sm:grid sm:grid-cols-[16px_auto_2fr_1fr_auto] sm:items-center sm:gap-4 min-w-0",
-        "px-4 py-3 focus:outline-none focus:ring-2 focus:ring-isof/70 rounded-md",
+        "px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-isof/70 rounded-md",
         isEditing ? "bg-yellow-50" : "",
         utterance.status === "complete" && "opacity-60",
         isActive &&
@@ -365,7 +365,7 @@ export default memo(function UtteranceRow({
               e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
             }}
             className="w-full p-3 text-base sm:text-sm border rounded
-                       focus:ring-isof focus:border-isof resize-none"
+                       focus-visible:ring-isof focus-visible:border-isof resize-none"
           />
         ) : (
           <span className="whitespace-pre-wrap break-all break-words">

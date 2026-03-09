@@ -226,7 +226,7 @@ export default function MapMenu({
               aria-controls="intro-overlay"
               aria-label={l('Hjälp och nyheter')}
               title={l('Hjälp och nyheter')}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-darker-isof focus:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-darker-isof focus-visible:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             >
               <FontAwesomeIcon icon={faQuestion} aria-hidden="true" className="text-lg font-bold" />
             </button>
@@ -234,7 +234,7 @@ export default function MapMenu({
           <button
             type="button"
             onClick={toggleMobileView}
-            className="inline-flex h-11 items-center justify-center rounded-md border border-white/70 bg-transparent px-4 text-sm font-semibold !text-white hover:bg-darker-isof focus:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-white/70 bg-transparent px-4 text-sm font-semibold !text-white hover:bg-darker-isof focus-visible:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             aria-pressed={mobileView === 'map'}
             aria-label={mobileToggleLabel}
             title={mobileToggleLabel}

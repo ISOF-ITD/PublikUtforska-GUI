@@ -164,7 +164,7 @@ export default function RecordCardItem({
           {recordUrl ? (
             <Link
               to={recordUrl}
-              className="!text-isof focus:outline-none focus:ring-2 focus:ring-isof"
+              className="!text-isof focus:outline-none focus-visible:ring-2 focus-visible:ring-isof"
               onClick={handleRecordClick}
             >
               <span
