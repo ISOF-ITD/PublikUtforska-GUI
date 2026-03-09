@@ -73,12 +73,6 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                             {results.harad}
                             ,
                             {' '}
-                            <strong>{l('Län')}</strong>
-                            :
-                            {' '}
-                            {results.lan}
-                            ,
-                            {' '}
                             <strong>{l('Landskap')}</strong>
                             :
                             {' '}
