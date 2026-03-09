@@ -2,6 +2,7 @@
 
 import {
   Await, useLoaderData, useParams, useNavigate,
+  Route,
 } from 'react-router-dom';
 
 import { Suspense, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 import config from '../../config';
 import { l } from '../../lang/Lang';
 import RecordList from '../../features/RecordList/RecordList';
+import RouteViewLoadingPlaceholder from '../RouteViewLoadingPlaceholder';
 
 export default function PlaceView({ highlightRecordsWithMetadataField = null, mode = 'material' }) {
   const { results } = useLoaderData();
@@ -37,69 +39,69 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
 
   return (
     <div className="container">
-      <div className="container-header">
-        <div className="row">
-          <Suspense>
-            <Await resolve={results}>
-              {(results) => {
-                if (results.name) {
-                  document.title = `${results.name} - ${config.siteTitle}`;
-                }
-                if (!validateResults(results)) {
-                  navigate('/');
-                  return null;
-                }
-                return (
-                  <div className="twelve columns">
-                    <h1>{results.name && results.name.replace(/ sn$/, ' socken')}</h1>
-                    <p>
-                      {
-                      results.fylke && (
-                        <span>
-                          <strong>{l('Fylke')}</strong>
-                          {' '}
-                          {results.fylke}
-                        </span>
-                      )
-                    }
-                      {
-                      !results.fylke && results.harad && (
-                        <span>
-                          <strong>{l('Härad')}</strong>
-                          :
-                          {' '}
-                          {results.harad}
-                          ,
-                          {' '}
-                          <strong>{l('Län')}</strong>
-                          :
-                          {' '}
-                          {results.lan}
-                          ,
-                          {' '}
-                          <strong>{l('Landskap')}</strong>
-                          :
-                          {' '}
-                          {results.landskap}
-                        </span>
-                      )
-                    }
-                    </p>
-                    {
-                    results.comment && (
-                      <p>
-                        {results.comment}
-                      </p>
-                    )
+      <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" inline />}>
+        <div className="container-header">
+          <div className="row">
+              <Await resolve={results}>
+                {(results) => {
+                  if (results.name) {
+                    document.title = `${results.name} - ${config.siteTitle}`;
                   }
+                  if (!validateResults(results)) {
+                    navigate('/');
+                    return null;
+                  }
+                  return (
+                    <div className="twelve columns">
+                      <h1>{results.name && results.name.replace(/ sn$/, ' socken')}</h1>
+                      <p>
+                        {
+                        results.fylke && (
+                          <span>
+                            <strong>{l('Fylke')}</strong>
+                            {' '}
+                            {results.fylke}
+                          </span>
+                        )
+                      }
+                        {
+                        !results.fylke && results.harad && (
+                          <span>
+                            <strong>{l('Härad')}</strong>
+                            :
+                            {' '}
+                            {results.harad}
+                            ,
+                            {' '}
+                            <strong>{l('Län')}</strong>
+                            :
+                            {' '}
+                            {results.lan}
+                            ,
+                            {' '}
+                            <strong>{l('Landskap')}</strong>
+                            :
+                            {' '}
+                            {results.landskap}
+                          </span>
+                        )
+                      }
+                      </p>
+                      {
+                      results.comment && (
+                        <p>
+                          {results.comment}
+                        </p>
+                      )
+                    }
 
-                  </div>
-                );
-              }}
-            </Await>
-          </Suspense>
+                    </div>
+                  );
+                }}
+              </Await>
+          </div>
         </div>
-      </div>
+      </Suspense>
 
       <Suspense>
         <Await resolve={results}>

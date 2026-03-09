@@ -30,7 +30,7 @@ import SimilarRecords from "./ui/SimilarRecords";
 import { getTitleText } from "../../utils/helpers";
 import config from "../../config";
 import AudioItems from "../AudioDescription/AudioItems";
-import Spinner from "../../components/Spinner";
+import RouteViewLoadingPlaceholder from "../../components/RouteViewLoadingPlaceholder";
 
 function RecordView({ mode = "material" }) {
   const { results: resultsPromise } = useLoaderData();
@@ -82,16 +82,7 @@ function RecordView({ mode = "material" }) {
 }
 
 function LoadingFallback() {
-  return (
-    <>
-      <div
-        className="container-header h-32"
-        aria-live="polite"
-        aria-busy="true"
-      />
-      <Spinner className="text-isof" label="Hämtar data…" />
-    </>
-  );
+  return <RouteViewLoadingPlaceholder kind="record" inline />;
 }
 
 function LoadError() {
