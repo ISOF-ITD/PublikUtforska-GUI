@@ -2,7 +2,6 @@
 
 import {
   Await, useLoaderData, useParams, useNavigate,
-  Route,
 } from 'react-router-dom';
 
 import { Suspense, useEffect } from 'react';
@@ -15,17 +14,24 @@ import { l } from '../../lang/Lang';
 import RecordList from '../../features/RecordList/RecordList';
 import RouteViewLoadingPlaceholder from '../RouteViewLoadingPlaceholder';
 
+const renderMetadataItem = (label, value) => (
+  <div key={label} className="mr-2.5 inline">
+    <dt className="inline m-0 font-semibold">{label}</dt>
+    <dd className="inline m-0">{`: ${value}`}</dd>
+  </div>
+);
+
 export default function PlaceView({ highlightRecordsWithMetadataField = null, mode = 'material' }) {
   const { results } = useLoaderData();
   const params = useParams();
   const navigate = useNavigate();
 
-  function validateResults(results) {
-    if (!results) {
+  function validateResults(data) {
+    if (!data) {
       return false;
     }
 
-    if (!results.id) {
+    if (!data.id) {
       return false;
     }
 
@@ -42,75 +48,55 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
       <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" inline />}>
         <div className="container-header">
           <div className="row">
-              <Await resolve={results}>
-                {(results) => {
-                  if (results.name) {
-                    document.title = `${results.name} - ${config.siteTitle}`;
-                  }
-                  if (!validateResults(results)) {
-                    navigate('/');
-                    return null;
-                  }
-                  return (
-                    <div className="twelve columns">
-                      <h1>{results.name && results.name.replace(/ sn$/, ' socken')}</h1>
-                      <p>
-                        {
-                        results.fylke && (
-                          <span>
-                            <strong>{l('Fylke')}</strong>
-                            {' '}
-                            {results.fylke}
-                          </span>
-                        )
-                      }
-                        {
-                        !results.fylke && results.harad && (
-                          <span>
-                            <strong>{l('Härad')}</strong>
-                            :
-                            {' '}
-                            {results.harad}
-                            ,
-                            {' '}
-                            <strong>{l('Landskap')}</strong>
-                            :
-                            {' '}
-                            {results.landskap}
-                          </span>
-                        )
-                      }
-                      </p>
-                      {
-                      results.comment && (
+            <Await resolve={results}>
+              {(data) => {
+                if (data.name) {
+                  document.title = `${data.name} - ${config.siteTitle}`;
+                }
+                if (!validateResults(data)) {
+                  navigate('/');
+                  return null;
+                }
+                return (
+                  <div className="twelve columns">
+                    <h1>{data.name && data.name.replace(/ sn$/, ' socken')}</h1>
+                    <dl className="m-0">
+                      {data.fylke && renderMetadataItem(l('Fylke'), data.fylke)}
+                      {!data.fylke && data.harad
+                        && renderMetadataItem(l('H\u00E4rad'), data.harad)}
+                      {!data.fylke && data.landskap
+                        && renderMetadataItem(l('Landskap'), data.landskap)}
+                    </dl>
+                    {
+                      data.comment && (
                         <p>
-                          {results.comment}
+                          {data.comment}
                         </p>
                       )
                     }
 
-                    </div>
-                  );
-                }}
-              </Await>
+                  </div>
+                );
+              }}
+            </Await>
           </div>
         </div>
       </Suspense>
 
       <Suspense>
         <Await resolve={results}>
-          {(results) => (
+          {(data) => (
             <div>
               <div className="row">
                 <div className="twelve columns">
                   {
-                    results.location.lat && results.location.lon
+                    data.location.lat && data.location.lon
                       ? (
                         <SimpleMap
                           marker={{
-                            lat: results.location.lat,
-                            lng: results.location.lon,
-                            label: results.name,
+                            lat: data.location.lat,
+                            lng: data.location.lon,
+                            label: data.name,
                           }}
                         />
                       )
@@ -128,13 +114,13 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                     <h3>{l('Sökträffar')}</h3>
 
                     <RecordList
-                      key={`PlaceView-RecordList-${results.id}`}
+                      key={`PlaceView-RecordList-${data.id}`}
                       disableRouterPagination
                       showViewToggle={false}
                       highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
                       params={{
                         ...createParamsFromSearchRoute(params['*']),
-                        place_id: results.id,
+                        place_id: data.id,
                         has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
                         transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe',
                       }}
@@ -151,7 +137,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
 
       <Suspense>
         <Await resolve={results}>
-          {(results) => (
+          {(data) => (
             <div>
 
               <div className="row">
@@ -159,11 +145,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                   {/* Show the h3 only if params['*'] is truthy, and we have two record lists */}
                   {params['*'] && (
                     <h3>
-                      Samtliga
-                      {' '}
-                      {mode === 'material' ? 'accessioner och uppteckningar' : 'accessioner'}
-                      {' '}
-                      från orten
+                      {l('Samtliga accessioner från orten')}
                     </h3>
                   )}
 
@@ -171,7 +153,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                     disableRouterPagination
                     highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
                     params={{
-                      place_id: results.id,
+                      place_id: data.id,
                       has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
                       transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe',
                     }}
