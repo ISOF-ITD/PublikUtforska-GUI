@@ -1,7 +1,7 @@
-import PropTypes from "prop-types";
-import RecordListItem from "./RecordListItem";
-import { l } from "../../../lang/Lang";
-import config from "../../../config";
+import PropTypes from 'prop-types';
+import RecordListItem from './RecordListItem';
+import { l } from '../../../lang/Lang';
+import config from '../../../config';
 
 export default function RecordTable({
   records,
@@ -41,11 +41,11 @@ export default function RecordTable({
 
 
   const ariaSortValue = (key) => {
-    if (sort !== key) return "none";
+    if (sort !== key) return 'none';
     // aria-sort expects: "ascending" | "descending" | "other" | "none"
-    if (order === "asc") return "ascending";
-    if (order === "desc") return "descending";
-    return "none";
+    if (order === 'asc') return 'ascending';
+    if (order === 'desc') return 'descending';
+    return 'none';
   };
 
   return (
@@ -56,66 +56,69 @@ export default function RecordTable({
         {/* ---------- header ---------- */}
         <thead>
           <tr className="border-b border-gray-300 last:border-0">
-            {shouldRenderColumn("title") && (
+            {shouldRenderColumn('title') && (
               <th scope="col" className="text-left w-1/2">{l('Titel')}</th>
             )}
 
-            {shouldRenderColumn("archive_id") &&
-              !config.siteOptions.recordList?.hideAccessionpage && (
+            {shouldRenderColumn('archive_id')
+              && !config.siteOptions.recordList?.hideAccessionpage && (
                 <th scope="col" className="text-left" aria-sort={ariaSortValue('archive.archive_id_row.keyword')}>
                   <button
                     type="button"
-                    onClick={() => handleSort("archive.archive_id_row.keyword")}
-                    className="record-table-sort-button flex items-center gap-1 text-sky-900 hover:underline"
+                    onClick={() => handleSort('archive.archive_id_row.keyword')}
+                    className="record-table-sort-button inline-flex items-center gap-1 border-0 bg-transparent p-0 align-middle text-sky-900 hover:underline m-0"
                   >
-                    {l("Arkivnummer")}
-                    {sort === "archive.archive_id_row.keyword" &&
-                      (order === "asc" ? "▼" : "▲")}
+                    {l('Arkivnummer')}
+                    {sort === 'archive.archive_id_row.keyword'
+                      && (order === 'asc' ? '▼' : '▲')}
                   </button>
                 </th>
-              )}
+            )}
 
-            {shouldRenderColumn("place") && (
+            {shouldRenderColumn('place') && (
               <th scope="col" className="text-center">{l('Ort')}</th>
             )}
 
-            {shouldRenderColumn("collector") &&
-              config.siteOptions.recordList?.visibleCollecorPersons !==
-                false && <th scope="col" className="text-center">{l('Insamlare')}</th>}
+            {shouldRenderColumn('collector')
+              && config.siteOptions.recordList?.visibleCollecorPersons
+                !== false && <th scope="col" className="text-center">{l('Insamlare')}</th>}
 
-            {shouldRenderColumn("year") && (
+            {shouldRenderColumn('year') && (
               <th scope="col" className="text-center" aria-sort={ariaSortValue('year')}>
                 <button
                   type="button"
-                  className="record-table-sort-button text-sky-900 hover:underline hover:cursor-pointer"
-                  onClick={() => handleSort("year")}
+                  className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-sky-900 hover:cursor-pointer hover:underline m-0"
+                  onClick={() => handleSort('year')}
                 >
-                  {sort === "year" && (order === "asc" ? "▼" : "▲")} {l("År")}
+                  {sort === 'year' && (order === 'asc' ? '▼' : '▲')}
+                  {' '}
+                  {l('År')}
                 </button>
               </th>
             )}
 
-            {shouldRenderColumn("material_type") &&
-              !config.siteOptions.recordList?.hideMaterialType && (
+            {shouldRenderColumn('material_type')
+              && !config.siteOptions.recordList?.hideMaterialType && (
                 <th scope="col" className="text-left">{l('Materialtyp')}</th>
-              )}
+            )}
 
-            {shouldRenderColumn("transcriptionstatus") &&
-              !config.siteOptions.recordList?.hideTranscriptionStatus && (
-                <th scope="col" className="text-center" aria-sort={ariaSortValue("transcriptionstatus")}>
+            {shouldRenderColumn('transcriptionstatus')
+              && !config.siteOptions.recordList?.hideTranscriptionStatus && (
+                <th scope="col" className="text-center" aria-sort={ariaSortValue('transcriptionstatus')}>
                   <button
                     type="button"
-                    className="record-table-sort-button text-sky-900 hover:underline hover:cursor-pointer"
-                    onClick={() => handleSort("transcriptionstatus")}
+                    className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-sky-900 hover:cursor-pointer hover:underline m-0"
+                    onClick={() => handleSort('transcriptionstatus')}
                   >
-                    {sort === "transcriptionstatus" &&
-                      (order === "asc" ? "▼" : "▲")}{" "}
-                    {l("Avskrivna")}
+                    {sort === 'transcriptionstatus'
+                      && (order === 'asc' ? '▼' : '▲')}
+                    {' '}
+                    {l('Avskrivna')}
                   </button>
                 </th>
-              )}
+            )}
 
-            {columns?.includes("transcribedby") && (
+            {columns?.includes('transcribedby') && (
               <th scope="col" className="text-left">{l('Bidrag av')}</th>
             )}
           </tr>
@@ -123,12 +126,12 @@ export default function RecordTable({
         <tbody className="[&>tr]:block md:[&>tr]:table-row [&>td]:flex [&>td]:justify-between [&>td]:gap-2">
           {/* hidden header for accessibility on small screens */}
           <tr className="sr-only md:hidden">
-            <th>{l("Titel")}</th>
-            <th>{l("Arkivnummer")}</th>
-            <th>{l("Ort")}</th>
-            <th>{l("Insamlare")}</th>
-            <th>{l("År")}</th>
-            <th>{l("Avskrivna")}</th>
+            <th>{l('Titel')}</th>
+            <th>{l('Arkivnummer')}</th>
+            <th>{l('Ort')}</th>
+            <th>{l('Insamlare')}</th>
+            <th>{l('År')}</th>
+            <th>{l('Avskrivna')}</th>
           </tr>
           {items}
         </tbody>
