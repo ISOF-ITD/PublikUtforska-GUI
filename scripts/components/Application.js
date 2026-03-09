@@ -16,6 +16,7 @@ import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
 import { NavigationContext } from '../NavigationContext';
 import MapWrapper from './MapWrapper';
 import Footer from './Footer';
+import RecordListLoadingPlaceholder from './RecordListLoadingPlaceholder';
 
 import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
 
@@ -261,11 +262,11 @@ useEffect(() => {
   return (
     <AudioProvider>
       <div className="app">
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white text-isof underline px-3 py-2 rounded">
+        <a href="#main" className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50 bg-white text-isof underline px-3 py-2 rounded">
           Hoppa till innehåll
         </a>
         <RoutePopupWindow manuallyOpenPopup>
-          <Suspense fallback={<p className="p-4 text-center">Laddar lista...</p>}>
+          <Suspense fallback={<RecordListLoadingPlaceholder />}>
             <RecordListWrapper
               openButtonLabel="Visa sökträffar som lista"
               disableRouterPagination
