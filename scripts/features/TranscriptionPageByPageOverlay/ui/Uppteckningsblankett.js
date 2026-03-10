@@ -31,7 +31,7 @@ export default function Uppteckningsblankett({
             <div className="md:col-span-6 flex flex-col">
               <label
                 htmlFor="transcription_informantname"
-                className="font-semibold mb-1"
+                className="font-semibold flex flex-col gap-1"
               >
                 Berättat av
                 <input
@@ -41,7 +41,7 @@ export default function Uppteckningsblankett({
                   placeholder="Namn"
                   value={informantNameInput}
                   onChange={inputChangeHandler}
-                  className="rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+                  className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
                 />
               </label>
             </div>
@@ -49,7 +49,7 @@ export default function Uppteckningsblankett({
             <div className="md:col-span-2 flex flex-col">
               <label
                 htmlFor="transcription_informantbirthdate"
-                className="font-semibold mb-1"
+                className="font-semibold flex flex-col gap-1"
               >
                 Född&nbsp;år
                 <input
@@ -59,7 +59,7 @@ export default function Uppteckningsblankett({
                   placeholder="År"
                   value={informantBirthDateInput}
                   onChange={inputChangeHandler}
-                  className="rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+                  className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
                 />
               </label>
             </div>
@@ -67,7 +67,7 @@ export default function Uppteckningsblankett({
             <div className="md:col-span-4 flex flex-col">
               <label
                 htmlFor="transcription_informantbirthplace"
-                className="font-semibold mb-1 text-right"
+                className="font-semibold flex flex-col gap-1"
               >
                 Född&nbsp;i
                 <input
@@ -77,7 +77,7 @@ export default function Uppteckningsblankett({
                   placeholder="Ort"
                   value={informantBirthPlaceInput}
                   onChange={inputChangeHandler}
-                  className="rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+                  className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
                 />
               </label>
             </div>
