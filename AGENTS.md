@@ -24,6 +24,11 @@ Before you say the work is done:
   - Do not add `import React from "react"` unless ESLint explicitly requires it (it shouldn’t).
 - Use the repo’s configured quote style and formatting rules (no stylistic bikeshedding).
 
+## Styling conventions
+- Prefer Tailwind utility classes over LESS when implementing or updating styling.
+- When styling changes are made, remove or reduce related LESS code where possible and replace it with Tailwind classes.
+- Keep styling migrations incremental and limited to the touched feature or component.
+
 ## Change discipline
 - Keep changes minimal and consistent with existing code patterns.
 - Avoid unrelated refactors in the same change.
