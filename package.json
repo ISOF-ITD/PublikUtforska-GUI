@@ -36,7 +36,7 @@
     "react-dom": "^19.2.1",
     "react-hot-toast": "^2.5.2",
     "react-input-mask": "^2.0.4",
-    "react-router-dom": "^6.26.2",
+    "react-router-dom": "^6.30.3",
     "react-window": "^1.8.11",
     "route-parser": "0.0.5",
     "sanitize-html": "^2.13.1",
