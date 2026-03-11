@@ -147,9 +147,13 @@ export default {
       visibleCollecorPersons: true,
     },
 
+    recordView: {
+      hideMaterialType: true,
+    },
+    
     /*
     recordView: {
-      // Vilka metadata fälts skulle visas i RecordView, används för folkmusiken
+      Vilka metadata fälts skulle visas i RecordView, används för folkmusiken
       visible_metadata_fields: [
         'folkmusik_instrument',
         'folkmusik_recorded_by',
