@@ -4,6 +4,7 @@ export const FOCUSABLE_SELECTOR = [
   'input:not([disabled])',
   'textarea:not([disabled])',
   'select:not([disabled])',
+  'iframe',
   '[tabindex]:not([tabindex="-1"])',
 ].join(', ');
 
