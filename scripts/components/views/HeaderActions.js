@@ -6,7 +6,7 @@ import { IconButton } from '../IconButton';
 import folkeWhiteLogo from '../../../img/folke-white.svg';
 import IsofLogoWhite from '../../../img/logotyp-isof-vit.svg';
 
-const baseRailClassName = 'absolute left-4 right-4 top-0 z-[3100] flex items-center justify-between pt-2 lg:left-auto lg:right-8 lg:justify-start lg:items-start';
+const baseRailClassName = 'pointer-events-none absolute left-4 right-4 top-0 z-[3100] flex items-center justify-between pt-2 lg:left-auto lg:right-8 lg:justify-start lg:items-start';
 const backSlotClassName = 'h-6 w-6 flex items-start justify-center';
 
 export default function HeaderActions({
@@ -21,7 +21,7 @@ export default function HeaderActions({
     ? 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900'
     : lightFocusClassName;
   const mobileLogoGroup = (
-    <div className="flex min-w-0 flex-1 items-center gap-2 pt-2 md:pt-1 lg:hidden">
+    <div className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2 pt-2 md:pt-1 lg:hidden">
       <img
         src={folkeWhiteLogo}
         alt={l('Folkelogga')}
@@ -32,6 +32,7 @@ export default function HeaderActions({
         href="https://www.isof.se"
         target="_blank"
         rel="noopener noreferrer"
+        data-route-popup-header-logo="isof"
         className={classNames(
           'inline-flex min-w-0 items-center rounded-sm',
           lightFocusClassName,
@@ -51,7 +52,7 @@ export default function HeaderActions({
   return (
     <div className={classNames(baseRailClassName, className)}>
       {mobileLogoGroup}
-      <div className="ml-auto flex shrink-0 items-start gap-2">
+      <div className="pointer-events-auto ml-auto flex shrink-0 items-start gap-2">
         <div className={backSlotClassName}>
           {showBack && (
             <IconButton

@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
-
-// Main CSS: /ui-components/feedback-buttons.less";
+import contactButtonClassName from './contactButtonClassName';
 
 export default function ContributeInfoButton({
   title = '',
@@ -29,7 +28,7 @@ export default function ContributeInfoButton({
 
   return (
     <button
-      className="feedback-button contributeinfo-button"
+      className={contactButtonClassName}
       onClick={contributeinfoButtonClick}
       type="button"
     >

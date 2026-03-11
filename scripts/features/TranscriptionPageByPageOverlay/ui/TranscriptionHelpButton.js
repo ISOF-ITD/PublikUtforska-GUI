@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import config from '../../../config';
 import { l } from '../../../lang/Lang';
-
-// Main CSS: /ui-components/feedback-buttons.less
+import contactButtonClassName from '../../../components/views/contactButtonClassName';
 
 export default function TranscriptionHelpButton({ title = '', type }) {
   const { pathname } = useLocation();
@@ -22,7 +21,7 @@ export default function TranscriptionHelpButton({ title = '', type }) {
 
   return (
     <button
-      className="feedback-button transcriptionhelp-button"
+      className={contactButtonClassName}
       onClick={helpButtonClick}
       type="button"
     >

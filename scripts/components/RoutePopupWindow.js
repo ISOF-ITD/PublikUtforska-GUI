@@ -53,33 +53,37 @@ const RoutePopupWindow = memo(({
       return focusableElements;
     }
 
+    const headerLogos = focusableElements.filter(
+      (element) => element.dataset.routePopupHeaderLogo,
+    );
     const headerActions = focusableElements.filter(
       (element) => element.dataset.routePopupHeaderAction,
     );
-
-    if (headerActions.length === 0) {
-      return focusableElements;
-    }
-
-    const regularFocusableElements = focusableElements.filter(
-      (element) => !element.dataset.routePopupHeaderAction,
-    );
-
-    const contactButtons = regularFocusableElements.filter(
+    const contactButtons = focusableElements.filter(
       (element) => element.classList?.contains('feedback-button'),
     );
 
-    if (contactButtons.length === 0) {
-      return [...regularFocusableElements, ...headerActions];
+    if (
+      headerLogos.length === 0
+      && headerActions.length === 0
+      && contactButtons.length === 0
+    ) {
+      return focusableElements;
     }
 
-    const lastContactButton = contactButtons[contactButtons.length - 1];
-    const insertAfterIndex = regularFocusableElements.indexOf(lastContactButton) + 1;
+    const prioritizedElements = [
+      ...headerLogos,
+      ...contactButtons,
+      ...headerActions,
+    ];
+    const prioritizedSet = new Set(prioritizedElements);
+    const remainingElements = focusableElements.filter(
+      (element) => !prioritizedSet.has(element),
+    );
 
     return [
-      ...regularFocusableElements.slice(0, insertAfterIndex),
-      ...headerActions,
-      ...regularFocusableElements.slice(insertAfterIndex),
+      ...prioritizedElements,
+      ...remainingElements,
     ];
   }, []);
 
