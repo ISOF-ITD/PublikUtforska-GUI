@@ -1,74 +1,69 @@
 /* eslint-disable react/require-default-props */
-import { useState, useEffect, useRef, useCallback } from "react";
-import PropTypes from "prop-types";
-import { useLocation, useNavigate } from "react-router-dom";
-import config from "../../config";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import { getFocusableElements } from "../../utils/focusHelper";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
+import PropTypes from 'prop-types';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import config from '../../config';
+import { l } from '../../lang/Lang';
+import { getFocusableElements } from '../../utils/focusHelper';
+import folkeWhiteLogo from '../../../img/folke-white.svg';
+import IsofLogoWhite from '../../../img/logotyp-isof-vit.svg';
 
 function IntroOverlay({ show = false, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const iframeRef = useRef(null);
-  // Referens till overlay-roten som används för fokusfällan.
   const introRef = useRef(null);
-  // Sparar elementet som hade fokus innan overlayn öppnades.
   const restoreFocusRef = useRef(null);
 
   const getInitialSrc = () => {
     const params = new URLSearchParams(location.search);
-    const kParam = params.get("k") || config.kontextStartPage;
+    const kParam = params.get('k') || config.kontextStartPage;
     return `${config.kontextBasePath}${kParam}`;
   };
 
-  const [iframeSrc, setIframeSrc] = useState(getInitialSrc);
+  const [iframeSrc] = useState(getInitialSrc);
 
   const overlayClass = `overlay-container light-modal intro-overlay ${
-    show ? "visible" : ""
+    show ? 'visible' : ''
   }`;
 
   useEffect(() => {
     const handleMessage = (event) => {
       try {
-        if (event.data.type === "navigateAway") {
-          // Anropa onClose med en liten fördröjning för att låta navigeringen ske
+        if (event.data.type === 'navigateAway') {
           setTimeout(() => {
             if (onClose) onClose();
-          }, 100); // Fördröjning i millisekunder, justera vid behov
+          }, 100);
         }
 
-        if (event.data.newSrc?.startsWith("http")) {
+        if (event.data.newSrc?.startsWith('http')) {
           const newUrlObject = new URL(event.data.newSrc);
-          const newPath = newUrlObject.href.replace(config.kontextBasePath, "");
+          const newPath = newUrlObject.href.replace(config.kontextBasePath, '');
 
           const params = new URLSearchParams(location.search);
-          if (params.get("k") !== newPath) {
-            params.set("k", newPath);
+          if (params.get('k') !== newPath) {
+            params.set('k', newPath);
             navigate(`?${params.toString()}`, { replace: true });
           }
         }
-      } catch (error) {
-        console.error("Fel vid hantering av meddelande:", error);
+      } catch {
+        // Ignore malformed postMessage payloads from the embedded content.
       }
     };
 
-    window.addEventListener("message", handleMessage);
+    window.addEventListener('message', handleMessage);
     return () => {
-      window.removeEventListener("message", handleMessage);
+      window.removeEventListener('message', handleMessage);
     };
   }, [navigate, location.search, onClose]);
 
-  const handleIntroductionClick = () => {
-    // Uppdatera både iframeSrc och URL:en
-    const newSrc = config.kontextBasePath + config.kontextStartPage;
-    setIframeSrc(newSrc);
-    const params = new URLSearchParams(location.search);
-    params.set("k", config.kontextStartPage);
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  // Stabil callback så att keydown-lyssnaren kan återanvändas mellan renderingar.
   const handleClose = useCallback(() => {
     if (onClose) onClose();
   }, [onClose]);
@@ -76,14 +71,12 @@ function IntroOverlay({ show = false, onClose }) {
   useEffect(() => {
     if (!show) return undefined;
 
-    // Flytta in fokus i overlayn direkt när den visas.
     restoreFocusRef.current = document.activeElement;
     const animationFrameId = window.requestAnimationFrame(() => {
       introRef.current?.focus();
     });
 
     const onDocumentKeyDown = (event) => {
-      // Escape stänger overlayn oavsett var fokus ligger.
       if (event.key === 'Escape') {
         event.preventDefault();
         handleClose();
@@ -94,7 +87,6 @@ function IntroOverlay({ show = false, onClose }) {
       const root = introRef.current;
       if (!root) return;
 
-      // Tab/Shift+Tab hålls inom overlayn för bättre tillgänglighet.
       const focusableElements = getFocusableElements(root);
       if (focusableElements.length === 0) {
         event.preventDefault();
@@ -126,7 +118,6 @@ function IntroOverlay({ show = false, onClose }) {
       document.removeEventListener('keydown', onDocumentKeyDown);
       window.cancelAnimationFrame(animationFrameId);
       try {
-        // Fokussera element när overlayn stängs
         const activeFilterSwitchLink = document.querySelector(
           'nav[data-focus-id="filter-switch"] a[aria-current="page"]',
         ) || document.querySelector('nav[data-focus-id="filter-switch"] a');
@@ -136,7 +127,7 @@ function IntroOverlay({ show = false, onClose }) {
         }
         restoreFocusRef.current?.focus?.();
       } catch {
-        // Ignorera fel om tidigare element inte längre finns i DOM.
+        // Ignore focus restoration failures if the previous element is gone.
       }
     };
   }, [show, handleClose]);
@@ -149,25 +140,41 @@ function IntroOverlay({ show = false, onClose }) {
     >
       <div className="intro focus:outline-none" ref={introRef} tabIndex={-1}>
         <div className="overlay-header">
-          <span
-            className="overflow-hidden text-ellipsis whitespace-nowrap mr-4"
-            title={config.siteTitle}
-          ></span>
-          <div className="controls">
-            <span
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <h1 className="m-0 shrink-0">
+              <img
+                src={folkeWhiteLogo}
+                alt={l('Folkelogga')}
+                className="h-12 w-auto max-w-[40vw] object-contain sm:max-w-none"
+              />
+            </h1>
+            <span aria-hidden className="h-6 w-px shrink-0 bg-white/30" />
+            <a
+              href="https://www.isof.se"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              aria-label={l('Öppna Institutet för språk och folkminnens webbplats i nytt fönster')}
+              title={l('Institutet för språk och folkminnen')}
+            >
+              <img
+                src={IsofLogoWhite}
+                alt={l('Institutet för språk och folkminnen')}
+                className="h-12 w-auto max-w-[40vw] object-contain sm:max-w-none"
+              />
+            </a>
+          </div>
+          <div className="controls ml-auto flex shrink-0 items-center">
+            <button
+              type="button"
               onClick={handleClose}
-              role="button"
-              tabIndex="0"
-              className="intro-close-button flex items-center"
+              className="intro-close-button inline-flex items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               aria-label="Stäng och gå vidare till kartan"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") handleClose();
-              }}
             >
               Stäng och gå vidare
               {' '}
               <FontAwesomeIcon icon={faChevronRight} />
-            </span>
+            </button>
           </div>
         </div>
 
@@ -177,12 +184,11 @@ function IntroOverlay({ show = false, onClose }) {
             id="iframe"
             title="Introduktion och hjälp"
             src={iframeSrc}
-            tabIndex={0}
             style={{
-              border: "none",
-              width: "100%",
-              height: "100%",
-              display: "block",
+              border: 'none',
+              width: '100%',
+              height: '100%',
+              display: 'block',
             }}
           />
         </div>
