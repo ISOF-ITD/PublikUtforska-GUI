@@ -31,7 +31,7 @@ export default function RouteViewLoadingPlaceholder({ kind = 'record', inline = 
   if (!cfg) return <div role="status" aria-live="polite" />;
 
   const headerSkeleton = (
-    <div className="container-header">
+    <div className="container-header max-lg:!pt-[74px]">
       <div className="row">
         <div className="twelve columns px-4 md:px-6 py-4">
           <div className={`h-8 ${cfg.title} rounded bg-white/70 animate-pulse mb-3`} />

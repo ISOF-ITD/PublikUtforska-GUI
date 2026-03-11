@@ -78,7 +78,7 @@ export default function PersonView({ mode = "material" }) {
 
   return (
     <div className={`container${id ? "" : " loading"}`}>
-      <div className="container-header">
+      <div className="container-header max-lg:!pt-[74px]">
         <div className="row">
           <div className="twelve columns">
             <h1 className="person-title">{name}</h1>

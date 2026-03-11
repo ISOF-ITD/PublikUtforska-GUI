@@ -8,7 +8,7 @@ import { faQuestion } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from 'classnames';
 import Folkelogga from "../../img/folke-white.svg";
-import IsofLogoWhite from '../../img/Isof_logotyp_vit.png';
+import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
 import { l } from "../lang/Lang";
 import SearchPanel from "../features/Search/SearchPanel";
 import StatisticsLoadingPlaceholder from './StatisticsLoadingPlaceholder';
