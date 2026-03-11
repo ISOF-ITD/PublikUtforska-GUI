@@ -29,6 +29,11 @@ Before you say the work is done:
 - When styling changes are made, remove or reduce related LESS code where possible and replace it with Tailwind classes.
 - Keep styling migrations incremental and limited to the touched feature or component.
 
+## A11y and semantics
+- Follow best practices for accessibility (a11y) with a focus on WCAG AA standards.
+- Use semantic HTML elements where appropriate (e.g. `<header>`, `<nav>`, `<main>`, `<footer>`, `<button>`, etc.).
+- Ensure interactive elements are keyboard accessible and have appropriate ARIA attributes if needed.
+
 ## Change discipline
 - Keep changes minimal and consistent with existing code patterns.
 - Avoid unrelated refactors in the same change.
