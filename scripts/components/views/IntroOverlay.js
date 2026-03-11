@@ -139,7 +139,7 @@ function IntroOverlay({ show = false, onClose }) {
       aria-modal="true"
     >
       <div className="intro focus:outline-none" ref={introRef} tabIndex={-1}>
-        <div className="overlay-header">
+        <div className="overlay-header flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:items-center sm:px-6 sm:py-[15px]">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <h1 className="m-0 shrink-0">
               <img
@@ -164,11 +164,11 @@ function IntroOverlay({ show = false, onClose }) {
               />
             </a>
           </div>
-          <div className="controls ml-auto flex shrink-0 items-center">
+          <div className="controls ml-auto flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto">
             <button
               type="button"
               onClick={handleClose}
-              className="intro-close-button inline-flex items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="intro-close-button inline-flex items-center gap-1 rounded-sm border-0 bg-transparent p-0 text-white underline [font:inherit] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               aria-label="Stäng och gå vidare till kartan"
             >
               Stäng och gå vidare
