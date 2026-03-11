@@ -46,7 +46,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
   return (
     <div className="container">
       <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" inline />}>
-        <div className="container-header">
+        <div className="container-header max-lg:!pt-[74px]">
           <div className="row">
             <Await resolve={results}>
               {(data) => {

@@ -5,7 +5,7 @@ export default function RecordListLoadingPlaceholder() {
 
   return (
     <div className="container" role="status" aria-live="polite" aria-label="Laddar sökträffar som lista">
-      <div className="container-header">
+      <div className="container-header max-lg:!pt-[74px]">
         <div className="row">
           <div className="twelve columns px-4 md:px-6 py-4">
             <div className="h-8 w-2/3 rounded bg-white/70 animate-pulse mb-3" />

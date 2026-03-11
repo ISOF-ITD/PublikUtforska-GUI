@@ -74,7 +74,7 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
   };
 
   return (
-    <header className="container-header">
+    <header className="container-header max-lg:!pt-[74px]">
       <div className="row">
         <div className="eleven columns">
           <h1>

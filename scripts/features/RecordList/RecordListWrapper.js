@@ -27,7 +27,7 @@ export default function RecordListWrapper({
 
   return (
     <div className="container this-class-is-always-visible">
-      <div className="container-header">
+      <div className="container-header max-lg:!pt-[74px]">
         <div className="row">
           <div className="twelve columns">
             <h1>
