@@ -1,7 +1,8 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 
-export default function Disclaimer() {
+export default function Disclaimer({ showMeankieliDisclaimer = false }) {
   return (
     <aside
       role="note"
@@ -9,15 +10,31 @@ export default function Disclaimer() {
       className=""
     >
       <div className="rounded-md px-4 py-3">
+        {showMeankieliDisclaimer && (
+          <div className="border-0 border-l-4 border-l-lighter-isof border-solid pl-3 mb-3">
+            <p className="text-sm leading-6 text-darker-isof italic">
+              <strong className="not-italic font-semibold">
+                Information till läsaren:
+              </strong>
+              {' '}
+              När insamlingarna gjordes hade meänkieli ännu inte fått status som
+              ett eget minoritetsspråk, det skedde genom ett riksdagsbeslut år
+              2000. Därför benämns det som idag kallas för meänkieli ofta som
+              finska i accessionerna.
+            </p>
+          </div>
+        )}
         <div className="border-0 border-l-4 border-l-lighter-isof border-solid pl-3 mb-3">
           <p className="text-sm leading-6 text-darker-isof italic">
             <strong className="not-italic font-semibold">
               Information till läsaren:
-            </strong>{" "}
+            </strong>
+            {' '}
             Denna arkivhandling kan innehålla fördomar och språkbruk från en
             annan tid. Delar av Isofs äldre arkivmaterial kan vara svårt att
             närma sig och använda då det återspeglar det vi idag upplever som
-            fördomsfulla synsätt och ett språkbruk som kan väcka anstöt.{" "}
+            fördomsfulla synsätt och ett språkbruk som kan väcka anstöt.
+            {' '}
             <a
               href="https://www.isof.se/arkiv-och-insamling/arkivsamlingar/folkminnessamlingar/fordomar-och-aldre-sprakbruk-i-samlingarna"
               target="_blank"
@@ -38,3 +55,7 @@ export default function Disclaimer() {
     </aside>
   );
 }
+
+Disclaimer.propTypes = {
+  showMeankieliDisclaimer: PropTypes.bool,
+};

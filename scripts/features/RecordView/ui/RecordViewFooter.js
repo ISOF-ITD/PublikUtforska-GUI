@@ -1,40 +1,40 @@
-import React, { memo, useMemo } from "react";
-import PropTypes from "prop-types";
-import archiveLogoIsof from "../../../../img/archive-logo-isof.png";
-import archiveLogoIkos from "../../../../img/archive-logo-ikos.png";
-import logotypSprakbanken from "../../../../img/logotyp_sprakbanken.svg";
-import Disclamer from "../../../components/views/Disclaimer";
+import { memo, useMemo } from 'react';
+import PropTypes from 'prop-types';
+import archiveLogoIsof from '../../../../img/archive-logo-isof.png';
+import archiveLogoIkos from '../../../../img/archive-logo-ikos.png';
+import logotypSprakbanken from '../../../../img/logotyp_sprakbanken.svg';
+import Disclaimer from '../../../components/views/Disclaimer';
 
 // Normalize: lowercase, strip diacritics, collapse punctuation/whitespace
-const normalize = (s) =>
-  (s || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // strip diacritics
-    .replace(/[^\w\s]/g, " ") // punctuation -> space
-    .replace(/\s+/g, " ")
-    .trim();
+const normalize = (s) => (s || '')
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '') // strip diacritics
+  .replace(/[^\w\s]/g, ' ') // punctuation -> space
+  .replace(/\s+/g, ' ')
+  .trim();
 
 // Aliases grouped by brand
 const NAME_ALIASES = {
   isof: [
-    "dialekt-, namn- och folkminnesarkivet i göteborg",
-    "dialekt- och folkminnesarkivet i uppsala",
-    "dialekt och folkminnesarkivet i uppsala",
-    "dag",
-    "dfu",
-    "isof",
+    'dialekt-, namn- och folkminnesarkivet i göteborg',
+    'dialekt- och folkminnesarkivet i uppsala',
+    'dialekt och folkminnesarkivet i uppsala',
+    'dag',
+    'dfu',
+    'isof',
   ],
-  ikos: ["norsk folkeminnesamling", "nfs", "ikos"],
+  ikos: ['norsk folkeminnesamling', 'nfs', 'ikos'],
 };
 
 function buildAliasMap() {
-  const map = new Map();
-  for (const [brand, aliases] of Object.entries(NAME_ALIASES)) {
-    const logo = brand === "ikos" ? archiveLogoIkos : archiveLogoIsof;
-    aliases.forEach((a) => map.set(normalize(a), logo));
-  }
-  return map;
+  return Object.entries(NAME_ALIASES).reduce((map, [brand, aliases]) => {
+    const logo = brand === 'ikos' ? archiveLogoIkos : archiveLogoIsof;
+
+    aliases.forEach((alias) => map.set(normalize(alias), logo));
+
+    return map;
+  }, new Map());
 }
 
 const aliasMap = buildAliasMap();
@@ -45,14 +45,17 @@ const getArchiveLogo = (name) => {
 };
 
 function RecordViewFooter({ data }) {
-  // Safe nested destructuring (won’t crash if archive is missing)
-  const { archive: { archive: archiveName = "" } = {} } = data || {};
+  // Safe nested destructuring (won't crash if archive is missing)
+  const { archive: { archive: archiveName = '' } = {}, languages = [] } = data || {};
 
+  const hasMeankieliLanguage = languages.some(
+    (language) => language?.name === 'Meänkieli',
+  );
   const logoSrc = useMemo(() => getArchiveLogo(archiveName), [archiveName]);
 
   return (
     <div className="flex flex-row items-center max-sm:flex-col">
-      <Disclamer />
+      <Disclaimer showMeankieliDisclaimer={hasMeankieliLanguage} />
       <div
         className="flex items-center gap-4 max-sm:flex-col max-sm:mb-20"
       >
@@ -64,8 +67,8 @@ function RecordViewFooter({ data }) {
         >
           <img
             src={logoSrc}
-            alt={archiveName ? `Logga för ${archiveName}` : "Logga för arkiv"}
-            style={{ height: "auto", width: 150 }}
+            alt={archiveName ? `Logga för ${archiveName}` : 'Logga för arkiv'}
+            className="w-[150px] h-auto"
             loading="lazy"
             decoding="async"
             onError={(e) => {
@@ -87,7 +90,7 @@ function RecordViewFooter({ data }) {
           <img
             src={logotypSprakbanken}
             alt="Logga för Språkbanken"
-            style={{ height: "auto", width: 150 }}
+            className="w-[150px] h-auto"
             loading="lazy"
             decoding="async"
           />
@@ -102,6 +105,12 @@ RecordViewFooter.propTypes = {
     archive: PropTypes.shape({
       archive: PropTypes.string,
     }),
+    languages: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string,
+        code: PropTypes.string,
+      }),
+    ),
   }).isRequired,
 };
 
