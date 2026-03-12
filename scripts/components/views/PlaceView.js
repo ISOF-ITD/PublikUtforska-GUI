@@ -16,8 +16,8 @@ import RouteViewLoadingPlaceholder from '../RouteViewLoadingPlaceholder';
 
 const renderMetadataItem = (label, value) => (
   <div key={label} className="mr-2.5 inline">
-    <dt className="inline m-0 font-semibold">{label}</dt>
-    <dd className="inline m-0">{`: ${value}`}</dd>
+    <dt className="inline m-0 font-semibold">{label && `${label}: `}</dt>
+    <dd className="inline m-0">{value}</dd>
   </div>
 );
 

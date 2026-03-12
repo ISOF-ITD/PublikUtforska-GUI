@@ -9,7 +9,7 @@ export default {
 		'Samtliga uppteckningar från orten': 'Samtliga favoriter från orten',
 		'Länk till dina sägner har kopierats.': 'Länk till din favorit har kopierats.',
 		//Temporary solution to remove text "Fylke" for Finland (and this solution also Norway)
-		'Fylke': ' ',
+		'Fylke': '',
 		// Transcription status to user:
 		'untranscribed':'Ej transkribera', 
 		'readytotranscribe':'Nej', 
