@@ -5,7 +5,7 @@ import {
 import { useLocation } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
-import { getFocusableElements } from '../../utils/focusHelper';
+import { focusDialogOnOpen, getFocusableElements } from '../../utils/focusHelper';
 import { IconButton } from '../IconButton';
 
 // Main CSS: ui-components/overlay.less
@@ -81,11 +81,7 @@ export default function FeedbackOverlay() {
     restoreFocusRef.current = document.activeElement;
     const animationFrameId = window.requestAnimationFrame(() => {
       const focusableElements = getFocusableElements(dialogRef.current);
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-        return;
-      }
-      dialogRef.current?.focus();
+      focusDialogOnOpen(dialogRef.current, focusableElements);
     });
 
     const onKeyDown = (event) => {

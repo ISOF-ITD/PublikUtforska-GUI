@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { l } from '../lang/Lang';
 import { NavigationContext } from '../NavigationContext';
-import { getFocusableElements } from '../utils/focusHelper';
+import { focusDialogOnOpen, getFocusableElements } from '../utils/focusHelper';
 import { removeViewParamsFromRoute } from '../utils/routeHelper';
 import HeaderActions from './views/HeaderActions';
 
@@ -211,11 +211,7 @@ const RoutePopupWindow = memo(({
 
     const animationFrameId = window.requestAnimationFrame(() => {
       const focusableElements = getOrderedFocusableElements();
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus();
-        return;
-      }
-      pageContentRef.current?.focus();
+      focusDialogOnOpen(pageContentRef.current, focusableElements);
     });
 
     document.addEventListener('keydown', trapTabKey);

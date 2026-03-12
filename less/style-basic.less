@@ -10,11 +10,11 @@ html {
   }
 
 // @import "accessibility.less";
-// Accessibility
-// body.tab-navigation *:focus-visible {
-//     opacity: 1 !important;
-//     outline: 2px solid #01535d !important;
-// }
+// Keep focus styling visible only after actual Tab navigation.
+body:not(.tab-navigation) *:focus-visible {
+	outline: none !important;
+	box-shadow: none !important;
+}
 
 //TODO: @color parameters in less files based basic less parameters named on either:
 // 1) color intensity perspective or 
