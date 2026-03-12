@@ -140,8 +140,7 @@ export default function PersonView({ mode = "material" }) {
             <>
               <p
                 id="bio-text"
-                className="bio-text"
-                style={{ whiteSpace: "pre-line" }}
+                className="bio-text whitespace-pre-line"
               >
                 {bioToShow}
               </p>
@@ -183,14 +182,7 @@ export default function PersonView({ mode = "material" }) {
       <div className="row">
         <div className="twelve columns">
           <div
-            className="record-header"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              gap: "1rem",
-              flexWrap: "wrap",
-            }}
+            className="record-header flex justify-between items-baseline gap-4 flex-wrap"
           >
             <h3 id="records">{l(`Arkivmaterial kopplat till ${name}`)}</h3>
           </div>
