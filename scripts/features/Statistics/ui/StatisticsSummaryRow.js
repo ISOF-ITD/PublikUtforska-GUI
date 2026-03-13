@@ -13,14 +13,14 @@ export default function StatisticsSummaryRow({
 }) {
   return (
     <section className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-        <div className="min-w-0 sm:w-32 sm:shrink-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
+        <div className="min-w-0 sm:w-28 sm:shrink-0">
           <StatisticsSectionHeading>
             {title}
           </StatisticsSectionHeading>
         </div>
 
-        <div className="grid flex-1 grid-cols-2 gap-3">
+        <div className="grid flex-1 grid-cols-2 gap-2">
           <ShortStatistics
             params={monthParams}
             label={monthLabel}

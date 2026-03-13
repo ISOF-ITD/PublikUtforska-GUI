@@ -92,7 +92,7 @@ export default function ShortStatistics({
     <div
       className={
         compact
-          ? 'min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-3'
+          ? 'min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-3'
           : ''
       }
     >
@@ -121,7 +121,7 @@ export default function ShortStatistics({
           <animated.div
             className={
               compact
-                ? 'font-barlow text-3xl font-bold leading-none text-slate-900'
+                ? 'font-barlow text-[1.75rem] font-bold leading-none text-slate-900 whitespace-nowrap'
                 : 'font-barlow text-4xl font-bold'
             }
           >
