@@ -1,8 +1,11 @@
 /* eslint-disable react/require-default-props */
-import { useState, useEffect, useRef, useCallback } from "react";
-import PropTypes from "prop-types";
-import config from "../config";
-import { l } from "../lang/Lang";
+import {
+  useState, useEffect, useRef, useCallback,
+} from 'react';
+import PropTypes from 'prop-types';
+import config from '../../../config';
+import { l } from '../../../lang/Lang';
+import StatisticsSectionHeading from './StatisticsSectionHeading';
 
 export default function StatisticsList({
   params: rawParams = {},
@@ -12,7 +15,7 @@ export default function StatisticsList({
 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false); // show spinner only when fetching
-  const [fetchError, setFetchError] = useState("");
+  const [fetchError, setFetchError] = useState('');
   const abortRef = useRef(null);
 
   const fetchStatistics = useCallback(async () => {
@@ -22,30 +25,30 @@ export default function StatisticsList({
     abortRef.current = controller;
 
     setLoading(true);
-    setFetchError("");
+    setFetchError('');
     try {
       const queryParams = { ...config.requiredParams, ...rawParams };
       const paramString = new URLSearchParams(queryParams).toString();
 
       let esApiEndpoint;
       switch (type) {
-        case "topTranscribersByPages":
-          esApiEndpoint = "statistics/get_top_transcribers_by_mediapages/";
+        case 'topTranscribersByPages':
+          esApiEndpoint = 'statistics/get_top_transcribers_by_mediapages/';
           break;
         default:
-          throw new Error(`${l("Otillåten typ")}: ${type}`);
+          throw new Error(`${l('Otillåten typ')}: ${type}`);
       }
 
       const response = await fetch(
         `${config.apiUrl}${esApiEndpoint}?${paramString}`,
-        { signal: controller.signal }
+        { signal: controller.signal },
       );
-      if (!response.ok) throw new Error(l("Fel vid hämtning av statistik"));
+      if (!response.ok) throw new Error(l('Fel vid hämtning av statistik'));
 
       const json = await response.json();
       setData(Array.isArray(json?.data) ? json.data : []);
     } catch (error) {
-      if (error.name !== "AbortError") {
+      if (error.name !== 'AbortError') {
         setFetchError(error.message || String(error));
       }
     } finally {
@@ -66,35 +69,44 @@ export default function StatisticsList({
     <div>
       {loading && (
         <div className="loading" role="status" aria-live="polite">
-          {l("Hämtar statistik...")}
+          {l('Hämtar statistik...')}
         </div>
       )}
 
       {!!fetchError && (
         <div className="error" role="alert">
-          {l("Fel vid hämtning av statistik")}: {fetchError}
+          {l('Fel vid hämtning av statistik')}
+          :
+          {fetchError}
         </div>
       )}
 
-      {!loading && !fetchError && <h2 className="!my-2">{label}</h2>}
+      {!loading && !fetchError && (
+        <StatisticsSectionHeading className="!my-2">
+          {label}
+        </StatisticsSectionHeading>
+      )}
 
-      {!loading &&
-        !fetchError &&
-        (data?.length ? (
+      {!loading
+        && !fetchError
+        && (data?.length ? (
           <ol className="space-y-2">
             {data.map((item) => {
               const valueNum = Number(item.value) || 0;
               return (
                 <li key={`${item.key}-${item.value}`}>
-                  <span className="font-bold">{item.key.replace('crowdsource-anonymous',l('Anonyma bidragsgivare'))}</span>:{" "}
-                  {valueNum.toLocaleString("sv-SE")}{" "}
-                  {valueNum === 1 ? "sida" : "sidor"}
+                  <span className="font-bold">{item.key.replace('crowdsource-anonymous', l('Anonyma bidragsgivare'))}</span>
+                  :
+                  {' '}
+                  {valueNum.toLocaleString('sv-SE')}
+                  {' '}
+                  {valueNum === 1 ? 'sida' : 'sidor'}
                 </li>
               );
             })}
           </ol>
         ) : (
-          <span>{l("Ingen data att visa än")}</span>
+          <span>{l('Ingen data att visa än')}</span>
         ))}
     </div>
   );

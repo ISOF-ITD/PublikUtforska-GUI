@@ -11,11 +11,11 @@ import Folkelogga from "../../img/folke-white.svg";
 import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
 import { l } from "../lang/Lang";
 import SearchPanel from "../features/Search/SearchPanel";
-import StatisticsLoadingPlaceholder from './StatisticsLoadingPlaceholder';
+import StatisticsLoadingPlaceholder from '../features/Statistics/ui/StatisticsLoadingPlaceholder';
 import IntroOverlay from "./views/IntroOverlay";
 import config from "../config";
 
-const StatisticsContainer = lazy(() => import('./StatisticsContainer'));
+const StatisticsContainer = lazy(() => import('../features/Statistics/StatisticsContainer'));
 
 // Helpers
 function SurveyLink() {
