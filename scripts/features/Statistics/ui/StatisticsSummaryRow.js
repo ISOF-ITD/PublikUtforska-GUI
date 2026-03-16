@@ -12,7 +12,7 @@ export default function StatisticsSummaryRow({
   valueSource = 'value',
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
+    <section className="rounded-lg border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
         <div className="min-w-0 sm:w-28 sm:shrink-0">
           <StatisticsSectionHeading>

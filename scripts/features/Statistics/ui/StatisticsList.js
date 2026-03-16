@@ -66,7 +66,7 @@ export default function StatisticsList({
   useEffect(() => () => abortRef.current?.abort(), []);
 
   return (
-    <div>
+    <div className=" border-slate-200 bg-slate-50/80 p-4 rounded-lg shadow">
       {loading && (
         <div className="loading" role="status" aria-live="polite">
           {l('Hämtar statistik...')}
@@ -82,7 +82,7 @@ export default function StatisticsList({
       )}
 
       {!loading && !fetchError && (
-        <StatisticsSectionHeading className="!my-2">
+        <StatisticsSectionHeading className="!mb-2">
           {label}
         </StatisticsSectionHeading>
       )}

@@ -181,7 +181,7 @@ export default function MapMenu({
   const statisticsBlock = (
     <div
       className={classNames(
-        'box-border max-w-full overflow-x-hidden rounded-xl bg-white p-3 break-words',
+        'box-border max-w-full overflow-x-hidden p-3 break-words',
         isMobileViewport ? 'w-auto mx-2 mt-2 mb-2' : 'w-full mb-2 h-full',
       )}
     >

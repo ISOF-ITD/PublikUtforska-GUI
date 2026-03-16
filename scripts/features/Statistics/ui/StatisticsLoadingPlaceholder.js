@@ -3,7 +3,7 @@
 export default function StatisticsLoadingPlaceholder() {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
           <div className="h-6 w-24 rounded bg-slate-200 animate-pulse" />
           <div className="grid flex-1 grid-cols-2 gap-3">
@@ -19,7 +19,7 @@ export default function StatisticsLoadingPlaceholder() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
           <div className="h-6 w-36 rounded bg-slate-200 animate-pulse" />
           <div className="grid flex-1 grid-cols-2 gap-3">
@@ -35,7 +35,7 @@ export default function StatisticsLoadingPlaceholder() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm space-y-3">
         <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
         <div className="h-8 w-full rounded bg-gray-100 animate-pulse" />
         <div className="h-8 w-11/12 rounded bg-gray-100 animate-pulse" />
