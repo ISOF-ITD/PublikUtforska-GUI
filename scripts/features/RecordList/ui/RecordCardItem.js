@@ -353,6 +353,19 @@ export default function RecordCardItem({
               />
             </div>
           )}
+
+          {highlight?.contents?.[0] && (
+            <div className="flex flex-col mt-2">
+              <span className="mr-1">Beskrivning av innehåll:</span>
+              <HighlightedText
+                text={highlight.contents[0]}
+                maxSnippets={1}
+                maxWords={15}
+                className="inline"
+              />
+            </div>
+          )}
+
           {innerHits?.media?.hits?.hits.map((hit) => {
             const highlighted = hit.highlight?.["media.text"]?.[0];
             if (!highlighted) return null;
