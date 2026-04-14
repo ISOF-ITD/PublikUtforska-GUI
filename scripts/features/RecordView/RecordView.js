@@ -25,7 +25,7 @@ import RecordViewHeader from "./ui/RecordViewHeader";
 import RecordViewThumbnails from "./ui/RecordViewThumbnails";
 import ReferenceLinks from "./ui/ReferenceLinks";
 import RecordTextPanel from "../RecordTextPanel/RecordTextPanel";
-import TranscriptionPrompt from "./ui/TranscriptionPrompt";
+import TranscriptionCTA from "./ui/TranscriptionCTA";
 import SimilarRecords from "./ui/SimilarRecords";
 import { getTitleText } from "../../utils/helpers";
 import config from "../../config";
@@ -180,7 +180,7 @@ function ResolvedRecord({
           <HeadwordsElement data={data} />
         </div>
 
-        <TranscriptionPrompt data={data} />
+        <TranscriptionCTA data={data} />
         <AudioItems data={data} highlightData={highlightData} />
         <PdfElement data={data} />
         <RecordTextPanel

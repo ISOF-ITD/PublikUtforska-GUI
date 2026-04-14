@@ -62,7 +62,7 @@ const statusStyles = (raw) => {
   }
 };
 
-export default function TranscriptionPrompt({ data }) {
+export default function TranscriptionCTA({ data }) {
   const isTranscriptionAvailable = useTranscriptionAvailability();
   const {
     transcriptiontype = null,
@@ -80,8 +80,7 @@ export default function TranscriptionPrompt({ data }) {
   // 1. Hide for audio & already published & if no transcription type explicitly defined
   if (
     transcriptionstatus === "published" ||
-    transcriptiontype === "audio" ||
-    !transcriptiontype
+    transcriptiontype === "audio"
   )
     return null;
 
@@ -276,7 +275,7 @@ export default function TranscriptionPrompt({ data }) {
   );
 }
 
-TranscriptionPrompt.propTypes = {
+TranscriptionCTA.propTypes = {
   data: PropTypes.shape({
     transcriptiontype: PropTypes.string,
     transcriptionstatus: PropTypes.string.isRequired,
