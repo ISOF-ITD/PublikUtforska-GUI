@@ -324,6 +324,9 @@ export default function TranscriptionPageByPageOverlay() {
       setShowMetaFields(true);
     }
 
+    // true if the page has already been transcribed (either in this session, or before), or has unsaved changes.
+    // In that case we want to prefill the form with the existing text, comment, etc. Otherwise
+    // (if it's a fresh ready-to-transcribe page), we want to show an empty form.
     const shouldPrefill =
       (page.transcriptionstatus &&
         page.transcriptionstatus !== "readytotranscribe") ||

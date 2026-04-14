@@ -71,7 +71,7 @@ export default function PersonView({ mode = "material" }) {
       person_id: id,
       has_untranscribed_records: mode === "transcribe" ? "true" : null,
       transcriptionstatus:
-        mode === "transcribe" ? null : "published,accession,readytocontribute,readytotranscribe",
+        mode === "transcribe" ? null : "published,accession,readytocontribute,undertranscription",
     }),
     [id, mode]
   );

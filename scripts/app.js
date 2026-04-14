@@ -181,7 +181,7 @@ function createRootRoute() {
 
       const queryParams = {
         ...createParamsFromSearchRoute(basePath),
-        transcriptionstatus: 'published,accession,readytotranscribe,readytocontribute',
+        transcriptionstatus: 'published,accession,readytotranscribe,readytocontribute,undertranscription',
         // Mode Arkiv: only for: one_accession_row
         // In requiredParams in config.js:
         // recordtype: 'one_accession_row',
@@ -222,7 +222,7 @@ function createTranscribeRoute() {
         ...base,
         recordtype: base.recordtype ?? 'one_accession_row',
         // Used in counting untranscribed records
-        transcriptionstatus: base.transcriptionstatus ?? 'readytotranscribe',
+        transcriptionstatus: base.transcriptionstatus ?? 'readytotranscribe,undertranscription',
         //has_untranscribed_records: base.has_untranscribed_records ?? true,
       };
 

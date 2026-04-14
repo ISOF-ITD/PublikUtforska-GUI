@@ -154,7 +154,7 @@ export default function useRecords(params, mode, interval) {
       has_transcribed_records: params.has_transcribed_records || undefined,
       // has_untranscribed_records not used anymore
       //has_untranscribed_records: params.has_untranscribed_records || undefined,
-      transcriptionstatus: params.transcriptionstatus || "readytotranscribe",
+      transcriptionstatus: params.transcriptionstatus || "readytotranscribe,undertranscription",
       // Fanns:
       //transcriptionstatus: params.transcriptionstatus || undefined,
       recordtype:

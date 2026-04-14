@@ -91,7 +91,7 @@ function Timeline({
       search: params.search ? encodeURIComponent(params.search) : undefined,
       search_field: params.search_field || undefined,
       recordtype: params.recordtype || (mode === 'transcribe' ? 'one_accession_row,one_audio_record' : (filter || null)),
-      transcriptionstatus: 'published,accession,readytocontribute,readytotranscribe',
+      transcriptionstatus: 'published,accession,readytocontribute,readytotranscribe,undertranscription',
       category: params.category ? encodeURIComponent(params.category) : undefined,
     };
 

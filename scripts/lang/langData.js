@@ -11,7 +11,7 @@ export default {
 		//Temporary solution to remove text "Fylke" for Finland (and this solution also Norway)
 		'Fylke': '',
 		// Transcription status to user:
-		'untranscribed':'Ej transkribera', 
+		'untranscribed':'Ej transkriberad',
 		'readytotranscribe':'Nej', 
 		'undertranscription':'Skrivs av',
 		'transcribed':'Granskas', 
