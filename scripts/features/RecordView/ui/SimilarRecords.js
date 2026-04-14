@@ -134,13 +134,13 @@ function SimilarRecords({ data }) {
     <section className="mt-8" aria-busy="false">
       <div className="mb-4 flex flex-col items-start justify-between gap-4">
         <h3 className="flex items-center gap-2 text-xl font-semibold text-gray-900 m-0">
-          {l("Liknande uppteckningar")}
+          {l('Liknande accessioner')}
         </h3>
 
         <details className="group max-w-[42rem]">
           <summary
             className="cursor-pointer select-none text-sm text-isof hover:text-darker-isof focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-isof rounded"
-            aria-label={l("Visa hjälptext för liknande uppteckningar")}
+            aria-label={l("Visa hjälptext för liknande accessioner")}
           >
             {l("Vad är detta?")}
           </summary>
@@ -150,16 +150,16 @@ function SimilarRecords({ data }) {
             role="note"
           >
             <p className="font-semibold">
-              {l('Hur "Liknande uppteckningar" tas fram')}
+              {l('Hur "Liknande accessioner" tas fram')}
             </p>
             <p>
               {l(
-                "Liknande uppteckningar genereras genom att analysera innehållet i den valda uppteckningen och identifiera andra uppteckningar med liknande ord och teman."
+                "Liknande accessioner genereras genom att analysera innehållet i den valda accessionen och identifiera andra accessioner med liknande ord och teman."
               )}
             </p>
             <p>
               {l(
-                "När en uppteckning visas analyseras dess innehåll noggrant för att identifiera viktiga nyckelord och teman. Dessa identifierade element används sedan för att söka igenom databasen och hitta andra uppteckningar som delar liknande ämnen eller termer. Resultatet är en lista med uppteckningar som är relevanta och relaterade till den ursprungliga uppteckningen, vilket underlättar utforskning av liknande innehåll."
+                "När en accession visas analyseras dess innehåll noggrant för att identifiera viktiga nyckelord och teman. Dessa identifierade element används sedan för att söka igenom databasen och hitta andra accessioner som delar liknande ämnen eller termer. Resultatet är en lista med uppteckningar som är relevanta och relaterade till den ursprungliga uppteckningen, vilket underlättar utforskning av liknande innehåll."
               )}
             </p>
           </div>
@@ -169,8 +169,11 @@ function SimilarRecords({ data }) {
       <ul className="flex flex-wrap gap-4" role="list">
         {similarRecords.map(({ _id, _source }) => {
           const { media, places = [] } = _source || {};
-          const firstMedia = Array.isArray(media) ? media[0] : null;
-          const titleText = String(getTitleText(_source) || l("(Utan titel)"));
+          // first media of type = image, otherwise null
+          const firstMedia = Array.isArray(media)
+            ? media.find((m) => m?.type?.startsWith("image")) || null
+            : null;
+          const titleText = String(getTitleText(_source, undefined, undefined, 90) || l("(Utan titel)"));
 
           // Double-check we have a usable image source
           if (!firstMedia?.source) return null;

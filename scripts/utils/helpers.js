@@ -2,6 +2,7 @@ import config from "../config";
 import { l } from "../lang/Lang";
 import archiveLogoIsof from "../../img/archive-logo-isof.png";
 import archiveLogoIkos from "../../img/archive-logo-ikos.png";
+import { max } from "d3-array";
 
 export function pageFromTo(input = {}) {
   /*
@@ -25,7 +26,7 @@ export function pageFromTo(input = {}) {
 
 // OBS: om `highlight` skickas medså innehåller return-strängen HTML-taggar
 // använd då `dangerouslySetInnerHTML`!
-export function getTitle(title, contents, archive, highlight) {
+export function getTitle(title, contents, archive, highlight, maxLength = 300) {
   /*
   Funktion för att skapa titel för mediafil
   */
@@ -47,8 +48,8 @@ export function getTitle(title, contents, archive, highlight) {
   }
   // annars, testa med `contents`, och förkorta om nödvändigt
   if (contents) {
-    if (contents.length > 300) {
-      return `${contents.substring(0, 282).replace(/\r/g, ' ')} ${' (...)'}`;
+    if (contents.length > maxLength) {
+      return `${contents.substring(0, maxLength - 18).replace(/\r/g, ' ')} ${' (...)'}`;
     }
     return `${contents.replace(/\r/g, ' ')}`;
   }
@@ -635,13 +636,16 @@ export function getTitleText(
   data,
   numberOfSubrecordsMedia,
   numberOfTranscribedSubrecordsMedia,
+  maxLength = 300,
 ) {
   const transcriptionStatusElement = data.transcriptionstatus;
   // Let getTitle do the smart fallback work (title → contents → archive)
   const baseTitle = getTitle(
     data.title,
     data.contents,
-    data.archive // pass archive too
+    data.archive, // pass archive too
+    null, // pass highlight too
+    maxLength,
   );
   if (
     [
