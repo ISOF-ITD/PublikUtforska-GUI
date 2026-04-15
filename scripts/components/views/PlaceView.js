@@ -25,6 +25,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
   const { results } = useLoaderData();
   const params = useParams();
   const navigate = useNavigate();
+  // only show the contextual place record lists if we're in a search context
+  const shouldShowPlaceRecordLists = params['*'] && !params['*'].includes('search_field/place');
 
   function validateResults(data) {
     if (!data) {
@@ -105,9 +107,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                 </div>
               </div>
 
-              {/* show the following div only if params['*'] is truthy, which
-              means that there is a search query in the URL */}
-              {params['*'] && (
+              {/* do not show contextual place results if we're not in a search context */}
+              {shouldShowPlaceRecordLists && (
                 <div className="row search-results-container">
                   <div className="twelve columns">
 
@@ -135,6 +136,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
         </Await>
       </Suspense>
 
+      {/* Samtliga accessioner från orten */}
       <Suspense>
         <Await resolve={results}>
           {(data) => (
@@ -142,8 +144,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
 
               <div className="row">
                 <div className="twelve columns">
-                  {/* Show the h3 only if params['*'] is truthy, and we have two record lists */}
-                  {params['*'] && (
+                  {/* heading only needed when also showing contextual place results */}
+                  {shouldShowPlaceRecordLists && (
                     <h3>
                       {l('Samtliga accessioner från orten')}
                     </h3>
