@@ -95,6 +95,17 @@ export default function RecordCardItem({
       ),
     [media]
   );
+  const firstImageMedia = media.find((m) => m?.type?.startsWith('image')) || null;
+  let thumbnail = '';
+  if (firstImageMedia?.source) {
+    try {
+      thumbnail = new URL(firstImageMedia.source, config?.imageUrl).toString();
+    } catch {
+      const base = String(config?.imageUrl || '');
+      const sep = base && !base.endsWith('/') ? '/' : '';
+      thumbnail = `${base}${sep}${String(firstImageMedia.source || '')}`;
+    }
+  }
 
   // ───────── highlight / summary
   const displayTextSummary =
@@ -158,7 +169,19 @@ export default function RecordCardItem({
       }`}
     >
       {/* Header Section */}
-      <header className="flex items-center gap-2">
+      <header className="flex items-start gap-2">
+        {thumbnail && (
+          <img
+            src={thumbnail}
+            alt=""
+            className="h-24 w-20 shrink-0 rounded border border-gray-200 bg-white object-contain p-0.5"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              e.currentTarget.style.visibility = 'hidden';
+            }}
+          />
+        )}
         <MediaIcons media={media || []} />
         <span className="flex-1 text-lg font-semibold leading-tight !text-isof">
           {recordUrl ? (

@@ -98,9 +98,8 @@ export default function RecordListItem(props) {
       : "";
 
   /* ----- audio & utterance helpers ----- */
-  const audioItem =
-    config.siteOptions.recordList?.displayPlayButton &&
-    media.find((m) => m.type === "audio");
+  const audioItem = config.siteOptions.recordList?.displayPlayButton
+    && media.find((m) => m.type === 'audio');
 
   // does any audio file contain utterances?
   const hasTranscription = media.some(
@@ -111,6 +110,20 @@ export default function RecordListItem(props) {
     || media.some(
       (m) => m?.type === 'audio' || m?.source?.toLowerCase().endsWith('.mp3'),
     );
+
+  /* ---------- thumbnail ---------- */
+  const firstImageMedia = media.find((m) => m?.type?.startsWith('image')) || null;
+  let thumbnail = '';
+  if (firstImageMedia?.source) {
+    try {
+      thumbnail = new URL(firstImageMedia.source, config?.imageUrl).toString();
+    } catch {
+      const base = String(config?.imageUrl || '');
+      const sep = base && !base.endsWith('/') ? '/' : '';
+      thumbnail = `${base}${sep}${String(firstImageMedia.source || '')}`;
+    }
+  }
+
   /* ---------- hrefs ---------- */
 
   // build a search suffix from the current list params
@@ -167,43 +180,57 @@ export default function RecordListItem(props) {
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
-            className="item-title text-isof hover:underline"
+            className="item-title text-isof hover:underline flex items-start gap-3"
             onClick={handleRecordLinkClick}
           >
-            {audioItem && (
-              <ListPlayButton
-                disablePlayback
-                media={audioItem}
-                recordId={recordId}
-                recordTitle={title || l("(Utan titel)")}
+            {thumbnail && (
+              <img
+                src={thumbnail}
+                alt=""
+                className="w-20 shrink-0 rounded border object-contain p-0.5"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.style.visibility = 'hidden';
+                }}
               />
             )}
-            <MediaIcons media={media} />
-            <span
-              dangerouslySetInnerHTML={{
-                __html: getTitle(
-                  title,
-                  contents,
-                  archive,
-                  transcriptionstatus === "readytotranscribe"
-                    ? undefined
-                    : highlight
-                ),
-              }}
-            />
-            {hasTranscription && (
-              <span
-                className="inline-flex items-center gap-0.5 -!mb-1 px-1.5 text-[10px] font-medium text-lighter-isof"
-                title={l("Har avskrift")}
-              >
-                <FontAwesomeIcon
-                  icon={faClosedCaptioning}
-                  className="text-[16px] bg-isof rounded-sm"
-                  aria-hidden="true"
+            <span className="min-w-0">
+              {audioItem && (
+                <ListPlayButton
+                  disablePlayback
+                  media={audioItem}
+                  recordId={recordId}
+                  recordTitle={title || l("(Utan titel)")}
                 />
-                <span className="sr-only">{l("Har avskrift")}</span>
-              </span>
-            )}
+              )}
+              <MediaIcons media={media} />
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: getTitle(
+                    title,
+                    contents,
+                    archive,
+                    transcriptionstatus === "readytotranscribe"
+                      ? undefined
+                      : highlight
+                  ),
+                }}
+              />
+              {hasTranscription && (
+                <span
+                  className="inline-flex items-center gap-0.5 -!mb-1 px-1.5 text-[10px] font-medium text-lighter-isof"
+                  title={l("Har avskrift")}
+                >
+                  <FontAwesomeIcon
+                    icon={faClosedCaptioning}
+                    className="text-[16px] bg-isof rounded-sm"
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only">{l("Har avskrift")}</span>
+                </span>
+              )}
+            </span>
           </Link>
 
           {summary && (
