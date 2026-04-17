@@ -239,7 +239,7 @@ const RoutePopupWindow = memo(({
         {/* eslint-disable jsx-a11y/click-events-have-key-events */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
-          className="popup-content-wrapper"
+          className="popup-content-wrapper [backdrop-filter:blur(6px)] [-webkit-backdrop-filter:blur(6px)]"
           // klick utanför page content stänger popup
           onClick={(e) => {
             if (e.target.classList?.contains('popup-content-wrapper')) {

@@ -478,7 +478,7 @@ export default function TranscriptionPageByPageOverlay() {
     : '';
 
   return (
-    <div className="overlay-container visible transcription-page-by-page-overlay">
+    <div className="overlay-container  [backdrop-filter:blur(6px)] [-webkit-backdrop-filter:blur(6px)] visible transcription-page-by-page-overlay">
       <div className="overlay-window large">
         {/* ── header ────────────────────────────────────────── */}
         <div className="overlay-header">
