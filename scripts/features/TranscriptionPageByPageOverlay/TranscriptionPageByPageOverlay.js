@@ -51,10 +51,6 @@ export default function TranscriptionPageByPageOverlay() {
     return '';
   };
 
-  const isUppteckningsblankettPage = (page) => (
-    page?.transcriptiontype === 'uppteckningsblankett'
-  );
-
   const scrollToActiveThumbnail = useCallback((index) => {
     const cont = thumbnailContainerRef.current;
     if (!cont) return;
@@ -275,7 +271,7 @@ export default function TranscriptionPageByPageOverlay() {
       };
 
       const startIdx = resolveStartIndex();
-      setShowMetaFields(isUppteckningsblankettPage(initialPages[startIdx]));
+      setShowMetaFields(true);
       setPages(initialPages);
       setCurrentPageIndex(startIdx);
       requestAnimationFrame(() => scrollToActiveThumbnail(startIdx));
