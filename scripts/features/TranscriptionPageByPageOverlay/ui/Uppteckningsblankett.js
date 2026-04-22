@@ -15,6 +15,7 @@ export default function Uppteckningsblankett({
   disableInput = false,
   showMeta = true,
   showText = true,
+  showInformantFields = true,
 }) {
   const wordCount = messageInput.trim().split(/\s+/).filter(Boolean).length;
 
@@ -24,79 +25,82 @@ export default function Uppteckningsblankett({
         Uppteckningsblankett
       </legend>
 
-      {/* Meta/form fields */}
       {showMeta && (
         <>
-          <div className="grid gap-x-2 gap-y-4 md:grid-cols-12 mb-2">
-            <div className="md:col-span-6 flex flex-col">
-              <label
-                htmlFor="transcription_informantname"
-                className="font-semibold flex flex-col gap-1"
-              >
-                Berättat av
-                <input
-                  id="transcription_informantname"
-                  name="informantNameInput"
-                  type="text"
-                  placeholder="Namn"
-                  value={informantNameInput}
-                  onChange={inputChangeHandler}
-                  className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
-                />
-              </label>
-            </div>
+          {showInformantFields && (
+            <>
+              <div className="grid gap-x-2 gap-y-4 md:grid-cols-12 mb-2">
+                <div className="md:col-span-6 flex flex-col">
+                  <label
+                    htmlFor="transcription_informantname"
+                    className="font-semibold flex flex-col gap-1"
+                  >
+                    Berättat av
+                    <input
+                      id="transcription_informantname"
+                      name="informantNameInput"
+                      type="text"
+                      placeholder="Namn"
+                      value={informantNameInput}
+                      onChange={inputChangeHandler}
+                      className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
+                    />
+                  </label>
+                </div>
 
-            <div className="md:col-span-2 flex flex-col">
-              <label
-                htmlFor="transcription_informantbirthdate"
-                className="font-semibold flex flex-col gap-1"
-              >
-                Född&nbsp;år
-                <input
-                  id="transcription_informantbirthdate"
-                  name="informantBirthDateInput"
-                  type="text"
-                  placeholder="År"
-                  value={informantBirthDateInput}
-                  onChange={inputChangeHandler}
-                  className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
-                />
-              </label>
-            </div>
+                <div className="md:col-span-2 flex flex-col">
+                  <label
+                    htmlFor="transcription_informantbirthdate"
+                    className="font-semibold flex flex-col gap-1"
+                  >
+                    Född&nbsp;år
+                    <input
+                      id="transcription_informantbirthdate"
+                      name="informantBirthDateInput"
+                      type="text"
+                      placeholder="År"
+                      value={informantBirthDateInput}
+                      onChange={inputChangeHandler}
+                      className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
+                    />
+                  </label>
+                </div>
 
-            <div className="md:col-span-4 flex flex-col">
-              <label
-                htmlFor="transcription_informantbirthplace"
-                className="font-semibold flex flex-col gap-1"
-              >
-                Född&nbsp;i
-                <input
-                  id="transcription_informantbirthplace"
-                  name="informantBirthPlaceInput"
-                  type="text"
-                  placeholder="Ort"
-                  value={informantBirthPlaceInput}
-                  onChange={inputChangeHandler}
-                  className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
-                />
-              </label>
-            </div>
-          </div>
+                <div className="md:col-span-4 flex flex-col">
+                  <label
+                    htmlFor="transcription_informantbirthplace"
+                    className="font-semibold flex flex-col gap-1"
+                  >
+                    Född&nbsp;i
+                    <input
+                      id="transcription_informantbirthplace"
+                      name="informantBirthPlaceInput"
+                      type="text"
+                      placeholder="Ort"
+                      value={informantBirthPlaceInput}
+                      onChange={inputChangeHandler}
+                      className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
+                    />
+                  </label>
+                </div>
+              </div>
 
-          <div>
-            <label htmlFor="transcription_informant" className="font-semibold">
-              Fält under &quot;Berättat av&quot;
-              <input
-                id="transcription_informant"
-                name="informantInformationInput"
-                type="text"
-                value={informantInformationInput}
-                onChange={inputChangeHandler}
-                placeholder="Om det finns fler uppgifter nedskrivna"
-                className="w-full rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
-              />
-            </label>
-          </div>
+              <div>
+                <label htmlFor="transcription_informant" className="font-semibold">
+                  Fält under &quot;Berättat av&quot;
+                  <input
+                    id="transcription_informant"
+                    name="informantInformationInput"
+                    type="text"
+                    value={informantInformationInput}
+                    onChange={inputChangeHandler}
+                    placeholder="Om det finns fler uppgifter nedskrivna"
+                    className="w-full rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+                  />
+                </label>
+              </div>
+            </>
+          )}
 
           <div>
             <label htmlFor="transcription_title" className="font-semibold">
@@ -115,7 +119,6 @@ export default function Uppteckningsblankett({
         </>
       )}
 
-      {/* Free-text transcription field */}
       {showText && (
         <div className="flex flex-col">
           <label htmlFor="transcription_text" className="font-semibold">
@@ -154,4 +157,5 @@ Uppteckningsblankett.propTypes = {
   disableInput: PropTypes.bool,
   showMeta: PropTypes.bool,
   showText: PropTypes.bool,
+  showInformantFields: PropTypes.bool,
 };

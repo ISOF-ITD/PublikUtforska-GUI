@@ -1,35 +1,36 @@
-import { useCallback, useMemo, useState, useId } from "react";
-import Uppteckningsblankett from "./Uppteckningsblankett";
-import { l } from "../../../lang/Lang";
-import ContributorInfoFields from "./ContributorInfoFields";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  useCallback, useState, useId,
+} from 'react';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCircleChevronDown,
   faCircleChevronUp,
   faInfoCircle,
-} from "@fortawesome/free-solid-svg-icons";
+} from '@fortawesome/free-solid-svg-icons';
+import Uppteckningsblankett from './Uppteckningsblankett';
+import { l } from '../../../lang/Lang';
+import ContributorInfoFields from './ContributorInfoFields';
 
-const field =
-  "w-full border border-gray-300 rounded-lg p-3 font-serif leading-relaxed " +
-  "disabled:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-isof " +
-  "focus-visible:border-isof transition !mb-2";
+const field = 'w-full border border-gray-300 rounded-lg p-3 font-serif leading-relaxed '
+  + 'disabled:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-isof '
+  + 'focus-visible:border-isof transition !mb-2';
 
 export default function TranscriptionForm({
   sending,
-  recordDetails,
   currentPageIndex,
   pages,
   transcriptionText,
-  pagenumberInput = "",
+  pagenumberInput = '',
   foneticSignsInput = false,
   unreadableInput = false,
-  informantNameInput,
-  informantBirthDateInput,
-  informantBirthPlaceInput,
-  informantInformationInput,
-  nameInput,
-  emailInput,
-  titleInput,
+  informantNameInput = '',
+  informantBirthDateInput = '',
+  informantBirthPlaceInput = '',
+  informantInformationInput = '',
+  nameInput = '',
+  emailInput = '',
+  titleInput = '',
   comment,
   inputChangeHandler,
   sendButtonClickHandler,
@@ -41,55 +42,25 @@ export default function TranscriptionForm({
   const commentId = useId();
 
   const validateEmail = useCallback(
-    (email) => email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-    []
+    (email) => email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+    [],
   );
 
   const page = pages[currentPageIndex] ?? {};
-  const disableInput = page.transcriptionstatus !== "readytotranscribe";
+  const pageCount = pages.length;
+  const disableInput = page.transcriptionstatus !== 'readytotranscribe';
   const isSent = !!page.isSent;
-  const isReadyToTranscribe = page.transcriptionstatus === "readytotranscribe";
-
-  const sendButtonLabel = isSent
-    ? l("Sidan har skickats")
-    : l(`Skicka sida ${currentPageIndex + 1} (av ${pages.length})`);
-
-  const commonProps = useMemo(
-    () => ({
-      messageInput: transcriptionText,
-      inputChangeHandler,
-      pageIndex: currentPageIndex,
-      numberOfPages: pages.length,
-      transcriptionstatus: page.transcriptionstatus,
-      disableInput,
-      titleInput,
-    }),
-    [
-      transcriptionText,
-      inputChangeHandler,
-      currentPageIndex,
-      pages.length,
-      page.transcriptionstatus,
-      disableInput,
-      titleInput,
-    ]
+  const isReadyToTranscribe = page.transcriptionstatus === 'readytotranscribe';
+  const isUppteckningsblankett = (
+    page.transcriptiontype === 'uppteckningsblankett'
   );
 
-  const uppteckningsProps = {
-    informantNameInput,
-    informantBirthDateInput,
-    informantBirthPlaceInput,
-    informantInformationInput,
-    title: recordDetails.title,
-    titleInput,
-    ...commonProps,
-  };
+  const sendButtonLabel = isSent
+    ? l('Sidan har skickats')
+    : l(`Skicka sida ${currentPageIndex + 1} (av ${pageCount})`);
 
   const handleEmailBlur = (e) => setEmailValid(validateEmail(e.target.value));
-  const wordCount = transcriptionText
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const wordCount = transcriptionText.trim().split(/\s+/).filter(Boolean).length;
   const formValid = wordCount >= 2 && emailValid;
 
   return (
@@ -114,17 +85,24 @@ export default function TranscriptionForm({
         </button>
       </div>
 
-      {/* 1) META: toggleable */}
       {showMetaFields && (
         <Uppteckningsblankett
-          {...uppteckningsProps}
+          informantNameInput={informantNameInput}
+          informantBirthDateInput={informantBirthDateInput}
+          informantBirthPlaceInput={informantBirthPlaceInput}
+          informantInformationInput={informantInformationInput}
+          messageInput={transcriptionText}
+          inputChangeHandler={inputChangeHandler}
+          pageIndex={currentPageIndex}
+          titleInput={titleInput}
+          numberOfPages={pageCount}
           disableInput={false}
           showMeta
           showText={false}
+          showInformantFields={isUppteckningsblankett}
         />
       )}
 
-      {/* 2) TEXT: always visible */}
       <fieldset
         className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
         disabled={disableInput}
@@ -132,7 +110,6 @@ export default function TranscriptionForm({
         <legend className="sr-only">
           Transkriberingstext
         </legend>
-        {/* Only in state readytotranscribe */}
         {isReadyToTranscribe && (
           <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
             <strong className="flex items-center mb-1 gap-2">
@@ -141,9 +118,7 @@ export default function TranscriptionForm({
             </strong>
             <ul className="list-disc list-inside space-y-0.5 !my-0">
               <li>{l('Skriv av texten precis som den står, även stavfel.')}</li>
-              <li>
-                {l('Skriv av texten rad för rad, med samma radbrytningar.')}
-              </li>
+              <li>{l('Skriv av texten rad för rad, med samma radbrytningar.')}</li>
               <li>{l('Använd ### för ord du inte kan läsa.')}</li>
             </ul>
           </div>
@@ -153,7 +128,7 @@ export default function TranscriptionForm({
           htmlFor="transcription_text_always"
           className="font-semibold block"
         >
-          {l('Text på sidan')} {currentPageIndex + 1} {l('(av')} {pages.length})
+          {l(`Text på sidan ${currentPageIndex + 1} (av ${pageCount})`)}
         </label>
         <textarea
           id="transcription_text_always"
@@ -165,12 +140,12 @@ export default function TranscriptionForm({
           className="w-full min-h-[18rem] max-h-96 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100"
         />
         <span className="text-sm text-gray-600 self-end" aria-live="polite">
-          {wordCount} {l('ord')}
+          {wordCount}
+          {' '}
+          {l('ord')}
         </span>
       </fieldset>
 
-      {/* 2b) PAGE META: page number + flags */}
-      {/* Only in state readytotranscribe */}
       {isReadyToTranscribe && (
         <fieldset
           className="space-y-3 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
@@ -189,7 +164,7 @@ export default function TranscriptionForm({
                 id="transcription_pagenumber"
                 name="pagenumberInput"
                 type="text"
-                value={pagenumberInput ?? ""}
+                value={pagenumberInput ?? ''}
                 onChange={inputChangeHandler}
                 className="w-32 rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
               />
@@ -233,7 +208,6 @@ export default function TranscriptionForm({
         </fieldset>
       )}
 
-      {/* 3) Comment + contributor + send */}
       {(isReadyToTranscribe || isSent) && (
         <fieldset
           className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"
@@ -247,11 +221,7 @@ export default function TranscriptionForm({
               htmlFor={commentId}
               className="font-semibold block mb-1 leading-snug"
             >
-              {l(
-                `Kommentar till sidan ${currentPageIndex + 1} (av ${
-                  pages.length
-                })`
-              )}
+              {l(`Kommentar till sidan ${currentPageIndex + 1} (av ${pageCount})`)}
             </label>
             <textarea
               id={commentId}
@@ -260,7 +230,7 @@ export default function TranscriptionForm({
               spellCheck="false"
               value={comment}
               onChange={inputChangeHandler}
-              className={field + " h-40 resize-y"}
+              className={`${field} h-40 resize-y`}
             />
             <span className="text-xs text-gray-500">
               {l(
@@ -269,8 +239,6 @@ export default function TranscriptionForm({
             </span>
           </div>
 
-          {/* 4) contributor + send */}
-          {/* Only in state readytotranscribe */}
           {isReadyToTranscribe && (
             <>
               <ContributorInfoFields
@@ -283,7 +251,6 @@ export default function TranscriptionForm({
                 disabled={disableInput}
               />
 
-              {/* Only in state readytotranscribe */}
               <button
                 type="button"
                 onClick={sendButtonClickHandler}
@@ -293,16 +260,16 @@ export default function TranscriptionForm({
                   font-semibold text-white shadow transition
                   ${
                     sending || disableInput || !formValid
-                      ? "bg-gray-400 !cursor-not-allowed !hover:text-white"
-                      : "!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof"
+                      ? 'bg-gray-400 !cursor-not-allowed !hover:text-white'
+                      : '!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof'
                   }
                 `}
                 disabled={disableInput || sending || !formValid}
                 title={
                   !formValid
                     ? l(
-                        'Knappen aktiveras när du har skrivit minst två ord i Text-fältet',
-                      )
+                      'Knappen aktiveras när du har skrivit minst två ord i Text-fältet',
+                    )
                     : undefined
                 }
               >
@@ -323,3 +290,31 @@ export default function TranscriptionForm({
     </div>
   );
 }
+
+TranscriptionForm.propTypes = {
+  sending: PropTypes.bool.isRequired,
+  currentPageIndex: PropTypes.number.isRequired,
+  pages: PropTypes.arrayOf(
+    PropTypes.shape({
+      transcriptionstatus: PropTypes.string,
+      transcriptiontype: PropTypes.string,
+      isSent: PropTypes.bool,
+    }),
+  ).isRequired,
+  transcriptionText: PropTypes.string.isRequired,
+  pagenumberInput: PropTypes.string,
+  foneticSignsInput: PropTypes.bool,
+  unreadableInput: PropTypes.bool,
+  informantNameInput: PropTypes.string,
+  informantBirthDateInput: PropTypes.string,
+  informantBirthPlaceInput: PropTypes.string,
+  informantInformationInput: PropTypes.string,
+  nameInput: PropTypes.string,
+  emailInput: PropTypes.string,
+  titleInput: PropTypes.string,
+  comment: PropTypes.string.isRequired,
+  inputChangeHandler: PropTypes.func.isRequired,
+  sendButtonClickHandler: PropTypes.func.isRequired,
+  showMetaFields: PropTypes.bool.isRequired,
+  onToggleMetaFields: PropTypes.func.isRequired,
+};
