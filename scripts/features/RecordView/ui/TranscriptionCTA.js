@@ -1,63 +1,57 @@
-import PropTypes from "prop-types";
-import React, { useMemo } from "react";
-import TranscribeButton from "../../TranscriptionPageByPageOverlay/ui/TranscribeButton";
-import { l } from "../../../lang/Lang";
+import PropTypes from 'prop-types';
+import TranscribeButton from '../../TranscriptionPageByPageOverlay/ui/TranscribeButton';
+import { l } from '../../../lang/Lang';
 import useTranscriptionAvailability from '../../../hooks/useTranscriptionAvailability';
 
 // short keys; wrap with l()
 const STRINGS = {
-  underTranscription:
-    "Den här uppteckningen håller på att transkriberas av annan användare.",
-  underReview: "Den här uppteckningen är avskriven och granskas.",
-  notTranscribed: "Den här uppteckningen är inte avskriven.",
   invitation:
-    "Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!",
-  transcribe: "Skriv av",
-  perPage: "sida för sida",
-  of: "av",
-  pages: "sidor",
-  pagesTranscribed: "sidor avskrivna",
-  pagesLeft: "kvar",
-  readyPages: "redo att skrivas av",
-  readyPagesPlural: "redo att skrivas av",
-  randomCta: "Transkribera en slumpmässig uppteckning",
+    'Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!',
+  transcribe: 'Skriv av',
+  perPage: 'sida för sida',
+  pages: 'sidor',
+  pagesTranscribed: 'sidor avskrivna',
+  pagesLeft: 'kvar',
+  readyPages: 'redo att skrivas av',
+  readyPagesPlural: 'redo att skrivas av',
   lockedInfo:
-    "Alla sidor är upptagna just nu. Testa en slumpmässig uppteckning!",
-  noPagesInfo: "Den här uppteckningen saknar skannade sidor.",
-  tipStartFirstFree: "Tips: Tryck för att starta på den första otranskriberade sidan.",
-  recordLabel: "Uppteckning",
+    'Alla sidor är upptagna just nu. Testa en slumpmässig uppteckning!',
+  tipStartFirstFree:
+    'Tips: Tryck för att starta på den första otranskriberade sidan.',
+  recordLabel: 'Uppteckning',
 };
 
 const statusStyles = (raw) => {
-  const status = (raw || "").toLowerCase();
+  const status = (raw || '').toLowerCase();
+
   switch (status) {
-    case "readytotranscribe":
+    case 'readytotranscribe':
       return {
-        label: "Kan skrivas av",
-        cls: "bg-emerald-100 text-emerald-800 ring-emerald-600/20",
+        label: 'Kan skrivas av',
+        cls: 'bg-emerald-100 text-emerald-800 ring-emerald-600/20',
       };
-    case "undertranscription":
+    case 'undertranscription':
       return {
-        label: "Pågår",
-        cls: "bg-amber-100 text-amber-800 ring-amber-600/20",
+        label: 'Pågår',
+        cls: 'bg-amber-100 text-amber-800 ring-amber-600/20',
       };
-    case "reviewing":
-    case "transcribed":
-    case "needsimprovement":
-    case "approved":
+    case 'reviewing':
+    case 'transcribed':
+    case 'needsimprovement':
+    case 'approved':
       return {
-        label: "Under granskning",
-        cls: "bg-sky-100 text-sky-800 ring-sky-600/20",
+        label: 'Under granskning',
+        cls: 'bg-sky-100 text-sky-800 ring-sky-600/20',
       };
-    case "published":
+    case 'published':
       return {
-        label: "Publicerad",
-        cls: "bg-gray-100 text-gray-800 ring-gray-600/20",
+        label: 'Publicerad',
+        cls: 'bg-gray-100 text-gray-800 ring-gray-600/20',
       };
     default:
       return {
-        label: "Status okänd",
-        cls: "bg-gray-100 text-gray-800 ring-gray-600/20",
+        label: 'Status okänd',
+        cls: 'bg-gray-100 text-gray-800 ring-gray-600/20',
       };
   }
 };
@@ -68,122 +62,82 @@ export default function TranscriptionCTA({ data }) {
     transcriptiontype = null,
     transcriptionstatus,
     media = [],
-    title = "",
+    title = '',
     id,
     archive,
     places = [],
-    recordtype,
   } = data || {};
 
-  if (!isTranscriptionAvailable) return null;
+  const statusNorm = (transcriptionstatus || '').toLowerCase();
+  const mediaItems = Array.isArray(media) ? media : [];
+  const imagePages = mediaItems.filter(
+    (item) => (item?.type || '').toLowerCase() === 'image',
+  );
+  const hasImagePages = imagePages.length > 0;
+  const hasAudioMedia = mediaItems.some(
+    (item) => (item?.type || '').toLowerCase().includes('audio'),
+  );
+  const normalizedTranscriptionType = transcriptiontype || (hasImagePages ? 'sida' : '');
+  const isAudioRecord = (
+    normalizedTranscriptionType === 'audio'
+    || (!transcriptiontype && hasAudioMedia && !hasImagePages)
+  );
 
-  // 1. Hide for audio & already published & if no transcription type explicitly defined
+  // Show the CTA only for records that are ready to transcribe page by page.
   if (
-    transcriptionstatus === "published" ||
-    transcriptiontype === "audio"
-  )
-    return null;
-
-  // 2. Hide for records that only have PDF media, no page images
-  const hasMedia = Array.isArray(media) && media.length > 0;
-  const onlyPdfMedia =
-    hasMedia && media.every((m) => (m?.type || "").toLowerCase() === "pdf");
-
-  if (onlyPdfMedia) {
-    // Don’t show the prompt for PDF-only records
+    !isTranscriptionAvailable
+    || statusNorm !== 'readytotranscribe'
+    || isAudioRecord
+    || !hasImagePages
+  ) {
     return null;
   }
 
-  const statusNorm = (transcriptionstatus || "").toLowerCase();
-  const isUnderTranscription = statusNorm === "undertranscription";
+  const { transcribedCount, readyCount, transcribableCount } = imagePages.reduce(
+    (counts, page) => {
+      const pageStatus = (page?.transcriptionstatus || '').toLowerCase();
+      const isCompleted = pageStatus === 'transcribed' || pageStatus === 'published';
+      const isReady = pageStatus === 'readytotranscribe';
+      const isTranscribable = !pageStatus || isReady;
+
+      return {
+        transcribedCount: counts.transcribedCount + (isCompleted ? 1 : 0),
+        readyCount: counts.readyCount + (isReady ? 1 : 0),
+        transcribableCount: counts.transcribableCount + (isTranscribable ? 1 : 0),
+      };
+    },
+    {
+      transcribedCount: 0,
+      readyCount: 0,
+      transcribableCount: 0,
+    },
+  );
+
+  const totalPages = imagePages.length;
+  const pagesLeft = Math.max(totalPages - transcribedCount, 0);
+  const primaryEnabled = transcribableCount > 0;
+  const pill = statusStyles(transcriptionstatus);
   const statusId = `tp-status-${id}`;
   const progressId = `tp-progress-${id}`;
-
-  // ---- derived state ----
-  const derived = useMemo(() => {
-    // Exclude PDFs from progress calculations
-    const pageMedia = Array.isArray(media)
-      ? media.filter((m) => (m?.type || "").toLowerCase() !== "pdf")
-      : [];
-
-    const total = pageMedia.length;
-
-    let done = 0;
-    let ready = 0;
-    for (const m of pageMedia) {
-      const s = (m?.transcriptionstatus || "").toLowerCase();
-      if (s === "transcribed" || s === "published") done += 1;
-      if (s === "readytotranscribe") ready += 1;
-    }
-
-    const isUnderReview = [
-      "undertranscription",
-      "transcribed",
-      "reviewing",
-      "needsimprovement",
-      "approved",
-    ].includes(statusNorm);
-
-    const hasReadyPage = ready > 0 || statusNorm === "readytotranscribe";
-
-    const pagesLeft = total > 0 ? Math.max(total - done, 0) : 0;
-
-    return {
-      totalPages: total,
-      transcribedCount: done,
-      readyCount: ready,
-      hasReadyPage,
-      isUnderReview,
-      pagesLeft,
-      pill: statusStyles(transcriptionstatus),
-      nextReadyText:
-        ready > 0
-          ? `${ready} ${
-              ready === 1 ? l(STRINGS.readyPages) : l(STRINGS.readyPagesPlural)
-            }`
-          : null,
-    };
-  }, [media, transcriptiontype, transcriptionstatus, statusNorm]);
-
-  const {
-    totalPages,
-    transcribedCount,
-    hasReadyPage,
-    isUnderReview,
-    pagesLeft,
-    readyCount,
-    pill,
-    nextReadyText,
-  } = derived;
-
-  // Primary enabled
-  const primaryEnabled =
-    !isUnderTranscription &&
-    (hasReadyPage || statusNorm === "readytotranscribe");
-
-  // Short, scannable status line
-  const statusLine =
-    totalPages > 0
-      ? // compact: "X/Y sidor • Z kvar"
-        `${transcribedCount}/${totalPages} ${l(
-          STRINGS.pages
-        )} • ${pagesLeft} ${l(STRINGS.pagesLeft)}`
-      : l(STRINGS.notTranscribed);
+  const statusLine = `${transcribedCount}/${totalPages} ${l(
+    STRINGS.pages,
+  )} - ${pagesLeft} ${l(STRINGS.pagesLeft)}`;
+  const readyPagesLabel = readyCount === 1
+    ? l(STRINGS.readyPages)
+    : l(STRINGS.readyPagesPlural);
+  const nextReadyText = readyCount > 0 ? `${readyCount} ${readyPagesLabel}` : null;
 
   return (
     <section
       className="rounded-2xl !border !border-gray-200 bg-white/80 p-4 mb-2 shadow"
       aria-labelledby={`tp-${id}`}
       aria-describedby={statusId}
-      aria-busy={isUnderTranscription ? "true" : undefined}
       data-testid="transcription-prompt"
     >
-      {/* A11y heading for aria-labelledby */}
       <h2 id={`tp-${id}`} className="sr-only">
-        {l(STRINGS.recordLabel)}: {title || id}
+        {`${l(STRINGS.recordLabel)}: ${title || id}`}
       </h2>
 
-      {/* Header */}
       <div className="mt-1 flex items-center gap-2">
         <span
           className={`inline-flex items-center rounded-full px-2 py-1 text-sm font-medium ring-1 ring-inset whitespace-nowrap ${pill.cls}`}
@@ -196,47 +150,32 @@ export default function TranscriptionCTA({ data }) {
         </span>
       </div>
 
-      {/* Progress (sida only) */}
-      {totalPages > 0 && (
-        <div className="mt-3" aria-live="polite">
+      <div className="mt-3" aria-live="polite">
+        <div
+          id={progressId}
+          className="h-2 w-full overflow-hidden rounded bg-gray-200 lg:w-1/2"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={totalPages}
+          aria-valuenow={Math.min(transcribedCount, totalPages)}
+          aria-label={l(STRINGS.pagesTranscribed)}
+          title={`${transcribedCount}/${totalPages}`}
+        >
           <div
-            id={progressId}
-            className="h-2 w-full lg:w-1/2 overflow-hidden rounded bg-gray-200"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={totalPages}
-            aria-valuenow={Math.min(transcribedCount, totalPages)}
-            aria-label={l(STRINGS.pagesTranscribed)}
-            title={`${transcribedCount}/${totalPages}`}
-          >
-            <div
-              className="h-full rounded bg-emerald-500 transition-all"
-              style={{
-                width: `${
-                  totalPages > 0 ? (transcribedCount / totalPages) * 100 : 0
-                }%`,
-              }}
-            />
-          </div>
+            className="h-full rounded bg-emerald-500 transition-all"
+            style={{
+              width: `${
+                totalPages > 0 ? (transcribedCount / totalPages) * 100 : 0
+              }%`,
+            }}
+          />
         </div>
-      )}
+      </div>
 
-      {/* Copy & CTAs */}
       <div className="mt-4 space-y-2">
-        {/* State text (compact) */}
-        <span className="text-gray-900">
-          {statusNorm === "undertranscription"
-            ? l(STRINGS.underTranscription)
-            : isUnderReview
-            ? l(STRINGS.underReview)
-            : totalPages === 0
-            ? l(STRINGS.noPagesInfo)
-            : l(STRINGS.invitation)}
-        </span>
+        <span className="text-gray-900">{l(STRINGS.invitation)}</span>
 
-        {/* Buttons */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Primary */}
           <TranscribeButton
             className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
             label={`${l(STRINGS.transcribe)} ${l(STRINGS.perPage)}`}
@@ -244,29 +183,20 @@ export default function TranscriptionCTA({ data }) {
             recordId={id}
             archiveId={archive?.archive_id}
             places={places}
-            images={media}
-            transcriptionType={transcriptiontype}
+            images={imagePages}
+            transcriptionType={normalizedTranscriptionType}
             random={false}
             disabled={!primaryEnabled}
             aria-disabled={!primaryEnabled}
-            aria-describedby={
-              !primaryEnabled && transcriptiontype === "sida"
-                ? statusId
-                : undefined
-            }
+            aria-describedby={!primaryEnabled ? statusId : undefined}
           />
-          {/* Helpful note for disabled state (only when relevant) */}
-          {!primaryEnabled &&
-            statusNorm !== "undertranscription" &&
-            totalPages > 0 &&
-            readyCount === 0 && (
-              <span className="ml-1 text-gray-900" role="note">
-                {l(STRINGS.lockedInfo)}
-              </span>
-            )}
+          {!primaryEnabled && (
+            <span className="ml-1 text-gray-900" role="note">
+              {l(STRINGS.lockedInfo)}
+            </span>
+          )}
         </div>
 
-        {/* Ready pages tip */}
         {nextReadyText && (
           <span className="text-gray-700">{l(STRINGS.tipStartFirstFree)}</span>
         )}
@@ -282,7 +212,8 @@ TranscriptionCTA.propTypes = {
     media: PropTypes.arrayOf(
       PropTypes.shape({
         transcriptionstatus: PropTypes.string,
-      })
+        type: PropTypes.string,
+      }),
     ),
     title: PropTypes.string,
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
