@@ -96,7 +96,7 @@ export default function TranscriptionForm({
           pageIndex={currentPageIndex}
           titleInput={titleInput}
           numberOfPages={pageCount}
-          disableInput={false}
+          disableInput={disableInput}
           showMeta
           showText={false}
           showInformantFields={isUppteckningsblankett}
