@@ -16,6 +16,8 @@ export function isPdfMedia(mediaItem) {
   return mediaItem?.type === 'pdf' || source.endsWith('.pdf');
 }
 
+// Returns the primary media type for a record based on its media items,
+// with priority: audio > image > pdf.
 export function pickPrimaryMediaType(media = []) {
   if (!Array.isArray(media) || media.length === 0) return null;
 
