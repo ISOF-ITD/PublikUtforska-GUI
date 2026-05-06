@@ -212,10 +212,12 @@ export default function RecordTextPanel({
   const buildTextSide = useCallback(
     (mediaItem, absoluteIndex) => {
       const adjustedAbsoluteIndex = absoluteIndex + firstImageOffset;
+      const pageTranscriptionstatus = mediaItem?.transcriptionstatus || transcriptionstatus;
+
       // If page has text and isn't awaiting transcription, show HTML (with optional highlight)
       if (
         mediaItem.text &&
-        mediaItem.transcriptionstatus !== "readytotranscribe"
+        pageTranscriptionstatus !== "readytotranscribe"
       ) {
         const key = String(adjustedAbsoluteIndex);
         const html =
@@ -243,9 +245,9 @@ export default function RecordTextPanel({
         );
       }
 
-      // If record is ready to be transcribed and transcription is available, show CTA
+      // If page is ready to be transcribed and transcription is available, show CTA
       if (
-        transcriptionstatus === "readytotranscribe"
+        pageTranscriptionstatus === 'readytotranscribe'
         && isTranscriptionAvailable
       ) {
         return (
@@ -260,11 +262,11 @@ export default function RecordTextPanel({
               recordId={recordId}
               archiveId={archive?.archive_id}
               places={places}
-              images={media} // all pages
+              images={mediaImagesAbsolute}
               transcriptionType={transcriptiontype}
               random={false}
               // tell the overlay which page to open
-              initialPageIndex={adjustedAbsoluteIndex}
+              initialPageIndex={absoluteIndex}
               initialPageSource={mediaItem.source}
             />
           </div>
@@ -273,7 +275,7 @@ export default function RecordTextPanel({
 
       // On mobile (<768px), hide the transcribe button area entirely for writable pages.
       if (
-        transcriptionstatus === 'readytotranscribe'
+        pageTranscriptionstatus === 'readytotranscribe'
         && !isTranscriptionAvailable
       ) {
         return null;
@@ -293,7 +295,7 @@ export default function RecordTextPanel({
       expandedTextByIndex,
       highlightedMediaTexts,
       highlight,
-      media,
+      mediaImagesAbsolute,
       places,
       recordId,
       title,
