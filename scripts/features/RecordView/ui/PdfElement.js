@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
-import PropTypes from "prop-types";
-import PdfViewer from "../../../components/PdfViewer";
-import config from "../../../config";
-import PdfThumbnail from "./PdfThumbnail";
+import { useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
+import PdfViewer from '../../../components/PdfViewer';
+import config from '../../../config';
+import { isImageMedia, isPdfMedia } from '../../../utils/mediaTypes';
+import PdfThumbnail from './PdfThumbnail';
 
 export function useMediaQuery(query) {
   const [matches, setMatches] = useState(() => {
-    if (typeof window === "undefined" || !query) return false;
+    if (typeof window === 'undefined' || !query) return false;
     try {
       return window.matchMedia(query).matches;
     } catch {
@@ -15,20 +16,19 @@ export function useMediaQuery(query) {
   });
 
   useEffect(() => {
-    if (typeof window === "undefined" || !query) return;
+    if (typeof window === 'undefined' || !query) return undefined;
     const mql = window.matchMedia(query);
     // set initial value on mount (client only)
     setMatches(mql.matches);
     const handler = (e) => setMatches(e.matches);
 
     // Feature-detect modern vs legacy API (Safari < 14)
-    if (typeof mql.addEventListener === "function") {
-      mql.addEventListener("change", handler);
-      return () => mql.removeEventListener("change", handler);
-    } else {
-      mql.addListener(handler);
-      return () => mql.removeListener(handler);
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', handler);
+      return () => mql.removeEventListener('change', handler);
     }
+    mql.addListener(handler);
+    return () => mql.removeListener(handler);
   }, [query]);
 
   return matches;
@@ -36,21 +36,24 @@ export function useMediaQuery(query) {
 
 export default function PdfElement({ data }) {
   const { media = [] } = data ?? {};
-  const pdfObjects = useMemo(
-    () => (Array.isArray(media) ? media.filter((i) => i?.type === "pdf") : []),
-    [media]
-  );
+  const { hasImageFiles, pdfObjects } = useMemo(() => {
+    const mediaList = Array.isArray(media) ? media : [];
 
-  const isAtLeastMediumScreen = useMediaQuery("(min-width: 768px)");
-  const joinUrl = (base, path) =>
-    `${base ?? ""}${path ?? ""}`.replace(/([^:]\/)\/+/g, "$1");
-  const buildPdfUrl = (src) =>
-    joinUrl(config.pdfUrl ?? config.imageUrl ?? "", src ?? "");
+    return {
+      hasImageFiles: mediaList.some(isImageMedia),
+      pdfObjects: mediaList.filter(isPdfMedia),
+    };
+  }, [media]);
+
+  const isAtLeastMediumScreen = useMediaQuery('(min-width: 768px)');
+  const joinUrl = (base, path) => `${base ?? ''}${path ?? ''}`.replace(/([^:]\/)\/+/g, '$1');
+  const buildPdfUrl = (src) => joinUrl(config.pdfUrl ?? config.imageUrl ?? '', src ?? '');
 
   return (
     <>
-      {isAtLeastMediumScreen &&
-        pdfObjects.map((pdfObject) => (
+      {isAtLeastMediumScreen
+        && !hasImageFiles
+        && pdfObjects.map((pdfObject) => (
           <PdfViewer
             height="80vh"
             url={buildPdfUrl(pdfObject.source)}
@@ -63,7 +66,7 @@ export default function PdfElement({ data }) {
             <PdfThumbnail
               key={`pdf-${pdfObject.source}`}
               url={buildPdfUrl(pdfObject.source)}
-              title={pdfObject.title || pdfObject.source.split("/").pop()}
+              title={pdfObject.title || pdfObject.source.split('/').pop()}
             />
           ))}
         </div>
@@ -79,7 +82,7 @@ PdfElement.propTypes = {
         type: PropTypes.string.isRequired,
         source: PropTypes.string.isRequired,
         title: PropTypes.string,
-      })
+      }),
     ),
   }).isRequired,
 };
