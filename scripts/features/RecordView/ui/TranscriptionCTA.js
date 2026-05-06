@@ -68,7 +68,6 @@ export default function TranscriptionCTA({ data }) {
     places = [],
   } = data || {};
 
-  const statusNorm = (transcriptionstatus || '').toLowerCase();
   const mediaItems = Array.isArray(media) ? media : [];
   const imagePages = mediaItems.filter(
     (item) => (item?.type || '').toLowerCase() === 'image',
@@ -82,16 +81,6 @@ export default function TranscriptionCTA({ data }) {
     normalizedTranscriptionType === 'audio'
     || (!transcriptiontype && hasAudioMedia && !hasImagePages)
   );
-
-  // Show the CTA only for records that are ready to transcribe page by page.
-  if (
-    !isTranscriptionAvailable
-    || statusNorm !== 'readytotranscribe'
-    || isAudioRecord
-    || !hasImagePages
-  ) {
-    return null;
-  }
 
   const { transcribedCount, readyCount, transcribableCount } = imagePages.reduce(
     (counts, page) => {
@@ -112,6 +101,16 @@ export default function TranscriptionCTA({ data }) {
       transcribableCount: 0,
     },
   );
+
+  // Show the CTA when at least one image page can be transcribed.
+  if (
+    !isTranscriptionAvailable
+    || isAudioRecord
+    || !hasImagePages
+    || readyCount === 0
+  ) {
+    return null;
+  }
 
   const totalPages = imagePages.length;
   const pagesLeft = Math.max(totalPages - transcribedCount, 0);
