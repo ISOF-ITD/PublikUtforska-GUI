@@ -281,6 +281,19 @@ export default function RecordTextPanel({
         return null;
       }
 
+      if (
+        // If the record has status accession, show a message that text cannot be transcribed
+        transcriptionstatus === 'accession'
+      ) {
+        return (
+          <p className="text-gray-700">
+            {l(
+              "Texten kan inte skrivas av."
+            )}
+          </p>
+        );
+      }
+      
       // Otherwise, it's being processed
       return (
         <p className="text-gray-700">
