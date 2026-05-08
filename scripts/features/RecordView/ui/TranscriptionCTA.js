@@ -34,6 +34,7 @@ const statusStyles = (raw) => {
       return {
         label: 'Pågår',
         cls: 'bg-amber-100 text-amber-800 ring-amber-600/20',
+        disabled: true,
       };
     case 'reviewing':
     case 'transcribed':
@@ -108,6 +109,7 @@ export default function TranscriptionCTA({ data }) {
     || isAudioRecord
     || !hasImagePages
     || readyCount === 0
+    || transcriptionstatus === 'accession'
   ) {
     return null;
   }
@@ -171,35 +173,37 @@ export default function TranscriptionCTA({ data }) {
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <span className="text-gray-900">{l(STRINGS.invitation)}</span>
+      {!pill.disabled && (
+        <div className="mt-4 space-y-2">
+          <span className="text-gray-900">{l(STRINGS.invitation)}</span>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <TranscribeButton
-            className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
-            label={`${l(STRINGS.transcribe)} ${l(STRINGS.perPage)}`}
-            title={title}
-            recordId={id}
-            archiveId={archive?.archive_id}
-            places={places}
-            images={imagePages}
-            transcriptionType={normalizedTranscriptionType}
-            random={false}
-            disabled={!primaryEnabled}
-            aria-disabled={!primaryEnabled}
-            aria-describedby={!primaryEnabled ? statusId : undefined}
-          />
-          {!primaryEnabled && (
-            <span className="ml-1 text-gray-900" role="note">
-              {l(STRINGS.lockedInfo)}
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <TranscribeButton
+              className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
+              label={`${l(STRINGS.transcribe)} ${l(STRINGS.perPage)}`}
+              title={title}
+              recordId={id}
+              archiveId={archive?.archive_id}
+              places={places}
+              images={imagePages}
+              transcriptionType={normalizedTranscriptionType}
+              random={false}
+              disabled={!primaryEnabled}
+              aria-disabled={!primaryEnabled}
+              aria-describedby={!primaryEnabled ? statusId : undefined}
+            />
+            {!primaryEnabled && (
+              <span className="ml-1 text-gray-900" role="note">
+                {l(STRINGS.lockedInfo)}
+              </span>
+            )}
+          </div>
+
+          {nextReadyText && (
+            <span className="text-gray-700">{l(STRINGS.tipStartFirstFree)}</span>
           )}
         </div>
-
-        {nextReadyText && (
-          <span className="text-gray-700">{l(STRINGS.tipStartFirstFree)}</span>
-        )}
-      </div>
+      )}
     </section>
   );
 }
