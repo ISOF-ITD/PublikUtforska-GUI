@@ -9,9 +9,7 @@ These rules are mandatory. If anything conflicts, follow the repo configuration 
 ## Linting must pass
 Before you say the work is done:
 1) Run `npm run lint`.
-2) Fix all reported issues (errors and warnings) in the changed files.
-3) If your workflow supports autofix, prefer it:
-   - Try `npm run lint -- --fix` (or `npm run lint:fix` if it exists), then re-run `npm run lint`.
+2) Fix all reported issues (errors and warnings) in the changed lines, but not in the whole of the changed file!
 
 ## Do not bypass rules
 - Do NOT add `// eslint-disable` or relax rules to silence errors unless explicitly asked.
