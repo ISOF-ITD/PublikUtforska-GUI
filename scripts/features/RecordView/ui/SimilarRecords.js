@@ -1,11 +1,22 @@
-/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
 import config from "../../../config";
 import { l } from "../../../lang/Lang";
-import { getTitleText } from "../../../utils/helpers";
 import Spinner from "../../../components/Spinner";
+import RecordCards from '../../RecordList/ui/RecordCards';
+
+function normalizeSimilarRecord(hit) {
+  const { _id: fallbackId, _source: source = {} } = hit || {};
+  const id = source.id != null ? source.id : fallbackId;
+
+  return {
+    ...hit,
+    _source: {
+      ...source,
+      id,
+    },
+  };
+}
 
 function SimilarRecords({ data }) {
   // Normalize id to a stable string so the effect doesn't refire due to type flips.
@@ -66,23 +77,25 @@ function SimilarRecords({ data }) {
 
         // Only keep items with media and not the current record itself.
         const seen = new Set([idString]);
-        const cleaned = [];
+        const cleaned = hits.reduce((records, hit) => {
+          const { _id: hitId, _source: source = {} } = hit || {};
+          const hid = hitId == null ? null : String(hitId);
+          const { media } = source;
 
-        for (const h of hits) {
-          if (!h || h._id == null) continue;
-
-          const hid = String(h._id);
-          if (seen.has(hid) || hid === idString) continue;
-
-          const media = h._source?.media;
-          if (!Array.isArray(media) || media.length === 0) continue;
+          if (
+            records.length >= 12
+            || !hid
+            || seen.has(hid)
+            || hid === idString
+            || !Array.isArray(media)
+            || media.length === 0
+          ) {
+            return records;
+          }
 
           seen.add(hid);
-          cleaned.push(h);
-
-          // Cap list size defensively; adjust/remove if your UI expects more.
-          if (cleaned.length >= 12) break;
-        }
+          return records.concat(hit);
+        }, []);
 
         setSimilarRecords(cleaned);
       } catch (err) {
@@ -120,7 +133,9 @@ function SimilarRecords({ data }) {
         aria-live="assertive"
       >
         <span className="inline-block rounded-md bg-red-50 px-3 py-2">
-          <strong className="mr-1">Error:</strong> {error}
+          <strong className="mr-1">Error:</strong>
+          {' '}
+          {error}
         </span>
       </div>
     );
@@ -129,6 +144,8 @@ function SimilarRecords({ data }) {
   if (!similarRecords || similarRecords.length === 0) {
     return null;
   }
+
+  const normalizedRecords = similarRecords.map(normalizeSimilarRecord);
 
   return (
     <section className="mt-8" aria-busy="false">
@@ -166,58 +183,12 @@ function SimilarRecords({ data }) {
         </details>
       </div>
 
-      <ul className="flex flex-wrap gap-4" role="list">
-        {similarRecords.map(({ _id, _source }) => {
-          const { media, places = [] } = _source || {};
-          // first media of type = image, otherwise null
-          const firstMedia = Array.isArray(media)
-            ? media.find((m) => m?.type?.startsWith("image")) || null
-            : null;
-          const titleText = String(getTitleText(_source, undefined, undefined, 90) || l("(Utan titel)"));
-
-          // Double-check we have a usable image source
-          if (!firstMedia?.source) return null;
-
-          let thumbnail = "";
-          try {
-            thumbnail = new URL(firstMedia.source, config?.imageUrl).toString();
-          } catch {
-            const base = String(config?.imageUrl || "");
-            const sep = base && !base.endsWith("/") ? "/" : "";
-            thumbnail = `${base}${sep}${String(firstMedia.source || "")}`;
-          }
-
-          const place = places[0];
-          const placeName = place
-            ? `${place.name}${place.landskap ? `, ${place.landskap}` : ""}`
-            : "";
-
-          return (
-            <li key={_id} className="w-[150px] text-center list-none">
-              <Link
-                to={`/records/${encodeURIComponent(String(_id))}`}
-                className="block no-underline"
-              >
-                <img
-                  src={thumbnail}
-                  alt={titleText || l("Liknande uppteckning")}
-                  className="w-full h-auto rounded-lg shadow-sm"
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => {
-                    // Hide a broken image without crashing the component.
-                    e.currentTarget.style.visibility = "hidden";
-                  }}
-                />
-                <div className="mt-2 text-base text-link">
-                  {titleText}
-                  {placeName ? ` (${placeName})` : ""}
-                </div>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <RecordCards
+        records={normalizedRecords}
+        params={{}}
+        mode="material"
+        layout="desktop-grid"
+      />
     </section>
   );
 }
