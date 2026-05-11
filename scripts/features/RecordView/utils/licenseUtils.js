@@ -14,7 +14,7 @@ export function buildCitation(data) {
   return `${idHuman}${pages ? `, s. ${pages}` : ""}, ${orgName}`;
 }
 
-export const DEFAULT_LICENSE = 'https://creativecommons.org/licenses/by/4.0/deed.sv/';
+export const DEFAULT_LICENSE = 'https://creativecommons.org/licenses/by/4.0/deed.sv';
 
 // Map CC codes to Swedish names (used if `label` is missing)
 export const CC_NAMES_SV = {

@@ -214,7 +214,7 @@ export default {
       },
     },
     copyrightContent: {
-      'https://creativecommons.org/licenses/by/4.0/deed.sv/': {
+      'https://creativecommons.org/licenses/by/4.0/deed.sv': {
         code: 'by',
         version: '4.0',
         locale: 'sv',
