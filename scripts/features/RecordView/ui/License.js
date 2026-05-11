@@ -1,6 +1,21 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { resolveLicense } from "../utils/licenseUtils";
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCreativeCommons,
+  faCreativeCommonsBy,
+  faCreativeCommonsNc,
+  faCreativeCommonsNd,
+  faCreativeCommonsSa,
+} from '@fortawesome/free-brands-svg-icons';
+import { resolveLicense } from '../utils/licenseUtils';
+
+const CC_BADGE_ICONS = {
+  cc: faCreativeCommons,
+  by: faCreativeCommonsBy,
+  nc: faCreativeCommonsNc,
+  nd: faCreativeCommonsNd,
+  sa: faCreativeCommonsSa,
+};
 
 export default function License({ data, className = "" }) {
   const license = resolveLicense(data);
@@ -17,26 +32,38 @@ export default function License({ data, className = "" }) {
   }
 
   // type === "cc"
-  const { licenseUrl, badgeSrc, label } = license;
+  const {
+    licenseUrl,
+    badgeIconKeys,
+    badgeText,
+    label,
+  } = license;
+  const badgeIcons = badgeIconKeys
+    .map((key) => CC_BADGE_ICONS[key])
+    .filter(Boolean);
 
   return (
     <div
       className={`flex flex-col items-start justify-center gap-2 bg-surface-muted text-body rounded max-w-full p-3 w-full lg:w-1/3 border border-solid border-border ${className}`}
     >
-      {badgeSrc ? (
+      {badgeIcons.length ? (
         <a
           href={licenseUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0"
-          aria-label="Öppna licens i nytt fönster"
+          className="inline-flex shrink-0 items-center gap-1 !text-body font-bold leading-none no-underline hover:!text-body hover:no-underline visited:!text-body"
+          aria-label={`Öppna licens: ${label}`}
         >
-          <img
-            src={badgeSrc}
-            alt="Creative Commons-licens"
-            className="w-28"
-            loading="lazy"
-          />
+          {badgeIcons.map((icon) => (
+            <FontAwesomeIcon
+              key={icon.iconName}
+              icon={icon}
+              aria-hidden="true"
+            />
+          ))}
+          {badgeText ? (
+            <span className="ml-2">{badgeText}</span>
+          ) : null}
         </a>
       ) : null}
 
@@ -45,7 +72,7 @@ export default function License({ data, className = "" }) {
         href={licenseUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="underline hover:no-underline"
+        className="!text-body underline hover:!text-body hover:no-underline visited:!text-body"
       >
         {label}
       </a>

@@ -214,23 +214,25 @@ export default {
       },
     },
     copyrightContent: {
-    'https://creativecommons.org/licenses/by-nd/2.5/se/': {
-      code: 'by-nd',
-      version: '2.5',
-      locale: 'se',
-      label: 'Creative Commons Erkännande–Inga bearbetningar 2.5 Sverige',
-      // optional override; if omitted, component builds the default CC badge URL:
-      // https://i.creativecommons.org/l/{code}/{version}/{locale}/88x31.png
-      badge: 'https://i.creativecommons.org/l/by-nd/2.5/se/88x31.png',
+      'https://creativecommons.org/licenses/by/4.0/deed.sv/': {
+        code: 'by',
+        version: '4.0',
+        locale: 'sv',
+        label: 'Creative Commons Erkännande 4.0 Internationell',
+      },
+      'https://creativecommons.org/licenses/by-nd/2.5/se/': {
+        code: 'by-nd',
+        version: '2.5',
+        locale: 'se',
+        label: 'Creative Commons Erkännande–Inga bearbetningar 2.5 Sverige',
+      },
+      'https://creativecommons.org/licenses/by/2.5/se/': {
+        code: 'by',
+        version: '2.5',
+        locale: 'se',
+        label: 'Creative Commons Erkännande 2.5 Sverige',
+      },
     },
-    'https://creativecommons.org/licenses/by/2.5/se/': {
-      code: 'by',
-      version: '2.5',
-      locale: 'se',
-      label: 'Creative Commons Erkännande 2.5 Sverige',
-      badge: 'https://i.creativecommons.org/l/by/2.5/se/88x31.png',
-    },
-  },
   },
 
   // use this to filter the random transcriptions by category
