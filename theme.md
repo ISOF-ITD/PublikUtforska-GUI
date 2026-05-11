@@ -214,12 +214,94 @@ I LESS/CSS används variablerna direkt:
 
 ## Länkar i dark mode
 
-Länkar använder tokenparet:
+Länkfärgerna definieras som CSS custom properties i `less/theme-tokens.less`:
 
 ```css
 --color-link
 --color-link-hover
 ```
+
+Det är de underliggande färgtokensen. I Tailwind används samma färger via klassnamnen:
+
+```jsx
+text-link
+hover:text-link-hover
+```
+
+Det betyder alltså:
+
+- I LESS/CSS skriver du `color: var(--color-link)`.
+- I React-komponenter med Tailwind skriver du oftast `className="text-link hover:text-link-hover"`.
+- Båda varianterna pekar på samma färgvärden.
+
+### Från token till HTML
+
+Här är hela kedjan för en länkfärg:
+
+1. Färgvärdet definieras i `less/theme-tokens.less`.
+
+   ```css
+   :root {
+     --color-link-rgb: 0 84 98;
+   }
+
+   @media (prefers-color-scheme: dark) {
+     :root {
+       --color-link-rgb: 248 250 252;
+     }
+   }
+   ```
+
+2. Tailwind får veta att färgen `link` ska läsa från samma CSS-variabel i `tailwind.config.js`.
+
+   ```js
+   colors: {
+     link: tokenColor('--color-link-rgb'),
+     'link-hover': tokenColor('--color-link-hover-rgb'),
+   }
+   ```
+
+3. Hjälpfunktionen `tokenColor` gör att Tailwind kan skapa färger med eller utan opacity/genomsiktighet.
+
+   ```js
+   const tokenColor = (variable) => ({ opacityValue }) => {
+     if (opacityValue === undefined) {
+       return `rgb(var(${variable}))`;
+     }
+
+     return `rgb(var(${variable}) / ${opacityValue})`;
+   };
+   ```
+
+4. När en komponent skriver:
+
+   ```jsx
+   <a className="text-link hover:text-link-hover" href="/records/abc">
+     Visa post
+   </a>
+   ```
+
+   genererar Tailwind i praktiken CSS som motsvarar:
+
+   ```css
+   .text-link {
+     color: rgb(var(--color-link-rgb));
+   }
+
+   .hover\:text-link-hover:hover {
+     color: rgb(var(--color-link-hover-rgb));
+   }
+   ```
+
+5. I webbläsaren blir resultatet att samma HTML-klass får olika färg beroende på systemtema.
+
+   ```html
+   <a class="text-link hover:text-link-hover" href="/records/abc">
+     Visa post
+   </a>
+   ```
+
+   I light mode läser klassen `--color-link-rgb` från `:root`. I dark mode skriver `@media (prefers-color-scheme: dark)` över samma variabel, och länken byter färg utan att React-komponenten ändras.
 
 I light mode ligger länkarna nära ISOF:s gröna profilfärg. I dark mode är länkarna avsiktligt vita eller gråvita, eftersom gröna länkar upplevdes sticka ut för mycket mot mörka ytor.
 
