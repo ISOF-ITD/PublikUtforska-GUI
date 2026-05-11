@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolder,
   faFolderOpen,
-  faClosedCaptioning,
+  faFileLines,
 } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
 import HighlightedText from "./HighlightedText";
@@ -68,7 +68,7 @@ export default function RecordListItem(props) {
 
   // Re-use same Tailwind classes in similar many elements
   const pillClasses =
-    "inline-flex flex-wrap max-w-full shadow border border-gray-200 rounded py-1 px-1.5 m-1.5 text-xs bg-white";
+    'inline-flex flex-wrap max-w-full shadow border border-border rounded py-1 px-1.5 m-1.5 text-xs bg-surface';
 
   /* ---------- sub-records hook ---------- */
   const {
@@ -105,6 +105,11 @@ export default function RecordListItem(props) {
   const hasTranscription = media.some(
     (m) => m.type === "audio" && m.utterances?.utterances?.length > 0
   );
+  const transcriptionBadgeClass = [
+    'ml-1 inline-flex items-center gap-1 rounded border border-border',
+    'bg-white/80 px-1.5 py-0.5 align-middle text-[10px] font-semibold',
+    'leading-none text-link shadow-sm',
+  ].join(' ');
   const isAudioRecording = transcriptiontype === 'audio'
     || recordtype === 'one_audio_record'
     || media.some(
@@ -164,10 +169,10 @@ export default function RecordListItem(props) {
     <tr
       tabIndex={0}
       onKeyDown={onRowKeyDown}
-      className={`border-b border-gray-200 last:border-0 even:bg-white odd:bg-gray-100 ${
-        displayTextSummary ? "bg-gray-100" : ""
+      className={`border-b border-border last:border-0 even:bg-surface odd:bg-surface-muted ${
+        displayTextSummary ? 'bg-surface-muted' : ''
       } ${
-        isSelected ? 'outline outline-2 outline-black outline-offset-[-2px]' : ""
+        isSelected ? 'outline outline-2 outline-focus outline-offset-[-2px]' : ''
       }`}
     >
       {/* ---------- title (mobile+desktop) ---------- */}
@@ -180,7 +185,7 @@ export default function RecordListItem(props) {
           <Link
             to={recordHref}
             target={config.embeddedApp ? "_parent" : "_self"}
-            className="item-title text-isof hover:underline flex items-start gap-3"
+            className="item-title text-link hover:underline flex items-start gap-3"
             onClick={handleRecordLinkClick}
           >
             {thumbnail && (
@@ -219,37 +224,43 @@ export default function RecordListItem(props) {
               />
               {hasTranscription && (
                 <span
-                  className="inline-flex items-center gap-0.5 -!mb-1 px-1.5 text-[10px] font-medium text-lighter-isof"
-                  title={l("Har avskrift")}
+                  className={transcriptionBadgeClass}
+                  title={l('Har avskrift')}
+                  aria-label={l('Har avskrift')}
                 >
                   <FontAwesomeIcon
-                    icon={faClosedCaptioning}
-                    className="text-[16px] bg-isof rounded-sm"
+                    icon={faFileLines}
+                    className="text-[11px]"
                     aria-hidden="true"
                   />
-                  <span className="sr-only">{l("Har avskrift")}</span>
+                  <span>{l('Avskrift')}</span>
                 </span>
               )}
             </span>
           </Link>
 
           {summary && (
-            <div className="item-summary text-sm text-gray-600 mt-2">
+            <div className="item-summary text-sm text-muted mt-2">
               {summary}
             </div>
           )}
 
           {/* Show hits for double nested hits with highlight for descriptions */}
-          {innerHits?.["media.description"]?.hits?.hits.map((descHit) => {
+          {innerHits?.['media.description']?.hits?.hits.map((descHit) => {
             const highlighted =
-              descHit.highlight?.["media.description.text"]?.[0] ??
+              descHit.highlight?.['media.description.text']?.[0] ??
               descHit._source?.text ??
-              "";
+              '';
 
             if (!highlighted) return null;
 
             return (
-              <div className="flex flex-col mt-2" key={`test-${descHit._id}`}>
+              <div
+                className="flex flex-col mt-2"
+                key={`description-${descHit?.['_id'] ?? 'hit'}-${
+                  descHit?.['_nested']?.offset ?? highlighted
+                }`}
+              >
                 <span className="mr-1">Innehållsbeskrivning:</span>
                 <HighlightedText
                   text={highlighted}
@@ -260,21 +271,26 @@ export default function RecordListItem(props) {
               </div>
             );
           })}
-          {innerHits?.["media.utterances.utterances"]?.hits?.hits.map(
+          {innerHits?.['media.utterances.utterances']?.hits?.hits.map(
             (descHit) => {
               const highlighted =
-                descHit.highlight?.["media.utterances.utterances.text"]?.[0] ??
+                descHit.highlight?.['media.utterances.utterances.text']?.[0] ??
                 descHit._source?.text ??
-                "";
+                '';
 
               if (!highlighted) return null;
 
               const startLabel = descHit._source?.start !== undefined
                 ? ` (${secondsToMMSS(descHit._source.start)})`
-                : "";
+                : '';
 
               return (
-                <div className="flex flex-col mt-2" key={`test2-${descHit._id}-${startLabel}`}>
+                <div
+                  className="flex flex-col mt-2"
+                  key={`utterance-${descHit?.['_id'] ?? 'hit'}-${
+                    descHit?.['_nested']?.offset ?? ''
+                  }-${descHit?.['_source']?.start ?? startLabel}`}
+                >
                   <span className="mr-1">
                     Ljudavskrift
                     {startLabel}
@@ -329,11 +345,16 @@ export default function RecordListItem(props) {
           )}
 
           {innerHits?.media?.hits?.hits.map((hit) => {
-            const highlighted = hit.highlight?.["media.text"]?.[0];
+            const highlighted = hit.highlight?.['media.text']?.[0];
             if (!highlighted) return null;
 
             return (
-              <div className="flex flex-col mt-2" key={`media-${hit._id}-${highlighted}`}>
+              <div
+                className="flex flex-col mt-2"
+                key={`media-${hit?.['_id'] ?? 'hit'}-${
+                  hit?.['_nested']?.offset ?? highlighted
+                }`}
+              >
                 <span className="mr-1">Transkribering:</span>
                 <HighlightedText
                   text={highlighted}
@@ -349,7 +370,7 @@ export default function RecordListItem(props) {
             <div className="subrecords mt-1">
               <small>
                 <button type="button" onClick={toggle}
-                  className="inline-flex items-center text-isof hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-isof/60 rounded-sm"
+                  className="inline-flex items-center text-link hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-focus/60 rounded-sm"
                 >
                   <FontAwesomeIcon
                     icon={visible ? faFolderOpen : faFolder}
@@ -367,7 +388,7 @@ export default function RecordListItem(props) {
               {visible && (
                 <div className="relative ml-2 mt-1">
                   <div
-                    className={`rounded-md border !px-1.5 border-gray-200 bg-white/70 shadow-sm ${
+                    className={`rounded-md border !px-1.5 border-border bg-surface/70 shadow-sm ${
                       subrecords.length > 5
                         ? "max-h-48 overflow-y-auto pr-2"
                         : "pr-1"
@@ -423,7 +444,7 @@ export default function RecordListItem(props) {
                                   to={href}
                                   className={`${
                                     pub ? "font-semibold" : ""
-                                  } hover:underline text-isof`}
+                                  } hover:underline text-link`}
                                   onClick={handleRecordLinkClick}
                                 >
                                   {!isAudioRecording && pageLabel ? (
@@ -448,7 +469,7 @@ export default function RecordListItem(props) {
 
                   {/* subtle fade at the bottom when scrollable */}
                   {subrecords.length > 5 && (
-                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent" />
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-surface to-transparent" />
                   )}
                 </div>
               )}
@@ -474,7 +495,12 @@ export default function RecordListItem(props) {
           {places?.length > 0 && (
             <>
               {places.map((place) => (
-                <div key={place.id} className={pillClasses}>
+                <div
+                  key={`place-${place?.id ?? 'unknown'}-${
+                    place?.specification ?? ''
+                  }-${getPlaceString([place])}`}
+                  className={pillClasses}
+                >
                   {place.specification && (
                     <span className="mr-1">{place.specification} i</span>
                   )}
@@ -487,7 +513,7 @@ export default function RecordListItem(props) {
                       search: searchParams.search,
                       search_field: searchParams.search_field,
                     })}`}
-                    className="text-isof hover:underline"
+                    className="text-link hover:underline"
                     // onClick={(e) => {
                     //   e.preventDefault();
                     //   navigate(`/places/${place.id}`);
@@ -523,7 +549,7 @@ export default function RecordListItem(props) {
                 ? String(year)
                 : null;
             return displayYear ? (
-              <span className={`${pillClasses} bg-white`}>{displayYear}</span>
+              <span className={`${pillClasses} bg-surface`}>{displayYear}</span>
             ) : null;
           })()}
         </td>

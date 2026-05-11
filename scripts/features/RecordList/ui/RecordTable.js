@@ -55,7 +55,7 @@ export default function RecordTable({
       >
         {/* ---------- header ---------- */}
         <thead>
-          <tr className="border-b border-gray-300 last:border-0">
+          <tr className="border-b border-border last:border-0">
             {shouldRenderColumn('title') && (
               <th scope="col" className="text-left w-1/2">{l('Titel')}</th>
             )}
@@ -66,7 +66,7 @@ export default function RecordTable({
                   <button
                     type="button"
                     onClick={() => handleSort('archive.archive_id_row.keyword')}
-                    className="record-table-sort-button inline-flex items-center gap-1 border-0 bg-transparent p-0 align-middle text-sky-900 hover:underline m-0"
+                    className="record-table-sort-button inline-flex items-center gap-1 border-0 bg-transparent p-0 align-middle text-link hover:underline m-0"
                   >
                     {l('Arkivnummer')}
                     {sort === 'archive.archive_id_row.keyword'
@@ -87,7 +87,7 @@ export default function RecordTable({
               <th scope="col" className="text-center" aria-sort={ariaSortValue('year')}>
                 <button
                   type="button"
-                  className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-sky-900 hover:cursor-pointer hover:underline m-0"
+                  className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-link hover:cursor-pointer hover:underline m-0"
                   onClick={() => handleSort('year')}
                 >
                   {sort === 'year' && (order === 'asc' ? '▼' : '▲')}
@@ -107,7 +107,7 @@ export default function RecordTable({
                 <th scope="col" className="text-center" aria-sort={ariaSortValue('transcriptionstatus')}>
                   <button
                     type="button"
-                    className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-sky-900 hover:cursor-pointer hover:underline m-0"
+                    className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-link hover:cursor-pointer hover:underline m-0"
                     onClick={() => handleSort('transcriptionstatus')}
                   >
                     {sort === 'transcriptionstatus'

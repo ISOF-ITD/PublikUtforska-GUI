@@ -20,14 +20,14 @@ export default function CollectorList({
 
   return collectors.map((p) => (
     <Link
-      key={`collector-${p.id}`}
+      key={`collector-${p.id}-${p.relation}-${p.name}`}
       to={`${
         mode === "transcribe" ? "/transcribe" : ""
       }/persons/${p.id.toLowerCase()}${createSearchRoute({
         search: searchParams.search,
         search_field: searchParams.search_field,
       })}`}
-      className={`${pillClasses} bg-white text-isof hover:underline`}
+      className={`${pillClasses} bg-surface text-link hover:underline`}
     >
       {l(p.name)}
     </Link>

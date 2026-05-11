@@ -192,8 +192,8 @@ function DescriptionForm({
   );
 
   return (
-    <div className="border border-gray-300 p-4 mb-4 bg-white text-sm relative">
-      <p className="text-lg font-semibold pb-4 text-isof">
+    <div className="border border-border p-4 mb-4 bg-surface text-body text-sm relative">
+      <p className="text-lg font-semibold pb-4 text-link">
         Din kunskap kan hjälpa andra -
         {' '}
         {editingDesc ? 'Redigera beskrivning' : 'Lägg till en beskrivning'}
@@ -222,7 +222,7 @@ function DescriptionForm({
         </InfoMessage>
         <textarea
           id={fieldIds.text}
-          className="border p-2 w-full mb-2"
+          className="border border-border bg-surface text-body p-2 w-full mb-2"
           rows="4"
           value={dataForSource.descriptionText || ""}
           onChange={(e) => handleChangeField("descriptionText", e.target.value)}
@@ -285,7 +285,7 @@ function FormSection({ title, children, labelFor }) {
 
 function CharacterCount({ count }) {
   return (
-  <div className="text-right text-xs text-gray-500">
+  <div className="text-right text-xs text-muted">
     {count || 0}/500 tecken
   </div>
   );
@@ -311,7 +311,7 @@ function TermSection({
       <input
         id={fieldIds.term}
         type="text"
-        className="border p-1 w-full"
+        className="border border-border bg-surface text-body p-1 w-full"
         aria-label="Ämnesord"
         placeholder="Skriv t.ex. 'Musik' eller 'Mat'"
         value={data.typedTag || ""}
@@ -328,14 +328,14 @@ function TermSection({
 
     <button
       type="button"
-      className="mt-4 text-sm text-white hover:text-white bg-isof hover:bg-darker-isof px-2 py-1"
+      className="mt-4 text-sm text-white hover:text-white bg-primary hover:bg-primary-hover px-2 py-1"
       onClick={onToggleTree}
     >
       {showTermNode ? 'Dölj termlista ▲' : 'Visa termlista ▼'}
     </button>
 
     {showTermNode && (
-      <div className="border p-2 mt-2">
+      <div className="border border-border bg-surface p-2 mt-2">
         <ul className="space-y-1" aria-label="Tillgängliga ämnesord">
           {TermList.map((rootNode) => (
             <TermNode
@@ -364,7 +364,7 @@ function TermSuggestions({ typedTag, onSelect, onChange, inputId }) {
 
   return (
     <ul
-      className="absolute z-10 bg-white border border-gray-300 mt-1 w-full max-h-48 overflow-y-auto"
+      className="absolute z-10 bg-surface border border-border mt-1 w-full max-h-48 overflow-y-auto"
       aria-label="Föreslagna ämnesord"
       aria-controls={inputId}
     >
@@ -372,7 +372,7 @@ function TermSuggestions({ typedTag, onSelect, onChange, inputId }) {
         <li key={match.termid}>
           <button
             type="button"
-            className="block w-full px-2 py-1 text-left hover:bg-gray-100"
+            className="block w-full px-2 py-1 text-left text-body hover:bg-surface-hover"
             onClick={() => {
               onSelect(match);
               onChange('typedTag', '');
@@ -403,7 +403,7 @@ function SelectedTags({ tags, onRemove }) {
 function ExplanationSection() {
   return (
     <div className="mb-4">
-      <details className="text-sm text-gray-600">
+      <details className="text-sm text-muted">
         <summary className="hover:cursor-pointer list-none flex items-center">
           <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
           Varför samlar vi in innehållsbeskrivningar?
@@ -423,7 +423,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
   return (
   <div className="mt-4">
     <div className="mt-2">
-      <details className="text-sm text-gray-600">
+      <details className="text-sm text-muted">
         <summary className="hover:cursor-pointer list-none">
           <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
           Varför frågar vi efter namn/e-post?
@@ -436,7 +436,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
           <a
             href="https://www.isof.se/om-oss/om-webbplatsen/hantering-av-personuppgifter"
             target="_blank"
-            className="text-isof underline hover:cursor-pointer"
+            className="text-link underline hover:cursor-pointer hover:text-link-hover"
           >
             Läs mer.
           </a>
@@ -452,7 +452,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
             autoComplete="name"
             type="text"
             placeholder="Ange ditt namn"
-            className="border p-2 w-full mt-1"
+            className="border border-border bg-surface text-body p-2 w-full mt-1"
             value={data?.name || ""}
             onChange={(e) => onChange("name", e.target.value)}
           />
@@ -466,7 +466,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
             autoComplete="email"
             type="email"
             placeholder="Ange din e-post"
-            className="border p-2 w-full mt-1"
+            className="border border-border bg-surface text-body p-2 w-full mt-1"
             value={data?.email || ''}
             onChange={(e) => onChange('email', e.target.value)}
           />
@@ -496,7 +496,7 @@ function FormActions({ isValid, isEditing, onCancel, onSave, onDelete }) {
     {isEditing && (
       <button
         type="button"
-        className="text-red-600 hover:text-red-800 underline  hover:cursor-pointer"
+        className="text-red-600 hover:text-red-800 underline hover:cursor-pointer"
         onClick={onDelete}
       >
         Ta bort beskrivning
@@ -504,7 +504,7 @@ function FormActions({ isValid, isEditing, onCancel, onSave, onDelete }) {
     )}
     <button
       type="button"
-      className="underline text-gray-600 hover:text-gray-900 hover:cursor-pointer"
+      className="underline text-muted hover:text-body hover:cursor-pointer"
       onClick={onCancel}
     >
       Avbryt
@@ -513,8 +513,8 @@ function FormActions({ isValid, isEditing, onCancel, onSave, onDelete }) {
       type="button"
       className={`px-4 py-2 rounded text-white ${
         isValid
-          ? "bg-isof hover:bg-darker-isof hover:cursor-pointer"
-          : "bg-gray-400 hover:cursor-not-allowed"
+          ? "bg-primary hover:bg-primary-hover hover:cursor-pointer"
+          : "bg-disabled hover:cursor-not-allowed"
       }`}
       onClick={onSave}
       disabled={!isValid}

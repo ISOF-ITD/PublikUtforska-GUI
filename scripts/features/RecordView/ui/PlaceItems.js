@@ -20,11 +20,14 @@ function PlaceItems({ data, routeParams = '' }) {
     const linkUrl = `/places/${id}${routeParams}`;
 
     return (
-      <tr key={rowKey} className="border-b last:border-b-0 odd:bg-gray-100">
+      <tr
+        key={rowKey}
+        className="border-b border-border last:border-b-0 odd:bg-surface-muted even:bg-surface text-body"
+      >
         <td
           className="py-3 px-2 md:py-2 md:px-4"
         >
-          <Link to={linkUrl} className="text-isof hover:underline">
+          <Link to={linkUrl} className="text-link hover:underline">
             {placeName}
           </Link>
         </td>
@@ -41,7 +44,7 @@ function PlaceItems({ data, routeParams = '' }) {
     <div className="w-full mb-6 md:flex md:gap-4">
       <div className="md:w-1/2">
         <h3 className="text-xl font-bold mb-4">{l('Platser')}</h3>
-        <div className="overflow-x-auto border rounded">
+        <div className="overflow-x-auto rounded border border-border bg-surface text-body">
           <table className="w-full text-left border-collapse">
             <thead className="md:table-header-group">
               <tr>

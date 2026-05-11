@@ -124,16 +124,16 @@ function ArchiveImage({
   const handleClick = () => onMediaClick(mediaItem, index);
 
   const containerClasses = classNames(
-    "group relative flex gap-3 overflow-hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-isof focus-visible:ring-offset-2 focus-visible:ring-offset-white cursor-zoom-in appearance-none block w-full h-auto m-0 p-0 border-0 bg-transparent text-left align-top leading-none",
-    isThumb ? "w-28 sm:w-32 md:w-36 shrink-0" : "w-full",
+    'group relative flex gap-3 overflow-hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-zoom-in appearance-none block w-full h-auto m-0 p-0 border-0 bg-transparent text-left align-top leading-none',
+    isThumb ? 'w-28 sm:w-32 md:w-36 shrink-0' : 'w-full',
     className
   );
 
   const imageClasses = classNames(
     isThumb
-      ? "block w-full h-28 sm:h-32 md:h-36 object-contain bg-neutral-50 bg-neutral-200"
-      : "block w-full max-w-[640px] h-auto bg-neutral-50/40 bg-neutral-200/40",
-    "select-none pointer-events-none rounded-md",
+      ? 'block w-full h-28 sm:h-32 md:h-36 object-contain bg-surface-hover'
+      : 'block w-full max-w-[640px] h-auto bg-surface-hover/40',
+    'select-none pointer-events-none rounded-md',
     imgClassName
   );
 
@@ -173,7 +173,7 @@ function ArchiveImage({
 
       {/* Caption (visible) */}
       {showCaption && (mediaItem.title || mediaItem.comment) && (
-        <div className="mt-2 text-sm text-gray-700">
+        <div className="mt-2 text-sm text-body">
           {/* title is already shown in the segment header, 
           can be used later if we add support for single page titles
           <div className="font-medium">{mediaItem.title || ""}</div>
@@ -183,7 +183,7 @@ function ArchiveImage({
           {mediaItem.comment &&
             mediaItem.comment.trim() !== "" &&
             mediaItem.comment.trim() !== "None" && (
-              <div className="text-gray-600 flex items-center gap-2">
+              <div className="text-muted flex items-center gap-2">
                  <FontAwesomeIcon icon={faCommentDots} />
                 {l("Kommentarer: ")}
                 {mediaItem.comment}

@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,21 +17,21 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
     .filter(Boolean);
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 mt-4">
+    <div className="bg-surface-muted rounded-lg p-4 mt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Transcribed By Section */}
         {hasContributor && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-isof">
+            <div className="flex items-center gap-2 text-link">
               <FontAwesomeIcon icon={faUserPen} className="h-4 w-4" />
               <h3 className="font-semibold text-base m-0">
                 {l("Bidrag av")}
               </h3>
             </div>
             <div className="ml-6 space-y-1">
-              <p className="m-0 text-gray-800">{transcribedby}</p>
+              <p className="m-0 text-body">{transcribedby}</p>
               {transcriptiondate && (
-                <p className="m-0 text-sm text-gray-600">
+                <p className="m-0 text-sm text-muted">
                   {new Date(transcriptiondate).toLocaleDateString("sv-SE")}
                 </p>
               )}
@@ -43,7 +42,7 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
         {/* Comments Section */}
         {hasComments && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-isof">
+            <div className="flex items-center gap-2 text-link">
               <FontAwesomeIcon icon={faCommentDots} className="h-4 w-4" />
               <h3 className="font-semibold text-base m-0">
                 {l("Kommentarer")}
@@ -51,7 +50,7 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
             </div>
 
             {commentItems.length > 0 ? (
-              <ul className="ml-6 list-disc text-sm text-gray-800 space-y-1">
+              <ul className="ml-6 list-disc text-sm text-body space-y-1">
                 {commentItems.map((item, i) => (
                   <li
                     key={i}
@@ -60,7 +59,7 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
                 ))}
               </ul>
             ) : (
-              <span className="ml-6 m-0 text-gray-800">
+              <span className="ml-6 m-0 text-body">
                 {l("Inga kommentarer.")}
               </span>
             )}
@@ -89,7 +88,7 @@ export function PageContributor({ transcribedby, transcriptiondate, comment }) {
     : null;
 
   return (
-    <div className="mt-2 border-t border-gray-100 pt-2 text-xs text-gray-600 space-y-1">
+    <div className="mt-2 border-t border-border pt-2 text-xs text-muted space-y-1">
       {transcribedby && (
         <span className="m-0 flex items-center gap-1 select-none pointer-events-none">
           <FontAwesomeIcon icon={faUserPen} />

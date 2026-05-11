@@ -1,4 +1,5 @@
 @import "mixins.less";
+@import "theme-tokens.less";
 @import "skeleton.less";
 @import "leaflet.less";
 @import "ui-components/map.less";
@@ -92,7 +93,8 @@ body {
 	// background-image: url('../img/loader.gif');
 	// background-position: center;
 	// background-repeat: no-repeat;
-	background: radial-gradient(circle at 20% 20%, rgba(45, 212, 191, 0.28), transparent 40%), radial-gradient(circle at 80% 75%, rgba(14, 116, 144, 0.28), transparent 42%), linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
+	background: var(--color-bg-gradient);
+	color: var(--color-text);
 }
 
 button {
@@ -108,7 +110,7 @@ button {
 }
 
 .record-table-sort-button:focus-visible {
-	outline: 2px solid #000 !important;
+	outline: 2px solid var(--color-focus) !important;
 	outline-offset: 1px;
 	box-shadow: none !important;
 }
@@ -168,9 +170,9 @@ footer {
 
 		pointer-events: all;
 
-		box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.4);
+		box-shadow: 0px 2px 6px var(--color-shadow-strong);
 		border-radius: 4px;
-		background-color: @color-red;
+		background-color: var(--color-primary);
 
 		overflow: hidden;
 		
@@ -203,10 +205,10 @@ footer {
 
 				font-size: 16px !important;
 				text-decoration: none;
-				color: #fff;
+				color: var(--color-text-inverted);
 
 				&.vitxbrodtext {
-					background-color: @color-red-lighter;
+					background-color: var(--color-primary-hover);
 
 					text-decoration: underline;
 				}
@@ -226,12 +228,12 @@ footer {
 
 		margin: 0;
 
-		background: #fff;
+		background: var(--color-surface);
 
-		border-top: 6px solid @color-red !important;
+		border-top: 6px solid var(--color-primary) !important;
 		border-radius: 2px;
 
-		box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.4);
+		box-shadow: 0px 2px 6px var(--color-shadow-strong);
 
 		pointer-events: all;
 
@@ -269,7 +271,8 @@ footer {
 
 
 span.highlight {
-	background: yellow;
+	background: var(--color-highlight);
+	color: var(--color-highlight-text);
 }
 
 input {
@@ -277,7 +280,7 @@ input {
 }
 
 input.invalid {
-	border: 2px solid red;
+	border: 2px solid var(--color-danger);
   }
 
 @keyframes marquee-run {
@@ -301,7 +304,7 @@ input.invalid {
 }
 
 label {
-    color: #005462;
+    color: var(--color-link);
     text-decoration: none;
     cursor: pointer;
 }

@@ -1,4 +1,5 @@
 import logoIsof from '../../img/logotyp-isof.svg';
+import logoIsofWhite from '../../img/logotyp-isof-vit.svg';
 
 export default function Footer() {
   const isofHomepageLabel = 'Institutet for sprak och folkminnen - hemsida';
@@ -19,7 +20,14 @@ export default function Footer() {
           <img
             src={logoIsof}
             alt="Isof"
-            className="w-28 block h-auto"
+            className="theme-aware-logo--light w-28 h-auto"
+            loading="lazy"
+            decoding="async"
+          />
+          <img
+            src={logoIsofWhite}
+            alt="Isof"
+            className="theme-aware-logo--dark w-28 h-auto"
             loading="lazy"
             decoding="async"
           />

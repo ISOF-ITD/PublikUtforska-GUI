@@ -11,17 +11,17 @@ export default function SegmentPersons({ persons = [], maxVisible = 3 }) {
       {visiblePersons.map((p) => (
         <span
           key={p.id}
-          className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+          className="inline-flex items-center gap-1 bg-surface-hover text-body text-xs px-2 py-1 rounded-full"
         >
           <span className="font-medium">{p.name}</span>
           {p.relation ? (
-            <span className="text-[0.7rem] text-gray-500">({p.relation})</span>
+            <span className="text-[0.7rem] text-subtle">({p.relation})</span>
           ) : null}
         </span>
       ))}
 
       {hiddenCount > 0 && (
-        <span className="inline-flex items-center bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">
+        <span className="inline-flex items-center bg-surface-active text-muted text-xs px-2 py-1 rounded-full">
           +{hiddenCount}
         </span>
       )}

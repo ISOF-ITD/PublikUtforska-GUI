@@ -14,11 +14,11 @@ const SuggestionsPopover = forwardRef(
       <div
         ref={ref}
         id="search-suggestions-container"
-        className="absolute left-0 right-0 top-full mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg z-[2100] pointer-events-auto overflow-hidden"
+        className="absolute left-0 right-0 top-full mt-2 w-full rounded-lg border border-border bg-surface shadow-lg z-[2100] pointer-events-auto overflow-hidden"
       >
         <button
           type="button"
-          className="absolute z-[2000] right-3 !p-2 !border-none top-3 cursor-pointer !text-gray-500 text-xl leading-none  rounded"
+          className="absolute z-[2000] right-3 !p-2 !border-none top-3 cursor-pointer !text-subtle text-xl leading-none  rounded"
           onClick={onClose}
           aria-label="Stäng förslag"
         >
@@ -46,7 +46,7 @@ const SuggestionsPopover = forwardRef(
                   className="py-1"
                   style={{ maxHeight }}
                 >
-                  <div className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-wide text-gray-500 sticky top-0 bg-white">
+                  <div className="px-4 pt-2 pb-1 text-[11px] uppercase tracking-wide text-subtle sticky top-0 bg-surface">
                     {label}
                   </div>
 
@@ -61,8 +61,8 @@ const SuggestionsPopover = forwardRef(
                         role="option"
                         aria-selected={isActive}
                         tabIndex={-1}
-                        className={`px-4 py-2 cursor-pointer hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded ${
-                          isActive ? "bg-gray-100" : ""
+                        className={`px-4 py-2 cursor-pointer hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded ${
+                          isActive ? 'bg-surface-hover' : ''
                         }`}
                         // prevent input blur before we handle the click
                         onPointerDown={(e) => {

@@ -105,7 +105,7 @@ function SimilarRecords({ data }) {
       >
         <Spinner
           size="lg"
-          className="text-isof"
+          className="text-link"
           label={l("Laddar liknande uppteckningar")}
         />
       </div>
@@ -133,20 +133,20 @@ function SimilarRecords({ data }) {
   return (
     <section className="mt-8" aria-busy="false">
       <div className="mb-4 flex flex-col items-start justify-between gap-4">
-        <h3 className="flex items-center gap-2 text-xl font-semibold text-gray-900 m-0">
+        <h3 className="flex items-center gap-2 text-xl font-semibold text-body m-0">
           {l('Liknande accessioner')}
         </h3>
 
         <details className="group max-w-[42rem]">
           <summary
-            className="cursor-pointer select-none text-sm text-isof hover:text-darker-isof focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-isof rounded"
+            className="cursor-pointer select-none text-sm text-link hover:text-link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-focus rounded"
             aria-label={l("Visa hjälptext för liknande accessioner")}
           >
             {l("Vad är detta?")}
           </summary>
 
           <div
-            className="mt-2 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm flex flex-col gap-2 text-gray-700"
+            className="mt-2 rounded-md border border-border bg-surface-muted p-3 text-sm flex flex-col gap-2 text-body"
             role="note"
           >
             <p className="font-semibold">
@@ -209,7 +209,7 @@ function SimilarRecords({ data }) {
                     e.currentTarget.style.visibility = "hidden";
                   }}
                 />
-                <div className="mt-2 text-base text-isof">
+                <div className="mt-2 text-base text-link">
                   {titleText}
                   {placeName ? ` (${placeName})` : ""}
                 </div>

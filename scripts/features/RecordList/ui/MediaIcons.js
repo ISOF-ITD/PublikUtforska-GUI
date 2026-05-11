@@ -20,7 +20,7 @@ export default function MediaIcons({ media }) {
       <FontAwesomeIcon
         icon={faVolumeHigh}
         title="Inspelning"
-        className="mx-1 text-isof align-middle"
+        className="mx-1 text-link align-middle"
         aria-hidden="true"
       />
     );
@@ -31,7 +31,7 @@ export default function MediaIcons({ media }) {
       <FontAwesomeIcon
         icon={faFileLines}
         title="Uppteckning"
-        className="mx-1 text-isof align-middle"
+        className="mx-1 text-link align-middle"
         aria-hidden="true"
       />
     );
@@ -42,7 +42,7 @@ export default function MediaIcons({ media }) {
       <FontAwesomeIcon
         icon={faFilePdf}
         title="PDF"
-        className="mx-1 text-red-500 align-middle"
+        className="mx-1 text-danger align-middle"
         aria-hidden="true"
       />
     );

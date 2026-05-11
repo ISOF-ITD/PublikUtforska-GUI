@@ -42,8 +42,12 @@ export default function FilterSwitch({ mode = 'material', className = '' }) {
     "transition-colors duration-200 no-underline hover:underline",
   ].join(" ");
 
-  const unselected = 'bg-neutral-300 text-black hover:bg-neutral-400';
-  const selected = 'bg-neutral-100 text-black hover:bg-neutral-150 font-semibold';
+  const unselected = [
+    'bg-[var(--color-mode-tab-unselected)]',
+    'text-body',
+    'hover:bg-surface-hover',
+  ].join(' ');
+  const selected = 'bg-surface text-body hover:bg-surface-hover font-semibold';
 
   return (
     <nav

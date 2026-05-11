@@ -218,7 +218,7 @@ function Timeline({
       .attr('x2', width)
       .attr('y1', (d) => yScale(d))
       .attr('y2', (d) => yScale(d))
-      .attr('stroke', 'lightgray')
+      .attr('stroke', 'var(--color-border)')
       .attr('stroke-width', 0.5);
 
     svg.append('g')
@@ -233,10 +233,10 @@ function Timeline({
       .append('rect')
       .style('cursor', 'pointer')          // mouse pointer
       .on('focus', function () {           // keyboard focus colour
-        select(this).attr('fill', '#026e7b');
+        select(this).attr('fill', 'var(--color-primary-hover)');
       })
       .on('blur', function () {
-        select(this).attr('fill', '#01535d');
+        select(this).attr('fill', 'var(--color-primary)');
       })
       .attr('aria-label', (d) =>
         `${d.year}: ${d.doc_count} sökträffar`)
@@ -244,18 +244,18 @@ function Timeline({
       .attr('y', (d) => (d.doc_count > 0 ? Math.min(yScale(d.doc_count), svgHeight - minBarHeight) : yScale(d.doc_count)))
       .attr('height', (d) => (d.doc_count > 0 ? Math.max(svgHeight - yScale(d.doc_count), minBarHeight) : svgHeight - yScale(d.doc_count)))
       .attr('width', xScale.bandwidth())
-      .attr('fill', '#01535d');
+      .attr('fill', 'var(--color-primary)');
 
     const verticalLine = svg.append('line')
       .style('display', 'none')
-      .style('stroke', 'black')
+      .style('stroke', 'var(--color-text)')
       .style('stroke-dasharray', '3,3')
       .attr('y1', 0)
       .attr('y2', svgHeight);
 
     const otherVerticalLine = svg.append('line')
       .style('display', 'none')
-      .style('stroke', 'black')
+      .style('stroke', 'var(--color-text)')
       .style('stroke-dasharray', '3,3')
       .attr('y1', 0)
       .attr('y2', svgHeight + 15);
@@ -323,7 +323,7 @@ function Timeline({
           .attr('y', 0)
           .attr('width', Math.abs(dragEnd + dragEndOffset - (dragStart + dragStartOffset)))
           .attr('height', svgHeight)
-          .attr('fill', '#ddd')
+          .attr('fill', 'var(--color-surface-active)')
           .attr('opacity', 0.5);
 
         otherVerticalLine.style('display', null).attr('x1', x).attr('x2', x);
@@ -382,8 +382,8 @@ function Timeline({
     tooltip.append('rect')
       .attr('width', 150) // ändra som du vill
       .attr('height', 20) // ändra som du vill
-      .attr('fill', 'beige')
-      .attr('stroke', 'black');
+      .attr('fill', 'var(--color-surface)')
+      .attr('stroke', 'var(--color-border)');
 
     tooltip.append('text')
       .attr('x', 10)
@@ -488,7 +488,7 @@ function Timeline({
         Tidslinje över söktraffar per år
       </span>
       {!data.length && (
-        <p className="text-center text-gray-500">Laddar tidslinje…</p>
+        <p className="text-center text-subtle">Laddar tidslinje…</p>
       )}
       <svg ref={svgRef} width={containerWidth} height={svgHeight + 30} />
       <span id={summaryId} className="sr-only">

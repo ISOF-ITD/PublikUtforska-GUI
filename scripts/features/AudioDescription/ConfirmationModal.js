@@ -14,12 +14,12 @@ const ConfirmationModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <div className="bg-surface text-body p-6 rounded-lg shadow-lg max-w-md w-full">
         <p className="mb-4">{message}</p>
         <div className="flex justify-end gap-4 mt-4">
           <button
             onClick={onCancel}
-            className="bg-gray-300 hover:bg-gray-400 rounded"
+            className="bg-surface-hover hover:bg-[var(--color-surface-active)] text-body rounded"
           >
             {cancelLabel}
           </button>
@@ -28,7 +28,7 @@ const ConfirmationModal = ({
             className={` text-white rounded ${
               variant === "delete"
                 ? "bg-red-600 hover:bg-red-700"
-                : "bg-isof hover:bg-darker-isof"
+                : "bg-primary hover:bg-primary-hover"
             }`}
           >
             {confirmLabel}

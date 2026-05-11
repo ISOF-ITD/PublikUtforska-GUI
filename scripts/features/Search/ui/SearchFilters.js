@@ -1,9 +1,9 @@
 /* eslint-disable react/require-default-props */
-import PropTypes from "prop-types";
-import classNames from "classnames";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSquare, faSquareCheck } from "@fortawesome/free-solid-svg-icons";
-import { l } from "../../../lang/Lang";
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faSquare } from '@fortawesome/free-solid-svg-icons';
+import { l } from '../../../lang/Lang';
 
 export function SearchFilters({
   filters,
@@ -12,7 +12,7 @@ export function SearchFilters({
   loading = false,
   disabled = false,
   compact = false,
-  className = "",
+  className = '',
 }) {
   if (!filters?.length) return null;
 
@@ -51,7 +51,7 @@ export function SearchFilters({
 
           const onKeyDown = (e) => {
             if (disabled) return;
-            if (e.key === " " || e.key === "Enter") {
+            if (e.key === ' ' || e.key === 'Enter') {
               e.preventDefault();
               handleActivate();
             }
@@ -74,16 +74,41 @@ export function SearchFilters({
                 className={classNames(
                   'inline-flex border-none items-center !m-0 gap-1 !text-white',
                   compact
-                    ? 'rounded-full border border-solid border-white/60 bg-transparent px-2.5 py-1.5 hover:bg-darker-isof focus-visible:bg-darker-isof'
+                    ? 'rounded-full border border-solid border-white/60 bg-transparent px-2.5 py-1.5 hover:bg-primary-hover focus-visible:bg-primary-hover'
                     : 'rounded-md !px-0 py-1',
                   disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
                 )}
               >
-                <FontAwesomeIcon
-                  icon={checked ? faSquareCheck : faSquare}
-                  className={classNames('text-white', compact ? 'h-4 w-4' : 'h-5 w-5')}
-                  aria-hidden="true"
-                />
+                {checked ? (
+                  <span
+                    className={classNames(
+                      'relative inline-flex shrink-0 items-center justify-center',
+                      compact ? 'h-4 w-4' : 'h-5 w-5',
+                    )}
+                    aria-hidden="true"
+                  >
+                    <FontAwesomeIcon
+                      icon={faSquare}
+                      className="absolute inset-0 h-full w-full text-[var(--color-search-filter-checkbox-checked-bg)]"
+                    />
+                    <FontAwesomeIcon
+                      icon={faCheck}
+                      className={classNames(
+                        'relative text-[var(--color-search-filter-checkbox-check)]',
+                        compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
+                      )}
+                    />
+                  </span>
+                ) : (
+                  <FontAwesomeIcon
+                    icon={faSquare}
+                    className={classNames(
+                      'text-[var(--color-search-filter-checkbox)]',
+                      compact ? 'h-4 w-4' : 'h-5 w-5',
+                    )}
+                    aria-hidden="true"
+                  />
+                )}
                 <span
                   id={labelId}
                   className={classNames('whitespace-nowrap text-sm', compact ? 'font-semibold' : '')}

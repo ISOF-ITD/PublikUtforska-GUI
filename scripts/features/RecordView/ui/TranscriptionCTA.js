@@ -28,12 +28,12 @@ const statusStyles = (raw) => {
     case 'readytotranscribe':
       return {
         label: 'Kan skrivas av',
-        cls: 'bg-emerald-100 text-emerald-800 ring-emerald-600/20',
+        cls: 'bg-[var(--color-success-bg)] text-[var(--color-success-text)] ring-border',
       };
     case 'undertranscription':
       return {
         label: 'Pågår',
-        cls: 'bg-amber-100 text-amber-800 ring-amber-600/20',
+        cls: 'bg-[var(--color-warning-bg)] text-[var(--color-warning-text)] ring-border',
         disabled: true,
       };
     case 'reviewing':
@@ -42,17 +42,17 @@ const statusStyles = (raw) => {
     case 'approved':
       return {
         label: 'Under granskning',
-        cls: 'bg-sky-100 text-sky-800 ring-sky-600/20',
+        cls: 'bg-[var(--color-info-bg)] text-[var(--color-info-text)] ring-border',
       };
     case 'published':
       return {
         label: 'Publicerad',
-        cls: 'bg-gray-100 text-gray-800 ring-gray-600/20',
+        cls: 'bg-surface-hover text-body ring-border',
       };
     default:
       return {
         label: 'Status okänd',
-        cls: 'bg-gray-100 text-gray-800 ring-gray-600/20',
+        cls: 'bg-surface-hover text-body ring-border',
       };
   }
 };
@@ -130,7 +130,7 @@ export default function TranscriptionCTA({ data }) {
 
   return (
     <section
-      className="rounded-2xl !border !border-gray-200 bg-white/80 p-4 mb-2 shadow"
+      className="rounded-2xl !border !border-border bg-surface/80 text-body p-4 mb-2 shadow"
       aria-labelledby={`tp-${id}`}
       aria-describedby={statusId}
       data-testid="transcription-prompt"
@@ -146,7 +146,7 @@ export default function TranscriptionCTA({ data }) {
         >
           {l(pill.label)}
         </span>
-        <span id={statusId} className="text-gray-900" aria-live="polite">
+        <span id={statusId} className="text-body" aria-live="polite">
           {statusLine}
         </span>
       </div>
@@ -154,7 +154,7 @@ export default function TranscriptionCTA({ data }) {
       <div className="mt-3" aria-live="polite">
         <div
           id={progressId}
-          className="h-2 w-full overflow-hidden rounded bg-gray-200 lg:w-1/2"
+          className="h-2 w-full overflow-hidden rounded bg-surface-hover lg:w-1/2"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={totalPages}
@@ -163,7 +163,7 @@ export default function TranscriptionCTA({ data }) {
           title={`${transcribedCount}/${totalPages}`}
         >
           <div
-            className="h-full rounded bg-emerald-500 transition-all"
+            className="h-full rounded bg-accent transition-all"
             style={{
               width: `${
                 totalPages > 0 ? (transcribedCount / totalPages) * 100 : 0
@@ -172,10 +172,9 @@ export default function TranscriptionCTA({ data }) {
           />
         </div>
       </div>
-
       {!pill.disabled && (
         <div className="mt-4 space-y-2">
-          <span className="text-gray-900">{l(STRINGS.invitation)}</span>
+          <span className="text-body">{l(STRINGS.invitation)}</span>
 
           <div className="flex flex-wrap items-center gap-2">
             <TranscribeButton
@@ -193,14 +192,14 @@ export default function TranscriptionCTA({ data }) {
               aria-describedby={!primaryEnabled ? statusId : undefined}
             />
             {!primaryEnabled && (
-              <span className="ml-1 text-gray-900" role="note">
+              <span className="ml-1 text-body" role="note">
                 {l(STRINGS.lockedInfo)}
               </span>
             )}
           </div>
 
           {nextReadyText && (
-            <span className="text-gray-700">{l(STRINGS.tipStartFirstFree)}</span>
+            <span className="text-muted">{l(STRINGS.tipStartFirstFree)}</span>
           )}
         </div>
       )}

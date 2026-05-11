@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import archiveLogoIsof from '../../../../img/archive-logo-isof.png';
+import logoIsof from '../../../../img/logotyp-isof.svg';
+import logoIsofWhite from '../../../../img/logotyp-isof-vit.svg';
 import archiveLogoIkos from '../../../../img/archive-logo-ikos.png';
 import logotypSprakbanken from '../../../../img/logotyp_sprakbanken.svg';
 import Disclaimer from '../../../components/views/Disclaimer';
@@ -29,9 +30,7 @@ const NAME_ALIASES = {
 
 function buildAliasMap() {
   return Object.entries(NAME_ALIASES).reduce((map, [brand, aliases]) => {
-    const logo = brand === 'ikos' ? archiveLogoIkos : archiveLogoIsof;
-
-    aliases.forEach((alias) => map.set(normalize(alias), logo));
+    aliases.forEach((alias) => map.set(normalize(alias), brand));
 
     return map;
   }, new Map());
@@ -39,9 +38,9 @@ function buildAliasMap() {
 
 const aliasMap = buildAliasMap();
 
-const getArchiveLogo = (name) => {
+const getArchiveBrand = (name) => {
   const key = normalize(name);
-  return aliasMap.get(key) || archiveLogoIsof; // default: ISOF
+  return aliasMap.get(key) || 'isof'; // default: ISOF
 };
 
 function RecordViewFooter({ data }) {
@@ -51,7 +50,8 @@ function RecordViewFooter({ data }) {
   const hasMeankieliLanguage = languages.some(
     (language) => language?.name === 'Meänkieli',
   );
-  const logoSrc = useMemo(() => getArchiveLogo(archiveName), [archiveName]);
+  const archiveBrand = useMemo(() => getArchiveBrand(archiveName), [archiveName]);
+  const isIsofArchive = archiveBrand === 'isof';
 
   return (
     <div className="flex flex-row items-center max-sm:flex-col">
@@ -65,20 +65,32 @@ function RecordViewFooter({ data }) {
           rel="noopener noreferrer"
           aria-label="Öppna Isof i ny flik"
         >
-          <img
-            src={logoSrc}
-            alt={archiveName ? `Logga för ${archiveName}` : 'Logga för arkiv'}
-            className="w-[150px] h-auto"
-            loading="lazy"
-            decoding="async"
-            onError={(e) => {
-              // If a custom mapping ever points to a broken logo,
-              // guarantee we still show something.
-              if (e.currentTarget.src !== archiveLogoIsof) {
-                e.currentTarget.src = archiveLogoIsof;
-              }
-            }}
-          />
+          {isIsofArchive ? (
+            <>
+              <img
+                src={logoIsof}
+                alt={archiveName ? `Logga för ${archiveName}` : 'Logga för arkiv'}
+                className="theme-aware-logo--light w-[150px] h-auto"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                src={logoIsofWhite}
+                alt={archiveName ? `Logga för ${archiveName}` : 'Logga för arkiv'}
+                className="theme-aware-logo--dark w-[150px] h-auto"
+                loading="lazy"
+                decoding="async"
+              />
+            </>
+          ) : (
+            <img
+              src={archiveLogoIkos}
+              alt={archiveName ? `Logga för ${archiveName}` : 'Logga för arkiv'}
+              className="w-[150px] h-auto"
+              loading="lazy"
+              decoding="async"
+            />
+          )}
         </a>
 
         <a

@@ -8,6 +8,7 @@ import { faQuestion } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from 'classnames';
 import Folkelogga from "../../img/folke-white.svg";
+import headerBack from '../../img/header-back.gif';
 import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
 import { l } from "../lang/Lang";
 import SearchPanel from "../features/Search/SearchPanel";
@@ -177,6 +178,10 @@ export default function MapMenu({
   }, [mobileView, onMobileViewChange]);
 
   const mobileToggleLabel = mobileView === 'map' ? l('Till sök') : l('Visa karta');
+  const mapMenuPanelStyle = {
+    backgroundImage: `var(--image-header-back-tint), url(${headerBack})`,
+    backgroundPosition: 'center top',
+  };
 
   const statisticsBlock = (
     <div
@@ -192,7 +197,7 @@ export default function MapMenu({
   );
 
   const mobileHeader = (
-    <header className="max-w-full overflow-x-hidden border-b border-white/20 bg-isof">
+    <header className="max-w-full overflow-x-hidden border-b border-white/20 bg-transparent">
       <div className="flex min-h-[5rem] max-w-full flex-wrap items-center justify-between gap-2 px-3 py-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <h1 className="mt-0 mb-0">
@@ -249,7 +254,10 @@ export default function MapMenu({
   if (isMobileViewport && mobileView === 'map') {
     return (
       <>
-        <div className="pointer-events-none absolute left-0 right-0 top-0 z-[1201] print:hidden">
+        <div
+          className="pointer-events-none absolute left-0 right-0 top-0 z-[1201] bg-isof print:hidden"
+          style={mapMenuPanelStyle}
+        >
           <div className="pointer-events-auto">{mobileHeader}</div>
         </div>
         {activateIntroOverlay && (
@@ -269,6 +277,7 @@ export default function MapMenu({
         id="mapmenu-panel"
         aria-label="Sök och filter"
         className="absolute inset-0 z-[1201] flex flex-col overflow-x-hidden bg-isof print:hidden"
+        style={mapMenuPanelStyle}
       >
         <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-2 pb-2">
           {mobileHeader}
@@ -300,6 +309,7 @@ export default function MapMenu({
       id="mapmenu-panel"
       aria-label="Sök och filter"
       className="bg-isof absolute left-0 top-0 bottom-0 !z-[1201] flex w-[422px] flex-col items-center border-r-2 border-white pt-5 px-5 print:hidden"
+      style={mapMenuPanelStyle}
     >
       <h1 className="mt-0 mb-0">
         <img src={Folkelogga} alt={l('Folkelogga')} className="h-20 w-full" />

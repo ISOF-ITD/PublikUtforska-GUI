@@ -55,7 +55,7 @@ function ListPlayButton({
   const controlLabel = isActiveAndPlaying ? "Pausa uppspelning" : "Spela upp";
 
   // Smaller button for sub-list, default for main.
-  const sizeClasses = isSubList ? "w-3 h-3 text-darker-isof" : "text-isof w-6 h-6";
+  const sizeClasses = isSubList ? "w-3 h-3 text-link" : "text-link w-6 h-6";
 
   return (
     <button

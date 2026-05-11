@@ -1,6 +1,6 @@
 import config from "../config";
 import { l } from "../lang/Lang";
-import archiveLogoIsof from "../../img/archive-logo-isof.png";
+import archiveLogoIsof from "../../img/logotyp-isof.svg";
 import archiveLogoIkos from "../../img/archive-logo-ikos.png";
 import { max } from "d3-array";
 
@@ -410,7 +410,7 @@ export function getArchiveLogo(archive) {
   archiveLogos['Dialekt-, namn- och folkminnesarkivet i Göteborg'] = archiveLogoIsof;
   archiveLogos['Dialekt- och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
   archiveLogos['Dialekt och folkminnesarkivet i Uppsala'] = archiveLogoIsof;
-  archiveLogos.DAG = 'img/archive-logo-isof.png';
+  archiveLogos.DAG = 'img/logotyp-isof.svg';
   // Needs to be shrinked. By css?
   // archiveLogos['Norsk folkeminnesamling'] = 'img/UiO_Segl_A.png';
   archiveLogos['Norsk folkeminnesamling'] = archiveLogoIkos;

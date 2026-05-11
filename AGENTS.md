@@ -27,6 +27,17 @@ Before you say the work is done:
 - When styling changes are made, remove or reduce related LESS code where possible and replace it with Tailwind classes.
 - Keep styling migrations incremental and limited to the touched feature or component.
 
+## Theme and dark mode conventions
+- Read [theme.md](theme.md) before making theme, color, or component styling changes.
+- The application uses automatic dark mode through `prefers-color-scheme`; do not add a permanent manual theme toggle, `localStorage`, cookies, or persisted user preferences unless explicitly requested.
+- Use the shared semantic color tokens from `less/theme-tokens.less` and `tailwind.config.js` instead of hardcoded colors.
+- For new or updated Tailwind code, prefer semantic classes such as `bg-surface`, `bg-surface-muted`, `text-body`, `text-muted`, `text-subtle`, `text-link`, `hover:text-link-hover`, `border-border`, `ring-focus`, `bg-disabled`, and `text-danger`.
+- For LESS/CSS that cannot reasonably be migrated to Tailwind yet, use CSS custom properties such as `var(--color-surface)`, `var(--color-text)`, `var(--color-border)`, and `var(--color-focus)`.
+- Avoid introducing new `dark:` Tailwind variants when a semantic token can express the same styling. Tokens keep styling consistent between Tailwind and legacy LESS/CSS.
+- Do not rely on legacy remapping of classes like `bg-white`, `text-gray-*`, or `border-gray-*` in new code. That remapping exists as compatibility support for old components.
+- When changing UI, check both light and dark mode for backgrounds, text contrast, links, borders, form fields, disabled states, hover/focus states, icons, mobile views, and search result cards/lists.
+- Keep the existing ISOF/Folke visual identity. In dark mode, links should use the shared link tokens, which intentionally resolve to white or suitable gray tones rather than green.
+
 ## A11y and semantics
 - Follow best practices for accessibility (a11y) with a focus on WCAG AA standards.
 - Use semantic HTML elements where appropriate (e.g. `<header>`, `<nav>`, `<main>`, `<footer>`, `<button>`, etc.).

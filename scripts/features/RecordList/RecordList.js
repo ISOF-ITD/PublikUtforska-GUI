@@ -305,7 +305,7 @@ export default function RecordList(props) {
   return (
     <div ref={rootRef}>
       {hasTimeline && (
-        <Suspense fallback={<p className="text-center text-gray-500">Laddar tidslinje...</p>}>
+        <Suspense fallback={<p className="text-center text-subtle">Laddar tidslinje...</p>}>
           <Timeline
             containerRef={containerRef}
             params={params}

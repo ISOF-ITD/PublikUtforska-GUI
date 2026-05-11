@@ -12,7 +12,8 @@
 
     <title>Folke sök - Institutet för språk och folkminnen</title>
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png"/>
-    <link rel="preload" as="image" href="/img/logotyp-isof.svg" type="image/svg+xml">
+    <link rel="preload" as="image" href="/img/logotyp-isof.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
+    <link rel="preload" as="image" href="/img/logotyp-isof-vit.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
     <link rel="preconnect" href="https://matomo.isof.se" crossorigin="anonymous">
     <link rel="dns-prefetch" href="//matomo.isof.se">
 
@@ -31,6 +32,17 @@
             display: block;
             margin: 0 auto;
             height: 80px;
+        }
+        .loader-isof-logo--dark {
+            display: none !important;
+        }
+        @media (prefers-color-scheme: dark) {
+            .loader-isof-logo--light {
+                display: none !important;
+            }
+            .loader-isof-logo--dark {
+                display: block !important;
+            }
         }
     </style>
     <script type="text/javascript">
@@ -146,7 +158,8 @@
     <div id="app" aria-busy="true" aria-live="polite">
         <div class="loader">
         <img src="img/folke-green.svg" alt="Laddar…" role="status" aria-live="polite"> 
-        <img src="img/logotyp-isof.svg" alt="Laddar…" role="status" aria-live="polite">
+        <img class="loader-isof-logo--light" src="img/logotyp-isof.svg" alt="Laddar…" role="status" aria-live="polite">
+        <img class="loader-isof-logo--dark" src="img/logotyp-isof-vit.svg" alt="Laddar…" role="status" aria-live="polite">
     </div>
     </div>
     <!-- Page content stops here -->

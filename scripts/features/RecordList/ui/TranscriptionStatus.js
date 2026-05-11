@@ -55,7 +55,7 @@ export default function TranscriptionStatus({
           </span>
 
           <div
-            className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-isof border-solid bg-white"
+            className="relative h-2 w-full max-w-[200px] overflow-hidden rounded border border-primary border-solid bg-surface"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={safeTotal}
@@ -65,8 +65,8 @@ export default function TranscriptionStatus({
           >
             <span
               className={classNames(
-                "absolute inset-0 h-full bg-lighter-isof",
-                pct === 100 ? "rounded" : "rounded-l"
+                'absolute inset-0 h-full bg-accent',
+                pct === 100 ? 'rounded' : 'rounded-l'
               )}
               style={{ width: `${pct}%` }}
             />

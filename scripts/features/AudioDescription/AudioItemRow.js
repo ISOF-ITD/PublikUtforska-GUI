@@ -56,7 +56,7 @@ function AudioItemRow({
         <span
           role="status"
           aria-label="Laddar längd …"
-          className={`inline-block h-4 w-12 animate-pulse rounded bg-gray-200 ${className}`}
+          className={`inline-block h-4 w-12 animate-pulse rounded bg-surface-hover ${className}`}
         />
       );
     }
@@ -75,7 +75,7 @@ function AudioItemRow({
       <span
         title={`${label} lång`}
         aria-label={`Ljudlängd ${label.replace(/:/g, " : ")}`}
-        className={`font-mono ml-2 text-xs text-gray-500 ${className}`}
+        className={`font-mono ml-2 text-xs text-muted ${className}`}
       >
         ({label})
       </span>
@@ -147,7 +147,7 @@ function AudioItemRow({
   return (
     <>
       {/* Main row for the audio item */}
-      <tr className="odd:bg-gray-50 even:bg-white border-b last:border-b-0 border-gray-200">
+      <tr className="odd:bg-surface-muted even:bg-surface border-b last:border-b-0 border-border text-body">
         <td className="py-2 px-4">
           <ListPlayButton
             media={item}
@@ -158,7 +158,7 @@ function AudioItemRow({
         <td className="py-2 px-4">
           {audioTitle}
           {item.source.match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0] && (
-            <span className="ml-2 text-[11px] rounded bg-gray-100 px-1 py-[1px] text-gray-600">
+            <span className="ml-2 text-[11px] rounded bg-surface-hover px-1 py-[1px] text-muted">
               {item.source
                 .match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0]
                 ?.toUpperCase()}
@@ -200,7 +200,7 @@ function AudioItemRow({
                   <div
                     key={`utterance-${h.id}-${h._source.start}`}
                   >
-                    <span className="font-mono ml-2 text-xs text-gray-500 ">
+                    <span className="font-mono ml-2 text-xs text-muted">
                       Ljudavskrift
                       {' ('}
                       {secondsToMMSS(h._source.start)}
@@ -220,7 +220,7 @@ function AudioItemRow({
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
           {canContribute && config.activateAudioDescription && (
             <button type="button"
-              className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+              className="text-link hover:text-link-hover transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               aria-expanded={openItems[item.source] ? "true" : "false"}
               aria-controls={`descriptions-${item.source}`}
               onClick={() => onToggle(item.source)}
@@ -246,7 +246,7 @@ function AudioItemRow({
             href={`${config.audioUrl}${item.source}`}
             download
             title="Ladda ner ljudfilen"
-            className="text-isof hover:text-darker-isof no-underline hover:cursor-pointer whitespace-nowrap"
+            className="text-link hover:text-link-hover no-underline hover:cursor-pointer whitespace-nowrap"
           >
             <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
             <FontAwesomeIcon icon={faDownload} />
@@ -256,7 +256,7 @@ function AudioItemRow({
             hasUtterances && (
               <Link
                 to={`/records/${recordId}/audio/${item.id}/transcribe`}
-                className="text-isof hover:text-darker-isof transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+                className="text-link hover:text-link-hover transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               >
                 <span className="px-1 underline underline-offset-2">
                   Avskrift
@@ -272,7 +272,7 @@ function AudioItemRow({
         <tr
           id={`descriptions-${item.source}`}
           aria-hidden={!openItems[item.source]}
-          className="w-full"
+          className="w-full bg-surface text-body"
         >
           <td colSpan={3} className="py-4 px-4 w-full border-isof">
             {/* List existing descriptions. Pass a callback to start editing */}
@@ -309,7 +309,7 @@ function AudioItemRow({
               <>
                 {serverHasOngoingSession && !hasSession ? (
                   <div className="flex justify-center my-4">
-                    <div className="px-4 py-2 bg-gray-200 text-gray-700 rounded flex items-center">
+                    <div className="px-4 py-2 bg-surface-hover text-body rounded flex items-center">
                       <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
                       <span>
                         Någon annan håller på att lägga till en beskrivning.
@@ -321,8 +321,8 @@ function AudioItemRow({
                   <div className="flex justify-center my-4">
                     <button type="button" className={`transition-all duration-300 ease-in-out flex gap-2 justify-center items-center rounded hover:cursor-pointer w-full px-4 py-2 ${
                         showAddForm[item.source]
-                          ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                          : "bg-isof hover:bg-darker-isof text-white"
+                          ? "bg-surface-hover hover:bg-[var(--color-surface-active)] text-body"
+                          : "bg-primary hover:bg-primary-hover text-white"
                       }`}
                       onClick={() => onToggleAddForm(item.source)}
                     >

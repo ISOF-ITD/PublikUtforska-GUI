@@ -1,35 +1,31 @@
-import { Link } from "react-router-dom";
-import { useMemo } from "react";
-import { l } from "../../../lang/Lang";
+import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faPencil,
+  faFileLines,
+  faFilePdf,
+  faVolumeHigh,
+} from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
+import { l } from '../../../lang/Lang';
 import {
   getTitle,
   getPlaceString,
   pageFromTo,
-} from "../../../utils/helpers";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArchive,
-  faChevronRight,
-  faPencil,
-  faClosedCaptioning,
-} from "@fortawesome/free-solid-svg-icons";
-import config from "../../../config";
-import TranscribeButton from "../../TranscriptionPageByPageOverlay/ui/TranscribeButton";
-import TranscriptionStatus from "./TranscriptionStatus";
-import useSubrecords from "../hooks/useSubrecords";
-import MediaIcons from "./MediaIcons";
-import HighlightedText from "./HighlightedText";
-import PropTypes from "prop-types";
-import { secondsToMMSS } from "../../../utils/timeHelper";
-import { createSearchRoute } from "../../../utils/routeHelper";
-
-const pill =
-  "inline-flex items-center border rounded-full px-3 py-1 text-xs font-medium";
+} from '../../../utils/helpers';
+import config from '../../../config';
+import TranscribeButton from '../../TranscriptionPageByPageOverlay/ui/TranscribeButton';
+import useSubrecords from '../hooks/useSubrecords';
+import HighlightedText from './HighlightedText';
+import { secondsToMMSS } from '../../../utils/timeHelper';
+import { createSearchRoute } from '../../../utils/routeHelper';
+import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
 
 export default function RecordCardItem({
   item,
   searchParams,
-  mode = "material",
+  mode = 'material',
   highlightRecordsWithMetadataField,
   isSelected,
   onRecordActivate,
@@ -46,6 +42,7 @@ export default function RecordCardItem({
     transcriptionstatus,
     title,
     recordtype,
+    materialtype,
     contents,
     year,
     id,
@@ -71,13 +68,24 @@ export default function RecordCardItem({
   // helpers
   const displayTitle = useMemo(
     () => getTitle(title, contents, archive, highlight),
-    [title, contents, archive, highlight]
+    [title, contents, archive, highlight],
   );
   const archiveId = useMemo(
-    () =>
-      archive?.archive_id_display_search?.join(", ") || "",
-    [archive, archive.archive_id_display_search]
+    () => archive?.archive_id_display_search?.join(', ') || '',
+    [archive, archive.archive_id_display_search],
   );
+  const archivePage = useMemo(() => {
+    try {
+      const val = typeof pageFromTo === 'function'
+        ? pageFromTo({ _source: { archive } })
+        : archive?.page;
+
+      return val ? String(val) : '';
+    } catch (e) {
+      return '';
+    }
+  }, [archive]);
+  const archiveDisplay = `${archiveId}${archivePage ? `:${archivePage}` : ''}`;
   const placeString = useMemo(() => getPlaceString(places || []), [places]);
 
   // build a search suffix from the current list params
@@ -85,16 +93,21 @@ export default function RecordCardItem({
 
   // avoid adding a bare "/" when there are no params
   const recordUrl = `${
-    mode === "transcribe" ? "/transcribe" : ""
-  }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
+    mode === 'transcribe' ? '/transcribe' : ''
+  }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`;
 
   const hasTranscription = useMemo(
-    () =>
-      !!media?.some?.(
-        (m) => m?.type === "audio" && m?.utterances?.utterances?.length > 0
-      ),
-    [media]
+    () => !!media?.some?.(
+      (m) => m?.type === 'audio' && m?.utterances?.utterances?.length > 0,
+    ),
+    [media],
   );
+  const transcriptionBadgeClass = [
+    'mb-0.5 ml-1 inline-flex items-center gap-1 rounded border border-border',
+    'bg-white/80 px-1.5 py-0.5 align-middle text-[10px] font-semibold',
+    'leading-none text-link shadow-sm',
+  ].join(' ');
+  const contentHitLabelClass = 'mr-1 text-[var(--color-result-card-label)]';
   const firstImageMedia = media.find((m) => m?.type?.startsWith('image')) || null;
   let thumbnail = '';
   if (firstImageMedia?.source) {
@@ -106,26 +119,38 @@ export default function RecordCardItem({
       thumbnail = `${base}${sep}${String(firstImageMedia.source || '')}`;
     }
   }
+  const primaryMediaType = pickPrimaryMediaType(media);
+  const mediaPreview = {
+    audio: {
+      icon: faVolumeHigh,
+      label: l('Inspelning'),
+      className: 'text-primary',
+    },
+    image: {
+      icon: faFileLines,
+      label: l('Uppteckning'),
+      className: 'text-primary',
+    },
+    pdf: {
+      icon: faFilePdf,
+      label: 'PDF',
+      className: 'text-danger',
+    },
+  }[primaryMediaType];
 
   // ───────── highlight / summary
-  const displayTextSummary =
-    !!highlightRecordsWithMetadataField &&
-    metadata?.some?.((m) => m?.type === highlightRecordsWithMetadataField);
+  const hasHighlightedSummary = !!highlightRecordsWithMetadataField
+    && metadata?.some?.((m) => m?.type === highlightRecordsWithMetadataField)
+    && itemText;
 
-  const summary =
-    !!highlightRecordsWithMetadataField &&
-    metadata?.some?.((m) => m?.type === highlightRecordsWithMetadataField) &&
-    itemText
-      ? itemText.length > 250
-        ? `${itemText.slice(0, 250)}…`
-        : itemText
-      : null;
+  const summary = hasHighlightedSummary
+    ? itemText.length > 250
+      ? `${itemText.slice(0, 250)}…`
+      : itemText
+    : null;
 
   // Collector filtering
-  const collectorPersons =
-    persons?.filter?.((p) =>
-      ["c", "collector", "interviewer", "recorder"].includes(p?.relation)
-    ) ?? [];
+  const collectorPersons = persons?.filter?.((p) => ['c', 'collector', 'interviewer', 'recorder'].includes(p?.relation)) ?? [];
 
   const isAudioRecording = transcriptiontype === 'audio'
     || recordtype === 'one_audio_record'
@@ -133,48 +158,53 @@ export default function RecordCardItem({
       (m) => m?.type === 'audio' || m?.source?.toLowerCase().endsWith('.mp3'),
     );
 
-  const isAccession =
-    recordtype === "one_accession_row" && transcriptiontype !== "audio";
-
-  const total = isAudioRecording
-    ? undefined
-    : transcriptiontype === 'sida'
-      ? mediaCount
-      : count;
-
-  const done = isAudioRecording
-      ? undefined
-      : transcriptiontype === "sida"
-      ? mediaCountDone
-      : countDone;
+  let total;
+  let done;
+  if (!isAudioRecording) {
+    total = transcriptiontype === 'sida' ? mediaCount : count;
+    done = transcriptiontype === 'sida' ? mediaCountDone : countDone;
+  }
+  const pageTotal = total ?? 0;
+  const safePageTotal = Math.max(pageTotal, 1);
+  const pageDone = Math.min(done ?? 0, safePageTotal);
+  const transcriptionProgress = !isAudioRecording
+    && transcriptionstatus !== 'readytocontribute'
+    && pageTotal > 0
+    ? {
+      label: `${pageDone} av ${pageTotal} ${pageTotal === 1 ? 'sida' : 'sidor'}`,
+      pct: Math.round((pageDone / safePageTotal) * 100),
+    }
+    : null;
 
   // normalize year to a displayable string safely
-  const displayYear =
-    typeof year === "string"
-      ? year.split("-")[0]
-      : typeof year === "number"
-      ? String(year)
-      : null;
+  let displayYear = null;
+  if (typeof year === 'string') {
+    [displayYear] = year.split('-');
+  } else if (typeof year === 'number') {
+    displayYear = String(year);
+  }
 
   const handleRecordClick = () => {
     onRecordActivate?.(id);
   };
+  const showCollectors = config?.siteOptions?.recordList?.visibleCollecorPersons
+    && collectorPersons.length > 0;
 
   return (
     <article
-      className={`group relative rounded-lg !border bg-white p-4 shadow transition-all hover:shadow-md ${
+      className={`group relative overflow-hidden rounded-md !border bg-[var(--color-result-card-bg)] p-3 shadow-sm transition-all hover:shadow-md ${
         isSelected
-          ? "!border-black ring-2 ring-black ring-offset-1"
-          : "!border-gray-200"
+          ? '!border-focus ring-2 ring-focus ring-offset-1'
+          : '!border-[var(--color-result-card-rule)]'
       }`}
     >
       {/* Header Section */}
-      <header className="flex items-start gap-2">
+      <div className="flex items-start gap-3">
         {thumbnail && (
           <img
             src={thumbnail}
             alt=""
-            className="h-24 w-20 shrink-0 rounded border border-gray-200 bg-white object-contain p-0.5"
+            className="h-28 w-[72px] shrink-0 rounded-sm border border-[var(--color-result-card-rule)] bg-surface object-contain p-0.5"
             loading="lazy"
             decoding="async"
             onError={(e) => {
@@ -182,252 +212,276 @@ export default function RecordCardItem({
             }}
           />
         )}
-        <MediaIcons media={media || []} />
-        <span className="flex-1 text-lg font-semibold leading-tight !text-isof">
-          {recordUrl ? (
-            <Link
-              to={recordUrl}
-              className="!text-isof focus:outline-none focus-visible:ring-2 focus-visible:ring-isof"
-              onClick={handleRecordClick}
-            >
-              <span
-                // ensure string
-                dangerouslySetInnerHTML={{ __html: String(displayTitle || "") }}
-              />
-              {hasTranscription && (
+        {!thumbnail && mediaPreview && (
+          <div className="flex h-28 w-[72px] shrink-0 items-center justify-center rounded-sm border border-[var(--color-result-card-rule)] bg-surface-muted">
+            <FontAwesomeIcon
+              icon={mediaPreview.icon}
+              title={mediaPreview.label}
+              className={`${mediaPreview.className} text-3xl`}
+              aria-hidden="true"
+            />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <span className="block text-lg font-semibold leading-tight !text-link">
+            {recordUrl ? (
+              <Link
+                to={recordUrl}
+                className="!text-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                onClick={handleRecordClick}
+              >
                 <span
-                  className="inline-flex items-center gap-0.5 mb-0.5 px-1.5 text-[10px] font-medium text-lighter-isof"
-                  title={l("Har avskrift")}
-                  aria-label={l("Har avskrift")}
-                >
-                  <FontAwesomeIcon
-                    icon={faClosedCaptioning}
-                    className="text-[16px] bg-isof rounded-sm"
-                  />
-                  <span className="sr-only">{l("Har avskrift")}</span>
-                </span>
-              )}
-              <span className="ml-2 inline-block text-gray-400 transition-all group-hover:translate-x-1">
-                <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />
-              </span>
-            </Link>
-          ) : (
-            <span
-              className="!text-isof opacity-70 cursor-not-allowed"
-              aria-disabled="true"
-            >
+                // ensure string
+                  dangerouslySetInnerHTML={{ __html: String(displayTitle || '') }}
+                />
+                {hasTranscription && (
+                  <span
+                    className={transcriptionBadgeClass}
+                    title={l('Har avskrift')}
+                    aria-label={l('Har avskrift')}
+                  >
+                    <FontAwesomeIcon
+                      icon={faFileLines}
+                      className="text-[11px]"
+                      aria-hidden="true"
+                    />
+                    <span>{l('Avskrift')}</span>
+                  </span>
+                )}
+              </Link>
+            ) : (
               <span
-                dangerouslySetInnerHTML={{ __html: String(displayTitle || "") }}
-              />
-            </span>
-          )}
-        </span>
-      </header>
-
-      {/* Metadata Grid */}
-      <div className="mt-3 flex flex-col gap-y-2 text-sm">
-        {(archiveId || archive?.page) && (
-          <div className="flex items-center gap-1.5">
-            <FontAwesomeIcon icon={faArchive} className="flex-shrink-0" />
-            {archiveId && (
-              <span className="font-medium text-isof">
-                <b>
-                  {l('Arkivnummer')}
-                  :
-                  {' '}
-                </b>
-                {archiveId}
+                className="!text-link opacity-70 cursor-not-allowed"
+                aria-disabled="true"
+              >
+                <span
+                  dangerouslySetInnerHTML={{ __html: String(displayTitle || '') }}
+                />
               </span>
             )}
-            {archive?.page &&
-              (() => {
-                try {
-                  const val =
-                    typeof pageFromTo === "function"
-                      ? pageFromTo({ _source: { archive } })
-                      : archive.page;
-
-                  return val ? (
-                    <span className="text-gray-500">:{val}</span>
-                  ) : null;
-                } catch (e) {
-                  return null;
-                }
-              })()}
-          </div>
-        )}
-
-        {placeString && (
-          <div className="flex items-center">
-            <span className="text-gray-700">
-              <b>Ort:</b> {placeString}
+            {archiveDisplay && (
+            <span className="mt-0.5 block truncate text-sm font-normal leading-snug text-[var(--color-result-card-label)]">
+              {archiveDisplay}
             </span>
-          </div>
-        )}
+            )}
+          </span>
 
-        {displayYear && (
-          <div className="flex items-center">
-            <span className="text-gray-700">
-              <b>År:</b> {displayYear}
-            </span>
-          </div>
-        )}
+          {/* Metadata Grid */}
+          <div className="mt-3 flex flex-col text-sm leading-snug">
+            {placeString && (
+            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
+              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+                {l('Ort')}
+              </span>
+              <span className="min-w-0 break-words font-medium text-body">
+                {placeString}
+              </span>
+            </div>
+            )}
 
-        {config?.siteOptions?.recordList?.visibleCollecorPersons &&
-          collectorPersons.length > 0 && (
-            <div className="flex items-center">
-              <div className="flex flex-wrap gap-1 items-center">
-                <b>Insamlare:</b>
-                {collectorPersons.map((p, idx) => {
-                  const pid = (p?.id != null ? String(p.id) : "").toLowerCase();
+            {displayYear && (
+            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
+              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+                {l('År')}
+              </span>
+              <span className="min-w-0 break-words font-medium text-body">
+                {displayYear}
+              </span>
+            </div>
+            )}
+
+            {showCollectors && (
+            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
+              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+                {l('Insamlare')}
+              </span>
+              <span className="flex min-w-0 flex-wrap gap-x-1 font-medium text-body">
+                {collectorPersons.map((p) => {
+                  const pid = (p?.id != null ? String(p.id) : '').toLowerCase();
                   if (!pid) return null;
                   return (
                     <Link
-                      key={p?.id ?? `${pid}-${idx}`}
+                      key={`collector-${pid}-${p?.relation ?? ''}-${p?.name ?? ''}`}
                       to={`${
-                        mode === "transcribe" ? "/transcribe" : ""
+                        mode === 'transcribe' ? '/transcribe' : ''
                       }/persons/${pid}`}
-                      className="text-isof hover:underline text-xs"
+                      className="text-body hover:underline"
                     >
-                      {l(p?.name || "")}
+                      {l(p?.name || '')}
                     </Link>
                   );
                 })}
+              </span>
+            </div>
+            )}
+
+            {transcriptionProgress && (
+            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
+              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+                {l('Avskrivna')}
+              </span>
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="min-w-0 shrink break-words font-medium text-body">
+                  {transcriptionProgress.label}
+                </span>
+                <div
+                  className="h-1.5 w-14 shrink-0 overflow-hidden rounded border border-primary border-solid bg-surface"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={safePageTotal}
+                  aria-valuenow={pageDone}
+                  aria-label={l('Avskrivna')}
+                  title={`${transcriptionProgress.pct}%`}
+                >
+                  <span
+                    className="block h-full rounded bg-accent"
+                    style={{ width: `${transcriptionProgress.pct}%` }}
+                  />
+                </div>
               </div>
             </div>
-          )}
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Summary first (if any) */}
       {summary && (
-        <span className="mt-2 text-sm text-gray-600 line-clamp-4">
+        <span className="mt-2 text-sm text-muted line-clamp-4">
           {summary}
         </span>
       )}
 
       {innerHits?.['media.description']?.hits?.hits.map((descHit) => {
-            const highlighted =
-              descHit.highlight?.["media.description.text"]?.[0] ??
-              descHit._source?.text ??
-              "";
+        const highlighted = descHit.highlight?.['media.description.text']?.[0]
+              ?? descHit._source?.text
+              ?? '';
 
-            if (!highlighted) return null;
+        if (!highlighted) return null;
 
-            return (
-              <div className="flex flex-col mt-2" key={descHit._id}>
-                <span className="mr-1">Innehållsbeskrivning:</span>
-                <HighlightedText
-                  text={highlighted}
-                  className="inline"
-                  maxSnippets={1}
-                  maxWords={15}
-                />
-              </div>
-            );
-          })}
-          {innerHits?.['media.utterances.utterances']?.hits?.hits.map(
-            (descHit) => {
-              const highlighted =
-                descHit.highlight?.["media.utterances.utterances.text"]?.[0] ??
-                descHit._source?.text ??
-                "";
+        return (
+          <div
+            className="flex flex-col mt-2 text-sm leading-snug"
+            key={`description-${descHit?.['_id'] ?? 'hit'}-${
+              descHit?.['_nested']?.offset ?? highlighted
+            }`}
+          >
+            <span className={contentHitLabelClass}>Innehållsbeskrivning:</span>
+            <HighlightedText
+              text={highlighted}
+              className="inline"
+              maxSnippets={1}
+              maxWords={15}
+            />
+          </div>
+        );
+      })}
+      {innerHits?.['media.utterances.utterances']?.hits?.hits.map(
+        (descHit) => {
+          const highlighted = descHit.highlight?.['media.utterances.utterances.text']?.[0]
+                ?? descHit._source?.text
+                ?? '';
 
-              if (!highlighted) return null;
+          if (!highlighted) return null;
 
-              const startLabel =
-                descHit._source?.start !== undefined
-                  ? ` (${secondsToMMSS(descHit._source.start)})`
-                  : "";
+          const startLabel = descHit._source?.start !== undefined
+            ? ` (${secondsToMMSS(descHit._source.start)})`
+            : '';
 
-              return (
-                <div className="flex flex-col mt-2" key={descHit._id}>
-                  <span className="mr-1">Ljudavskrift{startLabel}:</span>
-                  <HighlightedText
-                    text={highlighted}
-                    className="inline"
-                    maxSnippets={1}
-                    maxWords={15}
-                  />
-                </div>
-              );
-            }
-          )}
-          {highlight?.text?.[0] && (
-            <div className="flex flex-col mt-2">
-              <span className="mr-1">Transkribering:</span>
-              <HighlightedText
-                text={highlight.text[0]} // only the ES highlight HTML
-                className="inline"
-                maxSnippets={1}
-                maxWords={15}
-              />
-            </div>
-          )}
-          {highlight?.headwords?.[0] && (
-            <div className="flex flex-col mt-2">
-              <span className="mr-1">
-                Uppgifter från äldre innehållsregister:
+          return (
+            <div
+              className="flex flex-col mt-2 text-sm leading-snug"
+              key={`utterance-${descHit?.['_id'] ?? 'hit'}-${
+                descHit?.['_nested']?.offset ?? ''
+              }-${descHit?.['_source']?.start ?? startLabel}`}
+            >
+              <span className={contentHitLabelClass}>
+                Ljudavskrift
+                {startLabel}
+                :
               </span>
               <HighlightedText
-                text={highlight.headwords[0]}
+                text={highlighted}
+                className="inline"
                 maxSnippets={1}
                 maxWords={15}
-                className="inline"
               />
             </div>
-          )}
+          );
+        },
+      )}
+      {highlight?.text?.[0] && (
+      <div className="flex flex-col mt-2 text-sm leading-snug">
+        <span className={contentHitLabelClass}>Transkribering:</span>
+        <HighlightedText
+          text={highlight.text[0]} // only the ES highlight HTML
+          className="inline"
+          maxSnippets={1}
+          maxWords={15}
+        />
+      </div>
+      )}
+      {highlight?.headwords?.[0] && (
+      <div className="flex flex-col mt-2 text-sm leading-snug">
+        <span className={contentHitLabelClass}>
+          Uppgifter från äldre innehållsregister:
+        </span>
+        <HighlightedText
+          text={highlight.headwords[0]}
+          maxSnippets={1}
+          maxWords={15}
+          className="inline"
+        />
+      </div>
+      )}
 
-          {highlight?.contents?.[0] && (
-            <div className="flex flex-col mt-2">
-              <span className="mr-1">Beskrivning av innehåll:</span>
-              <HighlightedText
-                text={highlight.contents[0]}
-                maxSnippets={1}
-                maxWords={15}
-                className="inline"
-              />
-            </div>
-          )}
+      {highlight?.contents?.[0] && (
+      <div className="flex flex-col mt-2 text-sm leading-snug">
+        <span className={contentHitLabelClass}>Beskrivning av innehåll:</span>
+        <HighlightedText
+          text={highlight.contents[0]}
+          maxSnippets={1}
+          maxWords={15}
+          className="inline"
+        />
+      </div>
+      )}
 
-          {innerHits?.media?.hits?.hits.map((hit) => {
-            const highlighted = hit.highlight?.["media.text"]?.[0];
-            if (!highlighted) return null;
+      {innerHits?.media?.hits?.hits.map((hit) => {
+        const highlighted = hit.highlight?.['media.text']?.[0];
+        if (!highlighted) return null;
 
-            return (
-              <div className="flex flex-col mt-2" key={hit._id}>
-                <span className="mr-1">Transkribering:</span>
-                <HighlightedText
-                  text={highlighted}
-                  className="inline"
-                  maxSnippets={1}
-                  maxWords={15}
-                />
-              </div>
-            );
-          })}
-
-      <TranscriptionStatus
-        status={transcriptionstatus}
-        type={recordtype === "one_accession_row" ? "accession" : "record"}
-        transcriptiontype={
-          isAudioRecording ? 'audio' : transcriptiontype
-        }
-        done={done}
-        total={total}
-        pillClasses={`${pill} mr-auto block`}
-      />
+        return (
+          <div
+            className="flex flex-col mt-2 text-sm leading-snug"
+            key={`media-${hit?.['_id'] ?? 'hit'}-${
+              hit?.['_nested']?.offset ?? highlighted
+            }`}
+          >
+            <span className={contentHitLabelClass}>Transkribering:</span>
+            <HighlightedText
+              text={highlighted}
+              className="inline"
+              maxSnippets={1}
+              maxWords={15}
+            />
+          </div>
+        );
+      })}
 
       {/* Transcription CTA */}
-      {transcriptionstatus === "readytotranscribe" &&
-        (media?.length ?? 0) > 0 && (
-          <div className="mt-4 border-t border-gray-100 pt-3">
+      {transcriptionstatus === 'readytotranscribe'
+        && (media?.length ?? 0) > 0 && (
+          <div className="mt-4 border-t border-border pt-3">
             <TranscribeButton
-              className="w-full justify-center bg-isof hover:bg-darker-isof !text-white font-medium rounded-lg transition-colors"
-              label={
+              className="w-full justify-center bg-primary hover:bg-primary-hover !text-white font-medium rounded-lg transition-colors"
+              label={(
                 <>
-                  <FontAwesomeIcon icon={faPencil} /> {l("Skriv av")}
+                  <FontAwesomeIcon icon={faPencil} />
+                  {' '}
+                  {l('Skriv av')}
                 </>
-              }
+              )}
               title={title}
               recordId={id}
               archiveId={archive?.archive_id}
@@ -437,10 +491,10 @@ export default function RecordCardItem({
               random={false}
             />
           </div>
-        )}
+      )}
     </article>
   );
-};
+}
 
 RecordCardItem.propTypes = {
   item: PropTypes.object.isRequired,

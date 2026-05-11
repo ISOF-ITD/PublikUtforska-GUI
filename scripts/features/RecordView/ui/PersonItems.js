@@ -8,7 +8,10 @@ function renderPersonItem(person, routeParams, index) {
   const rowKey = `${person.id || 'person'}-${person.relation || 'relation'}-${index}`;
 
   return (
-    <tr key={rowKey} className="border-b last:border-b-0 odd:bg-gray-100">
+    <tr
+      key={rowKey}
+      className="border-b border-border last:border-b-0 odd:bg-surface-muted even:bg-surface text-body"
+    >
       <td
         data-title=""
         className="py-3 px-2 md:py-2 md:px-4 underline-offset-2"
@@ -27,7 +30,7 @@ function renderPersonItem(person, routeParams, index) {
           ) && (
             <Link
               to={`/persons/${person.id}${routeParams}`}
-              className="text-isof"
+              className="text-link"
             >
               {person.name || ''}
             </Link>
@@ -45,7 +48,7 @@ function renderPersonItem(person, routeParams, index) {
         {person.home && person.home.length > 0 && (
           <Link
             to={`/places/${person.home[0].id}${routeParams}`}
-            className="text-isof hover:underline"
+            className="text-link hover:underline"
           >
             {`${person.home[0].name}, ${person.home[0].harad}`}
           </Link>
@@ -78,7 +81,7 @@ function PersonItems({ data, routeParams = '' }) {
   return (
     <div className="w-full mb-4">
       <h3 className="text-xl font-bold">{l('Personer')}</h3>
-      <div className="overflow-x-auto border rounded">
+      <div className="overflow-x-auto rounded border border-border bg-surface text-body">
         <table className="w-full text-left border-collapse table-auto">
           <thead className="sr-only md:table-header-group">
             <tr>

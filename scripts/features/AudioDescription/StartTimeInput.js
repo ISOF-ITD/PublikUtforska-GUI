@@ -79,7 +79,7 @@ function StartTimeInput({ value, onChange, maxSeconds, inputId, autoFocus, requi
         onChange={handleChange}
         onPaste={handlePaste}
         placeholder="MM:SS"
-        className={`border rounded border-gray-30 bg-white p-2 w-32 ${
+        className={`border rounded border-border bg-surface text-body p-2 w-32 ${
           error ? "border-red-500" : ""
         }`}
       />
@@ -128,8 +128,8 @@ export default function StartTimeInputWithPlayer({ value, onChange, inputId, aut
 
       <button type="button"className={`px-4 py-2 rounded text-white ${
           visible
-            ? "bg-isof hover:bg-darker-isof hover:cursor-pointer"
-            : "bg-gray-400 hover:cursor-not-allowed"
+            ? "bg-primary hover:bg-primary-hover hover:cursor-pointer"
+            : "bg-disabled hover:cursor-not-allowed"
         }`}        title="Kopiera aktuell tid från ljudspelaren"
         disabled={!visible}
         onClick={handleInsertCurrentTime}

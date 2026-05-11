@@ -99,10 +99,10 @@ function PageButton({ label, onClick, disabled, active, icon }) {
       className={[
         "flex items-center justify-center gap-2 min-w-10 px-3 py-1 rounded border",
         active
-          ? "bg-isof text-white hover:!text-white border-isof"
-          : "bg-white hover:bg-gray-100 border-gray-300",
+          ? 'bg-primary text-white hover:!text-white border-primary'
+          : 'bg-surface hover:bg-surface-hover border-border',
         disabled && "opacity-40 cursor-not-allowed",
-        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-isof",
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
       ].join(" ")}
       aria-current={active ? "page" : undefined}
       aria-label={

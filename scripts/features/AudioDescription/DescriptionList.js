@@ -26,7 +26,7 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
 
   if (!descriptions.length) {
     return (
-      <div className="text-gray-600 text-sm p-6 bg-gray-50 rounded-lg">
+      <div className="text-muted text-sm p-6 bg-surface-muted rounded-lg">
         <InstructionBox />
         <p className="text-center mt-4">
         Det finns inga beskrivningar ännu. <br/>
@@ -44,13 +44,13 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
           <tr>
             <th
               colSpan="4"
-              className="text-left bg-gray-200 py-3 px-4 font-semibold"
+              className="text-left bg-surface-hover py-3 px-4 font-semibold text-body"
               scope="colgroup"
             >
               Innehållsbeskrivningar
             </th>
           </tr>
-          <tr className="border-b border-gray-300">
+          <tr className="border-b border-border text-body">
             <th scope="col" className="py-3 px-4">
               Starttid
             </th>
@@ -73,7 +73,7 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
             return (
               <tr
                 key={index}
-                className="odd:bg-white even:bg-gray-100 border-b last:border-b-0 border-gray-200"
+                className="odd:bg-surface even:bg-surface-muted border-b last:border-b-0 border-border text-body"
               >
                 <td className="py-3 px-4">
                   <div className="flex items-center">
@@ -104,7 +104,7 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
                   ))}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <button type="button" className="text-isof hover:cursor-pointer hover:text-darker-isof hover:bg-gray-100 rounded-md px-2 py-1 flex gap-1 items-center justify-end transition-colors"
+                  <button type="button" className="text-link hover:cursor-pointer hover:text-link-hover hover:bg-surface-hover rounded-md px-2 py-1 flex gap-1 items-center justify-end transition-colors"
                     onClick={() => onEditDesc(desc)}
                   >
                     <FontAwesomeIcon icon={faPenToSquare} />

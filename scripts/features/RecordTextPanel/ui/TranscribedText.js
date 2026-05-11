@@ -11,10 +11,9 @@ export default function TranscribedText({
       <div
         id={contentId}
         aria-expanded={expanded}
-        className={
-          "text-pretty prose text-sm prose-sm max-w-none text-gray-800 whitespace-pre-wrap break-words " +
-          (expanded ? "" : "overflow-hidden")
-        }
+        className={`text-pretty prose text-sm prose-sm max-w-none text-body whitespace-pre-wrap break-words ${
+          expanded ? '' : 'overflow-hidden'
+        }`}
         dangerouslySetInnerHTML={{ __html: html || "&nbsp;" }}
       />
     </div>

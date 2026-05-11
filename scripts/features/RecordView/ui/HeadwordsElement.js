@@ -96,7 +96,7 @@ export default function HeadwordsElement({ data }) {
         <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
         <span>
           <b>Uppgifter från äldre innehållsregister</b>{" "}
-          <span className="text-gray-500">({headwordBadge})</span>
+          <span className="text-subtle">({headwordBadge})</span>
         </span>
       </button>
 
@@ -106,7 +106,7 @@ export default function HeadwordsElement({ data }) {
         hidden={!expanded}
         aria-hidden={!expanded}
       >
-        <div className="rounded-md border border-gray-200">
+        <div className="rounded-md border border-border bg-surface text-body">
           <div className="p-3 text-sm leading-relaxed">
             <div
               dangerouslySetInnerHTML={{ __html: cleanHTML }}

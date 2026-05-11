@@ -264,8 +264,8 @@ export default function RecordTextPanel({
         && isTranscriptionAvailable
       ) {
         return (
-          <div className="flex flex-col items-center justify-between gap-2 p-2 rounded-lg bg-gray-50">
-            <span className="text-gray-700">
+          <div className="flex flex-col items-center justify-between gap-2 p-2 rounded-lg bg-surface-muted">
+            <span className="text-body">
               {l("Den här sidan kan skrivas av.")}
             </span>
             <TranscribeButton
@@ -294,9 +294,22 @@ export default function RecordTextPanel({
         return null;
       }
 
+      if (
+        // If the record has status accession, show a message that text cannot be transcribed
+        transcriptionstatus === 'accession'
+      ) {
+        return (
+          <p className="text-body">
+            {l(
+              "Texten kan inte skrivas av."
+            )}
+          </p>
+        );
+      }
+      
       // Otherwise, it's being processed
       return (
-        <p className="text-gray-700">
+        <p className="text-body">
           {l(
             "Texten är ännu inte färdig – transkribering eller granskning pågår."
           )}

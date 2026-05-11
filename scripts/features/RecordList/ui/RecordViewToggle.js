@@ -10,7 +10,7 @@ export default function RecordViewToggle({ value, onChange }) {
       className="hidden md:flex items-center gap-2"
       aria-label={l("Vyväljare")}
     >
-      <span className="text-gray-700">{l("Visa som")}:</span>
+      <span className="text-body">{l('Visa som')}:</span>
       <button
         type="button"
         aria-pressed={value === "table"}
@@ -18,9 +18,9 @@ export default function RecordViewToggle({ value, onChange }) {
         className={[
           "flex items-center gap-2 px-3 py-1 rounded border",
           value === "table"
-            ? "bg-isof !text-white !hover:text-white border-isof"
-            : "bg-white hover:bg-gray-100 border-gray-300",
-          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-isof",
+            ? 'bg-primary !text-white !hover:text-white border-primary'
+            : 'bg-surface hover:bg-surface-hover border-border',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
         ].join(" ")}
         title={l("Tabell")}
       >
@@ -34,9 +34,9 @@ export default function RecordViewToggle({ value, onChange }) {
         className={[
           "flex items-center gap-2 px-3 py-1 rounded border",
           value === "cards"
-            ? "bg-isof !text-white border-isof !hover:text-white"
-            : "bg-white hover:bg-gray-100 border-gray-300",
-          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-isof",
+            ? 'bg-primary !text-white border-primary !hover:text-white'
+            : 'bg-surface hover:bg-surface-hover border-border',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
         ].join(" ")}
         title={l("Kort")}
       >

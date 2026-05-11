@@ -10,15 +10,14 @@ export default function MapLoadingPlaceholder() {
       <div
         className="absolute inset-0"
         style={{
-          background:
-            'radial-gradient(circle at 20% 20%, rgba(45, 212, 191, 0.28), transparent 40%), radial-gradient(circle at 80% 75%, rgba(14, 116, 144, 0.28), transparent 42%), linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%)',
+          background: 'var(--color-bg-gradient)',
         }}
       />
       <div
         className="absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            'linear-gradient(0deg, rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)',
+            'linear-gradient(0deg, rgb(var(--color-surface-rgb) / 0.4) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--color-surface-rgb) / 0.4) 1px, transparent 1px)',
           backgroundSize: '34px 34px',
         }}
       />

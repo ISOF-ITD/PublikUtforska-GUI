@@ -10,14 +10,14 @@ import useLegacyContents from "../hooks/useLegacyContents";
 
 /** Renderers */
 const renderHeaderBand = () => (
-  <div className="flex items-center justify-between bg-gray-200 rounded-t-md px-4 py-3">
+  <div className="flex items-center justify-between bg-surface-hover rounded-t-md px-4 py-3 text-body">
     <span className="font-semibold">Innehållsbeskrivningar</span>
   </div>
 );
 
 const renderRecordingBadge = (tag) => (
   <span
-    className="text-[11px] rounded bg-gray-100 px-1 text-gray-600 uppercase"
+    className="text-[11px] rounded bg-surface-hover px-1 text-muted uppercase"
     title={`Inspelning ${tag.toUpperCase()}`}
     aria-label={`Inspelning ${tag.toUpperCase()}`}
   >
@@ -25,11 +25,18 @@ const renderRecordingBadge = (tag) => (
   </span>
 );
 
+const highlightedChipClassName = [
+  'border-[var(--color-highlight)]',
+  'bg-[var(--color-highlight)]',
+  'text-[var(--color-highlight-text)]',
+].join(' ');
+const defaultChipClassName = 'border-border bg-surface hover:bg-surface-hover';
+
 const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
   if (!rows.length) return null;
 
   return (
-    <div className="overflow-x-auto rounded-md border border-gray-200">
+    <div className="overflow-x-auto rounded-md border border-border bg-surface text-body">
       <table className="w-full table-auto border-collapse text-xs mb-0">
         <thead>
           <tr>
@@ -37,7 +44,7 @@ const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
               {renderHeaderBand()}
             </th>
           </tr>
-          <tr className="border-b border-gray-300 flex">
+          <tr className="border-b border-border flex">
             <th scope="col" className="py-3 px-4 w-12">
               Starttid
             </th>
@@ -58,7 +65,7 @@ const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
             return (
               <tr
                 key={`${row.tag || "_"}-${row.start}-${index}`}
-                className="odd:bg-white even:bg-gray-50 border-b last:border-b-0 border-gray-200 flex w-full"
+                className="odd:bg-surface even:bg-surface-muted border-b last:border-b-0 border-border flex w-full"
               >
                 <td className="py-3 px-4 w-12">
                   <div className="flex items-center">
@@ -87,7 +94,7 @@ const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
                   <span className="truncate block break-words" title={row.text}>
                     {row.tag && renderRecordingBadge(row.tag)}{" "}
                     {row.text || (
-                      <span className="text-gray-500 italic">—</span>
+                      <span className="text-subtle italic">—</span>
                     )}
                   </span>
                 </td>
@@ -112,7 +119,7 @@ const renderCompact = ({
   if (!rows.length) return null;
 
   return (
-    <div className="rounded-md border border-gray-200">
+    <div className="rounded-md border border-border bg-surface text-body">
       {renderHeaderBand()}
       <div className="p-3">
         <div className="flex flex-wrap gap-2">
@@ -127,8 +134,8 @@ const renderCompact = ({
                 key={`${row.tag || "_"}-${row.start}-${i}`}
                 className={`group inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs ${
                   isHighlighted
-                    ? "border-yellow-400 bg-yellow-50"
-                    : "border-gray-200 bg-white hover:bg-gray-50"
+                    ? highlightedChipClassName
+                    : defaultChipClassName
                 }`}
                 title={row.text}
               >
@@ -145,7 +152,7 @@ const renderCompact = ({
                 )}
                 <span className="font-mono tabular-nums">{row.start}</span>
                 {row.tag && renderRecordingBadge(row.tag)}
-                <span className="text-gray-700 whitespace-nowrap">
+                <span className="text-body whitespace-nowrap">
                   {row.text || '—'}
                 </span>
               </div>
@@ -225,7 +232,7 @@ export default function ContentsElement({ data, highlightData = [] }) {
         <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
         <span>
           <b>Beskrivning av innehållet</b>{" "}
-          <span className="text-gray-500">({rowCount})</span>
+          <span className="text-subtle">({rowCount})</span>
         </span>
       </button>
 

@@ -93,13 +93,13 @@ export default function ShareButtons({
 
   return (
     <section
-      className="rounded border border-solid border-gray-300 px-3 !py-2 bg-white"
+      className="rounded border border-solid border-border px-3 !py-2 bg-surface text-body"
       aria-labelledby={title ? titleId : undefined}
     >
       {title ? (
         <h3
           id={titleId}
-          className="!my-1 font-semibold text-base text-gray-700"
+          className="!my-1 font-semibold text-base text-body"
         >
           {title}
         </h3>
@@ -117,7 +117,7 @@ export default function ShareButtons({
             onKeyDown={onFieldKeyDown}
             aria-readonly="true"
             aria-describedby={`${helpId} ${statusId}`}
-            className={`w-full rounded border border-gray-300 px-2 py-1 !my-0 text-sm text-gray-800 resize-none ${
+            className={`w-full rounded border border-border bg-surface px-2 py-1 !my-0 text-sm text-body resize-none ${
               breakAll ? "break-all" : "break-words"
             }`}
             title="Klicka eller fokusera för att markera texten"
@@ -145,8 +145,8 @@ export default function ShareButtons({
             className={`inline-flex items-center gap-2 px-2 py-1 !my-0 rounded border text-sm transition-colors
               ${
                 hasTarget
-                  ? "border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900"
-                  : "border-gray-200 text-gray-400 cursor-not-allowed"
+                  ? 'border-border hover:border-focus text-body hover:text-link-hover'
+                  : 'border-border text-subtle cursor-not-allowed'
               }`}
             aria-label={
               hasTarget ? "Kopiera till urklipp" : "Inget att kopiera"

@@ -14,7 +14,7 @@ export default function PdfThumbnail({ url, title = '' }) {
       rel="noopener noreferrer"
     >
       <div
-        className="h-24 text-red-500 w-full bg-gray-50 border border-gray-200 border-solid rounded
+        className="h-24 text-danger w-full bg-surface-muted border border-border border-solid rounded
                    flex items-center justify-center"
         aria-hidden="true"
       >

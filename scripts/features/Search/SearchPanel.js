@@ -234,7 +234,7 @@ export default function SearchPanel({
       )}
       <div
         className={classNames(
-          'left-0 z-[2000] flex max-w-full items-center cursor-auto relative overflow-visible text-gray-700 bg-neutral-100 rounded shadow-sm',
+          'left-0 z-[2000] flex max-w-full items-center cursor-auto relative overflow-visible text-body bg-surface rounded shadow-sm',
           mobileCompact ? 'w-auto mx-2 px-2.5 py-1.5 text-sm' : 'w-full px-2.5 py-1.5 text-sm',
         )}
         style={desktopSearchRowStyle}
@@ -248,8 +248,8 @@ export default function SearchPanel({
               id="searchInputMapMenu"
               type="text"
               className={classNames(
-                'w-full border bg-white !p-2 text-gray-900 placeholder-gray-500 shadow-sm',
-                'border-gray-300 focus-visible:border-isof focus-visible:ring-2 focus-visible:ring-isof/60 focus:outline-none !mb-0',
+                'w-full border bg-surface !p-2 text-body placeholder-subtle shadow-sm',
+                'border-border focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus/60 focus:outline-none !mb-0',
                 'h-12 rounded-md pr-20',
                 'text-[16px]',
                 hasSelection ? 'opacity-0 pointer-events-none' : 'opacity-100',
@@ -286,8 +286,8 @@ export default function SearchPanel({
               className={classNames(
                 'absolute pointer-events-none block left-4 right-12',
                 mobileCompact ? 'top-2' : 'top-2.5',
-                "truncate text-gray-700 leading-6",
-                hasSelection ? "opacity-100" : "opacity-0"
+                'truncate text-body leading-6',
+                hasSelection ? 'opacity-100' : 'opacity-0'
               )}
             >
               {labelPrefix}
@@ -309,7 +309,7 @@ export default function SearchPanel({
                 <button
                   type="button"
                   className={classNames(
-                    'pointer-events-auto rounded-full !py-0 !border-none !m-0 text-gray-500 hover:text-gray-700 focus-visible:outline-none',
+                    'pointer-events-auto rounded-full !py-0 !border-none !m-0 text-subtle hover:text-body focus-visible:outline-none',
                     mobileCompact ? 'h-8 w-8 flex items-center justify-center' : '',
                   )}
                   onClick={clearSearch}
@@ -332,8 +332,8 @@ export default function SearchPanel({
               {loading && query && (
                 <span
                   className={classNames(
-                    "h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-transparent",
-                    hasSelection ? "hidden" : "inline-block"
+                    'h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent',
+                    hasSelection ? 'hidden' : 'inline-block'
                   )}
                   aria-label="Laddar"
                   role="status"
@@ -348,7 +348,7 @@ export default function SearchPanel({
             type="button"
             className={classNames(
               'pointer-events-auto gap-1 flex items-center justify-center self-center rounded-md text-sm font-medium',
-              'bg-isof !text-white border-2 border-transparent hover:bg-darker-isof focus-visible:bg-darker-isof focus-visible:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-100 focus:outline-none',
+              'bg-primary !text-white border-2 border-transparent hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-hover focus:outline-none',
               'shrink-0 !mb-0',
               mobileCompact ? 'h-12 min-w-[3rem] px-3' : 'h-12 px-3',
             )}
@@ -384,7 +384,7 @@ export default function SearchPanel({
             <button
               type="button"
               className={classNames(
-                'inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow hover:bg-gray-50',
+                'inline-flex w-full items-center justify-center gap-2 rounded-md bg-surface px-3 py-2 !text-base font-medium text-body shadow hover:bg-surface-hover',
                 mobileCompact ? 'flex-wrap whitespace-normal break-words text-center' : '',
               )}
               onClick={() => window.eventBus?.dispatch('routePopup.show')}
@@ -400,7 +400,7 @@ export default function SearchPanel({
             <button
               type="button"
               className={classNames(
-                'inline-flex w-full items-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow cursor-not-allowed',
+                'inline-flex w-full items-center gap-2 rounded-md bg-surface px-3 py-2 !text-base font-medium text-body shadow cursor-not-allowed',
                 mobileCompact ? 'flex-wrap whitespace-normal break-words text-center' : '',
               )}
               disabled
@@ -412,7 +412,7 @@ export default function SearchPanel({
             <button
               type="button"
               className={classNames(
-                'inline-flex w-full items-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow cursor-default',
+                'inline-flex w-full items-center gap-2 rounded-md bg-surface px-3 py-2 !text-base font-medium text-body shadow cursor-default',
                 mobileCompact ? 'flex-wrap whitespace-normal break-words text-center' : '',
               )}
               disabled
@@ -445,7 +445,7 @@ export default function SearchPanel({
           type="button"
           onClick={onOpenIntroOverlay}
           aria-controls="intro-overlay"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 !text-base font-medium text-gray-700 shadow hover:bg-gray-50"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-surface px-3 py-2 !text-base font-medium text-body shadow hover:bg-surface-hover"
           title={l("Hjälp & nyheter")}
           aria-label={l("Hjälp och nyheter")}
         >
@@ -461,7 +461,7 @@ export default function SearchPanel({
           href="https://www.isof.se/enkatfolke"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white border-4 border-solid border-lighter-isof py-2 !text-base font-medium text-gray-700 shadow "
+          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-surface border-4 border-solid border-accent py-2 !text-base font-medium text-body shadow "
           title={l("Tyck till om Folke – svara på vår enkät")}
           aria-label={l("Tyck till om Folke – svara på vår enkät!")}
         >

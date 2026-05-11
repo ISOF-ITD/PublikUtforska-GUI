@@ -1,6 +1,5 @@
 /* eslint-disable react/require-default-props */
-import React from "react";
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
 /*
 - Removes [[...]] refs and \n
@@ -120,7 +119,7 @@ function HighlightedText({
         {pieces.map((html, idx) => (
           <div
             key={`${idx}-${html.length}`}
-            className={`item-summary inline-block bg-white rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight my-2 mb-0 ${className}`}
+            className={`item-summary inline-block bg-surface rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight my-2 mb-0 ${className}`}
             dangerouslySetInnerHTML={{ __html: html }}
           />
         ))}
@@ -148,7 +147,7 @@ function HighlightedText({
   if (highlights.length === 0) {
     return (
       <div
-        className={`item-summary inline-block bg-white rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight my-2 mb-0 ${className}`}
+        className={`item-summary inline-block bg-surface rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight my-2 mb-0 ${className}`}
         dangerouslySetInnerHTML={{ __html: str }}
       />
     );
@@ -185,7 +184,7 @@ function HighlightedText({
         return (
           <div
             key={key}
-            className={`item-summary inline-block bg-white rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight my-2 mb-0 ${className}`}
+            className={`item-summary inline-block bg-surface rounded-lg shadow-md font-serif max-w-full text-sm py-2 px-2 leading-tight my-2 mb-0 ${className}`}
             dangerouslySetInnerHTML={{ __html: beforeText + html + afterText }}
           />
         );

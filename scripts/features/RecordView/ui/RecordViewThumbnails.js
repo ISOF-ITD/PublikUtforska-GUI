@@ -81,7 +81,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
         title={expanded ? "Dölj" : "Visa"}
         aria-expanded={expanded}
         aria-controls={contentId}
-        className="flex items-center gap-2 rounded-sm px-1 py-1.5 underline hover:no-underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
+        className="flex items-center gap-2 rounded-sm px-1 py-1.5 underline hover:no-underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
         aria-label={`Visa översikt, ${images.length} bild${
           images.length === 1 ? "" : "er"
         }`}
@@ -90,7 +90,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
         <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
         <span>
           <b>Visa översikt</b>{" "}
-          <span className="text-gray-500">({images.length})</span>
+          <span className="text-subtle">({images.length})</span>
         </span>
         <FontAwesomeIcon icon={faTh} />
       </button>
@@ -99,9 +99,10 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
         <div
           id={contentId}
           className={classNames(
-            "flex flex-wrap gap-2 bg-white rounded-lg shadow-md font-serif leading-normal mb-5 max-w-full p-5",
-            "max-h-96 overflow-auto",
-            !expanded && "hidden"
+            'flex flex-wrap gap-2 bg-surface text-body rounded-lg shadow-md',
+            'font-serif leading-normal mb-5 max-w-full p-5',
+            'max-h-96 overflow-auto',
+            !expanded && 'hidden',
           )}
           aria-hidden={!expanded}
         >
@@ -114,7 +115,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
               variant="thumbnail"
               showCaption={false}
               renderMagnifyingGlass={false}
-              className="mr-4 w-28 hover:cursor-pointer sm:w-32 md:w-36 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
+              className="mr-4 w-28 hover:cursor-pointer sm:w-32 md:w-36 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
               imgClassName="h-28 sm:h-32 md:h-36"
               imgProps={{
                 loading: "lazy",
@@ -135,7 +136,7 @@ export default function RecordViewThumbnails({ data, mediaImageClickHandler }) {
                   Math.min(prev + CHUNK_SIZE, images.length)
                 )
               }
-              className="mt-2 px-3 py-1.5 text-sm bg-white border rounded shadow-sm hover:bg-gray-50"
+              className="mt-2 px-3 py-1.5 text-sm bg-surface border border-border rounded shadow-sm hover:bg-surface-hover"
             >
               Visa fler ({images.length - visibleCount} kvar)
             </button>

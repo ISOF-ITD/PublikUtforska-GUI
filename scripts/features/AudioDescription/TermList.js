@@ -39,7 +39,7 @@ export function TermNode({
             aria-label="Visa eller dölj undernivåer"
             aria-expanded={expanded}
             aria-controls={childrenId}
-            className="border border-gray-500 text-gray-500 hover:text-gray-700 mb-2 mr-1 p-2
+            className="border border-border text-muted hover:text-body mb-2 mr-1 p-2
                transition-transform duration-200 transform hover:cursor-pointer"
             style={{ transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
           >
@@ -65,7 +65,7 @@ export function TermNode({
         <label
           htmlFor={checkboxId}
           className={`cursor-pointer flex items-center gap-1 px-2 rounded-lg transition-all duration-200 
-            ${isSelected ? 'bg-isof text-white' : 'hover:bg-gray-100'}`}
+            ${isSelected ? 'bg-isof text-white' : 'hover:bg-surface-hover'}`}
         >
           <span className="font-medium">
             {node.termid} - {node.term}
@@ -77,7 +77,7 @@ export function TermNode({
       {expanded && hasChildren && (
         <ul
           id={childrenId}
-          className="ml-6 pl-3 border-l border-gray-300 transition-all duration-200 space-y-1"
+          className="ml-6 pl-3 border-l border-border transition-all duration-200 space-y-1"
         >
           {node.children.map((child) => (
             <TermNode

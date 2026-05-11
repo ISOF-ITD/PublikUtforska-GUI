@@ -7,7 +7,7 @@
 		right: 0;
 		bottom: 0;
 
-		background: rgba(0, 0, 0, 0.2);
+		background: var(--color-overlay);
 
 		overflow-y: scroll;
 
@@ -73,9 +73,10 @@
 			margin: 0 auto 20px;
 			padding: 0 20px 20px;
 
-			background-color: #fff;
+			background-color: var(--color-surface);
+			color: var(--color-text);
 
-			box-shadow: 0 2px 6px rgba(0,0,0,.2);
+			box-shadow: 0 2px 6px var(--color-shadow);
 			// border-radius: 3px;
 
 			box-sizing: border-box;
@@ -156,7 +157,7 @@
 					max-width: 150px;
 
 					border-radius: 5px;
-					box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+					box-shadow: 0 2px 3px var(--color-shadow);
 
 					@media print {
 						max-width: 50%;
@@ -206,10 +207,10 @@
 				margin: 0 -50px 40px;
 				padding: 46px 50px 30px;
 
-				color: #fff;
+				color: var(--color-text-inverted);
 
-				background-image: url('../../img/header-back.gif');
-				background-color: @color-red;
+				background-image: var(--image-header-back-tint), url('../../img/header-back.gif');
+				background-color: var(--color-primary);
 				background-position: center;
 
 				@media print {
@@ -226,13 +227,13 @@
 				}
 
 				h1, h2 {
-					color: #fff;
+					color: var(--color-text-inverted);
 
 					margin-top: 0;
 				}
 
 				a {
-					color: #fff;
+					color: var(--color-text-inverted);
 				}
 
 				p {

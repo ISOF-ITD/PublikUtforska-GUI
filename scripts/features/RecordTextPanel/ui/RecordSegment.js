@@ -38,10 +38,10 @@ function RecordSegment({
   }, [controlled, onToggle]);
 
   return (
-    <section className="bg-white shadow-sm border border-black/5 overflow-hidden relative">
+    <section className="bg-surface shadow-sm border border-border overflow-hidden relative">
       <button
         type="button"
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left border !border-solid border-gray-500 rounded !m-0"
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left border !border-solid border-border rounded !m-0"
         aria-expanded={open}
         aria-controls={`seg-panel-${segId}`}
         onClick={toggle}
@@ -70,7 +70,7 @@ function RecordSegment({
 
         {/* RIGHT SIDE: "Visa/Dölj" + chevron */}
         <span className="flex items-center gap-2 shrink-0">
-          <span className="text-gray-500 shrink-0">
+          <span className="text-subtle shrink-0">
             {open ? (
               <span>
                 {l("Dölj")}{" "}

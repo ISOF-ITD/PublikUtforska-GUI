@@ -262,7 +262,7 @@ useEffect(() => {
   return (
     <AudioProvider>
       <div className="app">
-        <a href="#main" className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50 bg-white text-isof underline px-3 py-2 rounded">
+        <a href="#main" className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50 bg-surface text-link underline px-3 py-2 rounded">
           Hoppa till innehåll
         </a>
         <RoutePopupWindow manuallyOpenPopup>

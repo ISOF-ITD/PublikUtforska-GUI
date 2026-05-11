@@ -3,6 +3,8 @@ Public crowdsource map-based interface
 
 [Accessibility](Accessibility.md)
 
+[Tema och dark mode](theme.md)
+
 ## Code style and conventions
 
 * Use [ES6](http://es6-features.org/) syntax.

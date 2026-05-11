@@ -9,7 +9,7 @@ export default function License({ data, className = "" }) {
     return (
       <div className={`h-full ${className}`}>
         <div
-          className="flex h-full items-start gap-3 bg-gray-50 rounded p-3 text-sm text-gray-700"
+          className="flex h-full items-start gap-3 bg-surface-muted rounded p-3 text-sm text-body"
           dangerouslySetInnerHTML={{ __html: license.html }}
         />
       </div>
@@ -21,7 +21,7 @@ export default function License({ data, className = "" }) {
 
   return (
     <div
-      className={`flex flex-col items-start justify-center gap-2 bg-gray-50 text-gray-700 rounded max-w-full p-3 w-full lg:w-1/3 border border-solid border-gray-300 ${className}`}
+      className={`flex flex-col items-start justify-center gap-2 bg-surface-muted text-body rounded max-w-full p-3 w-full lg:w-1/3 border border-solid border-border ${className}`}
     >
       {badgeSrc ? (
         <a
@@ -40,7 +40,7 @@ export default function License({ data, className = "" }) {
         </a>
       ) : null}
 
-      <span className="text-gray-700">Detta verk är licensierat under:</span>
+      <span className="text-body">Detta verk är licensierat under:</span>
       <a
         href={licenseUrl}
         target="_blank"

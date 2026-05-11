@@ -125,7 +125,7 @@ input[type="button"] {
   display: inline-block;
   height: 44px;
   // padding: 0 30px;
-  color: #555;
+  color: var(--color-text-muted);
   text-align: center;
   font-size: 13px;
   font-weight: 600;
@@ -153,8 +153,8 @@ button.button-primary,
 input[type="submit"].button-primary,
 input[type="reset"].button-primary,
 input[type="button"].button-primary {
-  color: #fff;
-  background-color: @color-red;
+  color: var(--color-text-inverted);
+  background-color: var(--color-primary);
   border: none;
 }
 .button-primary:hover,
@@ -169,8 +169,8 @@ button.button-primary:focus-visible,
 input[type="submit"].button-primary:focus-visible,
 input[type="reset"].button-primary:focus-visible,
 input[type="button"].button-primary:focus-visible {
-  color: #fff;
-  background-color: darken(@color-red, 10%);
+  color: var(--color-text-inverted);
+  background-color: var(--color-primary-hover);
 }
 
 .button-secondary,
@@ -179,9 +179,9 @@ button.button-secondary,
 input[type="submit"].button-secondary,
 input[type="reset"].button-secondary,
 input[type="button"].button-secondary {
-  color: #1f2937;
-  background-color: #f3f4f6;
-  border: 1px solid #d1d5db;
+  color: var(--color-text);
+  background-color: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
 }
 .button-secondary:hover,
 .button.button-secondary:hover,
@@ -195,8 +195,8 @@ button.button-secondary:focus-visible,
 input[type="submit"].button-secondary:focus-visible,
 input[type="reset"].button-secondary:focus-visible,
 input[type="button"].button-secondary:focus-visible {
-  color: #111827;
-  background-color: #e5e7eb;
+  color: var(--color-text);
+  background-color: var(--color-surface-active);
 }
 
 .button-ghost,
@@ -205,9 +205,9 @@ button.button-ghost,
 input[type="submit"].button-ghost,
 input[type="reset"].button-ghost,
 input[type="button"].button-ghost {
-  color: #374151;
+  color: var(--color-text-muted);
   background-color: transparent;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
 }
 .button-ghost:hover,
 .button.button-ghost:hover,
@@ -221,8 +221,8 @@ button.button-ghost:focus-visible,
 input[type="submit"].button-ghost:focus-visible,
 input[type="reset"].button-ghost:focus-visible,
 input[type="button"].button-ghost:focus-visible {
-  color: #111827;
-  background-color: #f9fafb;
+  color: var(--color-text);
+  background-color: var(--color-surface-hover);
 }
 // .button:hover,
 // button:hover,
@@ -308,12 +308,13 @@ input[type="button"].button-large {
   font-size: 14px;
 }
 button[disabled] {
-    background:#ccc;
-    border-color: #ccc;
+    background: var(--color-disabled-bg);
+    border-color: var(--color-disabled-bg);
+    color: var(--color-disabled-text);
     text-shadow:none;
 }
 button[disabled]:hover {
-  background:#ccc;
+  background: var(--color-disabled-bg);
 }
 
 /* Forms
@@ -329,8 +330,9 @@ textarea,
 select {
   height: 38px;
   padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
-  background-color: #fff;
-  border: 1px solid #D1D1D1;
+  color: var(--color-text);
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
   border-radius: 4px;
   box-shadow: none;
   box-sizing: border-box; }
@@ -390,8 +392,8 @@ code {
   margin: 0 .2rem;
   font-size: 90%;
   white-space: nowrap;
-  background: #F1F1F1;
-  border: 1px solid #E1E1E1;
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 4px; }
 pre > code {
   display: block;
@@ -441,7 +443,7 @@ hr {
   margin-top: 3rem;
   margin-bottom: 3.5rem;
   border-width: 0;
-  border-top: 1px solid #E1E1E1;
+  border-top: 1px solid var(--color-border-subtle);
 
   @media (max-width: 750px) {
     margin-top: 1rem;

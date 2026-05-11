@@ -43,7 +43,7 @@ export default function AccessionIdCell({
         <button type="button"
           data-archiveidrow={archive.archive_id_row}
           onClick={archiveIdClick}
-          className={`${pillClasses} bg-white text-isof underline hover:bg-gray-100 cursor-pointer`}
+          className={`${pillClasses} bg-surface text-link underline hover:bg-surface-hover cursor-pointer`}
         >
           {base}
         </button>
