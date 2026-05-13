@@ -189,9 +189,9 @@ function ResolvedRecord({
           mediaImageClickHandler={mediaImageClickHandler}
         />
 
-        <div className="flex flex-col lg:flex-row gap-2 my-6 items-stretch">
-            <ReferenceLinks data={data} />
-            <License data={data} />
+        <div className="my-6 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+          <ReferenceLinks data={data} />
+          <License data={data} />
         </div>
         <PersonItems data={data} routeParams={routeParams} />
         <PlaceItems data={data} routeParams={routeParams} />

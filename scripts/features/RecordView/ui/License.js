@@ -44,7 +44,7 @@ export default function License({ data, className = "" }) {
 
   return (
     <div
-      className={`flex flex-col items-start justify-center gap-2 bg-surface-muted text-body rounded max-w-full p-3 w-full lg:w-1/3 border border-solid border-border ${className}`}
+      className={`flex flex-col items-start justify-center gap-2 bg-surface-muted text-body rounded max-w-full p-3 border border-solid border-border ${className}`}
     >
       {badgeIcons.length ? (
         <a
