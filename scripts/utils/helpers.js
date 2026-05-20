@@ -39,13 +39,6 @@ export function getTitle(title, contents, archive, highlight, maxLength = 300) {
   if (title) {
     return title;
   }
-  // om det finns träff i `contents`, visa med highlight
-  if (highlight?.contents) {
-    // här behövs ingen teckenbegräsning eftersom es-api levererar highlights
-    // med max 300 tecken
-    const highlightedContents = highlight.contents[0].replace(/\r/g, ' ');
-    return `${highlightedContents}`;
-  }
   // annars, testa med `contents`, och förkorta om nödvändigt
   if (contents) {
     if (contents.length > maxLength) {
