@@ -474,6 +474,7 @@ export default function RecordCardItem({
         && (media?.length ?? 0) > 0 && (
           <div className="mt-4 border-t border-border pt-3">
             <TranscribeButton
+              transcriptionstatus={transcriptionstatus}
               className="w-full justify-center bg-primary hover:bg-primary-hover !text-white font-medium rounded-lg transition-colors"
               label={(
                 <>

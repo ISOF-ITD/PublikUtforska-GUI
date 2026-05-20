@@ -11,6 +11,7 @@ import useTranscriptionAvailability from '../../../hooks/useTranscriptionAvailab
 // details about the current record.
 // The component can take in several props to customize its appearance and behavior.
 export default function TranscribeButton({
+  transcriptionstatus,
   random = false,
   recordId = "",
   archiveId = "",
@@ -172,7 +173,7 @@ export default function TranscribeButton({
 
   const effectiveOnClick = onClick || defaultOnClick;
 
-  if (!config.activateTranscription || !isTranscriptionAvailable) {
+  if ((!config.activateTranscription || !isTranscriptionAvailable) || (!transcriptionstatus || !transcriptionstatus.includes('readytotranscribe'))) {
     // Ingen knapp
     return null;
   }
@@ -210,6 +211,7 @@ export default function TranscribeButton({
 }
 
 TranscribeButton.propTypes = {
+  transcriptionstatus: PropTypes.string,
   random: PropTypes.bool,
   recordId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   archiveId: PropTypes.string,

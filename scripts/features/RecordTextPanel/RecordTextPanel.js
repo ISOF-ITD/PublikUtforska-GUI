@@ -258,6 +258,12 @@ export default function RecordTextPanel({
         );
       }
 
+      // NOTE: Maybe use TranscriptionCTA here instead of duplicating logic? It would require lifting the "which page to open" state up to the panel, but it would ensure consistency and reduce code duplication.
+      let transcribeMessage = l("Den här sidan kan skrivas av.")
+      if (!['readytotranscribe'].includes(transcriptionstatus)) {
+        transcribeMessage = l("Texten är ännu inte färdig – transkribering eller granskning pågår.");
+      }
+
       // If page is ready to be transcribed and transcription is available, show CTA
       if (
         pageTranscriptionstatus === 'readytotranscribe'
@@ -266,9 +272,10 @@ export default function RecordTextPanel({
         return (
           <div className="flex flex-col items-center justify-between gap-2 p-2 rounded-lg bg-surface-muted">
             <span className="text-body">
-              {l("Den här sidan kan skrivas av.")}
+              {transcribeMessage}
             </span>
             <TranscribeButton
+              transcriptionstatus={transcriptionstatus}
               className="button button-primary"
               label={l("Skriv av")}
               title={title}

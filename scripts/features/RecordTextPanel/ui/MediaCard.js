@@ -5,6 +5,7 @@ import ArchiveImage from "./ArchiveImage";
 import { l } from "../../../lang/Lang";
 
 const MediaCard = memo(function MediaCard({
+  // transcriptionStatus, //Needed here?
   mediaItem,
   index,
   imageUrl,
@@ -13,7 +14,7 @@ const MediaCard = memo(function MediaCard({
   right,
 }) {
   return (
-    <Card>
+    <Card> {/* <Card transcriptionstatus={transcriptionStatus}>: Needed here?  */}
       <div className="md:grid items-start md:gap-6 md:[grid-template-columns:minmax(18rem,1.15fr)_minmax(18rem,1fr)]">
         <figure className="relative md:sticky md:top-2 md:self-start">
           {/* Cap figure height and scroll the image inside if it’s very tall */}
