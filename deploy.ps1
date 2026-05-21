@@ -1,30 +1,82 @@
-# Kör npm-skriptet för att bygga applikationen (bygger till www-deploy)
-npm install
-npm run build
+param(
+    [string]$PublicPath = "",
+    [int]$KeepDays = $(if ($env:KEEP_RELEASE_DAYS) { [int]$env:KEEP_RELEASE_DAYS } else { 7 }),
+    [string]$ReleaseId = $(if ($env:RELEASE_ID) { $env:RELEASE_ID } else { Get-Date -Format "yyyyMMddHHmmss" })
+)
 
-# Kopiera sitemap*.xml-filerna från www till www-deploy
-Copy-Item -Path "www/sitemap*.xml" -Destination "www-deploy"
+$ErrorActionPreference = "Stop"
 
-# Skapa en tidsstämpel i formatet yyyyMMddHHmmss
-$timestamp = Get-Date -Format "yyyyMMddHHmmss"
+# Stable files are published to www/. Versioned build assets are published to
+# www/releases/<release-id>/ so old browser tabs can still load their chunks.
+$BuildDir = "www-deploy"
+$WwwDir = "www"
+$ReleasesDir = Join-Path $WwwDir "releases"
 
-# Om mappen "www" finns, byt namn på den till en backup med tidsstämpel
-if (Test-Path "www") {
-    Rename-Item -Path "www" -NewName "www-backup_$timestamp"
+if ($ReleaseId -notmatch "^[A-Za-z0-9._-]+$") {
+    throw "ReleaseId far bara innehalla bokstaver, siffror, punkt, understreck och bindestreck."
 }
 
-# Byt namn på mappen "www-deploy" till "www"
-Rename-Item -Path "www-deploy" -NewName "www"
+$BasePublicPath = if ([string]::IsNullOrEmpty($PublicPath)) { "/" } else { $PublicPath }
 
-# Hämta alla mappar som matchar "www-backup_*", sortera dem efter senaste ändring (äldsta först)
-$backups = Get-ChildItem -Directory -Filter "www-backup_*" | Sort-Object LastWriteTime
+if (-not $BasePublicPath.EndsWith("/")) {
+    $BasePublicPath = "$BasePublicPath/"
+}
 
-# Om det finns fler än 10 backup-mappar, ta bort de äldsta
-if ($backups.Count -gt 10) {
-    $toRemove = $backups | Select-Object -First ($backups.Count - 10)
-    Write-Host "Tar bort $($toRemove.Count) äldsta backup(er)..."
-    foreach ($backup in $toRemove) {
-        Write-Host "Tar bort $($backup.FullName)"
-        Remove-Item $backup.FullName -Recurse -Force
+$AssetPublicPath = "${BasePublicPath}releases/$ReleaseId/"
+$ReleaseDir = Join-Path $ReleasesDir $ReleaseId
+
+if (Test-Path $ReleaseDir) {
+    throw "Releasekatalogen finns redan: $ReleaseDir"
+}
+
+Write-Host "Bygger release $ReleaseId med PUBLIC_PATH=$AssetPublicPath..."
+
+npm install
+if ($LASTEXITCODE -ne 0) {
+    throw "npm install misslyckades."
+}
+
+$env:PUBLIC_PATH = $AssetPublicPath
+npm run build
+if ($LASTEXITCODE -ne 0) {
+    throw "npm run build misslyckades."
+}
+
+New-Item -ItemType Directory -Force -Path $ReleasesDir | Out-Null
+New-Item -ItemType Directory -Path $ReleaseDir | Out-Null
+
+Write-Host "Publicerar assets till $ReleaseDir..."
+Copy-Item -Path (Join-Path $BuildDir "*") -Destination $ReleaseDir -Recurse -Force
+
+Write-Host "Uppdaterar stabila filer i $WwwDir..."
+Copy-Item -Path (Join-Path $ReleaseDir "index.html") -Destination (Join-Path $WwwDir "index.html") -Force
+
+$favicon = Join-Path $ReleaseDir "favicon.ico"
+if (Test-Path $favicon) {
+    Copy-Item -Path $favicon -Destination (Join-Path $WwwDir "favicon.ico") -Force
+}
+
+Get-ChildItem -Path $ReleaseDir -Filter "google*.html" | Copy-Item -Destination $WwwDir -Force
+Get-ChildItem -Path $ReleaseDir -Filter "varning.template*" | Copy-Item -Destination $WwwDir -Force
+
+foreach ($staticDir in @("img", "fonts")) {
+    $source = Join-Path $ReleaseDir $staticDir
+    $destination = Join-Path $WwwDir $staticDir
+
+    if (Test-Path $source) {
+        New-Item -ItemType Directory -Force -Path $destination | Out-Null
+        Copy-Item -Path (Join-Path $source "*") -Destination $destination -Recurse -Force
     }
 }
+
+Set-Content -Path (Join-Path $WwwDir "current-release.txt") -Value $ReleaseId
+
+Write-Host "Rensar releases aldre an $KeepDays dagar..."
+$cutoff = (Get-Date).AddDays(-$KeepDays)
+Get-ChildItem -Path $ReleasesDir -Directory |
+    Where-Object { $_.Name -ne $ReleaseId -and $_.LastWriteTime -lt $cutoff } |
+    Remove-Item -Recurse -Force
+
+Remove-Item -Path $BuildDir -Recurse -Force
+
+Write-Host "Release $ReleaseId ar publicerad."

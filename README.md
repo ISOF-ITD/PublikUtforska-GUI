@@ -45,6 +45,23 @@ cd /var/www/react/PublikUtforska-GUI/
 ./deploy.sh
 ```
 
+`deploy.sh` publishes every build as a separate release under `www/releases/<release-id>/`
+and updates only the stable entry files in `www/`, such as `index.html`.
+This lets users with an older open browser tab keep loading the chunks that
+belong to the version they already have.
+
+Old releases are kept for 7 days by default. You can change that per deploy:
+
+```bash
+./deploy.sh --keepDays 14
+```
+
+You can also set a deterministic release id when needed:
+
+```bash
+./deploy.sh --releaseId 20260521-1430
+```
+
 ### Optional: Deploy with a custom public path
 
 If you want to deploy the application to a subpath (for example `/demo/test/www/` instead of `/`), you can pass the `--publicPath` flag to `deploy.sh`.
@@ -69,11 +86,21 @@ PUBLIC_PATH=/demo/test/www/ npm run start
 
 If no `--publicPath` is provided, it defaults to `/`.
 
+When release assets are published, the configured public path is extended with
+the release directory. For example:
+
+* `./deploy.sh` -> assets are loaded from `/releases/<release-id>/`
+
+* `./deploy.sh --publicPath /demo/test/www/` -> assets are loaded from `/demo/test/www/releases/<release-id>/`
+
 During the build, the `webpack.config.js` will print the active `PUBLIC_PATH` to the console, so you can easily see which path is being used:
 
 ```bash
 🏗️  Bygger med PUBLIC_PATH=/demo/test/www/ 🚀
 ```
+
+With release deploys, the printed path includes the release directory, for
+example `/demo/test/www/releases/20260521-1430/`.
 
 ## Create or update sitemap
 
