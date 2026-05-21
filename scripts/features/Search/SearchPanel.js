@@ -425,6 +425,7 @@ export default function SearchPanel({
       {isTranscriptionAvailable && (
         <TranscribeButton
           className={mobileCompact ? '!h-auto !min-h-[2.75rem] !whitespace-normal !break-words !leading-snug !py-2' : ''}
+          transcriptionstatus={"readytotranscribe"} // readytotranscribe to always show the button, even if there’s no specific record selected – it will then invite to transcribe a random record
           label={(
             <>
               <FontAwesomeIcon icon={faPen} />
