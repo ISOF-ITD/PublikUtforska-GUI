@@ -21,6 +21,7 @@ import HighlightedText from './HighlightedText';
 import { secondsToMMSS } from '../../../utils/timeHelper';
 import { createSearchRoute } from '../../../utils/routeHelper';
 import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
+import countPageProgressFromMedia from '../utils/countPageProgressFromMedia';
 
 export default function RecordCardItem({
   item,
@@ -164,9 +165,18 @@ export default function RecordCardItem({
     total = transcriptiontype === 'sida' ? mediaCount : count;
     done = transcriptiontype === 'sida' ? mediaCountDone : countDone;
   }
-  const pageTotal = total ?? 0;
+  const fromMedia = countPageProgressFromMedia(media);
+  const totalCount = Number(total);
+  const hasSubrecordTotal = Number.isFinite(totalCount) && totalCount > 0;
+  const pageTotal = hasSubrecordTotal ? totalCount : fromMedia.total;
   const safePageTotal = Math.max(pageTotal, 1);
-  const pageDone = Math.min(done ?? 0, safePageTotal);
+  const doneCount = Number(done);
+  const pageDone = Math.min(
+    hasSubrecordTotal && Number.isFinite(doneCount) && doneCount >= 0
+      ? doneCount
+      : fromMedia.done,
+    safePageTotal,
+  );
   const transcriptionProgress = !isAudioRecording
     && transcriptionstatus !== 'readytocontribute'
     && pageTotal > 0

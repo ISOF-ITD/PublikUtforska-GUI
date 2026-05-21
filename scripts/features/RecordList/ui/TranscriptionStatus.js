@@ -2,28 +2,7 @@
 import PropTypes from "prop-types";
 import { l } from "../../../lang/Lang";
 import classNames from "classnames";
-
-const DONE_PAGE_STATUSES = new Set([
-  "undertranscription",
-  "transcribed",
-  "reviewing",
-  "needsimprovement",
-  "approved",
-  "published",
-]);
-
-function countPageProgressFromMedia(media = []) {
-  const pages = (Array.isArray(media) ? media : []).filter(
-    (m) => m && m.type !== "pdf" // PDFs are not transcribable
-  );
-
-  const done = pages.reduce((acc, m) => {
-    const st = m?.transcriptionstatus;
-    return acc + (DONE_PAGE_STATUSES.has(st) ? 1 : 0);
-  }, 0);
-
-  return { total: pages.length, done };
-}
+import countPageProgressFromMedia from "../utils/countPageProgressFromMedia";
 
 export default function TranscriptionStatus({
   status,
