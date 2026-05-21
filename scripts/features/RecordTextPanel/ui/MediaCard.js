@@ -14,7 +14,7 @@ const MediaCard = memo(function MediaCard({
   right,
 }) {
   return (
-    <Card> {/* <Card transcriptionstatus={transcriptionStatus}>: Needed here?  */}
+    <Card> {/* <Card> får sin TranscribeButton från buildTextSide i RecordSegment som kommer från RecordTextPanel */}
       <div className="md:grid items-start md:gap-6 md:[grid-template-columns:minmax(18rem,1.15fr)_minmax(18rem,1fr)]">
         <figure className="relative md:sticky md:top-2 md:self-start">
           {/* Cap figure height and scroll the image inside if it’s very tall */}

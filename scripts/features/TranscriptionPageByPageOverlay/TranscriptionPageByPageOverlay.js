@@ -490,6 +490,7 @@ export default function TranscriptionPageByPageOverlay() {
               random
               label="Skriv av annan slumpmässig uppteckning"
               transcribeCancel={transcribeCancel}
+              transcriptionstatus="readytotranscribe"
             />
           </div>
         </div>
