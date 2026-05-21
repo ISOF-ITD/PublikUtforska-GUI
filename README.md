@@ -62,6 +62,32 @@ You can also set a deterministic release id when needed:
 ./deploy.sh --releaseId 20260521-1430
 ```
 
+### Manual rollback to an earlier release
+
+Rollback is done by copying the earlier release's `index.html` back to the
+stable `www/index.html`. The file contains the asset URLs for that release, so
+new page loads will use the older bundle and chunks again.
+
+Run on server:
+
+```bash
+cd /var/www/react/PublikUtforska-GUI/
+ls -1 www/releases
+cp www/releases/20260521-1430/index.html www/index.html
+printf '%s\n' '20260521-1430' > www/current-release.txt
+```
+
+If static root assets also need to match the rolled back release, copy them too:
+
+```bash
+cp -R www/releases/20260521-1430/img/. www/img/
+cp -R www/releases/20260521-1430/fonts/. www/fonts/
+cp www/releases/20260521-1430/favicon.ico www/favicon.ico
+```
+
+Rollback is only possible while the release directory is still present. By
+default old releases are kept for 7 days.
+
 ### Optional: Deploy with a custom public path
 
 If you want to deploy the application to a subpath (for example `/demo/test/www/` instead of `/`), you can pass the `--publicPath` flag to `deploy.sh`.
