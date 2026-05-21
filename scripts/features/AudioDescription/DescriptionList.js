@@ -8,7 +8,7 @@ import ListPlayButton from "./ListPlayButton";
 function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData }) {
   function parseTimeString(timeString = "00:00") {
     try {
-      const parts = timeString.split(":").map(Number).reverse();
+      const parts = timeString.split(':').map(Number).reverse();
       let seconds = 0;
       if (parts[0]) seconds += parts[0];
       if (parts[1]) seconds += parts[1] * 60;
