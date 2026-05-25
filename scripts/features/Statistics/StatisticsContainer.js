@@ -12,7 +12,7 @@ export default function StatisticsContainer() {
 
     const loadCurrentMonth = async () => {
       try {
-        const res = await fetch(`${config.apiUrl}current_time`, {
+        const res = await fetch(`${config.apiUrl}current_time/`, {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error('current_time fetch failed');
