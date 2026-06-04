@@ -202,7 +202,7 @@ export default function TranscriptionForm({
                 checked={!!unreadableInput}
                 onChange={inputChangeHandler}
               />
-              <span>Sidan är svårläst eller delvis oläslig</span>
+              <span>Sidan innehåller delvis oläsliga ord</span>
             </label>
           </div>
         </fieldset>
