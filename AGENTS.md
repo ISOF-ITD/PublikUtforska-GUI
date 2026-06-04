@@ -27,6 +27,11 @@ Before you say the work is done:
 - When styling changes are made, remove or reduce related LESS code where possible and replace it with Tailwind classes.
 - Keep styling migrations incremental and limited to the touched feature or component.
 
+## DRY
+- Avoid introducing new code that duplicates existing logic, styles, or components.
+- If you find yourself writing code that seems similar to existing code, check if you can reuse or refactor existing code instead of creating new code.
+- If you need to create new components or utilities, check if there are existing ones that can be extended or modified to fit the new use case.
+
 ## Theme and dark mode conventions
 - Read [theme.md](theme.md) before making theme, color, or component styling changes.
 - The application uses automatic dark mode through `prefers-color-scheme`; do not add a permanent manual theme toggle, `localStorage`, cookies, or persisted user preferences unless explicitly requested.

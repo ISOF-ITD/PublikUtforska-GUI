@@ -48,7 +48,7 @@ export default function ShortStatistics({
       const queryParams = { ...config.requiredParams, ...params };
       const paramString = new URLSearchParams(queryParams).toString();
 
-      const res = await fetch(`${config.apiUrl}media_count?${paramString}`, {
+      const res = await fetch(`${config.apiUrl}media_count/?${paramString}`, {
         signal: controller.signal,
       });
       if (!res.ok) throw new Error(l('Fel vid hämtning av statistik'));

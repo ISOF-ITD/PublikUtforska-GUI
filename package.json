@@ -41,7 +41,9 @@
     "react-window": "^1.8.11",
     "route-parser": "0.0.5",
     "sanitize-html": "^2.13.1",
+    "terser-webpack-plugin": "5.4.0",
     "wavesurfer.js": "^7.9.5",
+    "webpack-merge": "^5.10.0",
     "whatwg-fetch": "^3.6.20",
     "xmlbuilder": "^15.1.1"
   },
@@ -74,7 +76,6 @@
     "webpack": "^5.105.4",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^4.15.2",
-    "webpack-merge": "^5.10.0"
+    "webpack-dev-server": "^4.15.2"
   }
 }

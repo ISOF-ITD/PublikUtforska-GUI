@@ -154,7 +154,7 @@ export default function TranscriptionForm({
           <legend className="sr-only">
             Metadata
           </legend>
-          <div className="flex flex-col">
+          <div className="flex flex-col !mt-0">
             <label
               htmlFor="transcription_pagenumber"
               className="font-semibold mb-1"
@@ -166,7 +166,7 @@ export default function TranscriptionForm({
                 type="text"
                 value={pagenumberInput ?? ''}
                 onChange={inputChangeHandler}
-                className="w-32 rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+                className="w-32 rounded border p-2 font-serif disabled:bg-gray-100 mt-1 ml-2"
               />
             </label>
             <span className="text-xs text-gray-500 mt-1">
@@ -202,7 +202,7 @@ export default function TranscriptionForm({
                 checked={!!unreadableInput}
                 onChange={inputChangeHandler}
               />
-              <span>Sidan är svårläst eller delvis oläslig</span>
+              <span>Sidan innehåller delvis oläsliga ord</span>
             </label>
           </div>
         </fieldset>
@@ -216,7 +216,7 @@ export default function TranscriptionForm({
           <legend className="sr-only">
             Kommentar och bidragsgivare
           </legend>
-          <div>
+          <div className="!mt-0">
             <label
               htmlFor={commentId}
               className="font-semibold block mb-1 leading-snug"

@@ -12,7 +12,7 @@ export default function StatisticsContainer() {
 
     const loadCurrentMonth = async () => {
       try {
-        const res = await fetch(`${config.apiUrl}current_time`, {
+        const res = await fetch(`${config.apiUrl}current_time/`, {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error('current_time fetch failed');
@@ -54,6 +54,13 @@ export default function StatisticsContainer() {
     }),
     [base],
   );
+  const pMonthTopTranscribers = useMemo(
+    () => ({
+      ...base,
+      mediarange: monthRange,
+    }),
+    [base],
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -84,14 +91,14 @@ export default function StatisticsContainer() {
       />
 
       <StatisticsList
-        params={{ ...base, mediarange: monthRange }}
+        params={pMonthTopTranscribers}
         type="topTranscribersByPages"
         label={`Topplista bidragsgivare i ${monthOrFallback}`}
         shouldFetch
       />
 
       <StatisticsList
-        params={{ ...base }}
+        params={base}
         type="topTranscribersByPages"
         label="Topplista bidragsgivare totalt"
         shouldFetch
