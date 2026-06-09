@@ -32,8 +32,8 @@ function createQueryString(params) {
 const queryString = createQueryString(API_PARAMS);
 
 // URLs
-const SOCKEN_URL = `https://garm.isof.se/folkeservice/api/es/socken/?${queryString}`;
-const RECORDS_URL = `https://garm.isof.se/folkeservice/api/es/documents/?${queryString}&size=10000&socken_id=`; // socken_id läggs till senare
+const SOCKEN_URL = `https://ull.isof.se/folkeservice/api/es/socken/?${queryString}`;
+const RECORDS_URL = `https://ull.isof.se/folkeservice/api/es/documents/?${queryString}&size=10000&socken_id=`; // socken_id läggs till senare
 const SITEMAP_BASE_URL = 'https://sok.folke.isof.se/records/';
 
 // Sitemap limits
