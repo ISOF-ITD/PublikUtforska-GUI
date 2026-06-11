@@ -10,6 +10,7 @@ set -euo pipefail
 PUBLIC_PATH=""
 KEEP_RELEASE_DAYS="${KEEP_RELEASE_DAYS:-7}"
 RELEASE_ID="${RELEASE_ID:-$(date +%Y%m%d%H%M%S)}"
+BUILD_NODE_OPTIONS="${NODE_OPTIONS:-}"
 BUILD_DIR="www-deploy"
 WWW_DIR="www"
 RELEASES_DIR="$WWW_DIR/releases"
@@ -74,9 +75,14 @@ fi
 echo "Bygger release $RELEASE_ID med PUBLIC_PATH=$ASSET_PUBLIC_PATH..."
 
 npm install
+
+if [[ "$BUILD_NODE_OPTIONS" != *"--max-old-space-size"* ]]; then
+  BUILD_NODE_OPTIONS="${BUILD_NODE_OPTIONS:+$BUILD_NODE_OPTIONS }--max-old-space-size=4096"
+fi
+
 # Build into www-deploy, but make the generated index.html point at the
 # final release URL under www/releases/<release-id>/.
-PUBLIC_PATH="$ASSET_PUBLIC_PATH" npm run build
+NODE_OPTIONS="$BUILD_NODE_OPTIONS" PUBLIC_PATH="$ASSET_PUBLIC_PATH" npm run build
 
 mkdir -p "$RELEASES_DIR"
 mkdir "$RELEASE_DIR"
