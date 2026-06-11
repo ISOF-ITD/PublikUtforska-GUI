@@ -177,7 +177,7 @@ export default function TranscriptionForm({
           <div className="flex flex-col gap-2">
             <label
               htmlFor="transcription_fonetic_signs"
-              className="inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2 mb-0"
             >
               <input
                 type="checkbox"
@@ -190,6 +190,14 @@ export default function TranscriptionForm({
                 Innehåller landsmålsalfabetet eller andra fonetiska tecken
               </span>
             </label>
+            <span className="text-xs text-gray-500 mb-2">
+              Läs mer om
+              {' '}
+              <a href="https://sok.folke.isof.se/?k=start%2Fanvanda-folke%2Flandsmalsalfabetet" target="_blank" rel="noreferrer" className="text-isof hover:underline">
+                landsmålsalfabetet
+              </a>
+              .
+            </span>
 
             <label
               htmlFor="transcription_unreadable"
