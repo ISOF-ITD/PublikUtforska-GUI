@@ -36,17 +36,17 @@ const getLastThreeMonthsRange = () => {
 };
 
 const apiUrlObject = {
-  dev: 'https://ull-test.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
+  dev: 'https://ull.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
   // 'dev': 'http://localhost:5001/api/es/', //feel free to change according to your local environment
   test: 'https://ull-test.isof.se/folkeservice/api/es/',
-  prod: 'https://garm.isof.se/folkeservice/api/es/',
+  prod: 'https://ull.isof.se/folkeservice/api/es/',
 };
 
 const restApiUrlObject = {
   // dev: 'http://localhost:5001/api/', // feel free to change according to your local environment
-  dev: 'https://ull-test.isof.se/folkeservice/api/',
+  dev: 'https://ull.isof.se/folkeservice/api/',
   test: 'https://ull-test.isof.se/folkeservice/api/',
-  prod: 'https://garm.isof.se/folkeservice/api/',
+  prod: 'https://ull.isof.se/folkeservice/api/',
 };
 
 const appUrlObject = {
@@ -254,7 +254,7 @@ export default {
   pdfUrl: pdfUrlObject[ENV],
   // For test with ortnamn data in index:
   // imageUrl: 'https://www4.isof.se/NAU/bilder/',
-  personImageUrl: 'https://garm.isof.se/media/',
+  personImageUrl: 'https://ull.isof.se/media/',
   // audioUrl: 'https://www4.isof.se/Folkminnen/Svenska_sagor_filer/inspelningar/',
   audioUrl: 'https://sok.folke.isof.se/arkivfiler/publik/',
 
