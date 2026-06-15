@@ -181,7 +181,7 @@ Old way:
 
 ## How to change default background map (basemap)
 
-In scripts/components/views/MapBase.js change DEFAULT_BASE to name of prefered map
+In scripts/components/views/MapBase.js change DEFAULT_BASE to name of preferred map (layer) in tileLayers in maphelper.js.
 
 Example:
 ```
