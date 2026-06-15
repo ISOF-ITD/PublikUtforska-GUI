@@ -179,9 +179,10 @@ Old way:
 2. **Display the warning message**:
    - If the `varning.html` file exists, the warning message will be automatically rendered.
 
-## How to change default backgrund map (basemap)
+## How to change default background map (basemap)
 
 In scripts/components/views/MapBase.js change DEFAULT_BASE to name of prefered map
+
 Example:
 ```
     // Prefer OSM as default while Lantmäteriet is down
