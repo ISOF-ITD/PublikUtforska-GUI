@@ -182,7 +182,8 @@ Old way:
 ## How to change default backgrund map (basemap)
 
 In scripts/components/views/MapBase.js change DEFAULT_BASE to name of prefered map
-```Example:
+Example:
+```
     // Prefer OSM as default while Lantmäteriet is down
     const DEFAULT_BASE = "Open Street Map Mapnik";
 ```
