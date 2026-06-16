@@ -7,6 +7,7 @@ import {
   faCircleChevronDown,
   faCircleChevronUp,
   faInfoCircle,
+  faExternalLink,
 } from '@fortawesome/free-solid-svg-icons';
 import Uppteckningsblankett from './Uppteckningsblankett';
 import { l } from '../../../lang/Lang';
@@ -191,12 +192,11 @@ export default function TranscriptionForm({
               </span>
             </label>
             <span className="text-xs text-gray-500 mb-2">
-              Läs mer om
-              {' '}
               <a href="https://sok.folke.isof.se/?k=start%2Fanvanda-folke%2Flandsmalsalfabetet" target="_blank" rel="noreferrer" className="text-isof hover:underline">
-                landsmålsalfabetet
+                Läs mer om landsmålsalfabetet.
+                {' '}
+                <FontAwesomeIcon icon={faExternalLink} />
               </a>
-              .
             </span>
 
             <label
