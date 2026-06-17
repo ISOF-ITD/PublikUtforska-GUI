@@ -23,6 +23,9 @@ import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHe
 import config from '../config';
 import { toastError } from '../utils/toast';
 import useTranscriptionAvailability from '../hooks/useTranscriptionAvailability';
+import {
+  STARRED_RECORDS_RETURN_STORAGE_KEY,
+} from '../hooks/useStarredRecords';
 
 const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
 const FeedbackOverlay = lazy(() => import('./views/FeedbackOverlay'));
@@ -135,6 +138,8 @@ export default function Application({
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: {} });
   const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: {} });
   const [loading, setLoading] = useState(true);
+  const hasShownManualListPopupRef = useRef(false);
+  const skipManualListReturnRef = useRef(false);
   const isTranscriptionAvailable = useTranscriptionAvailability();
 
   const params = useParams();
@@ -174,6 +179,61 @@ export default function Application({
     if (mode === 'transcribe') target = `/transcribe${target}`;
     navigate(target);
   };
+
+  const handleManualListPopupShow = useCallback(() => {
+    hasShownManualListPopupRef.current = true;
+  }, []);
+
+  const handleManualListPopupHide = useCallback(() => {
+    if (!hasShownManualListPopupRef.current) return;
+    hasShownManualListPopupRef.current = false;
+
+    if (skipManualListReturnRef.current) {
+      skipManualListReturnRef.current = false;
+      try {
+        sessionStorage.removeItem(STARRED_RECORDS_RETURN_STORAGE_KEY);
+      } catch {
+        // Ignore storage failures from private/incognito storage contexts.
+      }
+      return;
+    }
+
+    const currentSearchParams = createParamsFromSearchRoute(params['*']);
+    const locationParams = new URLSearchParams(location.search);
+    if (!currentSearchParams.record_ids || !locationParams.has('showlist')) return;
+
+    let returnTo = null;
+    try {
+      returnTo = sessionStorage.getItem(STARRED_RECORDS_RETURN_STORAGE_KEY);
+      sessionStorage.removeItem(STARRED_RECORDS_RETURN_STORAGE_KEY);
+    } catch {
+      // Ignore storage failures from private/incognito storage contexts.
+    }
+
+    const fallback = mode === 'transcribe' ? '/transcribe/' : '/';
+    const target = returnTo || fallback;
+    if (target !== `${location.pathname}${location.search}`) {
+      navigate(target, { replace: true });
+    }
+  }, [location.pathname, location.search, mode, navigate, params]);
+
+  useEffect(() => {
+    const skipReturnForStarredRecordOpen = () => {
+      skipManualListReturnRef.current = true;
+    };
+
+    window.eventBus?.addEventListener(
+      'starredRecords.openRecord',
+      skipReturnForStarredRecordOpen,
+    );
+
+    return () => {
+      window.eventBus?.removeEventListener(
+        'starredRecords.openRecord',
+        skipReturnForStarredRecordOpen,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -265,7 +325,11 @@ useEffect(() => {
         <a href="#main" className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50 bg-surface text-link underline px-3 py-2 rounded">
           Hoppa till innehåll
         </a>
-        <RoutePopupWindow manuallyOpenPopup>
+        <RoutePopupWindow
+          manuallyOpenPopup
+          onHide={handleManualListPopupHide}
+          onShow={handleManualListPopupShow}
+        >
           <Suspense fallback={<RecordListLoadingPlaceholder />}>
             <RecordListWrapper
               openButtonLabel="Visa sökträffar som lista"

@@ -1,51 +1,73 @@
 import config from '../config';
 
 export default {
-  _getList() {
+  getList() {
     try {
-      return localStorage.getItem(config.localLibraryName) ? JSON.parse(localStorage.getItem(config.localLibraryName)) : [];
+      const list = localStorage.getItem(config.localLibraryName)
+        ? JSON.parse(localStorage.getItem(config.localLibraryName))
+        : [];
+
+      if (!Array.isArray(list)) return [];
+
+      return list.filter((item, index, fullList) => {
+        if (!item?.id) return false;
+
+        return fullList.findIndex(
+          (candidate) => String(candidate?.id) === String(item.id),
+        ) === index;
+      });
     } catch (e) {
       return [];
     }
   },
 
-  _saveList(list) {
+  saveList(list) {
     try {
       localStorage.setItem(config.localLibraryName, JSON.stringify(list));
-    } catch (e) {
-
+    } catch {
+      // Ignore storage failures from private/incognito storage contexts.
     }
   },
 
   add(item) {
-    const storageList = this._getList();
+    const storageList = this.getList();
+    const id = typeof item === 'object' ? item?.id : item;
 
-    storageList.push(item);
+    if (!id || this.find(id)) return;
 
-    this._saveList(storageList);
+    storageList.push({
+      ...(typeof item === 'object' ? item : {}),
+      id,
+      savedAt: new Date().toISOString(),
+    });
+
+    this.saveList(storageList);
   },
 
   remove(item) {
-    let storageList = this._getList();
+    let storageList = this.getList();
 
     // reject objects with id equal to item or the item id
     storageList = storageList.filter((listItem) => {
       if (typeof item === 'object') {
-        return listItem.id !== item.id;
+        return String(listItem.id) !== String(item.id);
       }
-      return listItem.id !== item;
+      return String(listItem.id) !== String(item);
     });
 
-    this._saveList(storageList);
+    this.saveList(storageList);
   },
 
   find(item) {
-    const storageList = this._getList();
+    const storageList = this.getList();
+    const id = typeof item === 'object' ? item?.id : item;
 
-    return storageList.find((storageItem) => storageItem.id === item.id);
+    return storageList.find(
+      (storageItem) => String(storageItem.id) === String(id),
+    );
   },
 
   list() {
-    return this._getList();
+    return this.getList();
   },
 };

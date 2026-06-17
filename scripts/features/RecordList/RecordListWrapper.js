@@ -1,10 +1,10 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
-import RecordList from '../../features/RecordList/RecordList';
+import RecordList from './RecordList';
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 
 import { l } from '../../lang/Lang';
@@ -17,13 +17,18 @@ export default function RecordListWrapper({
 }) {
   const params = useParams();
   const containerRef = useRef();
+  const searchParams = useMemo(
+    () => createParamsFromSearchRoute(params['*']),
+    [params],
+  );
+  const isStarredRecordList = Boolean(searchParams.record_ids);
 
-    // Memoize openSwitcherHelptext för att undvika omrenderingar
-    const openSwitcherHelptext = useCallback(() => {
-      if (window.eventBus) {
-        window.eventBus.dispatch('overlay.HelpText', { kind: 'switcher' });
-      }
-    }, []); // Tom array för att se till att funktionen inte återskapas varje gång
+  // Memoize openSwitcherHelptext för att undvika omrenderingar
+  const openSwitcherHelptext = useCallback(() => {
+    if (window.eventBus) {
+      window.eventBus.dispatch('overlay.HelpText', { kind: 'switcher' });
+    }
+  }, []); // Tom array för att se till att funktionen inte återskapas varje gång
 
   return (
     <div className="container this-class-is-always-visible">
@@ -31,7 +36,9 @@ export default function RecordListWrapper({
         <div className="row">
           <div className="twelve columns">
             <h1>
-              {l('Sökträffar som lista')}
+              {isStarredRecordList
+                ? l('Stjärnmarkerat arkivmaterial')
+                : l('Sökträffar som lista')}
             </h1>
           </div>
         </div>
@@ -44,7 +51,7 @@ export default function RecordListWrapper({
             disableListPagination={disableListPagination}
             disableRouterPagination={disableRouterPagination}
             params={{
-              ...createParamsFromSearchRoute(params['*']),
+              ...searchParams,
               has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
               transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe,undertranscription',
               // Ignore other (older) record types:
@@ -53,8 +60,8 @@ export default function RecordListWrapper({
             }}
             mode={mode}
             hasFilter={mode !== 'transcribe'}
-            hasTimeline
-            showViewToggle={true}
+            hasTimeline={!isStarredRecordList}
+            showViewToggle
             openSwitcherHelptext={openSwitcherHelptext}
             containerRef={containerRef}
           />

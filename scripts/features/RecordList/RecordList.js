@@ -191,11 +191,15 @@ export default function RecordList(props) {
   const markRecordAsActive = useCallback(
     (recordId) => {
       if (!recordId) return;
+      if (params?.record_ids) {
+        window.eventBus?.dispatch('starredRecords.openRecord');
+        window.eventBus?.dispatch('routePopup.hideManual');
+      }
       const normalized = String(recordId);
       setSelectedRecordId(normalized);
       writeSessionItem(activeRecordStorageKey, normalized);
     },
-    [activeRecordStorageKey],
+    [activeRecordStorageKey, params],
   );
 
   const clearActiveRecord = useCallback(() => {

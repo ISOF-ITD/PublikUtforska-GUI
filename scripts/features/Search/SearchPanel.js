@@ -10,10 +10,13 @@ import {
   faCircleQuestion,
   faClipboardList,
   faExternalLink,
-} from "@fortawesome/free-solid-svg-icons";
-import { useLocation } from 'react-router-dom';
+  faStar,
+} from '@fortawesome/free-solid-svg-icons';
+import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { l } from "../../lang/Lang";
 import {
+  createSearchRoute,
   createParamsFromSearchRoute,
   removeViewParamsFromRoute,
 } from '../../utils/routeHelper';
@@ -30,6 +33,9 @@ import TranscribeButton from '../TranscriptionPageByPageOverlay/ui/TranscribeBut
 import FilterSwitch from '../../components/FilterSwitch';
 import config from '../../config';
 import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
+import useStarredRecords, {
+  STARRED_RECORDS_RETURN_STORAGE_KEY,
+} from '../../hooks/useStarredRecords';
 
 export default function SearchPanel({
   mode,
@@ -42,6 +48,11 @@ export default function SearchPanel({
 }) {
   const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
+  const navigate = useNavigate();
+  const {
+    ids: starredRecordIds,
+    count: starredRecordCount,
+  } = useStarredRecords();
   // Normalise the path so it always starts from "search/…"
   const baseSearchPath = useMemo(() => {
     // 1. Strip view segments (/records/:id etc.)
@@ -209,6 +220,24 @@ export default function SearchPanel({
   }, [qParam]); // do NOT include `category` here
 
   const onFiltersToggle = (categoryId) => toggleCategory(categoryId, inputValue || qParam || '');
+  const showStarredRecords = useCallback(() => {
+    if (starredRecordIds.length === 0) return;
+
+    const starredRoute = createSearchRoute({ record_ids: starredRecordIds });
+    const prefix = mode === 'transcribe' ? '/transcribe' : '';
+    try {
+      sessionStorage.setItem(
+        STARRED_RECORDS_RETURN_STORAGE_KEY,
+        `${location.pathname}${location.search}`,
+      );
+    } catch {
+      // Ignore storage failures from private/incognito storage contexts.
+    }
+    navigate(`${prefix}${starredRoute}?showlist=1`);
+    window.setTimeout(() => {
+      window.eventBus?.dispatch('routePopup.show');
+    }, 0);
+  }, [location.pathname, location.search, mode, navigate, starredRecordIds]);
   const fixedSearchControlHeightPx = 48;
   const desktopSearchRowStyle = mobileCompact
     ? undefined
@@ -364,6 +393,44 @@ export default function SearchPanel({
             <FontAwesomeIcon icon={faSearch} />
             {!mobileCompact && l('Sök')}
           </button>
+
+          <button
+            type="button"
+            className={classNames(
+              'relative inline-flex h-12 w-12 shrink-0 items-center justify-center self-center rounded-md border-2 border-transparent bg-surface text-sm font-medium shadow',
+              'focus:outline-none focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+              starredRecordCount > 0
+                ? 'text-link hover:bg-surface-hover hover:text-link-hover'
+                : 'cursor-not-allowed text-subtle opacity-70',
+              '!mb-0',
+            )}
+            onClick={showStarredRecords}
+            disabled={starredRecordCount === 0}
+            aria-label={
+              starredRecordCount > 0
+                ? `Visa ${starredRecordCount} stjärnmarkerat arkivmaterial`
+                : l('Inget stjärnmarkerat arkivmaterial att visa')
+            }
+            title={
+              starredRecordCount > 0
+                ? `Visa ${starredRecordCount} stjärnmarkerat arkivmaterial`
+                : l('Inget stjärnmarkerat arkivmaterial att visa')
+            }
+            style={searchButtonStyle}
+          >
+            <FontAwesomeIcon
+              icon={starredRecordCount > 0 ? faStar : faStarRegular}
+              aria-hidden="true"
+            />
+            {starredRecordCount > 0 && (
+              <span
+                className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-primary px-1 text-center text-[11px] font-semibold leading-5 !text-white shadow"
+              >
+                {starredRecordCount}
+              </span>
+            )}
+          </button>
+
         </div>
       </div>
 

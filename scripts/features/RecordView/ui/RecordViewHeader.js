@@ -11,6 +11,7 @@ import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
 import FeedbackButton from "../../../components/views/FeedbackButton";
 import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
 import config from "../../../config";
+import StarredRecordButton from '../../../components/StarredRecordButton';
 
 const renderMetadataItem = (label, value) => (
   <div key={label} className="mr-2.5 inline">
@@ -105,6 +106,7 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
         </div>
       </div>
       <ContactButtonGroup>
+        <StarredRecordButton record={data} variant="contact" />
         <ContributeInfoButton
           title={title}
           type="Uppteckning"
