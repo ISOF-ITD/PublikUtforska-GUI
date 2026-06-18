@@ -122,8 +122,6 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                       params={{
                         ...createParamsFromSearchRoute(params['*']),
                         place_id: data.id,
-                        has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-                        transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe,undertranscription',
                       }}
                       mode={mode}
                       hasFilter={mode !== 'transcribe'}
@@ -156,8 +154,6 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                     highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
                     params={{
                       place_id: data.id,
-                      has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-                      transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe,undertranscription',
                     }}
                     mode={mode}
                     hasFilter={mode !== 'transcribe'}

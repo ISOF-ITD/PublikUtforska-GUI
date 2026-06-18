@@ -8,6 +8,13 @@ const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
   config;
 const RECORDS_CACHE_TTL_MS = 5 * 60 * 1000;
 const RECORDS_CACHE_MAX_ENTRIES = 100;
+const MATERIAL_TRANSCRIPTION_STATUSES = [
+  'published',
+  'accession',
+  'readytotranscribe',
+  'readytocontribute',
+  'undertranscription',
+].join(',');
 const recordsCache = new Map();
 
 function createCacheKey(fetchParams) {
@@ -154,7 +161,11 @@ export default function useRecords(params, mode, interval) {
       has_transcribed_records: params.has_transcribed_records || undefined,
       // has_untranscribed_records not used anymore
       //has_untranscribed_records: params.has_untranscribed_records || undefined,
-      transcriptionstatus: params.transcriptionstatus || "readytotranscribe,undertranscription",
+      transcriptionstatus: params.transcriptionstatus || (
+        mode === 'transcribe'
+          ? 'readytotranscribe,undertranscription'
+          : MATERIAL_TRANSCRIPTION_STATUSES
+      ),
       // Fanns:
       //transcriptionstatus: params.transcriptionstatus || undefined,
       recordtype:

@@ -52,8 +52,6 @@ export default function RecordListWrapper({
             disableRouterPagination={disableRouterPagination}
             params={{
               ...searchParams,
-              has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-              transcriptionstatus: mode === 'transcribe' ? null : 'published,accession,readytocontribute,readytotranscribe,undertranscription',
               // Ignore other (older) record types:
               // In requiredParams in config.js:
               // recordtype: 'one_accession_row',
