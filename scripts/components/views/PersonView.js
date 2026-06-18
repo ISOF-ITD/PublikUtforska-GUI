@@ -11,14 +11,6 @@ import { l } from "../../lang/Lang";
 import config from "../../config";
 import RecordList from "../../features/RecordList/RecordList";
 
-const MATERIAL_TRANSCRIPTION_STATUSES = [
-  'published',
-  'accession',
-  'readytotranscribe',
-  'readytocontribute',
-  'undertranscription',
-].join(',');
-
 export default function PersonView({ mode = "material" }) {
   const {
     biography = "",
@@ -77,9 +69,6 @@ export default function PersonView({ mode = "material" }) {
   const recordListParams = useMemo(
     () => ({
       person_id: id,
-      has_untranscribed_records: mode === 'transcribe' ? 'true' : null,
-      transcriptionstatus:
-        mode === 'transcribe' ? null : MATERIAL_TRANSCRIPTION_STATUSES,
     }),
     [id, mode],
   );
