@@ -143,6 +143,21 @@ export default function Application({
   const isTranscriptionAvailable = useTranscriptionAvailability();
 
   const params = useParams();
+  const searchRoutePath = params['*'];
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+  const manualListReturnContextRef = useRef({
+    mode,
+    pathname: location.pathname,
+    search: location.search,
+    searchRoutePath,
+  });
+  manualListReturnContextRef.current = {
+    mode,
+    pathname: location.pathname,
+    search: location.search,
+    searchRoutePath,
+  };
 
   // fallback for old hash routes
   useEffect(() => {
@@ -198,9 +213,17 @@ export default function Application({
       return;
     }
 
-    const currentSearchParams = createParamsFromSearchRoute(params['*']);
-    const locationParams = new URLSearchParams(location.search);
-    if (!currentSearchParams.record_ids || !locationParams.has('showlist')) return;
+    const {
+      mode: currentMode,
+      pathname,
+      search,
+      searchRoutePath: currentSearchRoutePath,
+    } = manualListReturnContextRef.current;
+    const currentSearchParams = createParamsFromSearchRoute(currentSearchRoutePath);
+    const locationParams = new URLSearchParams(search);
+    const hasStarredRecordIds = currentSearchParams.record_ids
+      || locationParams.has('record_ids');
+    if (!hasStarredRecordIds || !locationParams.has('showlist')) return;
 
     let returnTo = null;
     try {
@@ -210,12 +233,12 @@ export default function Application({
       // Ignore storage failures from private/incognito storage contexts.
     }
 
-    const fallback = mode === 'transcribe' ? '/transcribe/' : '/';
+    const fallback = currentMode === 'transcribe' ? '/transcribe/' : '/';
     const target = returnTo || fallback;
-    if (target !== `${location.pathname}${location.search}`) {
-      navigate(target, { replace: true });
+    if (target !== `${pathname}${search}`) {
+      navigateRef.current(target, { replace: true });
     }
-  }, [location.pathname, location.search, mode, navigate, params]);
+  }, []);
 
   useEffect(() => {
     const skipReturnForStarredRecordOpen = () => {

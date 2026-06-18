@@ -16,7 +16,6 @@ import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { l } from "../../lang/Lang";
 import {
-  createSearchRoute,
   createParamsFromSearchRoute,
   removeViewParamsFromRoute,
 } from '../../utils/routeHelper';
@@ -223,8 +222,10 @@ export default function SearchPanel({
   const showStarredRecords = useCallback(() => {
     if (starredRecordIds.length === 0) return;
 
-    const starredRoute = createSearchRoute({ record_ids: starredRecordIds });
     const prefix = mode === 'transcribe' ? '/transcribe' : '';
+    const starredParams = new URLSearchParams();
+    starredParams.set('record_ids', starredRecordIds.join(','));
+    starredParams.set('showlist', '1');
     try {
       sessionStorage.setItem(
         STARRED_RECORDS_RETURN_STORAGE_KEY,
@@ -233,7 +234,7 @@ export default function SearchPanel({
     } catch {
       // Ignore storage failures from private/incognito storage contexts.
     }
-    navigate(`${prefix}${starredRoute}?showlist=1`);
+    navigate(`${prefix}/?${starredParams.toString()}`);
     window.setTimeout(() => {
       window.eventBus?.dispatch('routePopup.show');
     }, 0);

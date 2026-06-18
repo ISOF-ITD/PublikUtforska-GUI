@@ -146,10 +146,15 @@ export default function MapMenu({
     const isRoot = location.pathname === '/';
     const noHash = !location.hash || location.hash === '#/';
     const locationParams = new URLSearchParams(location.search);
+    const hasManualList = locationParams.has('showlist') || locationParams.has('record_ids');
     const hasK = locationParams.has('k') && locationParams.get('k') !== '';
 
     const SEEN_KEY = 'folke:introSeen:v1';
     const hasSeen = typeof window !== 'undefined' && localStorage.getItem(SEEN_KEY) === '1';
+    if (hasManualList) {
+      initialLoad.current = false;
+      return;
+    }
     if (initialLoad.current && isRoot && noHash) {
       if (hasK || !hasSeen) {
         setShowIntroOverlay(true);

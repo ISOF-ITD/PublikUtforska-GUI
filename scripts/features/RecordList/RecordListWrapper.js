@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 
 import { useRef, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import RecordList from './RecordList';
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
@@ -16,10 +16,22 @@ export default function RecordListWrapper({
   mode = 'material',
 }) {
   const params = useParams();
+  const location = useLocation();
+  const searchRoutePath = params['*'];
   const containerRef = useRef();
   const searchParams = useMemo(
-    () => createParamsFromSearchRoute(params['*']),
-    [params],
+    () => {
+      const routeParams = createParamsFromSearchRoute(searchRoutePath);
+      const queryParams = new URLSearchParams(location.search);
+      const queryRecordIds = queryParams.get('record_ids');
+
+      if (!queryRecordIds || routeParams.record_ids) return routeParams;
+      return {
+        ...routeParams,
+        record_ids: queryRecordIds,
+      };
+    },
+    [location.search, searchRoutePath],
   );
   const isStarredRecordList = Boolean(searchParams.record_ids);
 
