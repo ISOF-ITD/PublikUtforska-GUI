@@ -28,6 +28,8 @@ export default function MapView({
   // Keep references to overlays so we can remove them cleanly
   const clusterGroupRef = useRef(null);
   const circleGroupRef = useRef(null);
+  const clusterPreviewGroupRef = useRef(null);
+  const activePreviewClusterRef = useRef(null);
 
   // Compute valid points once per mapData change
   const points = useMemo(() => {
@@ -53,7 +55,19 @@ export default function MapView({
     }. Valj en markör för att visa relaterade sökresultat.`;
   }, [points.length, currentView]);
 
+  const clearClusterPreview = useCallback((map = mapView.current?.map) => {
+    if (activePreviewClusterRef.current) {
+      activePreviewClusterRef.current.closeTooltip();
+      activePreviewClusterRef.current = null;
+    }
+    if (map && clusterPreviewGroupRef.current) {
+      map.removeLayer(clusterPreviewGroupRef.current);
+      clusterPreviewGroupRef.current = null;
+    }
+  }, []);
+
   const removeOverlays = useCallback((map) => {
+    clearClusterPreview(map);
     if (clusterGroupRef.current) {
       map.removeLayer(clusterGroupRef.current);
       clusterGroupRef.current = null;
@@ -62,7 +76,59 @@ export default function MapView({
       map.removeLayer(circleGroupRef.current);
       circleGroupRef.current = null;
     }
-  }, []);
+  }, [clearClusterPreview]);
+
+  const getDocumentCount = useCallback((obj) => (
+    typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count)
+      ? obj.doc_count
+      : 1
+  ), []);
+
+  const getSockenName = useCallback((obj) => (
+    obj.name?.replace?.(/ sn$/, ' socken') || ''
+  ), []);
+
+  const createSockenCircle = useCallback((obj, { preview = false } = {}) => {
+    const count = getDocumentCount(obj);
+    const circle = circleMarker([obj.location[0], obj.location[1]], {
+      color: '#01666e',
+      fillColor: preview ? '#01666e' : 'black',
+      fillOpacity: preview ? 0.35 : 0.1,
+      title: `${obj.name}`,
+      weight: preview ? 2 : 1,
+      radius: preview ? Math.max(Math.min(count / 18, 9), 4) : Math.max(count / 14, 2),
+      interactive: !preview,
+    }).bindTooltip(
+      `${getSockenName(obj)}: ${count} tr\u00e4ffar`,
+      { permanent: false, direction: 'top' },
+    );
+
+    if (!preview && onMarkerClick) {
+      circle.on('click', () => onMarkerClick(obj.id));
+    }
+
+    return circle;
+  }, [getDocumentCount, getSockenName, onMarkerClick]);
+
+  const showClusterPreview = useCallback((cluster) => {
+    const map = mapView.current?.map;
+    if (!map) return;
+
+    clearClusterPreview(map);
+
+    const previewCircles = cluster.getAllChildMarkers()
+      .map((childMarker) => childMarker.pointData)
+      .filter(Boolean)
+      .map((obj) => createSockenCircle(obj, { preview: true }));
+
+    if (!previewCircles.length) return;
+
+    const previewGroup = layerGroup(previewCircles);
+    map.addLayer(previewGroup);
+    previewCircles.forEach((circle) => circle.bringToFront());
+    clusterPreviewGroupRef.current = previewGroup;
+    activePreviewClusterRef.current = cluster;
+  }, [clearClusterPreview, createSockenCircle]);
 
   const updateMap = useCallback(() => {
     const map = mapView.current?.map;
@@ -82,6 +148,7 @@ export default function MapView({
             title: obj.name,
             icon,
           });
+          m.pointData = obj;
 
           if (onMarkerClick) m.on("click", () => onMarkerClick(obj.id));
           return m;
@@ -110,6 +177,9 @@ export default function MapView({
             });
           },
         });
+        clusterGroup.on('clustermouseover', (event) => showClusterPreview(event.layer));
+        clusterGroup.on('clustermouseout', () => clearClusterPreview(map));
+        clusterGroup.on('clusterclick', (event) => showClusterPreview(event.layer));
 
         clusterGroup.addLayers(markers);
         if (clusterGroup.getLayers().length > 0) {
@@ -118,27 +188,7 @@ export default function MapView({
         }
       } else {
         // Circles view
-        const circles = points.map((obj) => {
-          const count = typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count)
-            ? obj.doc_count
-            : 1;
-
-          const circle = circleMarker([obj.location[0], obj.location[1]], {
-            color: "#01666e",
-            fillColor: "black",
-            fillOpacity: 0.1,
-            title: `${obj.name}`,
-            weight: 1,
-            radius: Math.max(count / 14, 2),
-            interactive: true,
-          }).bindTooltip(
-            `${obj.name?.replace?.(/ sn$/, " socken") || ""}: ${count} träffar`,
-            { permanent: false, direction: "top" }
-          );
-
-          if (onMarkerClick) circle.on("click", () => onMarkerClick(obj.id));
-          return circle;
-        });
+        const circles = points.map((obj) => createSockenCircle(obj));
 
         const group = layerGroup(circles);
         if (group.getLayers().length > 0) {
@@ -157,6 +207,9 @@ export default function MapView({
     highlightedMarkerIcon,
     defaultMarkerIcon,
     removeOverlays,
+    clearClusterPreview,
+    createSockenCircle,
+    showClusterPreview,
   ]);
 
   // Rebuild overlays when data or view changes
