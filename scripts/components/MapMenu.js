@@ -324,7 +324,7 @@ export default function MapMenu({
       className="bg-isof absolute left-0 top-0 bottom-0 !z-[1201] flex w-[422px] flex-col items-center border-r-2 border-white pt-5 px-5 print:hidden"
       style={mapMenuPanelStyle}
     >
-      {/* <Warning /> */}
+      <Warning />
       {/* <SurveyLink /> */}
       <h1 className="mt-0 mb-0">
         <img src={Folkelogga} alt={l('Folkelogga')} className="h-20 w-full" />
