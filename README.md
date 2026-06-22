@@ -88,6 +88,37 @@ cp www/releases/20260521-1430/favicon.ico www/favicon.ico
 Rollback is only possible while the release directory is still present. By
 default old releases are kept for 7 days.
 
+### Temporarily disable transcription
+
+Update `activateTranscription` in `scripts/config.js` on the
+server and deploy again.
+
+Set:
+
+```js
+activateTranscription: false,
+```
+
+Then run on server:
+
+```bash
+cd /var/www/react/PublikUtforska-GUI/
+./deploy.sh
+```
+
+To turn transcription back on, set:
+
+```js
+activateTranscription: true,
+```
+
+Then deploy again:
+
+```bash
+cd /var/www/react/PublikUtforska-GUI/
+./deploy.sh
+```
+
 ### Optional: Deploy with a custom public path
 
 If you want to deploy the application to a subpath (for example `/demo/test/www/` instead of `/`), you can pass the `--publicPath` flag to `deploy.sh`.
