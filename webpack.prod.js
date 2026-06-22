@@ -7,6 +7,7 @@ const common = require('./webpack.common');
 module.exports = merge(common, {
 
   mode: 'production',
+  // activate source-map for debugging, but disable for production to get the best performance
   // devtool: 'source-map', // external source maps for production
   devtool: false,
 
