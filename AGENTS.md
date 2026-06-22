@@ -33,7 +33,7 @@ Before you say the work is done:
 - If you need to create new components or utilities, check if there are existing ones that can be extended or modified to fit the new use case.
 
 ## Theme and dark mode conventions
-- Read [theme.md](theme.md) before making theme, color, or component styling changes.
+- Read [docs/theme.md](docs/theme.md) before making theme, color, or component styling changes.
 - The application uses automatic dark mode through `prefers-color-scheme`; do not add a permanent manual theme toggle, `localStorage`, cookies, or persisted user preferences unless explicitly requested.
 - Use the shared semantic color tokens from `less/theme-tokens.less` and `tailwind.config.js` instead of hardcoded colors.
 - For new or updated Tailwind code, prefer semantic classes such as `bg-surface`, `bg-surface-muted`, `text-body`, `text-muted`, `text-subtle`, `text-link`, `hover:text-link-hover`, `border-border`, `ring-focus`, `bg-disabled`, and `text-danger`.

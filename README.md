@@ -23,7 +23,7 @@ npm run create-sitemap
 * Use React functional components with hooks instead of class components.
 * Use PropTypes for component props.
 * Follow the ESLint rules in [.eslintrc.js](.eslintrc.js). They are based on Airbnb's JavaScript Style Guide.
-* Prefer Tailwind utility classes for new or rewritten styling. See [theme.md](theme.md) for color tokens and dark mode.
+* Prefer Tailwind utility classes for new or rewritten styling. See [theme.md](docs/theme.md) for color tokens and dark mode.
 
 Recommended VS Code extensions:
 
@@ -56,12 +56,6 @@ See [Deployment and rollback](docs/deployment.md) for rollback, how long release
 
 See [Operations](docs/operations.md) for the detailed commands and server configuration.
 
-## Architecture notes
-
-The project is slowly moving from a layer-based tree to a feature-first structure. Feature code should keep local hooks, UI, state, and helpers near the behaviour they belong to.
-
-Most application state is controlled by the route, for example search parameters, search type, and display of one record. Some overlay and popup state is outside routing on purpose.
-
 ## Documentation
 
 * [Development conventions](docs/development.md)
@@ -69,5 +63,5 @@ Most application state is controlled by the route, for example search parameters
 * [Operations](docs/operations.md)
 * [Project structure](docs/project-structure.md)
 * [Routing](docs/routing.md)
-* [Accessibility](Accessibility.md)
-* [Tema och dark mode](theme.md)
+* [Accessibility](docs/accessibility.md)
+* [Tema och dark mode](docs/theme.md)

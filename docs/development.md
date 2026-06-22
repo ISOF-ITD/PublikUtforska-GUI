@@ -33,7 +33,7 @@ We are slowly replacing old LESS with Tailwind CSS v3.4.
 * Use Tailwind arbitrary values for Folke-specific z-indexes, for example `z-[23]`.
 * When old LESS must be overridden from Tailwind, use the important modifier, for example `!mt-2`.
 
-See [theme.md](../theme.md) for color tokens, dark mode, and theme conventions.
+See [theme.md](theme.md) for color tokens, dark mode, and theme conventions.
 
 ## Icons
 
