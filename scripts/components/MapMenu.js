@@ -19,6 +19,19 @@ import config from "../config";
 const StatisticsContainer = lazy(() => import('../features/Statistics/StatisticsContainer'));
 
 // Helpers
+function getWarningUrl() {
+  // Try to find the currently executing script to
+  // determine the correct path to varning.html,
+  // which may be in the same folder as the bundle
+  // or in a parent "releases/[version]/" folder.
+  const script = Array.from(document.scripts)
+    .find(({ src }) => src.includes('/bndl.') || src.includes('/releases/'));
+
+  if (!script) return '/varning.html';
+
+  return new URL('varning.html', script.src).href;
+}
+
 function SurveyLink() {
   const openSurvey = () =>
     window.open("https://www.isof.se/enkat-folke", "_blank");
@@ -46,7 +59,7 @@ function SurveyLink() {
 function Warning() {
   const [html, setHtml] = useState("");
   useEffect(() => {
-    fetch("/varning.html")
+    fetch(getWarningUrl())
       .then((r) => (r.ok ? r.text() : null))
       .then(setHtml);
   }, []);
@@ -316,6 +329,8 @@ export default function MapMenu({
       className="bg-isof absolute left-0 top-0 bottom-0 !z-[1201] flex w-[422px] flex-col items-center border-r-2 border-white pt-5 px-5 print:hidden"
       style={mapMenuPanelStyle}
     >
+      <Warning />
+      {/* <SurveyLink /> */}
       <h1 className="mt-0 mb-0">
         <img src={Folkelogga} alt={l('Folkelogga')} className="h-20 w-full" />
       </h1>

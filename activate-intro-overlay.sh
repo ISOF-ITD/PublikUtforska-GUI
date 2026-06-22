@@ -1,1 +1,0 @@
-find www -name '*.js' | xargs grep -l 'activateIntroOverlay:!1,' | xargs sed -i.bak s/activateIntroOverlay:!1,/activateIntroOverlay:!0,/g
