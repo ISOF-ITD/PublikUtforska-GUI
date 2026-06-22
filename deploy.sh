@@ -77,7 +77,7 @@ echo "Bygger release $RELEASE_ID med PUBLIC_PATH=$ASSET_PUBLIC_PATH..."
 # Node.js memory limits are increased for large builds, 
 # but kept separate for install and build steps to avoid
 INSTALL_NODE_OPTIONS="--max-old-space-size=1024"
-BUILD_NODE_OPTIONS="--openssl-legacy-provider --max-old-space-size=2048"
+BUILD_NODE_OPTIONS="--openssl-legacy-provider --max-old-space-size=1536"
 
 NODE_OPTIONS="$INSTALL_NODE_OPTIONS" npm install
 
