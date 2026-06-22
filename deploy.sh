@@ -74,15 +74,17 @@ fi
 
 echo "Bygger release $RELEASE_ID med PUBLIC_PATH=$ASSET_PUBLIC_PATH..."
 
-npm install
+# Node.js memory limits are increased for large builds, 
+# but kept separate for install and build steps to avoid
+INSTALL_NODE_OPTIONS="--max-old-space-size=1024"
+BUILD_NODE_OPTIONS="--openssl-legacy-provider --max-old-space-size=2048"
 
-if [[ "$BUILD_NODE_OPTIONS" != *"--max-old-space-size"* ]]; then
-  BUILD_NODE_OPTIONS="${BUILD_NODE_OPTIONS:+$BUILD_NODE_OPTIONS }--max-old-space-size=4096"
-fi
+NODE_OPTIONS="$INSTALL_NODE_OPTIONS" npm install
 
-# Build into www-deploy, but make the generated index.html point at the
-# final release URL under www/releases/<release-id>/.
-NODE_OPTIONS="$BUILD_NODE_OPTIONS" PUBLIC_PATH="$ASSET_PUBLIC_PATH" npm run build
+# Clean up any previous build output before starting a new build
+rm -rf "$BUILD_DIR"
+
+NODE_OPTIONS="$BUILD_NODE_OPTIONS" PUBLIC_PATH="$ASSET_PUBLIC_PATH" ./node_modules/.bin/webpack --config webpack.prod.js
 
 mkdir -p "$RELEASES_DIR"
 mkdir "$RELEASE_DIR"
