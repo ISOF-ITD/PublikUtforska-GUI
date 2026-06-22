@@ -7,7 +7,8 @@ const common = require('./webpack.common');
 module.exports = merge(common, {
 
   mode: 'production',
-  devtool: 'source-map', // external source maps for production
+  // devtool: 'source-map', // external source maps for production
+  devtool: false,
 
   // tells webpack to split the code
   // into multiple files

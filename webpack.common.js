@@ -11,6 +11,7 @@ module.exports = {
     // add a rev-hash to the filename to avoid caching issues
     filename: 'bndl.[contenthash].js',
     chunkFilename: 'chnk.[contenthash].js',
+    hashFunction: 'xxhash64',
     // output to the "www-deploy"-folder, the old "www"-folder
     // is replaced by the deploy script
     path: path.resolve(__dirname, 'www-deploy'),
