@@ -19,6 +19,19 @@ import config from "../config";
 const StatisticsContainer = lazy(() => import('../features/Statistics/StatisticsContainer'));
 
 // Helpers
+function getWarningUrl() {
+  // Try to find the currently executing script to
+  // determine the correct path to varning.html,
+  // which may be in the same folder as the bundle
+  // or in a parent "releases/[version]/" folder.
+  const script = Array.from(document.scripts)
+    .find(({ src }) => src.includes('/bndl.') || src.includes('/releases/'));
+
+  if (!script) return '/varning.html';
+
+  return script.src.replace(/(?:releases\/[^/]+\/)?[^/]+$/, 'varning.html');
+}
+
 function SurveyLink() {
   const openSurvey = () =>
     window.open("https://www.isof.se/enkat-folke", "_blank");
@@ -46,7 +59,7 @@ function SurveyLink() {
 function Warning() {
   const [html, setHtml] = useState("");
   useEffect(() => {
-    fetch("/varning.html")
+    fetch(getWarningUrl())
       .then((r) => (r.ok ? r.text() : null))
       .then(setHtml);
   }, []);
