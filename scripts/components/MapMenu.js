@@ -29,7 +29,7 @@ function getWarningUrl() {
 
   if (!script) return '/varning.html';
 
-  return script.src.replace(/(?:releases\/[^/]+\/)?[^/]+$/, 'varning.html');
+  return new URL('varning.html', script.src).href;
 }
 
 function SurveyLink() {
