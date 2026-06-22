@@ -2,7 +2,7 @@
 
 ## Code style
 
-* Use [ES6](http://es6-features.org/) syntax.
+* Use ES6 syntax.
 * Use [React](https://reactjs.org/) functional components with hooks instead of class components.
 * When changing an old class component, consider if it can be changed to a functional component.
 * Use [PropTypes](https://reactjs.org/docs/typechecking-with-proptypes.html) for component props.
