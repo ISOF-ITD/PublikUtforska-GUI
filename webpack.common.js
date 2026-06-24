@@ -3,7 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-console.log(`🏗️  Bygger med PUBLIC_PATH=${process.env.PUBLIC_PATH || '/'} 🚀`);
+console.log(`Bygger med PUBLIC_PATH=${process.env.PUBLIC_PATH || '/'}`);
 
 module.exports = {
   entry: './scripts/app.js',
