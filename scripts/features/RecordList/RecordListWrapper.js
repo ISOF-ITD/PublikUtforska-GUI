@@ -1,10 +1,10 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 
-import { useRef, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useRef, useCallback, useMemo } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 
-import RecordList from '../../features/RecordList/RecordList';
+import RecordList from './RecordList';
 import { createParamsFromSearchRoute } from '../../utils/routeHelper';
 
 import { l } from '../../lang/Lang';
@@ -16,14 +16,31 @@ export default function RecordListWrapper({
   mode = 'material',
 }) {
   const params = useParams();
+  const location = useLocation();
+  const searchRoutePath = params['*'];
   const containerRef = useRef();
+  const searchParams = useMemo(
+    () => {
+      const routeParams = createParamsFromSearchRoute(searchRoutePath);
+      const queryParams = new URLSearchParams(location.search);
+      const queryRecordIds = queryParams.get('record_ids');
 
-    // Memoize openSwitcherHelptext för att undvika omrenderingar
-    const openSwitcherHelptext = useCallback(() => {
-      if (window.eventBus) {
-        window.eventBus.dispatch('overlay.HelpText', { kind: 'switcher' });
-      }
-    }, []); // Tom array för att se till att funktionen inte återskapas varje gång
+      if (!queryRecordIds || routeParams.record_ids) return routeParams;
+      return {
+        ...routeParams,
+        record_ids: queryRecordIds,
+      };
+    },
+    [location.search, searchRoutePath],
+  );
+  const isStarredRecordList = Boolean(searchParams.record_ids);
+
+  // Memoize openSwitcherHelptext för att undvika omrenderingar
+  const openSwitcherHelptext = useCallback(() => {
+    if (window.eventBus) {
+      window.eventBus.dispatch('overlay.HelpText', { kind: 'switcher' });
+    }
+  }, []); // Tom array för att se till att funktionen inte återskapas varje gång
 
   return (
     <div className="container this-class-is-always-visible">
@@ -31,7 +48,9 @@ export default function RecordListWrapper({
         <div className="row">
           <div className="twelve columns">
             <h1>
-              {l('Sökträffar som lista')}
+              {isStarredRecordList
+                ? l('Stjärnmarkerat arkivmaterial')
+                : l('Sökträffar som lista')}
             </h1>
           </div>
         </div>
@@ -44,15 +63,15 @@ export default function RecordListWrapper({
             disableListPagination={disableListPagination}
             disableRouterPagination={disableRouterPagination}
             params={{
-              ...createParamsFromSearchRoute(params['*']),
+              ...searchParams,
               // Ignore other (older) record types:
               // In requiredParams in config.js:
               // recordtype: 'one_accession_row',
             }}
             mode={mode}
             hasFilter={mode !== 'transcribe'}
-            hasTimeline
-            showViewToggle={true}
+            hasTimeline={!isStarredRecordList}
+            showViewToggle
             openSwitcherHelptext={openSwitcherHelptext}
             containerRef={containerRef}
           />

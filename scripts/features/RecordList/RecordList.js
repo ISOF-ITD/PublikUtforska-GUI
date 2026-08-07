@@ -1,5 +1,5 @@
 import {
-  lazy, Suspense, useCallback, useEffect, useRef, useState,
+  lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState,
 } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -168,6 +168,14 @@ export default function RecordList(props) {
     (name) => (columns ? columns.includes(name) : true),
     [columns]
   );
+  // If the URL contains record_ids, we are in a starred record list and should not include record_ids in the navigation params to avoid losing the starred filter when navigating between records.
+  const recordNavigationParams = useMemo(() => {
+    if (!params?.record_ids) return params;
+
+    const cleanParams = { ...params };
+    delete cleanParams.record_ids;
+    return cleanParams;
+  }, [params]);
 
   const handleStepPage = (step) => {
     /* decide who owns page number */
@@ -191,11 +199,15 @@ export default function RecordList(props) {
   const markRecordAsActive = useCallback(
     (recordId) => {
       if (!recordId) return;
+      if (params?.record_ids) {
+        window.eventBus?.dispatch('starredRecords.openRecord');
+        window.eventBus?.dispatch('routePopup.hideManual');
+      }
       const normalized = String(recordId);
       setSelectedRecordId(normalized);
       writeSessionItem(activeRecordStorageKey, normalized);
     },
-    [activeRecordStorageKey],
+    [activeRecordStorageKey, params],
   );
 
   const clearActiveRecord = useCallback(() => {
@@ -340,7 +352,7 @@ export default function RecordList(props) {
           {/* Mobile: always cards */}
           <RecordCards
             records={records}
-            params={params}
+            params={recordNavigationParams}
             mode={mode}
             highlightRecordsWithMetadataField={
               highlightRecordsWithMetadataField
@@ -361,7 +373,7 @@ export default function RecordList(props) {
             {showViewToggle && view === "cards" ? (
               <RecordCards
                 records={records}
-                params={params}
+                params={recordNavigationParams}
                 mode={mode}
                 highlightRecordsWithMetadataField={
                   highlightRecordsWithMetadataField
@@ -374,7 +386,7 @@ export default function RecordList(props) {
               <RecordTable
                 records={records}
                 uniqueId={uniqueId}
-                params={params}
+                params={recordNavigationParams}
                 highlightRecordsWithMetadataField={
                   highlightRecordsWithMetadataField
                 }

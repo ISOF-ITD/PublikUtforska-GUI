@@ -160,11 +160,19 @@ const RoutePopupWindow = memo(({
   };
 
   useEffect(() => {
+    const hideManualRoutePopup = () => {
+      if (!manuallyOpenPopup) return;
+      setWindowOpen(false);
+      setManualOpen(false);
+    };
+
     window.eventBus?.addEventListener('routePopup.show', showRoutePopup);
+    window.eventBus?.addEventListener('routePopup.hideManual', hideManualRoutePopup);
     setWindowOpen(!manuallyOpenPopup);
 
     return () => {
       window.eventBus?.removeEventListener('routePopup.show', showRoutePopup);
+      window.eventBus?.removeEventListener('routePopup.hideManual', hideManualRoutePopup);
       if (onHide) {
         onHide();
       }

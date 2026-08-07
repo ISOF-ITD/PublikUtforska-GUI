@@ -160,7 +160,7 @@ export default function MapView({
           iconCreateFunction(cluster) {
             const childCount = cluster.getChildCount();
 
-            // Choose inner circle color by size bucket 
+            // Choose inner circle color by size bucket
             const innerBg = childCount < 20 ? "bg-isof" : "bg-darker-isof";
             const html = `
               <div class="w-8 h-8 rounded-full  bg-clip-padding">
