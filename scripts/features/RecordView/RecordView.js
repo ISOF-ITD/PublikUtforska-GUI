@@ -137,6 +137,11 @@ function ResolvedRecord({
   const [highlightData, raw, sub] = value || [];
   const data = raw?._source;
   const subrecordsCount = sub?.data;
+  const recordHighlightHit = highlightData?.data?.[0] ?? {};
+  const recordHighlights = recordHighlightHit.highlight ?? {};
+  const descriptionHighlights = (
+    recordHighlightHit.inner_hits?.['media.description']?.hits?.hits ?? []
+  );
 
   // Set the final title when data is available
   useEffect(() => {
@@ -173,11 +178,13 @@ function ResolvedRecord({
           />
           <ContentsElement
             data={data}
-            highlightData={
-              highlightData?.["media.description"]?.hits?.hits ?? []
-            }
+            highlightData={descriptionHighlights}
+            highlightHtml={recordHighlights.contents?.[0]}
           />
-          <HeadwordsElement data={data} />
+          <HeadwordsElement
+            data={data}
+            highlightHtml={recordHighlights.headwords?.[0]}
+          />
         </div>
 
         <TranscriptionCTA data={data} />

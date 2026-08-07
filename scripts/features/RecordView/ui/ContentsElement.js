@@ -5,6 +5,7 @@ import {
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import sanitizeHtml from 'sanitize-html';
 import ListPlayButton from "../../AudioDescription/ListPlayButton";
 import useLegacyContents from "../hooks/useLegacyContents";
 
@@ -31,6 +32,20 @@ const highlightedChipClassName = [
   'text-[var(--color-highlight-text)]',
 ].join(' ');
 const defaultChipClassName = 'border-border bg-surface hover:bg-surface-hover';
+const sanitizeHighlightConfig = {
+  allowedTags: ['b', 'i', 'em', 'strong', 'br', 'span'],
+  allowedAttributes: {
+    span: ['class'],
+  },
+  allowedClasses: {
+    span: ['highlight'],
+  },
+};
+
+const toSafeHighlightHtml = (html) => sanitizeHtml(
+  String(html ?? '').replace(/\r\n/g, '\n').replace(/\n/g, '<br />'),
+  sanitizeHighlightConfig,
+);
 
 const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
   if (!rows.length) return null;
@@ -165,11 +180,28 @@ const renderCompact = ({
 };
 
 // Fallback renderer: the original preformatted text
-const renderPlain = (contents) => (
-  <div className="mt-2 whitespace-pre-line text-sm leading-relaxed">
-    {contents}
-  </div>
-);
+const renderPlain = (contents, highlightHtml) => {
+  const cleanHighlightHtml = highlightHtml
+    ? toSafeHighlightHtml(highlightHtml)
+    : '';
+
+  if (cleanHighlightHtml) {
+    return (
+      <div
+        className="mt-2 whitespace-pre-line text-sm leading-relaxed"
+        dangerouslySetInnerHTML={{
+          __html: cleanHighlightHtml,
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="mt-2 whitespace-pre-line text-sm leading-relaxed">
+      {contents}
+    </div>
+  );
+};
 
 /**
  * ContentsElement (legacy annotations)
@@ -179,7 +211,11 @@ const renderPlain = (contents) => (
  *   when descriptions are very short (1-5 words).
  * - Falls back to the original text block if nothing structured detected.
  */
-export default function ContentsElement({ data, highlightData = [] }) {
+export default function ContentsElement({
+  data,
+  highlightData = [],
+  highlightHtml = '',
+}) {
   const {
     contents = "",
     id,
@@ -192,6 +228,8 @@ export default function ContentsElement({ data, highlightData = [] }) {
 
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
+  const hasHighlight = Boolean(highlightHtml)
+    || (Array.isArray(highlightData) && highlightData.length > 0);
 
   const { hasStructured, rows, isCompact, rowCount, defaultAudio, audioTitle } =
     useLegacyContents({
@@ -209,9 +247,10 @@ export default function ContentsElement({ data, highlightData = [] }) {
 
   useEffect(() => {
     const saved = sessionStorage.getItem(storageKey);
-    if (saved !== null) setExpanded(saved === "1");
+    if (hasHighlight) setExpanded(true);
+    else if (saved !== null) setExpanded(saved === "1");
     return () => {}; // no-op
-  }, []); // run once
+  }, [hasHighlight, storageKey]);
 
   useEffect(() => {
     sessionStorage.setItem(storageKey, expanded ? "1" : "0");
@@ -258,7 +297,7 @@ export default function ContentsElement({ data, highlightData = [] }) {
                 id,
                 audioTitle,
               })
-          : renderPlain(contents)}
+          : renderPlain(contents, highlightHtml)}
       </div>
     </section>
   );
@@ -283,4 +322,5 @@ ContentsElement.propTypes = {
     ),
   }).isRequired,
   highlightData: PropTypes.array,
+  highlightHtml: PropTypes.string,
 };

@@ -1,4 +1,9 @@
-import React, { useState, useMemo, useId, useEffect } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from 'react';
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -12,19 +17,25 @@ import sanitizeHtml from "sanitize-html";
 const UPPSALA_BASE = "https://www5.sprakochfolkminnen.se/Realkatalogen/";
 
 const SANITIZE_CFG = {
-  allowedTags: ["b", "i", "em", "strong", "a", "br"],
-  allowedAttributes: { a: ["href", "target", "rel"] },
+  allowedTags: ['b', 'i', 'em', 'strong', 'a', 'br', 'span'],
+  allowedAttributes: {
+    a: ['href', 'target', 'rel'],
+    span: ['class'],
+  },
+  allowedClasses: {
+    span: ['highlight'],
+  },
 };
 
 function formatHeadwords(text) {
-   // Ensure we always operate on a string
-   const s = (text ?? "").toString().trim();
-   // Insert line breaks before "Sida/Sidor" blocks for readability
-   return s.replace(/( Sida| Sidor)/g, "\n$1");
- }
+  // Ensure we always operate on a string
+  const s = (text ?? "").toString().trim();
+  // Insert line breaks before "Sida/Sidor" blocks for readability
+  return s.replace(/( Sida| Sidor)/g, '\n$1');
+}
 
 function toSafeHtml(headwords, archiveOrg) {
-   let out = formatHeadwords(headwords ?? "");
+  let out = formatHeadwords(headwords ?? "");
 
   // Just nu är kontroll på arkiv egentligen onödig, då bara Uppsala har länkar, 
   // markerade med [[]], till publika inskannande kort
@@ -47,15 +58,17 @@ function toSafeHtml(headwords, archiveOrg) {
 }
 
 //Component
-export default function HeadwordsElement({ data }) {
+export default function HeadwordsElement({ data, highlightHtml = '' }) {
   const archiveOrg = data?.archive?.archive_org;
   const safeHeadwords = data?.headwords ?? "";
+  const displayHeadwords = highlightHtml || safeHeadwords;
+  const hasHighlight = Boolean(highlightHtml);
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
 
   const cleanHTML = useMemo(
-    () => toSafeHtml(safeHeadwords, archiveOrg),
-    [safeHeadwords, archiveOrg]
+    () => toSafeHtml(displayHeadwords, archiveOrg),
+    [displayHeadwords, archiveOrg]
   );
   const headwordBadge = useMemo(() => {
     const linkCount = (safeHeadwords.match(/\[\[(.+?)\]\]/g) || []).length;
@@ -73,9 +86,10 @@ export default function HeadwordsElement({ data }) {
   const storageKey = `rv:${data?.id || "unknown"}:headwords:expanded`;
   useEffect(() => {
     const saved = sessionStorage.getItem(storageKey);
-    if (saved !== null) setExpanded(saved === "1");
+    if (hasHighlight) setExpanded(true);
+    else if (saved !== null) setExpanded(saved === "1");
     return () => {}; // no-op
-  }, []); // run once
+  }, [hasHighlight, storageKey]);
 
   useEffect(() => {
     sessionStorage.setItem(storageKey, expanded ? "1" : "0");
@@ -120,9 +134,12 @@ export default function HeadwordsElement({ data }) {
 
 HeadwordsElement.propTypes = {
   data: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    headwords: PropTypes.string,
     safeHeadwords: PropTypes.string,
     archive: PropTypes.shape({
       archive_org: PropTypes.string,
     }),
   }).isRequired,
+  highlightHtml: PropTypes.string,
 };
