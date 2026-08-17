@@ -1,36 +1,31 @@
-/* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
-import config from '../../../config';
 import { l } from '../../../lang/Lang';
 import contactButtonClassName from '../../../components/views/contactButtonClassName';
 
-export default function TranscriptionHelpButton({ title = '', type }) {
-  const { pathname } = useLocation();
-
+export default function TranscriptionHelpButton({
+  inline = false,
+  label = l('Instruktioner'),
+}) {
   const helpButtonClick = () => {
     if (window.eventBus) {
-      window.eventBus.dispatch('overlay.transcriptionhelp', {
-        url: `${config.siteUrl}${pathname}`,
-        title,
-        type,
-        appUrl: config.appUrl,
-      });
+      window.eventBus.dispatch('overlay.transcriptionhelp');
     }
   };
 
   return (
     <button
-      className={contactButtonClassName}
+      className={inline
+        ? '!m-0 !border-0 !bg-transparent !p-0 align-baseline text-link underline hover:text-link-hover'
+        : contactButtonClassName}
       onClick={helpButtonClick}
       type="button"
     >
-      {l('Instruktioner')}
+      {label}
     </button>
   );
 }
 
 TranscriptionHelpButton.propTypes = {
-  title: PropTypes.string,
-  type: PropTypes.string.isRequired,
+  inline: PropTypes.bool,
+  label: PropTypes.string,
 };

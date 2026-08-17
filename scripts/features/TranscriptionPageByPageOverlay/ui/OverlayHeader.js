@@ -62,10 +62,7 @@ function OverlayHeader({
       )}
       {!config.siteOptions.hideContactButton && (
         <ContactButtonGroup>
-          <TranscriptionHelpButton
-            type="Uppteckning"
-            title={recordDetails.title}
-          />
+          <TranscriptionHelpButton />
           <ContributeInfoButton
             type="Uppteckning"
             title={recordDetails.title}

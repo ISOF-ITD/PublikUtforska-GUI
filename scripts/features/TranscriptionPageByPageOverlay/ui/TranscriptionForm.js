@@ -12,6 +12,7 @@ import {
 import Uppteckningsblankett from './Uppteckningsblankett';
 import { l } from '../../../lang/Lang';
 import ContributorInfoFields from './ContributorInfoFields';
+import TranscriptionHelpButton from './TranscriptionHelpButton';
 
 const field = 'w-full border border-gray-300 rounded-lg p-3 font-serif leading-relaxed '
   + 'disabled:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-isof '
@@ -115,7 +116,15 @@ export default function TranscriptionForm({
           <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
             <strong className="flex items-center mb-1 gap-2">
               <FontAwesomeIcon icon={faInfoCircle} />
-              {l('Snabbguide (se även gärna instruktionerna ovanför)')}
+              <span>
+                {l('Snabbguide (se även gärna')}
+                {' '}
+                <TranscriptionHelpButton
+                  label={l('instruktionerna')}
+                  inline
+                />
+                {')'}
+              </span>
             </strong>
             <ul className="list-disc list-inside space-y-0.5 !my-0">
               <li>{l('Skriv av texten precis som den står, även stavfel.')}</li>

@@ -14,14 +14,10 @@ function TranscriptionHelpOverlay() {
 
   useEffect(() => {
     if (window.eventBus) {
-      const handleEventBus = (event) => {
+      const handleEventBus = () => {
         setState((prevState) => ({
           ...prevState,
           visible: true,
-          type: event.target.type,
-          title: event.target.title,
-          url: event.target.url,
-          appUrl: event.target.appUrl,
         }));
       };
 
