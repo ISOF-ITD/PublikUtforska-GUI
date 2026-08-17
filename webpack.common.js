@@ -3,6 +3,31 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const fontAwesomeIconPackages = new Set([
+  '@fortawesome/free-brands-svg-icons',
+  '@fortawesome/free-regular-svg-icons',
+  '@fortawesome/free-solid-svg-icons',
+]);
+
+// This function transforms imports of Font Awesome icons to import each icon individually.
+function transformFontAwesomeIconImports({ types: t }) {
+  return {
+    visitor: {
+      ImportDeclaration(importPath) {
+        const { node } = importPath;
+        if (!fontAwesomeIconPackages.has(node.source.value)) return;
+
+        const imports = node.specifiers.map((specifier) => t.importDeclaration(
+          [t.importSpecifier(specifier.local, specifier.imported)],
+          t.stringLiteral(`${node.source.value}/${specifier.imported.name}`),
+        ));
+
+        importPath.replaceWithMultiple(imports);
+      },
+    },
+  };
+}
+
 console.log(`Bygger med PUBLIC_PATH=${process.env.PUBLIC_PATH || '/'}`);
 
 module.exports = {
@@ -36,7 +61,10 @@ module.exports = {
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
-          options: { sourceMaps: true }, // enable source maps for babel
+          options: {
+            sourceMaps: true,
+            plugins: [transformFontAwesomeIconImports],
+          }, // enable source maps for babel
         },
       },
       // add support for .less files

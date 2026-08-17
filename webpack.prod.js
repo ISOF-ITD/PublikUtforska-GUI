@@ -11,6 +11,13 @@ module.exports = merge(common, {
   // devtool: 'source-map', // external source maps for production
   devtool: false,
 
+  // Varnar om en JavaScript-fil eller hela första sidladdningen blir större
+  // än den nuvarande produktionsstorleken. Webpacks standardgräns är för låg.
+  performance: {
+    maxAssetSize: 400 * 1024,
+    maxEntrypointSize: 600 * 1024,
+  },
+
   // tells webpack to split the code
   // into multiple files
   optimization: {
