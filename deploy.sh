@@ -39,19 +39,19 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Okand flagga: $1"
+      echo "Okänd flagga: $1"
       exit 1
       ;;
   esac
 done
 
 if [[ ! "$KEEP_RELEASE_DAYS" =~ ^[0-9]+$ ]]; then
-  echo "--keepDays maste vara ett heltal."
+  echo "--keepDays måste vara ett heltal."
   exit 1
 fi
 
 if [[ ! "$RELEASE_ID" =~ ^[A-Za-z0-9._-]+$ ]]; then
-  echo "--releaseId far bara innehalla bokstaver, siffror, punkt, understreck och bindestreck."
+  echo "--releaseId får bara innehålla bokstäver, siffror, punkt, understreck och bindestreck."
   exit 1
 fi
 
@@ -139,7 +139,7 @@ fi
 # Small marker for humans and support scripts to see which release is current.
 printf '%s\n' "$RELEASE_ID" > "$WWW_DIR/current-release.txt"
 
-echo "Rensar releases som varit ersatta i mer an $KEEP_RELEASE_DAYS dagar..."
+echo "Rensar releases som varit ersatta i mer än $KEEP_RELEASE_DAYS dagar..."
 # Retention cleanup removes release folders only after they have been replaced
 # for the grace period. The directory mtime is updated when a release is replaced.
 # The current release is explicitly excluded even if timestamps are unusual.
@@ -153,4 +153,4 @@ find "$RELEASES_DIR" \
 
 rm -rf "$BUILD_DIR"
 
-echo "Release $RELEASE_ID ar publicerad."
+echo "Release $RELEASE_ID är publicerad."
