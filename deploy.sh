@@ -66,6 +66,13 @@ fi
 # This is what prevents ChunkLoadError after a deploy.
 ASSET_PUBLIC_PATH="${BASE_PUBLIC_PATH}releases/${RELEASE_ID}/"
 RELEASE_DIR="$RELEASES_DIR/$RELEASE_ID"
+PREVIOUS_RELEASE_ID=""
+
+# Read the current release before publishing the new one. A missing or empty
+# marker means there is no previous release to mark as replaced.
+if [[ -f "$WWW_DIR/current-release.txt" ]]; then
+  PREVIOUS_RELEASE_ID="$(<"$WWW_DIR/current-release.txt")"
+fi
 
 if [[ -d "$RELEASE_DIR" ]]; then
   echo "Releasekatalogen finns redan: $RELEASE_DIR"
@@ -122,11 +129,19 @@ if [[ -d "$RELEASE_DIR/fonts" ]]; then
   cp -R "$RELEASE_DIR"/fonts/. "$WWW_DIR/fonts"/
 fi
 
+# Mark the previous release when it is replaced. Its directory mtime starts the
+# retention period used by the cleanup below.
+if [[ -n "$PREVIOUS_RELEASE_ID" && "$PREVIOUS_RELEASE_ID" != "$RELEASE_ID" && -d "$RELEASES_DIR/$PREVIOUS_RELEASE_ID" ]]; then
+  echo "Markerar ersatt release $PREVIOUS_RELEASE_ID..."
+  touch "$RELEASES_DIR/$PREVIOUS_RELEASE_ID"
+fi
+
 # Small marker for humans and support scripts to see which release is current.
 printf '%s\n' "$RELEASE_ID" > "$WWW_DIR/current-release.txt"
 
-echo "Rensar releases aldre an $KEEP_RELEASE_DAYS dagar..."
-# Retention cleanup removes old release folders only after the grace period.
+echo "Rensar releases som varit ersatta i mer an $KEEP_RELEASE_DAYS dagar..."
+# Retention cleanup removes release folders only after they have been replaced
+# for the grace period. The directory mtime is updated when a release is replaced.
 # The current release is explicitly excluded even if timestamps are unusual.
 find "$RELEASES_DIR" \
   -mindepth 1 \
