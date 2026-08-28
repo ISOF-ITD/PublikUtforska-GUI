@@ -12,8 +12,8 @@
 
 - Fix lint issues caused by your changes, not unrelated pre-existing issues.
 - Validate proportionally to the change:
-  - small changes: lint changed files when practical;
-  - larger changes: run `npm run lint`;
+  - small to mediumchanges: lint changed files when practical;
+  - only very large changes: run `npm run lint`;
   - run relevant existing tests when behavior changes.
 - If validation cannot be run, say what was not verified.
 
