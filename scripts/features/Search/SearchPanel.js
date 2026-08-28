@@ -6,7 +6,6 @@ import {
   faClose,
   faList,
   faMap,
-  faPen,
   faSearch,
   faCircleQuestion,
   faClipboardList,
@@ -29,13 +28,12 @@ import useSearchRouting from './hooks/useSearchRouting';
 import useSelectionFromRoute from './hooks/useSelectionFromRoute';
 import useSuggestionGroups from './hooks/useSuggestionGroups';
 import useSuggestionKeyboard from './hooks/useSuggestionKeyboard';
-import TranscribeButton from '../TranscriptionPageByPageOverlay/ui/TranscribeButton';
 import FilterSwitch from '../../components/FilterSwitch';
-import config from '../../config';
 import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
 import useStarredRecords, {
   STARRED_RECORDS_RETURN_STORAGE_KEY,
 } from '../../hooks/useStarredRecords';
+import RandomTranscriptionPrompt from './ui/RandomTranscriptionPrompt';
 
 export default function SearchPanel({
   mode,
@@ -463,6 +461,10 @@ export default function SearchPanel({
         ]}
       />
 
+      {showSupplementaryContent && mode === 'transcribe' && isTranscriptionAvailable && (
+        <RandomTranscriptionPrompt />
+      )}
+
       {showResultViewControl && (
         <div
           className="mt-2 grid w-full grid-cols-2 gap-2"
@@ -497,35 +499,6 @@ export default function SearchPanel({
           ))}
         </div>
       )}
-      {showSupplementaryContent && mode === 'transcribe' && isTranscriptionAvailable && (
-        <section
-          className="mt-3 rounded-md border border-border bg-surface-muted p-3 text-body"
-          aria-labelledby="random-transcription-heading"
-        >
-          <h2 id="random-transcription-heading" className="!m-0 !text-lg text-body">
-            {l('Kom igång direkt')}
-          </h2>
-          <TranscribeButton
-            className="!mb-0 !h-auto !min-h-[2.75rem] !whitespace-normal !break-words !py-2 !leading-snug"
-            transcriptionstatus="readytotranscribe"
-            label={(
-              <>
-                <FontAwesomeIcon icon={faPen} aria-hidden="true" />
-                {l('Skriv av slumpmässigt vald uppteckning')}
-                {config.specialEventTranscriptionCategoryLabel && (
-                  <span className="text-sm">
-                    {config.specialEventTranscriptionCategoryLabel}
-                  </span>
-                )}
-              </>
-            )}
-            random
-            ariaLabel={l('Skriv av slumpmässigt vald uppteckning')}
-            variant="listLike"
-          />
-        </section>
-      )}
-
       {showSupplementaryContent && onOpenIntroOverlay && (
         <button
           type="button"
