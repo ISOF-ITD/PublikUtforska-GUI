@@ -250,6 +250,7 @@ export default function MapMenu({
           id="intro-overlay"
           show={showIntroOverlay}
           onClose={handleCloseOverlay}
+          mode={mode}
         />
       )}
     </>

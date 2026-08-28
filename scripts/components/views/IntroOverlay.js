@@ -10,17 +10,25 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
+import useSearchRouting from '../../features/Search/hooks/useSearchRouting';
 import { l } from '../../lang/Lang';
 import { getFocusableElements } from '../../utils/focusHelper';
 import folkeWhiteLogo from '../../../img/folke-white.svg';
 import IsofLogoWhite from '../../../img/logotyp-isof-vit.svg';
 
-function IntroOverlay({ show = false, onClose }) {
+function IntroOverlay({ show = false, onClose, mode = 'material' }) {
   const location = useLocation();
   const navigate = useNavigate();
   const iframeRef = useRef(null);
   const introRef = useRef(null);
   const restoreFocusRef = useRef(null);
+  const [categories, setCategories] = useState([]);
+  const { navigateToSearch } = useSearchRouting({
+    mode,
+    search_field: null,
+    categories,
+    setCategories,
+  });
 
   const getInitialSrc = () => {
     const params = new URLSearchParams(location.search);
@@ -37,6 +45,28 @@ function IntroOverlay({ show = false, onClose }) {
   useEffect(() => {
     const handleMessage = (event) => {
       try {
+        if (event.source !== iframeRef.current?.contentWindow) return;
+
+        if (event.data.type === 'introSearchCapabilityRequest') {
+          event.source.postMessage({
+            type: 'introSearchCapabilityResponse',
+            version: 1,
+            supported: true,
+          }, event.origin);
+          return;
+        }
+
+        if (event.data.type === 'introSearch') {
+          const searchTerm = typeof event.data.search === 'string'
+            ? event.data.search.trim()
+            : '';
+          if (!searchTerm) return;
+
+          navigateToSearch(searchTerm, null, null, 'list');
+          if (onClose) onClose();
+          return;
+        }
+
         if (event.data.type === 'navigateAway') {
           setTimeout(() => {
             if (onClose) onClose();
@@ -62,7 +92,7 @@ function IntroOverlay({ show = false, onClose }) {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [navigate, location.search, onClose]);
+  }, [navigate, navigateToSearch, location.search, onClose]);
 
   const handleClose = useCallback(() => {
     if (onClose) onClose();
@@ -139,15 +169,15 @@ function IntroOverlay({ show = false, onClose }) {
       aria-modal="true"
     >
       <div className="intro focus:outline-none" ref={introRef} tabIndex={-1}>
-        <div className="overlay-header flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:items-center sm:px-6 sm:py-[15px]">
+        <div className="overlay-header flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-[15px]">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <h1 className="m-0 shrink-0">
+            <div className="shrink-0">
               <img
                 src={folkeWhiteLogo}
                 alt={l('Folkelogga')}
                 className="h-12 w-auto max-w-[40vw] object-contain sm:max-w-none"
               />
-            </h1>
+            </div>
             <span aria-hidden className="h-6 w-px shrink-0 bg-white/30" />
             <a
               href="https://www.isof.se"
@@ -164,14 +194,14 @@ function IntroOverlay({ show = false, onClose }) {
               />
             </a>
           </div>
-          <div className="controls ml-auto flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto">
+          <div className="controls ml-auto flex w-auto shrink-0 items-center justify-end gap-2">
             <button
               type="button"
               onClick={handleClose}
               className="intro-close-button inline-flex items-center gap-1 rounded-sm border-0 bg-transparent p-0 text-white underline [font:inherit] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              aria-label="Stäng och gå vidare till kartan"
+              aria-label="Gå vidare"
             >
-              Stäng och gå vidare
+              Gå vidare
               {' '}
               <FontAwesomeIcon icon={faChevronRight} />
             </button>
@@ -200,6 +230,7 @@ function IntroOverlay({ show = false, onClose }) {
 IntroOverlay.propTypes = {
   show: PropTypes.bool,
   onClose: PropTypes.func,
+  mode: PropTypes.string,
 };
 
 export default IntroOverlay;

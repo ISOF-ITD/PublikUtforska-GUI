@@ -146,17 +146,18 @@
   }
 
   .intro {
-    width: 90%;
-    margin: 20px auto 20px auto;
+    width: 100%;
+    margin: 0;
     position: relative;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 40px); // 100% av viewport höjd minus 40px
+    height: 100vh;
+    height: 100dvh;
     overflow: hidden; // Förhindrar att .intro blir scrollable
     background-color: var(--color-surface);
     color: var(--color-text);
-    max-width: 900px;
-    border-radius: 3px;
+    max-width: none;
+    border-radius: 0;
     box-shadow: 0 2px 6px var(--color-shadow-strong);
 
     .overlay-header {
