@@ -6,16 +6,61 @@ import "../../lib/leaflet.active-layers";
 
 import mapHelper from "../../utils/mapHelper";
 
+const SWEDEN_BOUNDS = latLngBounds(
+  [55.34267812700013, 11.108164910000113],
+  [69.03635569300009, 24.163413534000114],
+);
 const MapBase = forwardRef(function MapBase(props, ref) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const layersControlRef = useRef(null);
   const onBaseLayerChangeRef = useRef(props.onBaseLayerChange);
   const initializedRef = useRef(false); // guard against React 18 StrictMode double effects in dev
+  const initialBoundsFitRef = useRef(false);
+
+  const fitInitialBounds = () => {
+    const map = mapRef.current;
+    const container = containerRef.current;
+    if (
+      !map
+      || !container
+      || initialBoundsFitRef.current
+      || container.clientWidth === 0
+      || container.clientHeight === 0
+    ) {
+      return false;
+    }
+
+    map.invalidateSize({ animate: false });
+    map.fitBounds(SWEDEN_BOUNDS, {
+      padding: [24, 24],
+    });
+    initialBoundsFitRef.current = true;
+    return true;
+  };
 
   useEffect(() => {
     onBaseLayerChangeRef.current = props.onBaseLayerChange;
   }, [props.onBaseLayerChange]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return undefined;
+
+    let animationFrameId;
+    const observer = new ResizeObserver(() => {
+      window.cancelAnimationFrame(animationFrameId);
+      animationFrameId = window.requestAnimationFrame(() => {
+        mapRef.current?.invalidateSize({ animate: false });
+      });
+    });
+    observer.observe(container);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -35,6 +80,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       invalidateSize: () => {
         if (mapRef.current) mapRef.current.invalidateSize();
       },
+      fitInitialBounds,
       addMarker: (markerData) => {
         // Keep parity with the API used by SimpleMap
         if (!markerData || !mapRef.current) return;
@@ -89,13 +135,8 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       }
     }
 
-    const SWEDEN = latLngBounds(
-      [55.34267812700013, 11.108164910000113],
-      [69.03635569300009, 24.163413534000114]
-    );
-
     const mapOptions = {
-      center: props.center || SWEDEN.getCenter(),
+      center: props.center || SWEDEN_BOUNDS.getCenter(),
       zoom: parseInt(props.zoom, 10) || 5,
       minZoom: parseInt(props.minZoom, 10) || 5,
       maxZoom: parseInt(props.maxZoom, 10) || 17,
@@ -128,7 +169,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
 
     // Force initial view so Leaflet flips _loaded = true
     map.setView(
-      props.center || SWEDEN.getCenter(),
+      props.center || SWEDEN_BOUNDS.getCenter(),
       parseInt(props.zoom, 10) || 5,
       { animate: false }
     );
@@ -164,9 +205,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     let removeLayerOverlayListeners = () => {};
 
     map.whenReady(() => {
-      map.fitBounds(SWEDEN, {
-        paddingTopLeft: window.innerWidth >= 550 ? [400, 0] : [0, 100],
-      });
+      fitInitialBounds();
 
       if (props.disableInteraction && map.tap) {
         map.tap.disable();

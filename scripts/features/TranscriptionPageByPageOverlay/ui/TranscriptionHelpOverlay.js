@@ -180,7 +180,7 @@ function TranscriptionHelpOverlay() {
           <br />
           Känner du till någon av personerna som omnämns i uppteckningen och har
           du eventuellt fotografier eller liknande? Kontakta oss via knappen
-          &quot;Vet du mer&quot; ovanför uppteckningen. Du kan även välja att
+          &quot;Vet du mer?&quot; under transkriberingsverktyget. Du kan även välja att
           skriva en kommentar om personen i kommentarsfältet.
         </p>
 

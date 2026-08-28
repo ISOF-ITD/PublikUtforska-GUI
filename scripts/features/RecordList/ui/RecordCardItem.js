@@ -19,7 +19,7 @@ import TranscribeButton from '../../TranscriptionPageByPageOverlay/ui/Transcribe
 import useSubrecords from '../hooks/useSubrecords';
 import HighlightedText from './HighlightedText';
 import { secondsToMMSS } from '../../../utils/timeHelper';
-import { createSearchRoute } from '../../../utils/routeHelper';
+import { createSearchRoute, mergeRouteSearch } from '../../../utils/routeHelper';
 import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
 import countPageProgressFromMedia from '../utils/countPageProgressFromMedia';
 
@@ -30,6 +30,7 @@ export default function RecordCardItem({
   highlightRecordsWithMetadataField,
   isSelected,
   onRecordActivate,
+  detailSearch = '',
 }) {
   const src = item?._source ?? {};
 
@@ -93,9 +94,12 @@ export default function RecordCardItem({
   const searchSuffix = createSearchRoute(searchParams || {});
 
   // avoid adding a bare "/" when there are no params
-  const recordUrl = `${
-    mode === 'transcribe' ? '/transcribe' : ''
-  }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`;
+  const recordUrl = mergeRouteSearch(
+    `${
+      mode === 'transcribe' ? '/transcribe' : ''
+    }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`,
+    detailSearch,
+  );
 
   const hasTranscription = useMemo(
     () => !!media?.some?.(
@@ -312,9 +316,12 @@ export default function RecordCardItem({
                   return (
                     <Link
                       key={`collector-${pid}-${p?.relation ?? ''}-${p?.name ?? ''}`}
-                      to={`${
-                        mode === 'transcribe' ? '/transcribe' : ''
-                      }/persons/${pid}`}
+                      to={mergeRouteSearch(
+                        `${
+                          mode === 'transcribe' ? '/transcribe' : ''
+                        }/persons/${pid}${searchSuffix === '/' ? '' : searchSuffix}`,
+                        detailSearch,
+                      )}
                       className="text-body hover:underline"
                     >
                       {l(p?.name || '')}
@@ -493,12 +500,7 @@ export default function RecordCardItem({
                   {l('Skriv av')}
                 </>
               )}
-              title={title}
               recordId={id}
-              archiveId={archive?.archive_id}
-              places={places}
-              images={media || []}
-              transcriptionType={transcriptiontype}
               random={false}
             />
           </div>
@@ -514,4 +516,5 @@ RecordCardItem.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   isSelected: PropTypes.bool,
   onRecordActivate: PropTypes.func,
+  detailSearch: PropTypes.string,
 };

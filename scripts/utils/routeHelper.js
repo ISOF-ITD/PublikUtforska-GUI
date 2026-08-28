@@ -264,36 +264,179 @@ export function createSearchRoute(params) {
 }
 
 /**
+ * Merge query parameters into a route without losing an existing query or hash.
+ * Parameters from `search` replace parameters with the same name in `path`.
+ */
+export function mergeRouteSearch(path, search = '') {
+  if (!search) return path;
+
+  const hashIndex = path.indexOf('#');
+  const hash = hashIndex >= 0 ? path.slice(hashIndex) : '';
+  const pathWithoutHash = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
+  const queryIndex = pathWithoutHash.indexOf('?');
+  const pathname = queryIndex >= 0
+    ? pathWithoutHash.slice(0, queryIndex)
+    : pathWithoutHash;
+  const existingSearch = queryIndex >= 0
+    ? pathWithoutHash.slice(queryIndex + 1)
+    : '';
+  const mergedParams = new URLSearchParams(existingSearch);
+
+  new URLSearchParams(search).forEach((value, key) => {
+    mergedParams.set(key, value);
+  });
+
+  const query = mergedParams.toString();
+  return `${pathname}${query ? `?${query}` : ''}${hash}`;
+}
+
+/**
+ * Return the persistent search surface represented by a detail/task route.
+ * Detail-only media state is discarded while list and starred-result context
+ * remain shareable through the query string.
+ */
+export function createResultLocation(pathname, search = '') {
+  const pathSegments = String(pathname || '/')
+    .split('/')
+    .filter(Boolean);
+  const hasTranscribePrefix = pathSegments[0] === 'transcribe';
+  const segments = hasTranscribePrefix ? pathSegments.slice(1) : pathSegments;
+  let contextSegments = segments;
+
+  if (segments[0] === 'statistik') {
+    contextSegments = segments.slice(1);
+  } else if (['places', 'persons'].includes(segments[0]) && segments[1]) {
+    contextSegments = segments.slice(2);
+  } else if (segments[0] === 'records' && segments[1]) {
+    const recordSegments = segments.slice(2);
+    if (
+      recordSegments[0] === 'audio'
+      && recordSegments[1]
+      && recordSegments[2] === 'transcribe'
+    ) {
+      contextSegments = recordSegments.slice(3);
+    } else if (recordSegments[0] === 'transcribe') {
+      contextSegments = recordSegments.slice(1);
+    } else {
+      contextSegments = recordSegments;
+    }
+  }
+
+  const prefix = hasTranscribePrefix ? '/transcribe' : '';
+  const resultPath = contextSegments.length
+    ? `${prefix}/${contextSegments.join('/')}`
+    : `${prefix}/`;
+  const queryParams = new URLSearchParams(search);
+  queryParams.delete('media');
+  const query = queryParams.toString();
+
+  return `${resultPath}${query ? `?${query}` : ''}`;
+}
+
+/**
+ * Build the statistics page URL while retaining the current search context.
+ */
+export function createStatisticsLocation(pathname, search = '') {
+  const resultLocation = createResultLocation(pathname, search);
+  const queryIndex = resultLocation.indexOf('?');
+  const resultPath = queryIndex >= 0
+    ? resultLocation.slice(0, queryIndex)
+    : resultLocation;
+  const resultQuery = new URLSearchParams(
+    queryIndex >= 0 ? resultLocation.slice(queryIndex + 1) : '',
+  );
+  resultQuery.delete('showlist');
+  const resultSearch = resultQuery.toString();
+  const hasTranscribePrefix = resultPath === '/transcribe/'
+    || resultPath.startsWith('/transcribe/');
+  const prefix = hasTranscribePrefix ? '/transcribe' : '';
+  const searchContext = resultPath
+    .replace(/^\/transcribe(?=\/|$)/, '')
+    .replace(/^\/+|\/+$/g, '');
+
+  return `${prefix}/statistik${searchContext ? `/${searchContext}` : ''}${
+    resultSearch ? `?${resultSearch}` : ''
+  }`;
+}
+
+/**
+ * Build a detail URL while retaining the current result route and query.
+ */
+export function createDetailLocation({
+  resource,
+  id,
+  pathname,
+  search = '',
+}) {
+  const resultLocation = createResultLocation(pathname, search);
+  const queryIndex = resultLocation.indexOf('?');
+  const resultPath = queryIndex >= 0
+    ? resultLocation.slice(0, queryIndex)
+    : resultLocation;
+  const resultSearch = queryIndex >= 0
+    ? resultLocation.slice(queryIndex + 1)
+    : '';
+  const hasTranscribePrefix = resultPath === '/transcribe/'
+    || resultPath.startsWith('/transcribe/');
+  const prefix = hasTranscribePrefix ? '/transcribe' : '';
+  const searchContext = resultPath
+    .replace(/^\/transcribe(?=\/|$)/, '')
+    .replace(/^\/+|\/+$/g, '');
+  const detailPath = `${prefix}/${resource}/${encodeURIComponent(id)}${
+    searchContext ? `/${searchContext}` : ''
+  }`;
+
+  return `${detailPath}${resultSearch ? `?${resultSearch}` : ''}`;
+}
+
+/**
+ * Build a record task URL while retaining the current result route and query.
+ */
+export function createRecordTaskLocation({
+  recordId,
+  taskPath,
+  pathname,
+  search = '',
+  media = null,
+}) {
+  const resultLocation = createResultLocation(pathname, search);
+  const queryIndex = resultLocation.indexOf('?');
+  const resultPath = queryIndex >= 0
+    ? resultLocation.slice(0, queryIndex)
+    : resultLocation;
+  const resultSearch = queryIndex >= 0
+    ? resultLocation.slice(queryIndex + 1)
+    : '';
+  const hasTranscribePrefix = resultPath === '/transcribe/'
+    || resultPath.startsWith('/transcribe/');
+  const prefix = hasTranscribePrefix ? '/transcribe' : '';
+  const searchContext = resultPath
+    .replace(/^\/transcribe(?=\/|$)/, '')
+    .replace(/^\/+|\/+$/g, '');
+  const taskLocation = `${prefix}/records/${encodeURIComponent(recordId)}/${
+    taskPath.replace(/^\/+|\/+$/g, '')
+  }${searchContext ? `/${searchContext}` : ''}`;
+  const queryParams = new URLSearchParams(resultSearch);
+
+  if (media !== null && media !== undefined && media !== '') {
+    queryParams.set('media', String(media));
+  } else {
+    queryParams.delete('media');
+  }
+
+  const query = queryParams.toString();
+  return `${taskLocation}${query ? `?${query}` : ''}`;
+}
+
+/**
  * Remove view-specific params and return a search route.
  * Handles nested ASR editor trimming.
  */
 export function removeViewParamsFromRoute(path) {
-  let newPath = path?.startsWith("/") ? path : `/${path || ""}`;
-  [newPath] = newPath.split("?");
-
-  // drop trailing ASR audio editor
-  newPath = newPath.replace(/\/audio\/[^/]+\/transcribe\/?$/, "");
-
-  // Try place
-  const placeParams = getParser("place").match(newPath.replace(/\/$/, ""));
-  if (placeParams) {
-    delete placeParams.place_id;
-    return createSearchRoute(placeParams);
-  }
-  // Try person
-  const personParams = getParser("person").match(newPath.replace(/\/$/, ""));
-  if (personParams) {
-    delete personParams.person_id;
-    return createSearchRoute(personParams);
-  }
-  // Try record
-  const recordParams = getParser("record").match(newPath.replace(/\/$/, ""));
-  if (recordParams) {
-    delete recordParams.record_id;
-    return createSearchRoute(recordParams);
-  }
-
-  return path;
+  const normalizedPath = path?.startsWith('/') ? path : `/${path || ''}`;
+  const resultLocation = createResultLocation(normalizedPath);
+  const [resultPath] = resultLocation.split('?');
+  return resultPath.replace(/^\/transcribe(?=\/|$)/, '') || '/';
 }
 
 // Paths -> params

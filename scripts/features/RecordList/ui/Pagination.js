@@ -1,131 +1,171 @@
-import PropTypes from "prop-types";
-import { l } from "../../../lang/Lang";
-import config from "../../../config";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+
+import { l } from '../../../lang/Lang';
+import config from '../../../config';
 
 const { hitsPerPage, maxTotal } = config;
 
-/* ––––– helpers ––––– */
 function buildPageWindow(current, max) {
-  if (max <= 7) return [...Array(max)].map((_, i) => i + 1);
+  if (max <= 7) return [...Array(max)].map((_, index) => index + 1);
 
-  const window = [];
-  const add = (p) => window.push(p);
-
-  add(1);
-  if (current > 4) add("…");
+  const pageWindow = [1];
+  if (current > 4) pageWindow.push('ellipsis-start');
 
   const start = Math.max(2, current - 1);
   const end = Math.min(max - 1, current + 1);
 
-  for (let p = start; p <= end; p += 1) add(p);
+  for (let page = start; page <= end; page += 1) pageWindow.push(page);
 
-  if (current < max - 3) add("…");
-  add(max);
-  return window;
+  if (current < max - 3) pageWindow.push('ellipsis-end');
+  pageWindow.push(max);
+  return pageWindow;
 }
 
-export default function Pagination({ currentPage, total, onStep, maxPage }) {
-  /* bail-out if everything fits on one page */
-  if (total <= hitsPerPage) return null;
-
-  const from = (currentPage - 1) * hitsPerPage + 1;
-  const to = Math.min(currentPage * hitsPerPage, total);
-
-  const window = buildPageWindow(currentPage, maxPage);
-
-  return (
-    <nav className="my-4 flex flex-col gap-3 text-sm" aria-label="paginering">
-      <p>
-        <strong>
-          {l("Visar")} {from}-{to} {l("av")} {total.toLocaleString("sv-SE")}
-        </strong>
-      </p>
-
-      <div className="inline-flex flex-wrap items-center align-middle gap-1  w-full">
-        {/* PREVIOUS */}
-        <PageButton
-          disabled={currentPage === 1}
-          onClick={() => onStep(-1)}
-          label={l("Föregående")}
-          icon={faArrowLeft}
-        />
-
-        {/* PILL WINDOW */}
-        {window.map((p, i) =>
-          p === "…" ? (
-            <span key={`ellipsis-${i}`} className="px-2">
-              …
-            </span>
-          ) : (
-            <PageButton
-              key={p}
-              active={p === currentPage}
-              onClick={() => onStep(p - currentPage)}
-              label={p}
-            />
-          )
-        )}
-
-        {/* NEXT */}
-        <PageButton
-          disabled={currentPage === maxPage}
-          onClick={() => onStep(1)}
-          label={l("Nästa")}
-          icon={faArrowRight}
-        />
-      </div>
-
-      {total >= maxTotal && currentPage >= maxPage && (
-        <span className="text-red-600">
-          {l(
-            `Du har nått det maximala antalet sidor (${maxTotal.toLocaleString(
-              "sv-SE"
-            )} poster).`
-          )}
-        </span>
-      )}
-    </nav>
-  );
-}
-
-function PageButton({ label, onClick, disabled, active, icon }) {
+function PageButton({
+  label,
+  onClick,
+  disabled = false,
+  active = false,
+  icon = null,
+  iconAfter = false,
+  hideLabelBelow360 = false,
+  className = '',
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       className={[
-        "flex items-center justify-center gap-2 min-w-10 px-3 py-1 rounded border",
+        'flex min-h-11 min-w-10 items-center justify-center gap-2 rounded border px-3 py-1',
         active
-          ? 'bg-primary text-white hover:!text-white border-primary'
-          : 'bg-surface hover:bg-surface-hover border-border',
-        disabled && "opacity-40 cursor-not-allowed",
+          ? 'border-primary bg-primary text-[var(--color-text-inverted)] hover:!text-[var(--color-text-inverted)]'
+          : 'border-border bg-surface text-body hover:bg-surface-hover',
+        disabled ? 'cursor-not-allowed opacity-40' : '',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-      ].join(" ")}
-      aria-current={active ? "page" : undefined}
-      aria-label={
-        typeof label === "number" ? `${l("Gå till sida")} ${label}` : label
-      }
-      aria-disabled={disabled || undefined}
+        className,
+      ].join(' ')}
+      aria-current={active ? 'page' : undefined}
+      aria-label={typeof label === 'number' ? `${l('Gå till sida')} ${label}` : label}
     >
-      {icon && <FontAwesomeIcon icon={icon} aria-hidden="true" />}
-      {label}
+      {icon && !iconAfter && <FontAwesomeIcon icon={icon} aria-hidden="true" />}
+      <span className={hideLabelBelow360 ? 'sr-only min-[360px]:not-sr-only' : ''}>
+        {label}
+      </span>
+      {icon && iconAfter && <FontAwesomeIcon icon={icon} aria-hidden="true" />}
     </button>
   );
 }
 
 PageButton.propTypes = {
   label: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  onClick: PropTypes.func,
+  onClick: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
   active: PropTypes.bool,
+  icon: PropTypes.shape({}),
+  iconAfter: PropTypes.bool,
+  hideLabelBelow360: PropTypes.bool,
+  className: PropTypes.string,
 };
+
+export default function Pagination({
+  currentPage,
+  total,
+  onStep,
+  maxPage,
+  showRange = false,
+}) {
+  if (total <= hitsPerPage) return null;
+
+  const from = (currentPage - 1) * hitsPerPage + 1;
+  const to = Math.min(currentPage * hitsPerPage, total);
+  const pageWindow = buildPageWindow(currentPage, maxPage);
+  const previousLabel = l('Föregående');
+  const nextLabel = l('Nästa');
+  const rangeLabel = `${l('Visar')} ${from}–${to}`;
+  const pageStatus = `${l('Sida')} ${currentPage} ${l('av')} ${maxPage}`;
+
+  return (
+    <nav
+      className={showRange ? 'mb-3 mt-1 text-sm' : 'mb-0 mt-6 text-sm'}
+      aria-label={l('Paginering')}
+    >
+      {showRange && (
+        <p className="m-0 mb-2 font-semibold text-muted">
+          {rangeLabel}
+        </p>
+      )}
+
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:hidden">
+        <PageButton
+          disabled={currentPage === 1}
+          onClick={() => onStep(-1)}
+          label={previousLabel}
+          icon={faArrowLeft}
+          hideLabelBelow360
+          className="w-full px-2"
+        />
+        <span className="whitespace-nowrap px-1 text-center font-semibold text-body">
+          {pageStatus}
+        </span>
+        <PageButton
+          disabled={currentPage === maxPage}
+          onClick={() => onStep(1)}
+          label={nextLabel}
+          icon={faArrowRight}
+          iconAfter
+          hideLabelBelow360
+          className="w-full px-2"
+        />
+      </div>
+
+      <div className="hidden flex-wrap items-center gap-1 sm:flex">
+        <PageButton
+          disabled={currentPage === 1}
+          onClick={() => onStep(-1)}
+          label={previousLabel}
+          icon={faArrowLeft}
+        />
+
+        {pageWindow.map((page) => (
+          typeof page === 'string' ? (
+            <span key={page} className="px-2" aria-hidden="true">
+              …
+            </span>
+          ) : (
+            <PageButton
+              key={page}
+              active={page === currentPage}
+              onClick={() => onStep(page - currentPage)}
+              label={page}
+            />
+          )
+        ))}
+
+        <PageButton
+          disabled={currentPage === maxPage}
+          onClick={() => onStep(1)}
+          label={nextLabel}
+          icon={faArrowRight}
+          iconAfter
+        />
+      </div>
+
+      {total >= maxTotal && currentPage >= maxPage && (
+        <p className="mb-0 mt-3 text-danger">
+          {l(`Du har nått det maximala antalet sidor (${maxTotal.toLocaleString('sv-SE')} poster).`)}
+        </p>
+      )}
+    </nav>
+  );
+}
 
 Pagination.propTypes = {
   currentPage: PropTypes.number.isRequired,
   total: PropTypes.number.isRequired,
   onStep: PropTypes.func.isRequired,
   maxPage: PropTypes.number.isRequired,
+  showRange: PropTypes.bool,
 };

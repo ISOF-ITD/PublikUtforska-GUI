@@ -5,7 +5,14 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { l } from '../lang/Lang';
 import useStarredRecords from '../hooks/useStarredRecords';
-import contactButtonClassName from './views/contactButtonClassName';
+
+const compactContactButtonClassName = [
+  'feedback-button relative z-[1] inline-flex !h-auto self-start items-center gap-2',
+  'm-0 whitespace-nowrap rounded-full !border-0 bg-isof !px-3 !py-2',
+  'appearance-none !leading-[inherit] text-white shadow-[0_1px_2px_rgba(0,0,0,0.61)]',
+  'transition hover:bg-white/55 focus-visible:outline focus-visible:outline-2',
+  'focus-visible:outline-offset-2 focus-visible:outline-white',
+].join(' ');
 
 export default function StarredRecordButton({
   record,
@@ -34,7 +41,7 @@ export default function StarredRecordButton({
       type="button"
       className={classNames(
         variant === 'contact'
-          ? `${contactButtonClassName} inline-flex items-center gap-2`
+          ? compactContactButtonClassName
           : [
             'inline-flex shrink-0 items-center justify-center rounded-md border border-border bg-surface text-link shadow-sm',
             'hover:bg-surface-hover hover:text-link-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-focus',

@@ -8,17 +8,14 @@ export default function RecordListLoadingPlaceholder() {
   ];
 
   return (
-    <div className="container" role="status" aria-live="polite" aria-label="Laddar sökträffar som lista">
-      <div className="container-header max-lg:!pt-[74px]">
-        <div className="row">
-          <div className="twelve columns px-4 md:px-6 py-4">
-            <div className="h-8 w-2/3 rounded bg-surface/70 animate-pulse mb-3" />
-            {/* <div className="h-3 w-1/2 rounded bg-white/55 animate-pulse" /> */}
-          </div>
+    <div className="min-h-full bg-surface text-body" role="status" aria-live="polite" aria-label="Laddar sökträffar som lista">
+      <header className="bg-primary px-4 pb-6 pt-[9rem] md:px-8 md:py-8">
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="h-8 w-2/3 rounded bg-surface/70 animate-pulse" />
         </div>
-      </div>
+      </header>
 
-      <div className="row px-4 md:px-6 py-5">
+      <div className="mx-auto w-full max-w-6xl px-4 pb-28 pt-6 md:px-8 md:pb-24">
         <div className="w-full space-y-4">
           <div className="rounded-2xl border border-border bg-gradient-to-br from-surface-muted via-surface to-surface p-4 shadow-sm">
             <div className="flex flex-wrap items-center gap-3 mb-4">

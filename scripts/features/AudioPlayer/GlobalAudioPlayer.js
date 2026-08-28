@@ -47,8 +47,8 @@ export default function GlobalAudioPlayer() {
     <div
       {...swipeHandlers}
       className={classNames(
-        "fixed inset-x-0 bottom-0 z-[2000] bg-white shadow-lg/10",
-        "border-t border-gray-300 rounded-t-2xl",
+        'fixed inset-x-0 bottom-0 z-[2000] bg-surface text-body shadow-lg/10 print:hidden',
+        'border-t border-border rounded-t-2xl',
         "transition-transform duration-300 ease-in-out",
         "pb-[env(safe-area-inset-bottom,var(--tw-empty,0px))] px-3 sm:px-6",
         visible
@@ -57,7 +57,7 @@ export default function GlobalAudioPlayer() {
       )}
     >
       {/* grab handle (mobile) */}
-      <div className="mx-auto mt-1 mb-1 h-1.5 w-10 rounded-full bg-gray-300/80 sm:hidden" />
+      <div className="mx-auto mt-1 mb-1 h-1.5 w-10 rounded-full bg-border sm:hidden" />
 
       <div
         className="mx-auto w-full max-w-[1200px] py-3 gap-x-4 gap-y-2
@@ -84,7 +84,7 @@ export default function GlobalAudioPlayer() {
           <time
             aria-label="Total tid"
             dateTime={(durationTime / 1000).toFixed(0)}
-            className="font-mono tabular-nums text-xs text-gray-400 tracking-tight"
+            className="font-mono tabular-nums text-xs text-subtle tracking-tight"
           >
             {durationTime ? msToTime(durationTime) : "--:--"}
           </time>

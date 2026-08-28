@@ -1,57 +1,86 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChevronLeft,
   faChevronRight,
   faAngleDoubleRight,
-} from "@fortawesome/free-solid-svg-icons";
+} from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
 
-const Btn = ({ children, ...props }) => (
-  <button
-    className="inline-flex items-center gap-2 hover:cursor-pointer disabled:hover:cursor-not-allowed disabled:opacity-60"
-    type="button"
-    {...props}
-  >
-    {children}
-  </button>
-);
+function NavigationButton({
+  children,
+  onClick,
+  disabled,
+  ariaLabel,
+}) {
+  return (
+    <button
+      className="button button-secondary inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:hover:cursor-not-allowed disabled:opacity-60"
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </button>
+  );
+}
 
-const NavigationPanel = ({
+NavigationButton.propTypes = {
+  children: PropTypes.node.isRequired,
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool.isRequired,
+  ariaLabel: PropTypes.string.isRequired,
+};
+
+export default function NavigationPanel({
   currentPageIndex,
   pages,
   goToPreviousPage,
   goToNextPage,
   goToNextTranscribePage,
-}) => (
-  <div className="flex gap-2 items-center">
-    <Btn
-      onClick={goToPreviousPage}
-      disabled={currentPageIndex === 0}
-      aria-label="Föregående sida"
-    >
-      <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
-      Föregående sida
-    </Btn>
+}) {
+  const noLaterPageToTranscribe = pages
+    .slice(currentPageIndex + 1)
+    .every((page) => page.transcriptionstatus !== 'readytotranscribe');
 
-    <Btn
-      onClick={goToNextPage}
-      disabled={currentPageIndex === pages.length - 1}
-      aria-label="Nästa sida"
-    >
-      Nästa sida
-      <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />
-    </Btn>
+  return (
+    <div className="flex gap-2 items-center">
+      <NavigationButton
+        onClick={goToPreviousPage}
+        disabled={currentPageIndex === 0}
+        ariaLabel="Föregående sida"
+      >
+        <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+        Föregående sida
+      </NavigationButton>
 
-    <Btn
-      onClick={goToNextTranscribePage}
-      disabled={pages
-        .slice(currentPageIndex + 1)
-        .every((p) => p.transcriptionstatus !== "readytotranscribe")}
-      aria-label="Nästa sida att skriva av"
-    >
-      <FontAwesomeIcon icon={faAngleDoubleRight} aria-hidden="true" />
-      Nästa sida att skriva av
-    </Btn>
-  </div>
-);
+      <NavigationButton
+        onClick={goToNextPage}
+        disabled={currentPageIndex === pages.length - 1}
+        ariaLabel="Nästa sida"
+      >
+        Nästa sida
+        <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />
+      </NavigationButton>
 
-export default NavigationPanel;
+      <NavigationButton
+        onClick={goToNextTranscribePage}
+        disabled={noLaterPageToTranscribe}
+        ariaLabel="Nästa sida att skriva av"
+      >
+        <FontAwesomeIcon icon={faAngleDoubleRight} aria-hidden="true" />
+        Nästa sida att skriva av
+      </NavigationButton>
+    </div>
+  );
+}
+
+NavigationPanel.propTypes = {
+  currentPageIndex: PropTypes.number.isRequired,
+  pages: PropTypes.arrayOf(PropTypes.shape({
+    transcriptionstatus: PropTypes.string,
+  })).isRequired,
+  goToPreviousPage: PropTypes.func.isRequired,
+  goToNextPage: PropTypes.func.isRequired,
+  goToNextTranscribePage: PropTypes.func.isRequired,
+};

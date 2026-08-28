@@ -100,29 +100,36 @@
 	}
 
 .map-wrapper {
+	&:focus-visible {
+		outline: 3px solid var(--color-focus);
+		outline-offset: -3px;
+	}
+
+	.leaflet-marker-icon:focus-visible,
+	.leaflet-overlay-pane [data-map-marker-kind]:focus-visible {
+		z-index: 10000 !important;
+		outline: 3px solid var(--color-focus) !important;
+		outline-offset: 3px;
+	}
+
 	.leaflet-control-container {
 		.leaflet-top {
-			top: 160px;
-			@media screen and (max-width: 767px) {
-				top: 92px;
-			}
+			top: 12px;
 		}
 
-		@media screen and (max-width: 767px) {
-			.leaflet-top.leaflet-right {
-				.leaflet-control-layers {
-					max-height: calc(100vh - 108px);
-					max-height: calc(100dvh - 108px);
-					overflow: hidden;
-				}
+		.leaflet-top.leaflet-right {
+			.leaflet-control-layers {
+				max-height: calc(100vh - 24px);
+				max-height: calc(100dvh - 24px);
+				overflow: hidden;
+			}
 
-				.leaflet-control-layers-list {
-					max-height: calc(100vh - 116px);
-					max-height: calc(100dvh - 116px);
-					overflow-y: auto;
-					overscroll-behavior: contain;
-					-webkit-overflow-scrolling: touch;
-				}
+			.leaflet-control-layers-list {
+				max-height: calc(100vh - 32px);
+				max-height: calc(100dvh - 32px);
+				overflow-y: auto;
+				overscroll-behavior: contain;
+				-webkit-overflow-scrolling: touch;
 			}
 		}
 	}

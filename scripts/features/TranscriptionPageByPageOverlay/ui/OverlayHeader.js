@@ -1,45 +1,43 @@
-import config from "../../../config";
-import PropTypes from "prop-types";
-import { l } from "../../../lang/Lang";
+import PropTypes from 'prop-types';
+import { l } from '../../../lang/Lang';
 
-import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
-import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
-import FeedbackButton from "../../../components/views/FeedbackButton";
-import TranscriptionHelpButton from "./TranscriptionHelpButton";
-
-/**
- * Header for the page-by-page overlay.
- * Har nu en TranscribeButton i "random"‑läge som både avbryter pågående
- * transkribering och hämtar ett nytt slumpmässigt dokument.
- */
 function OverlayHeader({
   recordDetails,
-  handleHideOverlay,
-  transcribeCancel,
   progressCurrent = 0,
   progressTotal = 0,
 }) {
-  const progressLabel =
-    progressTotal > 1
-      ? `${progressCurrent} / ${progressTotal}`
-      : null; /* NB &ndash; keeps spaces with NBSP */
+  const progressLabel = progressTotal > 1
+    ? `${progressCurrent} / ${progressTotal}`
+    : null;
+  const heading = `Skriv av ${recordDetails.title || 'uppteckning'}`;
+  const archiveLabel = recordDetails.archiveId
+    ? `(ur ${recordDetails.archiveId}${
+      recordDetails.placeString ? ` ${recordDetails.placeString}` : ''
+    })`
+    : null;
+  const visibleProgressLabel = `${l('Sida')} ${progressLabel}`;
+  const screenReaderProgressLabel = `${l('Du är på sida')} ${
+    progressCurrent
+  } ${l('av')} ${progressTotal}`;
+
   return (
-    <>
-      Skriv av&nbsp;
-      {recordDetails.title || "uppteckning"}
-      {recordDetails.archiveId && (
-        <small>
-          &nbsp;(ur {recordDetails.archiveId}
-          {recordDetails.placeString ? ` ${recordDetails.placeString}` : ""})
-        </small>
-      )}
-      {recordDetails.transcriptionType === "sida" && (
-        <small>(sida för sida)</small>
-      )}
+    <header className="container-header mb-6">
+      <h1 className="mb-2 !text-[var(--color-text-inverted)]">
+        {heading}
+        {archiveLabel && (
+          <small>
+            {' '}
+            {archiveLabel}
+          </small>
+        )}
+        {recordDetails.transcriptionType === 'sida' && (
+          <small className="ml-2">(sida för sida)</small>
+        )}
+      </h1>
       {progressTotal > 1 && (
         <div className="mt-2 lg:w-1/2 w-full flex flex-col gap-1" aria-live="polite">
           <div
-            className="h-1 bg-gray-200 rounded overflow-hidden"
+            className="h-1 overflow-hidden rounded bg-surface-muted"
             role="progressbar"
             aria-label={l('Transkriberingsprogress')}
             aria-valuenow={progressCurrent}
@@ -48,36 +46,24 @@ function OverlayHeader({
             title={`${l('Sida')}: ${progressLabel}`}
           >
             <div
-              className="h-full bg-lighter-isof transition-all"
+              className="h-full bg-primary transition-all"
               style={{ width: `${(progressCurrent / progressTotal) * 100}%` }}
             />
           </div>
-          <span className="text-sm leading-none text-white self-start">
-            {l("Sida")} {progressLabel}
+          <span className="self-start text-sm leading-none text-[var(--color-text-inverted)]">
+            {visibleProgressLabel}
           </span>
           <span className="sr-only">
-            {l("Du är på sida")} {progressCurrent} {l("av")} {progressTotal}
+            {screenReaderProgressLabel}
           </span>
         </div>
       )}
-      {!config.siteOptions.hideContactButton && (
-        <ContactButtonGroup>
-          <TranscriptionHelpButton />
-          <ContributeInfoButton
-            type="Uppteckning"
-            title={recordDetails.title}
-          />
-          <FeedbackButton type="Uppteckning" title={recordDetails.title} />
-        </ContactButtonGroup>
-      )}
-    </>
+    </header>
   );
 }
 
 OverlayHeader.propTypes = {
   recordDetails: PropTypes.object.isRequired,
-  handleHideOverlay: PropTypes.func,
-  transcribeCancel: PropTypes.func,
   progressCurrent: PropTypes.number,
   progressTotal: PropTypes.number,
 };

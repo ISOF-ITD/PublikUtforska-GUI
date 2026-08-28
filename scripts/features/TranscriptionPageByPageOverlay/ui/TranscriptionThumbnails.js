@@ -40,8 +40,8 @@ export default function TranscriptionThumbnails({
                 className={classNames(
                   'relative rounded-md overflow-hidden border-solid border-3',
                   selected
-                    ? 'border-isof'
-                    : 'border-transparent hover:border-blue-500 focus-visible:border-blue-500',
+                    ? 'border-focus'
+                    : 'border-transparent hover:border-focus focus-visible:border-focus',
                   'transition-shadow',
                 )}
               >
@@ -55,7 +55,7 @@ export default function TranscriptionThumbnails({
                 />
               </div>
 
-              <div className="mt-2 text-center text-gray-600">
+              <div className="mt-2 text-center text-muted">
                 {`${index + 1} av ${pages.length}`}
               </div>
             </button>

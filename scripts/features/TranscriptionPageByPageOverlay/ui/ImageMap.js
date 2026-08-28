@@ -1,74 +1,78 @@
-/* eslint-disable react/require-default-props */
-import { useEffect, useId, useRef, useState } from 'react';
-import PropTypes from "prop-types";
-import { Map, imageOverlay, CRS, latLngBounds, DomEvent } from "leaflet";
+import {
+  useCallback, useEffect, useId, useRef, useState,
+} from 'react';
+import PropTypes from 'prop-types';
+import {
+  Map, imageOverlay, CRS, latLngBounds,
+} from 'leaflet';
 
 export default function ImageMap({
   image = null,
   description = '',
   maxZoom = 3,
   minZoom = -5,
-  fitOnImageChange = true, // fit-to-image whenever the `image` prop changes
+  fitOnImageChange = true,
   refitOnResize = false,
-  wheelZoomOnHover = true, // enable wheel-zoom only while hovering/focused
-  height = 600, // allow easy height override
+  wheelZoomOnHover = true,
+  height = 600,
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const overlayRef = useRef(null);
+  const loadedOnceRef = useRef(false);
   const [loading, setLoading] = useState(!!image);
   const [error, setError] = useState(null);
   const lastBoundsRef = useRef(null);
   const descriptionId = useId();
   const imageDescriptionText = description?.trim()
-    || 'Skannad arkivbild. Zooma for att granska detaljer i bilden.';
+    || 'Skannad arkivbild. Zooma för att granska detaljer i bilden.';
 
-  const applyImageToMap = (img) => {
+  const applyImageToMap = useCallback((loadedImage) => {
+    const map = mapInstance.current;
+    if (!map) return;
+
     const bounds = latLngBounds([
       [0, 0],
-      [img.height, img.width],
-    ]); // native pixels
+      [loadedImage.height, loadedImage.width],
+    ]);
     lastBoundsRef.current = bounds;
 
     if (overlayRef.current) {
-      overlayRef.current.setUrl(img.src);
+      overlayRef.current.setUrl(loadedImage.src);
       overlayRef.current.setBounds(bounds);
     } else {
-      overlayRef.current = imageOverlay(img.src, bounds).addTo(
-        mapInstance.current
-      );
+      overlayRef.current = imageOverlay(loadedImage.src, bounds).addTo(map);
     }
 
-    // Keep users inside the image and fit it nicely
-    mapInstance.current.setMaxBounds(bounds.pad(0.1));
-    if (fitOnImageChange || !mapInstance.current._loadedOnce) {
-      mapInstance.current.fitBounds(bounds, { animate: false });
-      mapInstance.current._loadedOnce = true;
+    map.setMaxBounds(bounds.pad(0.1));
+    if (fitOnImageChange || !loadedOnceRef.current) {
+      map.fitBounds(bounds, { animate: false });
+      loadedOnceRef.current = true;
     }
-  };
+  }, [fitOnImageChange]);
 
-  const loadImage = (url) => {
+  const loadImage = useCallback((url) => {
     if (!url) return;
     setLoading(true);
     setError(null);
 
-    const img = new Image();
-    img.onload = () => {
-      applyImageToMap(img);
+    const loadedImage = new Image();
+    loadedImage.onload = () => {
+      applyImageToMap(loadedImage);
       setLoading(false);
     };
-    img.onerror = () => {
-      setError("Kunde inte ladda bilden.");
+    loadedImage.onerror = () => {
+      setError('Kunde inte ladda bilden.');
       setLoading(false);
     };
-    img.src = url;
-  };
+    loadedImage.src = url;
+  }, [applyImageToMap]);
 
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current) return undefined;
 
-    mapInstance.current = new Map(mapRef.current, {
+    const map = new Map(mapRef.current, {
       crs: CRS.Simple,
       minZoom,
       maxZoom,
@@ -80,69 +84,57 @@ export default function ImageMap({
       wheelDebounceTime: 40,
       wheelPxPerZoomLevel: 100,
       scrollWheelZoom: true,
-      zoomSnap: 0.25, // allow zoom levels like 0, 0.25, 0.5, 0.75, 1, etc
+      zoomSnap: 0.25,
       zoomDelta: 0.25,
     });
+    mapInstance.current = map;
 
-    // Wheel-zoom only while hovering/focused
+    let removeWheelListeners = () => {};
     if (wheelZoomOnHover) {
-      mapInstance.current.scrollWheelZoom.disable();
-      const el = mapInstance.current.getContainer();
-      const enable = () => mapInstance.current.scrollWheelZoom.enable();
-      const disable = () => mapInstance.current.scrollWheelZoom.disable();
-      el.addEventListener("mouseenter", enable);
-      el.addEventListener("mouseleave", disable);
-      el.addEventListener("focusin", enable);
-      el.addEventListener("focusout", disable);
-
-      // Cleanup those listeners
-      mapInstance.current._wheelTogglesCleanup = () => {
-        el.removeEventListener("mouseenter", enable);
-        el.removeEventListener("mouseleave", disable);
-        el.removeEventListener("focusin", enable);
-        el.removeEventListener("focusout", disable);
+      map.scrollWheelZoom.disable();
+      const element = map.getContainer();
+      const enable = () => map.scrollWheelZoom.enable();
+      const disable = () => map.scrollWheelZoom.disable();
+      element.addEventListener('mouseenter', enable);
+      element.addEventListener('mouseleave', disable);
+      element.addEventListener('focusin', enable);
+      element.addEventListener('focusout', disable);
+      removeWheelListeners = () => {
+        element.removeEventListener('mouseenter', enable);
+        element.removeEventListener('mouseleave', disable);
+        element.removeEventListener('focusin', enable);
+        element.removeEventListener('focusout', disable);
       };
     }
 
-    // Keep sizing correct
-    let ro;
-    if (typeof window !== "undefined" && "ResizeObserver" in window) {
-      ro = new ResizeObserver(() => {
-        mapInstance.current?.invalidateSize();
-        // Optional: re-fit after big layout shifts
+    const resizeObserver = typeof window !== 'undefined'
+      && 'ResizeObserver' in window
+      ? new ResizeObserver(() => {
+        map.invalidateSize();
         if (lastBoundsRef.current && refitOnResize) {
-          mapInstance.current.fitBounds(lastBoundsRef.current, {
-            animate: false,
-          });
+          map.fitBounds(lastBoundsRef.current, { animate: false });
         }
-      });
-    }
-    if (containerRef.current) ro.observe(containerRef.current);
-
-    // Initial load
-    if (image) loadImage(image);
+      })
+      : null;
+    if (containerRef.current) resizeObserver?.observe(containerRef.current);
 
     return () => {
-      if (ro) ro.disconnect();
-      if (mapInstance.current?._wheelTogglesCleanup) {
-        mapInstance.current._wheelTogglesCleanup();
-      }
-      mapInstance.current?.remove();
-      mapInstance.current = null;
+      resizeObserver?.disconnect();
+      removeWheelListeners();
+      map.remove();
+      if (mapInstance.current === map) mapInstance.current = null;
     };
-  }, []); // init once
+  }, [maxZoom, minZoom, refitOnResize, wheelZoomOnHover]);
 
-  // Reload image when prop changes
   useEffect(() => {
     if (image && mapInstance.current) loadImage(image);
-  }, [image]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [image, loadImage]);
 
   return (
     <div ref={containerRef} className="mb-5 relative">
-      {/* Map container */}
       <div
         ref={mapRef}
-        className="border border-solid border-gray-700/10 rounded bg-gray-200"
+        className="rounded border border-solid border-border bg-surface-muted"
         style={{ height }}
         role="region"
         aria-label="Bildvisare"
@@ -153,18 +145,16 @@ export default function ImageMap({
         {imageDescriptionText}
       </p>
 
-      {/* Loader overlay */}
       {loading && (
-        <div className="absolute inset-0 grid place-items-center bg-black/10 backdrop-blur-[1px]">
-          <div className="h-10 w-10 rounded-full border-4 border-white border-t-transparent animate-spin" />
+        <div className="absolute inset-0 grid place-items-center bg-[var(--color-overlay)] backdrop-blur-[1px]">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-body border-t-transparent" />
           <span className="sr-only">Laddar bild…</span>
         </div>
       )}
 
-      {/* Error overlay */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="rounded-lg bg-white/90 shadow p-4 flex items-center gap-3">
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-surface p-4 text-body">
             <span>{error}</span>
             <button
               type="button"
@@ -186,6 +176,7 @@ ImageMap.propTypes = {
   image: PropTypes.string,
   description: PropTypes.string,
   fitOnImageChange: PropTypes.bool,
+  refitOnResize: PropTypes.bool,
   wheelZoomOnHover: PropTypes.bool,
   height: PropTypes.number,
 };

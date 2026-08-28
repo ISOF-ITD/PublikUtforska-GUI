@@ -1,5 +1,5 @@
 import {
-  lazy, Suspense, useState, useEffect, useContext, useRef, useCallback,
+  lazy, Suspense, useState, useEffect, useRef, useCallback,
 } from 'react';
 import {
   useNavigate,
@@ -7,31 +7,27 @@ import {
   useParams,
   Outlet,
   useLocation,
+  useMatches,
 } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
-import RoutePopupWindow from './RoutePopupWindow';
 import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
-import { NavigationContext } from '../NavigationContext';
 import MapWrapper from './MapWrapper';
 import Footer from './Footer';
-import RecordListLoadingPlaceholder from './RecordListLoadingPlaceholder';
 
-import { createSearchRoute, createParamsFromSearchRoute } from '../utils/routeHelper';
+import {
+  createParamsFromSearchRoute,
+  createSearchRoute,
+  mergeRouteSearch,
+} from '../utils/routeHelper';
 
 import config from '../config';
 import { toastError } from '../utils/toast';
 import useTranscriptionAvailability from '../hooks/useTranscriptionAvailability';
-import {
-  STARRED_RECORDS_RETURN_STORAGE_KEY,
-} from '../hooks/useStarredRecords';
 
-const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
-const FeedbackOverlay = lazy(() => import('./views/FeedbackOverlay'));
 const ContributeInfoOverlay = lazy(() => import('./views/ContributeInfoOverlay'));
 const TranscriptionHelpOverlay = lazy(() => import('../features/TranscriptionPageByPageOverlay/ui/TranscriptionHelpOverlay'));
-const TranscriptionPageByPageOverlay = lazy(() => import('../features/TranscriptionPageByPageOverlay/TranscriptionPageByPageOverlay'));
 const HelpTextOverlay = lazy(() => import('./views/HelpTextOverlay'));
 const ImageOverlay = lazy(() => import('../features/RecordTextPanel/ui/ImageOverlay'));
 
@@ -126,38 +122,26 @@ DeferredEventOverlay.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-
 export default function Application({
   mode = 'material',
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const matches = useMatches();
   const { results, audioResults, pictureResults } = useLoaderData();
   const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: {} });
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: {} });
   const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: {} });
   const [loading, setLoading] = useState(true);
-  const hasShownManualListPopupRef = useRef(false);
-  const skipManualListReturnRef = useRef(false);
+  const resultFocusRef = useRef(null);
+  const wasRoutePageRef = useRef(false);
   const isTranscriptionAvailable = useTranscriptionAvailability();
+  const hasRoutePage = matches.some(
+    (match) => match.handle?.surface === 'page',
+  );
 
   const params = useParams();
-  const searchRoutePath = params['*'];
-  const navigateRef = useRef(navigate);
-  navigateRef.current = navigate;
-  const manualListReturnContextRef = useRef({
-    mode,
-    pathname: location.pathname,
-    search: location.search,
-    searchRoutePath,
-  });
-  manualListReturnContextRef.current = {
-    mode,
-    pathname: location.pathname,
-    search: location.search,
-    searchRoutePath,
-  };
 
   // fallback for old hash routes
   useEffect(() => {
@@ -183,80 +167,13 @@ export default function Application({
     navigate,
   ]);
 
-  const {
-    addToNavigationHistory,
-  } = useContext(NavigationContext);
-
   const mapMarkerClick = (placeId) => {
     const current = createParamsFromSearchRoute(params['*']);
     const query = { ...current, _advanced: true }; // keep advanced filters when rebuilding URLs
     let target = `/places/${placeId}${createSearchRoute(query)}`;
     if (mode === 'transcribe') target = `/transcribe${target}`;
-    navigate(target);
+    navigate(mergeRouteSearch(target, location.search));
   };
-
-  const handleManualListPopupShow = useCallback(() => {
-    hasShownManualListPopupRef.current = true;
-  }, []);
-
-  const handleManualListPopupHide = useCallback(() => {
-    if (!hasShownManualListPopupRef.current) return;
-    hasShownManualListPopupRef.current = false;
-
-    if (skipManualListReturnRef.current) {
-      skipManualListReturnRef.current = false;
-      try {
-        sessionStorage.removeItem(STARRED_RECORDS_RETURN_STORAGE_KEY);
-      } catch {
-        // Ignore storage failures from private/incognito storage contexts.
-      }
-      return;
-    }
-
-    const {
-      mode: currentMode,
-      pathname,
-      search,
-      searchRoutePath: currentSearchRoutePath,
-    } = manualListReturnContextRef.current;
-    const currentSearchParams = createParamsFromSearchRoute(currentSearchRoutePath);
-    const locationParams = new URLSearchParams(search);
-    const hasStarredRecordIds = currentSearchParams.record_ids
-      || locationParams.has('record_ids');
-    if (!hasStarredRecordIds || !locationParams.has('showlist')) return;
-
-    let returnTo = null;
-    try {
-      returnTo = sessionStorage.getItem(STARRED_RECORDS_RETURN_STORAGE_KEY);
-      sessionStorage.removeItem(STARRED_RECORDS_RETURN_STORAGE_KEY);
-    } catch {
-      // Ignore storage failures from private/incognito storage contexts.
-    }
-
-    const fallback = currentMode === 'transcribe' ? '/transcribe/' : '/';
-    const target = returnTo || fallback;
-    if (target !== `${pathname}${search}`) {
-      navigateRef.current(target, { replace: true });
-    }
-  }, []);
-
-  useEffect(() => {
-    const skipReturnForStarredRecordOpen = () => {
-      skipManualListReturnRef.current = true;
-    };
-
-    window.eventBus?.addEventListener(
-      'starredRecords.openRecord',
-      skipReturnForStarredRecordOpen,
-    );
-
-    return () => {
-      window.eventBus?.removeEventListener(
-        'starredRecords.openRecord',
-        skipReturnForStarredRecordOpen,
-      );
-    };
-  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -269,135 +186,139 @@ export default function Application({
         setLoading(false);
       })
       .catch((err) => {
-        if (err?.name === "AbortError") return; // silent on navigation
-        console.error(err);
+        if (err?.name === 'AbortError') return;
         setLoading(false);
-        toastError("Kunde inte läsa in sökresultat. Försök igen.");
+        toastError('Kunde inte läsa in sökresultat. Försök igen.');
       });
     return () => {
       alive = false;
     };
   }, [results]);
 
-useEffect(() => {
-  let alive = true;
-  audioResults
-    .then((data) => {
-      if (alive) setAudioRecordsData(data);
-    })
-    .catch((err) => {
-      if (err?.name !== "AbortError") console.error(err);
-    });
-  return () => {
-    alive = false;
-  };
-}, [audioResults]);
-
-useEffect(() => {
-  let alive = true;
-  pictureResults
-    .then((data) => {
-      if (alive) setPictureRecordsData(data);
-    })
-    .catch((err) => {
-      if (err?.name !== "AbortError") console.error(err);
-    });
-  return () => {
-    alive = false;
-  };
-}, [pictureResults]);
-
+  useEffect(() => {
+    let alive = true;
+    audioResults
+      .then((data) => {
+        if (alive) setAudioRecordsData(data);
+      })
+      .catch((err) => {
+        if (err?.name !== 'AbortError') {
+          toastError('Kunde inte läsa in ljudresultat. Försök igen.');
+        }
+      });
+    return () => {
+      alive = false;
+    };
+  }, [audioResults]);
 
   useEffect(() => {
-    const onVisible = () => document.body.classList.add("bottom-16");
-    const onHidden = () => document.body.classList.remove("bottom-16");
+    let alive = true;
+    pictureResults
+      .then((data) => {
+        if (alive) setPictureRecordsData(data);
+      })
+      .catch((err) => {
+        if (err?.name !== 'AbortError') {
+          toastError('Kunde inte läsa in bildresultat. Försök igen.');
+        }
+      });
+    return () => {
+      alive = false;
+    };
+  }, [pictureResults]);
 
-    window.eventBus.addEventListener("audio.playervisible", onVisible);
-    window.eventBus.addEventListener("audio.playerhidden", onHidden);
+  useEffect(() => {
+    const onVisible = () => document.body.classList.add('bottom-16');
+    const onHidden = () => document.body.classList.remove('bottom-16');
 
-    document.title = config.siteTitle;
-    setTimeout(() => document.body.classList.add("app-initialized"), 1000);
+    window.eventBus.addEventListener('audio.playervisible', onVisible);
+    window.eventBus.addEventListener('audio.playerhidden', onHidden);
+
+    setTimeout(() => document.body.classList.add('app-initialized'), 1000);
     // Cleanup event listeners on unmount
     return () => {
-      window.eventBus.removeEventListener("audio.playervisible", onVisible);
-      window.eventBus.removeEventListener("audio.playerhidden", onHidden);
+      window.eventBus.removeEventListener('audio.playervisible', onVisible);
+      window.eventBus.removeEventListener('audio.playerhidden', onHidden);
     };
   }, []);
 
+  const rememberResultFocus = useCallback((event) => {
+    if (!(event.target instanceof Element)) return;
+    resultFocusRef.current = event.target.closest(
+      'a, button, input, select, textarea, [tabindex]',
+    );
+  }, []);
 
-  // Separate useEffect to handle location changes, tracking for "back"-button in RoutePopupWindow
   useEffect(() => {
-    addToNavigationHistory(`${location.pathname}${location.search}`);
-  }, [location]);
+    const returningToResults = wasRoutePageRef.current && !hasRoutePage;
+    wasRoutePageRef.current = hasRoutePage;
+    if (!returningToResults) return undefined;
+    document.title = config.siteTitle;
 
-  // If parameter showlist in url show record list using routePopup event
-  // Seems to have to be placed here BUT why? Seems it could be placed anywhere in the code? 
-  // But in RecordList it does not work. This code in RoutePopupWindow stopped to work.
-  useEffect(() => {
-    const paramsHere = new URLSearchParams(location.search);
-    if (paramsHere.has("showlist")) {
-      if (window.eventBus) {
-        window.eventBus.dispatch("routePopup.show");
+    const animationFrameId = window.requestAnimationFrame(() => {
+      const previousTarget = resultFocusRef.current;
+      if (previousTarget?.isConnected) {
+        previousTarget.focus();
+        return;
       }
-    }
-  }, [location]);
+      document.getElementById('results-viewport')?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(animationFrameId);
+  }, [hasRoutePage]);
 
   return (
     <AudioProvider>
       <div className="app">
-        <a href="#main" className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-50 bg-surface text-link underline px-3 py-2 rounded">
+        <a
+          href={hasRoutePage ? '#route-page-content' : '#results-viewport'}
+          className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-[4000] bg-surface text-link underline px-3 py-2 rounded"
+        >
           Hoppa till innehåll
         </a>
-        <RoutePopupWindow
-          manuallyOpenPopup
-          onHide={handleManualListPopupHide}
-          onShow={handleManualListPopupShow}
-        >
-          <Suspense fallback={<RecordListLoadingPlaceholder />}>
-            <RecordListWrapper
-              openButtonLabel="Visa sökträffar som lista"
-              disableRouterPagination
-              mode={mode}
-            />
-          </Suspense>
-        </RoutePopupWindow>
         <main id="main" tabIndex={-1}>
-        <Outlet />
-        <MapWrapper
-          mapMarkerClick={mapMarkerClick}
-          mode={mode}
-          params={params}
-          mapData={mapData}
-          recordsData={recordsData}
-          audioRecordsData={audioRecordsData}
-          pictureRecordsData={pictureRecordsData}
-          loading={loading}
-        />
-
+          <div
+            hidden={hasRoutePage}
+            inert={hasRoutePage || undefined}
+            aria-hidden={hasRoutePage || undefined}
+            onFocusCapture={rememberResultFocus}
+            onPointerDownCapture={rememberResultFocus}
+          >
+            <MapWrapper
+              active={!hasRoutePage}
+              mapMarkerClick={mapMarkerClick}
+              mode={mode}
+              params={params}
+              mapData={mapData}
+              recordsData={recordsData}
+              audioRecordsData={audioRecordsData}
+              pictureRecordsData={pictureRecordsData}
+              loading={loading}
+            />
+          </div>
+          <Outlet />
         </main>
 
         <GlobalAudioPlayer />
         <DeferredEventOverlay events={['overlay.viewimage']}>
           <ImageOverlay />
         </DeferredEventOverlay>
-        <DeferredEventOverlay events={['overlay.feedback']}>
-          <FeedbackOverlay />
-        </DeferredEventOverlay>
         <DeferredEventOverlay events={['overlay.contributeinfo']}>
           <ContributeInfoOverlay />
         </DeferredEventOverlay>
-        {isTranscriptionAvailable && (
-          <DeferredEventOverlay events={['overlay.transcribePageByPage']}>
-            <TranscriptionPageByPageOverlay />
-          </DeferredEventOverlay>
-        )}
         <DeferredEventOverlay events={['overlay.transcriptionhelp']}>
           <TranscriptionHelpOverlay />
         </DeferredEventOverlay>
         <DeferredEventOverlay events={['overlay.HelpText']}>
           <HelpTextOverlay />
         </DeferredEventOverlay>
-        <Footer />
+        <div
+          hidden={hasRoutePage}
+          inert={hasRoutePage || undefined}
+          aria-hidden={hasRoutePage || undefined}
+        >
+          {/* <Footer /> */}
+        </div>
       </div>
     </AudioProvider>
   );

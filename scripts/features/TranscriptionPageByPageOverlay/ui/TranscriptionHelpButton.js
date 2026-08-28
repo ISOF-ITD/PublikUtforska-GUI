@@ -3,6 +3,7 @@ import { l } from '../../../lang/Lang';
 import contactButtonClassName from '../../../components/views/contactButtonClassName';
 
 export default function TranscriptionHelpButton({
+  className = null,
   inline = false,
   label = l('Instruktioner'),
 }) {
@@ -14,9 +15,9 @@ export default function TranscriptionHelpButton({
 
   return (
     <button
-      className={inline
+      className={className || (inline
         ? '!m-0 !border-0 !bg-transparent !p-0 align-baseline text-link underline hover:text-link-hover'
-        : contactButtonClassName}
+        : contactButtonClassName)}
       onClick={helpButtonClick}
       type="button"
     >
@@ -26,6 +27,7 @@ export default function TranscriptionHelpButton({
 }
 
 TranscriptionHelpButton.propTypes = {
+  className: PropTypes.string,
   inline: PropTypes.bool,
   label: PropTypes.string,
 };

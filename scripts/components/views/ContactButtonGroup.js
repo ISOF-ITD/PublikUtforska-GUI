@@ -1,11 +1,8 @@
-import { useContext } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
-import { NavigationContext } from '../../NavigationContext';
 
 const baseContactButtonGroupClassName = [
-  'feedback-button-group absolute top-0 z-[3200] flex',
+  'feedback-button-group absolute right-0 top-0 z-10 flex',
   'items-start gap-3',
   'max-[550px]:static max-[550px]:mt-2 max-[550px]:w-full',
   'max-[550px]:justify-end',
@@ -18,16 +15,10 @@ export default function ContactButtonGroup({
   role,
   ariaLabel,
 }) {
-  const { pathname } = useLocation();
-  const { previousNavigation } = useContext(NavigationContext);
-  const shouldReserveBackButtonSpace = previousNavigation
-    || /\/audio\/[^/]+\/transcribe\/?$/.test(pathname);
-
   return (
     <div
       className={classNames(
         baseContactButtonGroupClassName,
-        shouldReserveBackButtonSpace ? 'right-[127px]' : 'right-[95px]',
         className,
       )}
       role={role}

@@ -179,18 +179,12 @@ export default function TranscriptionCTA({ data }) {
           <div className="flex flex-wrap items-center gap-2">
             <TranscribeButton
               transcriptionstatus={transcriptionstatus}
-              className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
+              className="button button-primary inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 disabled:opacity-50 disabled:hover:cursor-not-allowed"
               label={`${l(STRINGS.transcribe)} ${l(STRINGS.perPage)}`}
-              title={title}
               recordId={id}
-              archiveId={archive?.archive_id}
-              places={places}
-              images={imagePages}
-              transcriptionType={normalizedTranscriptionType}
               random={false}
               disabled={!primaryEnabled}
-              aria-disabled={!primaryEnabled}
-              aria-describedby={!primaryEnabled ? statusId : undefined}
+              ariaDescribedBy={!primaryEnabled ? statusId : null}
             />
             {!primaryEnabled && (
               <span className="ml-1 text-body" role="note">

@@ -15,7 +15,7 @@ import CollectorList from "./CollectorList";
 import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
 import { l } from "../../../lang/Lang";
 import config from "../../../config";
-import { createSearchRoute } from "../../../utils/routeHelper";
+import { createSearchRoute, mergeRouteSearch } from '../../../utils/routeHelper';
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
 import {
@@ -39,6 +39,7 @@ export default function RecordListItem(props) {
     smallTitle,
     isSelected,
     onRecordActivate,
+    detailSearch,
   } = props;
 
   const {
@@ -145,9 +146,12 @@ export default function RecordListItem(props) {
   const cleanParams = stripDetailParams(searchParams || {});
   const searchSuffix = createSearchRoute(cleanParams);
 
-  const recordHref = `${
-    mode === "transcribe" ? "/transcribe" : ""
-  }/records/${id}${searchSuffix === "/" ? "" : searchSuffix}`;
+  const recordHref = mergeRouteSearch(
+    `${
+      mode === 'transcribe' ? '/transcribe' : ''
+    }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`,
+    detailSearch,
+  );
 
   const onRowKeyDown = (e) => {
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -412,17 +416,27 @@ export default function RecordListItem(props) {
                             : s._source.transcriptionstatus === "published";
 
                           const parentHref = `${
-                            mode === "transcribe" ? "/transcribe" : ""
-                          }/records/${id}`;
+                            mode === 'transcribe' ? '/transcribe' : ''
+                          }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`;
+                          const subrecordSource = isNew
+                            ? null
+                            : Reflect.get(s, '_source');
+                          const subrecordMediaId = subrecordSource
+                            ? Reflect.get(subrecordSource, 'media_id')
+                            : null;
 
-                          const href = isNew
-                            ? Number.isFinite(s.startIndex)
-                              ? `${parentHref}?media=${s.startIndex}` // <-- use startIndex
-                              : parentHref
-                            : s._source.href ??
-                              (s._source.media_id
-                                ? `${parentHref}?media=${s._source.media_id}`
-                                : parentHref);
+                          let hrefWithoutListContext = parentHref;
+                          if (isNew && Number.isFinite(s.startIndex)) {
+                            hrefWithoutListContext = `${parentHref}?media=${s.startIndex}`;
+                          } else if (subrecordSource?.href) {
+                            hrefWithoutListContext = subrecordSource.href;
+                          } else if (subrecordMediaId) {
+                            hrefWithoutListContext = `${parentHref}?media=${subrecordMediaId}`;
+                          }
+                          const href = mergeRouteSearch(
+                            hrefWithoutListContext,
+                            detailSearch,
+                          );
 
                           const pageLabel = isNew
                             ? getSegmentTitle(s.items) || l("Segment")
@@ -506,13 +520,12 @@ export default function RecordListItem(props) {
                   )}
 
                   <Link
-                    to={`${mode === "transcribe" ? "/transcribe" : ""}/places/${
-                      place.id
-                    }${createSearchRoute({
-                      category: searchParams.category,
-                      search: searchParams.search,
-                      search_field: searchParams.search_field,
-                    })}`}
+                    to={mergeRouteSearch(
+                      `${mode === 'transcribe' ? '/transcribe' : ''}/places/${
+                        place.id
+                      }${searchSuffix === '/' ? '' : searchSuffix}`,
+                      detailSearch,
+                    )}
                     className="text-link hover:underline"
                     // onClick={(e) => {
                     //   e.preventDefault();
@@ -535,6 +548,7 @@ export default function RecordListItem(props) {
             mode={mode}
             searchParams={searchParams}
             pillClasses={pillClasses}
+            detailSearch={detailSearch}
           />
         </td>
       )}
@@ -598,4 +612,5 @@ RecordListItem.propTypes = {
   smallTitle: PropTypes.bool,
   isSelected: PropTypes.bool,
   onRecordActivate: PropTypes.func,
+  detailSearch: PropTypes.string,
 };

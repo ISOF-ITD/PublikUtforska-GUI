@@ -25,7 +25,7 @@ export default function CorrectionEditor({
 }) {
   readOnly = !config.activateAudioCorrection;
   /* -------- routing / context -------- */
-  const { source, id: fileId } = useParams();
+  const { audioId: fileId } = useParams();
   // prefer an explicit prop, otherwise fall back to the outlet context
   const outletCtx = useOutletContext() || {};
   const data = propData ?? outletCtx.data;

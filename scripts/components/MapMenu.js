@@ -1,29 +1,23 @@
 /* eslint-disable react/require-default-props */
 import {
-  lazy, Suspense, useEffect, useState, useRef, useCallback,
+  useCallback, useEffect, useRef, useState,
 } from 'react';
-import { useLocation } from "react-router-dom";
-import PropTypes from "prop-types";
-import { faQuestion } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from 'classnames';
-import Folkelogga from "../../img/folke-white.svg";
+import PropTypes from 'prop-types';
+import { faChartColumn, faQuestion } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link, useLocation } from 'react-router-dom';
+import Folkelogga from '../../img/folke-white.svg';
 import headerBack from '../../img/header-back.gif';
 import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
-import { l } from "../lang/Lang";
-import SearchPanel from "../features/Search/SearchPanel";
-import StatisticsLoadingPlaceholder from '../features/Statistics/ui/StatisticsLoadingPlaceholder';
-import IntroOverlay from "./views/IntroOverlay";
-import config from "../config";
+import { l } from '../lang/Lang';
+import SearchPanel from '../features/Search/SearchPanel';
+import useTranscriptionAvailability from '../hooks/useTranscriptionAvailability';
+import { createStatisticsLocation } from '../utils/routeHelper';
+import FilterSwitch from './FilterSwitch';
+import IntroOverlay from './views/IntroOverlay';
+import config from '../config';
 
-const StatisticsContainer = lazy(() => import('../features/Statistics/StatisticsContainer'));
-
-// Helpers
 function getWarningUrl() {
-  // Try to find the currently executing script to
-  // determine the correct path to varning.html,
-  // which may be in the same folder as the bundle
-  // or in a parent "releases/[version]/" folder.
   const script = Array.from(document.scripts)
     .find(({ src }) => src.includes('/bndl.') || src.includes('/releases/'));
 
@@ -32,83 +26,46 @@ function getWarningUrl() {
   return new URL('varning.html', script.src).href;
 }
 
-function SurveyLink() {
-  const openSurvey = () =>
-    window.open("https://www.isof.se/enkat-folke", "_blank");
-  return (
-    <button
-      type="button"
-      onClick={openSurvey}
-      onKeyDown={(e) => ["Enter", " "].includes(e.key) && openSurvey()}
-      style={{
-        backgroundColor: "#3ed494",
-        padding: "1.2rem 1rem 1.1rem",
-        textAlign: "center",
-        borderRadius: 13,
-        marginBottom: 10,
-        cursor: "pointer",
-        textDecoration: "underline",
-        width: "100%",
-      }}
-    >
-      Användarenkät Folke 2023
-    </button>
-  );
-}
-
 function Warning() {
-  const [html, setHtml] = useState("");
+  const [html, setHtml] = useState('');
+
   useEffect(() => {
     fetch(getWarningUrl())
-      .then((r) => (r.ok ? r.text() : null))
+      .then((response) => (response.ok ? response.text() : null))
       .then(setHtml);
   }, []);
+
   return html ? (
     <div
       role="alert"
-      aria-label="Varning"
-      style={{
-        backgroundColor: "#ffc107",
-        padding: "1.2rem 1rem 1.1rem",
-        textAlign: "center",
-        borderRadius: 13,
-        marginBottom: 10,
-      }}
+      aria-label={l('Varning')}
+      className="m-3 rounded-md bg-accent p-4 text-body"
       // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: html }}
     />
   ) : null;
 }
 
-// Component
-
 export default function MapMenu({
-  mode = "material",
+  mode = 'material',
   params,
   recordsData = { data: [], metadata: {} },
   audioRecordsData = { data: [], metadata: {} },
   pictureRecordsData = { data: [], metadata: {} },
   loading,
-  isMobileViewport = false,
-  mobileView = 'search',
-  onMobileViewChange = () => {},
+  hasSubmittedSearch = false,
+  activeResultView = 'list',
+  onResultViewChange = () => {},
+  showResultViewControl = false,
 }) {
-  // Track a short transition window when switching mode.
-  const prevModeRef = useRef(mode);
+  const isTranscriptionAvailable = useTranscriptionAvailability();
+  const location = useLocation();
+  const previousModeRef = useRef(mode);
+  const initialLoadRef = useRef(true);
   const [justSwitched, setJustSwitched] = useState(false);
-  useEffect(() => {
-    let timeoutId;
-    if (prevModeRef.current !== mode) {
-      prevModeRef.current = mode;
-      setJustSwitched(true);
-      timeoutId = setTimeout(() => setJustSwitched(false), 400);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [mode]);
-
-  // Remember latest non-empty totals so controls don't blink away on transitions.
+  const [panelLoading, setPanelLoading] = useState(Boolean(loading));
+  const [showIntroOverlay, setShowIntroOverlay] = useState(false);
+  const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
   const lastGoodRef = useRef({
     recordsData,
     audioRecordsData,
@@ -117,6 +74,19 @@ export default function MapMenu({
   const anyTotals = (recordsData?.metadata?.total?.value ?? 0)
     + (audioRecordsData?.metadata?.total?.value ?? 0)
     + (pictureRecordsData?.metadata?.total?.value ?? 0);
+
+  useEffect(() => {
+    let timeoutId;
+    if (previousModeRef.current !== mode) {
+      previousModeRef.current = mode;
+      setJustSwitched(true);
+      timeoutId = setTimeout(() => setJustSwitched(false), 400);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [mode]);
+
   useEffect(() => {
     if (anyTotals > 0) {
       lastGoodRef.current = {
@@ -125,18 +95,8 @@ export default function MapMenu({
         pictureRecordsData,
       };
     }
-  }, [anyTotals, recordsData, audioRecordsData, pictureRecordsData]);
+  }, [anyTotals, audioRecordsData, pictureRecordsData, recordsData]);
 
-  const stable = justSwitched && loading
-    ? lastGoodRef.current
-    : {
-      recordsData,
-      audioRecordsData,
-      pictureRecordsData,
-    };
-
-  // Debounce loading inside panel to reduce flashing.
-  const [panelLoading, setPanelLoading] = useState(!!loading);
   useEffect(() => {
     let timeoutId;
     if (justSwitched && loading) {
@@ -146,40 +106,33 @@ export default function MapMenu({
     if (loading) timeoutId = setTimeout(() => setPanelLoading(true), 150);
     else setPanelLoading(false);
     return () => clearTimeout(timeoutId);
-  }, [loading, justSwitched]);
+  }, [justSwitched, loading]);
 
-  const location = useLocation();
-  const initialLoad = useRef(true);
-  const [showIntroOverlay, setShowIntroOverlay] = useState(false);
-  const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
-
-  // Auto-open intro on first load when configured.
   useEffect(() => {
     if (!activateIntroOverlay) return;
     const isRoot = location.pathname === '/';
     const noHash = !location.hash || location.hash === '#/';
     const locationParams = new URLSearchParams(location.search);
-    const hasManualList = locationParams.has('showlist') || locationParams.has('record_ids');
+    const hasManualResults = locationParams.has('showlist')
+      || locationParams.has('showmap')
+      || locationParams.has('record_ids');
     const hasK = locationParams.has('k') && locationParams.get('k') !== '';
+    const seenKey = 'folke:introSeen:v1';
+    const hasSeen = typeof window !== 'undefined'
+      && localStorage.getItem(seenKey) === '1';
 
-    const SEEN_KEY = 'folke:introSeen:v1';
-    const hasSeen = typeof window !== 'undefined' && localStorage.getItem(SEEN_KEY) === '1';
-    if (hasManualList) {
-      initialLoad.current = false;
+    if (hasManualResults) {
+      initialLoadRef.current = false;
       return;
     }
-    if (initialLoad.current && isRoot && noHash) {
-      if (hasK || !hasSeen) {
-        setShowIntroOverlay(true);
-      }
-    }
-    initialLoad.current = false;
-  }, [location, activateIntroOverlay]);
-
-  const handleShowIntro = useCallback(() => {
-    if (activateIntroOverlay) {
+    if (initialLoadRef.current && isRoot && noHash && (hasK || !hasSeen)) {
       setShowIntroOverlay(true);
     }
+    initialLoadRef.current = false;
+  }, [activateIntroOverlay, location]);
+
+  const handleShowIntro = useCallback(() => {
+    if (activateIntroOverlay) setShowIntroOverlay(true);
   }, [activateIntroOverlay]);
 
   const handleCloseOverlay = useCallback(() => {
@@ -191,114 +144,87 @@ export default function MapMenu({
     }
   }, []);
 
-  const toggleMobileView = useCallback(() => {
-    onMobileViewChange(mobileView === 'map' ? 'search' : 'map');
-  }, [mobileView, onMobileViewChange]);
-
-  const mobileToggleLabel = mobileView === 'map' ? l('Till sök') : l('Visa karta');
+  const stable = justSwitched && loading
+    ? lastGoodRef.current
+    : { recordsData, audioRecordsData, pictureRecordsData };
   const mapMenuPanelStyle = {
     backgroundImage: `var(--image-header-back-tint), url(${headerBack})`,
     backgroundPosition: 'center top',
   };
-
-  const statisticsBlock = (
-    <div
-      className={classNames(
-        'box-border max-w-full overflow-x-hidden p-3 break-words',
-        isMobileViewport ? 'w-auto mx-2 mt-2 mb-2' : 'w-full mb-2 h-full',
-      )}
-    >
-      <Suspense fallback={<StatisticsLoadingPlaceholder />}>
-        <StatisticsContainer />
-      </Suspense>
-    </div>
+  const statisticsLocation = createStatisticsLocation(
+    location.pathname,
+    location.search,
   );
 
-  const mobileHeader = (
-    <header className="max-w-full overflow-x-hidden border-b border-white/20 bg-transparent">
-      <div className="flex min-h-[5rem] max-w-full flex-wrap items-center justify-between gap-2 px-3 py-2">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <h1 className="mt-0 mb-0">
-            <img
-              src={Folkelogga}
-              alt={l('Folkelogga')}
-              className="h-12 w-auto max-w-[40vw] object-contain"
-            />
-          </h1>
-          <span aria-hidden className="h-6 w-px bg-white/30" />
-          <a
-            href="https://www.isof.se"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-            aria-label={l('Öppna Institutet för språk och folkminnens webbplats i nytt fönster')}
-            title={l('Institutet för språk och folkminnen')}
-          >
-            <img
-              src={IsofLogoWhite}
-              alt={l('Institutet för språk och folkminnen')}
-              className="h-12 w-auto max-w-[40vw] object-contain"
-            />
-          </a>
-        </div>
-        <div className="ml-auto flex shrink-0 items-center gap-2">
-          {activateIntroOverlay && (
-            <button
-              type="button"
-              onClick={handleShowIntro}
-              aria-controls="intro-overlay"
-              aria-label={l('Hjälp och nyheter')}
-              title={l('Hjälp och nyheter')}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-darker-isof focus-visible:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-            >
-              <FontAwesomeIcon icon={faQuestion} aria-hidden="true" className="text-lg font-bold" />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={toggleMobileView}
-            className="inline-flex h-11 items-center justify-center rounded-md border border-white/70 bg-transparent px-4 text-sm font-semibold !text-white hover:bg-darker-isof focus-visible:bg-darker-isof focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-            aria-pressed={mobileView === 'map'}
-            aria-label={mobileToggleLabel}
-            title={mobileToggleLabel}
-          >
-            {mobileToggleLabel}
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-
-  if (isMobileViewport && mobileView === 'map') {
-    return (
-      <>
-        <div
-          className="pointer-events-none absolute left-0 right-0 top-0 z-[1201] bg-isof print:hidden"
-          style={mapMenuPanelStyle}
-        >
-          <div className="pointer-events-auto">{mobileHeader}</div>
-        </div>
-        {activateIntroOverlay && (
-          <IntroOverlay
-            id="intro-overlay"
-            show={showIntroOverlay}
-            onClose={handleCloseOverlay}
-          />
-        )}
-      </>
-    );
-  }
-
-  if (isMobileViewport) {
-    return (
-      <div
+  return (
+    <>
+      <section
         id="mapmenu-panel"
-        aria-label="Sök och filter"
-        className="absolute inset-0 z-[1201] flex flex-col overflow-x-hidden bg-isof print:hidden"
+        aria-label={l('Sök och filter')}
+        className="relative z-[1201] max-w-full overflow-visible bg-isof print:hidden"
         style={mapMenuPanelStyle}
       >
-        <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto px-2 pb-2">
-          {mobileHeader}
+        <Warning />
+        <header className="max-w-full border-b border-white/20">
+          <div className="flex min-h-[4rem] max-w-full items-center justify-between gap-2 px-3 py-2 min-[1440px]:px-5">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <h1 className="!m-0">
+                <img
+                  src={Folkelogga}
+                  alt={l('Folkelogga')}
+                  className="h-10 w-auto max-w-[40vw] object-contain"
+                />
+              </h1>
+              <span aria-hidden="true" className="h-6 w-px bg-white/30" />
+              <a
+                href="https://www.isof.se"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                aria-label={l('Öppna Institutet för språk och folkminnens webbplats i nytt fönster')}
+                title={l('Institutet för språk och folkminnen')}
+              >
+                <img
+                  src={IsofLogoWhite}
+                  alt={l('Institutet för språk och folkminnen')}
+                  className="h-10 w-auto max-w-[40vw] object-contain"
+                />
+              </a>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                to={statisticsLocation}
+                aria-label={l('Statistik')}
+                title={l('Statistik')}
+                className="!m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white no-underline hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+              >
+                <FontAwesomeIcon icon={faChartColumn} aria-hidden="true" className="text-lg" />
+              </Link>
+              {activateIntroOverlay && (
+                <button
+                  type="button"
+                  onClick={handleShowIntro}
+                  aria-controls="intro-overlay"
+                  aria-label={l('Hjälp och nyheter')}
+                  title={l('Hjälp och nyheter')}
+                  className="!m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                >
+                  <FontAwesomeIcon icon={faQuestion} aria-hidden="true" className="text-lg" />
+                </button>
+              )}
+            </div>
+          </div>
+          {isTranscriptionAvailable && (
+            <FilterSwitch
+              mode={mode}
+              className="max-w-[900px]"
+              resultView={hasSubmittedSearch ? activeResultView : null}
+            />
+          )}
+        </header>
+
+        <div className="box-border w-full max-w-[900px] px-2 pb-2 min-[1440px]:px-5 min-[1440px]:pb-5">
+          <h2 className="sr-only">{l('Sök och filtrera')}</h2>
           <SearchPanel
             params={params}
             mode={mode}
@@ -306,46 +232,18 @@ export default function MapMenu({
             audioRecordsData={stable.audioRecordsData}
             pictureRecordsData={stable.pictureRecordsData}
             loading={panelLoading}
-            mobileCompact
+            isListView={activeResultView === 'list'}
+            onListViewChange={(showList) => {
+              onResultViewChange(showList ? 'list' : 'map');
+            }}
+            resultViewOnSearch="list"
+            showResultViewControl={showResultViewControl}
+            showModeSwitch={false}
+            showSupplementaryContent={!hasSubmittedSearch}
           />
-          {statisticsBlock}
+
         </div>
-
-        {activateIntroOverlay && (
-          <IntroOverlay
-            id="intro-overlay"
-            show={showIntroOverlay}
-            onClose={handleCloseOverlay}
-          />
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      id="mapmenu-panel"
-      aria-label="Sök och filter"
-      className="bg-isof absolute left-0 top-0 bottom-0 !z-[1201] flex w-[422px] flex-col items-center border-r-2 border-white pt-5 px-5 print:hidden"
-      style={mapMenuPanelStyle}
-    >
-      <Warning />
-      {/* <SurveyLink /> */}
-      <h1 className="mt-0 mb-0">
-        <img src={Folkelogga} alt={l('Folkelogga')} className="h-20 w-full" />
-      </h1>
-
-      <SearchPanel
-        params={params}
-        mode={mode}
-        recordsData={stable.recordsData}
-        audioRecordsData={stable.audioRecordsData}
-        pictureRecordsData={stable.pictureRecordsData}
-        loading={panelLoading}
-        onOpenIntroOverlay={handleShowIntro}
-      />
-
-      {statisticsBlock}
+      </section>
 
       {activateIntroOverlay && (
         <IntroOverlay
@@ -354,7 +252,7 @@ export default function MapMenu({
           onClose={handleCloseOverlay}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -365,7 +263,8 @@ MapMenu.propTypes = {
   audioRecordsData: PropTypes.object,
   pictureRecordsData: PropTypes.object,
   loading: PropTypes.bool.isRequired,
-  isMobileViewport: PropTypes.bool,
-  mobileView: PropTypes.oneOf(['search', 'map']),
-  onMobileViewChange: PropTypes.func,
+  hasSubmittedSearch: PropTypes.bool,
+  activeResultView: PropTypes.oneOf(['map', 'list']),
+  onResultViewChange: PropTypes.func,
+  showResultViewControl: PropTypes.bool,
 };

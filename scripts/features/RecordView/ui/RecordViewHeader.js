@@ -8,8 +8,6 @@ import {
   getArchiveName,
 } from "../../../utils/helpers";
 import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
-import FeedbackButton from "../../../components/views/FeedbackButton";
-import ContributeInfoButton from "../../../components/views/ContributeInfoButton";
 import config from "../../../config";
 import StarredRecordButton from '../../../components/StarredRecordButton';
 
@@ -54,12 +52,9 @@ const renderPageCount = (pages) => (
 
 export default function RecordViewHeader({ data, subrecordsCount }) {
   const {
-    title,
     recordtype,
     materialtype,
     archive,
-    country,
-    id,
     year = null,
   } = data;
   const shouldShowMaterialType =
@@ -75,7 +70,7 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
   };
 
   return (
-    <header className="container-header max-lg:!pt-[74px]">
+    <header className="container-header">
       <div className="row">
         <div className="eleven columns">
           <h1>
@@ -105,15 +100,8 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
           </dl>
         </div>
       </div>
-      <ContactButtonGroup>
+      <ContactButtonGroup className="!static mt-2 w-full flex-wrap justify-end gap-2">
         <StarredRecordButton record={data} variant="contact" />
-        <ContributeInfoButton
-          title={title}
-          type="Uppteckning"
-          country={country}
-          id={id}
-        />
-        <FeedbackButton title={title} type="Uppteckning" country={country} />
       </ContactButtonGroup>
     </header>
   );

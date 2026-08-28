@@ -176,7 +176,7 @@ function SimilarRecords({ data }) {
             </p>
             <p>
               {l(
-                "När en accession visas analyseras dess innehåll noggrant för att identifiera viktiga nyckelord och teman. Dessa identifierade element används sedan för att söka igenom databasen och hitta andra accessioner som delar liknande ämnen eller termer. Resultatet är en lista med uppteckningar som är relevanta och relaterade till den ursprungliga uppteckningen, vilket underlättar utforskning av liknande innehåll."
+                "När en accession visas analyseras dess innehåll för att identifiera nyckelord och teman. Dessa identifierade element används sedan för att söka igenom databasen och hitta andra accessioner som delar liknande ämnen eller termer. Resultatet är en lista med uppteckningar som är relevanta och relaterade till den ursprungliga uppteckningen, vilket underlättar utforskning av liknande innehåll."
               )}
             </p>
           </div>

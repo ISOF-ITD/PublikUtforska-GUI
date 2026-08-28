@@ -1,7 +1,7 @@
 /* eslint-disable react/require-default-props */
 
 import {
-  Await, useLoaderData, useParams, useNavigate,
+  Await, useLoaderData, useLocation, useParams, useNavigate,
 } from 'react-router-dom';
 
 import { Suspense, useEffect } from 'react';
@@ -13,6 +13,7 @@ import config from '../../config';
 import { l } from '../../lang/Lang';
 import RecordList from '../../features/RecordList/RecordList';
 import RouteViewLoadingPlaceholder from '../RouteViewLoadingPlaceholder';
+import ContributeInfoSection from './ContributeInfoSection';
 
 const renderMetadataItem = (label, value) => (
   <div key={label} className="mr-2.5 inline">
@@ -24,6 +25,7 @@ const renderMetadataItem = (label, value) => (
 export default function PlaceView({ highlightRecordsWithMetadataField = null, mode = 'material' }) {
   const { results } = useLoaderData();
   const params = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   // only show the contextual place record lists if we're in a search context
   const shouldShowPlaceRecordLists = params['*'] && !params['*'].includes('search_field/place');
@@ -48,7 +50,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
   return (
     <div className="container">
       <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" inline />}>
-        <div className="container-header max-lg:!pt-[74px]">
+        <div className="container-header">
           <div className="row">
             <Await resolve={results}>
               {(data) => {
@@ -107,6 +109,13 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                 </div>
               </div>
 
+              <ContributeInfoSection
+                title={data.name || l('Ort')}
+                type="Ort"
+                country={data.country}
+                id={String(data.id)}
+              />
+
               {/* do not show contextual place results if we're not in a search context */}
               {shouldShowPlaceRecordLists && (
                 <div className="row search-results-container">
@@ -125,6 +134,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                       }}
                       mode={mode}
                       hasFilter={mode !== 'transcribe'}
+                      useRouteParams
+                      detailSearch={location.search}
                     />
                   </div>
                 </div>
@@ -157,6 +168,8 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                     }}
                     mode={mode}
                     hasFilter={mode !== 'transcribe'}
+                    useRouteParams
+                    detailSearch={location.search}
                     // add a random id to be able to have the same form twice on the same page
                   />
                 </div>

@@ -46,6 +46,7 @@ export default function useTranscriptionApi() {
         await fetch(`${config.restApiUrl}transcribecancel/`, {
           method: "POST",
           body: fd({ recordid: recordId, transcribesession: session }),
+          keepalive: true,
         });
       } catch (err) {
         console.error("transcribecancel error:", err);

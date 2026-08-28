@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { l } from '../../../lang/Lang';
 import config from '../../../config';
+import { createDetailLocation } from '../../../utils/routeHelper';
 
-function renderPersonItem(person, routeParams, index) {
+function renderPersonItem(person, location, index) {
   const rowKey = `${person.id || 'person'}-${person.relation || 'relation'}-${index}`;
 
   return (
@@ -29,7 +30,12 @@ function renderPersonItem(person, routeParams, index) {
             && ['i', 'informant'].includes(person.relation)
           ) && (
             <Link
-              to={`/persons/${person.id}${routeParams}`}
+              to={createDetailLocation({
+                resource: 'persons',
+                id: person.id,
+                pathname: location.pathname,
+                search: location.search,
+              })}
               className="text-link"
             >
               {person.name || ''}
@@ -47,7 +53,12 @@ function renderPersonItem(person, routeParams, index) {
       <td data-title="Födelseort" className="py-3 px-2 md:py-2 md:px-4">
         {person.home && person.home.length > 0 && (
           <Link
-            to={`/places/${person.home[0].id}${routeParams}`}
+            to={createDetailLocation({
+              resource: 'places',
+              id: person.home[0].id,
+              pathname: location.pathname,
+              search: location.search,
+            })}
             className="text-link hover:underline"
           >
             {`${person.home[0].name}, ${person.home[0].harad}`}
@@ -74,7 +85,7 @@ function renderPersonItem(person, routeParams, index) {
   );
 }
 
-function PersonItems({ data, routeParams = '' }) {
+function PersonItems({ data, location }) {
   const { persons } = data;
   if (!persons || persons.length === 0) return null;
 
@@ -92,7 +103,7 @@ function PersonItems({ data, routeParams = '' }) {
             </tr>
           </thead>
           <tbody>
-            {persons.map((person, index) => renderPersonItem(person, routeParams, index))}
+            {persons.map((person, index) => renderPersonItem(person, location, index))}
           </tbody>
         </table>
       </div>
@@ -104,5 +115,8 @@ export default PersonItems;
 
 PersonItems.propTypes = {
   data: PropTypes.object.isRequired,
-  routeParams: PropTypes.string,
+  location: PropTypes.shape({
+    pathname: PropTypes.string.isRequired,
+    search: PropTypes.string.isRequired,
+  }).isRequired,
 };

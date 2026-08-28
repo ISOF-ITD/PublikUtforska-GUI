@@ -2,14 +2,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useLocation, Link } from "react-router-dom";
 import PropTypes from "prop-types";
-import ContactButtonGroup from './ContactButtonGroup';
-import ContributeInfoButton from "./ContributeInfoButton";
 import SimpleMap from "./SimpleMap";
-import FeedbackButton from "./FeedbackButton";
+import ContributeInfoSection from './ContributeInfoSection';
 import { l } from "../../lang/Lang";
 
 import config from "../../config";
 import RecordList from "../../features/RecordList/RecordList";
+import { createDetailLocation } from '../../utils/routeHelper';
 
 export default function PersonView({ mode = "material" }) {
   const {
@@ -53,6 +52,14 @@ export default function PersonView({ mode = "material" }) {
       return "";
     }
   }, []);
+  const personPlaceLocation = personPlace ? createDetailLocation({
+    resource: 'places',
+    id: personPlace.id,
+    pathname: nordicSuffix
+      ? `${mode === 'transcribe' ? '/transcribe' : ''}${nordicSuffix}`
+      : location.pathname,
+    search: location.search,
+  }) : null;
 
   const hasCoords = Boolean(personPlace?.lat && personPlace?.lng);
 
@@ -75,7 +82,7 @@ export default function PersonView({ mode = "material" }) {
 
   return (
     <div className={`container${id ? "" : " loading"}`}>
-      <div className="container-header max-lg:!pt-[74px]">
+      <div className="container-header">
         <div className="row">
           <div className="twelve columns">
             <h1 className="person-title">{name}</h1>
@@ -86,7 +93,7 @@ export default function PersonView({ mode = "material" }) {
                 {birthYear > 0 && ` ${birthYear}`}
                 {(personPlace || birthplace) && " i "}
                 {personPlace ? (
-                  <Link to={`/places/${personPlace.id}${nordicSuffix}`}>
+                  <Link to={personPlaceLocation}>
                     {personCounty}
                   </Link>
                 ) : (
@@ -97,24 +104,6 @@ export default function PersonView({ mode = "material" }) {
           </div>
         </div>
 
-        {!config.siteOptions.hideContactButton && (
-          <ContactButtonGroup
-            role="group"
-            ariaLabel={l('Hjälp oss förbättra sidan')}
-          >
-            <ContributeInfoButton
-              title={name}
-              type="Person"
-              location={location}
-            />
-            <FeedbackButton
-              title={name}
-              type="Person"
-              location={location}
-              country="sweden"
-            />
-          </ContactButtonGroup>
-        )}
       </div>
 
       {hasCoords && (
@@ -174,6 +163,13 @@ export default function PersonView({ mode = "material" }) {
         )}
       </div>
 
+      <ContributeInfoSection
+        title={name}
+        type="Person"
+        country="sweden"
+        id={id}
+      />
+
       <hr />
 
       <div className="row">
@@ -191,6 +187,8 @@ export default function PersonView({ mode = "material" }) {
             params={recordListParams}
             mode={mode}
             hasFilter={mode !== "transcribe"}
+            useRouteParams
+            detailSearch={location.search}
           />
         </div>
       </div>

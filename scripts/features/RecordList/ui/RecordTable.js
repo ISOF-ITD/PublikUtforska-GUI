@@ -19,6 +19,7 @@ export default function RecordTable({
   columns,
   selectedRecordId,
   onRecordActivate,
+  detailSearch,
 }) {
   const items = records.map((item, index) => (
     <RecordListItem
@@ -36,9 +37,9 @@ export default function RecordTable({
       smallTitle={smallTitle}
       isSelected={String(item._source.id) === String(selectedRecordId)}
       onRecordActivate={onRecordActivate}
+      detailSearch={detailSearch}
     />
   ));
-
 
   const ariaSortValue = (key) => {
     if (sort !== key) return 'none';
@@ -49,7 +50,7 @@ export default function RecordTable({
   };
 
   return (
-    <div className="hidden md:block">
+    <div>
       <table
         className="mobile-table w-full text-sm border-collapse"
       >
@@ -156,4 +157,5 @@ RecordTable.propTypes = {
   columns: PropTypes.array,
   selectedRecordId: PropTypes.string,
   onRecordActivate: PropTypes.func,
+  detailSearch: PropTypes.string,
 };

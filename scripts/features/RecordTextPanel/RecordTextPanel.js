@@ -18,9 +18,11 @@ import {
   faCompress,
   faDownload,
   faExpand,
+  faFilePdf,
   faHighlighter,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { isPdfMedia } from '../../utils/mediaTypes';
 
 /**
  * RecordTextPanel component
@@ -46,6 +48,11 @@ export default function RecordTextPanel({
 
   const { imageUrl } = config;
   const isTranscriptionAvailable = useTranscriptionAvailability();
+  const pdfObjects = useMemo(() => media.filter(isPdfMedia), [media]);
+  const buildPdfUrl = (source) => (
+    `${config.pdfUrl || config.imageUrl || ''}${source || ''}`
+      .replace(/([^:]\/)\/+/g, '$1')
+  );
 
   // local state
   const [expandedTextByIndex, setExpandedTextByIndex] = useState({});
@@ -278,14 +285,8 @@ export default function RecordTextPanel({
               transcriptionstatus={transcriptionstatus}
               className="button button-primary"
               label={l("Skriv av")}
-              title={title}
               recordId={recordId}
-              archiveId={archive?.archive_id}
-              places={places}
-              images={mediaImagesAbsolute}
-              transcriptionType={transcriptiontype}
               random={false}
-              // tell the overlay which page to open
               initialPageIndex={absoluteIndex}
               initialPageSource={mediaItem.source}
             />
@@ -348,11 +349,11 @@ export default function RecordTextPanel({
         {/* Header */}
         <header className="mb-1 px-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {segments.length > 0 && <h2 id={headingId}>{l("Text och bild")}</h2>}
+            {/* {segments.length > 0 && <h2 id={headingId}>{l("Text och bild")}</h2>} */}
 
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
               {/* Segment controls */}
-              {segments?.length > 0 && (
+              {/* {segments?.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1">
                   <button
                     type="button"
@@ -382,23 +383,7 @@ export default function RecordTextPanel({
                     {l("Stäng alla")}
                   </button>
                 </div>
-              )}
-
-              {/* Download control */}
-              {textPages.length > 0 && (
-                <button
-                  type="button"
-                  className="button button-secondary text-sm"
-                  onClick={handleDownloadAllText}
-                >
-                  <FontAwesomeIcon
-                    icon={faDownload}
-                    className="mr-1"
-                    aria-hidden="true"
-                  />
-                  {l("Ladda ner text (.txt)")}
-                </button>
-              )}
+              )} */}
 
               {/* Highlight switch */}
               {hasHighlights && (
@@ -449,6 +434,45 @@ export default function RecordTextPanel({
           })}
         </div>
 
+        {(textPages.length > 0 || pdfObjects.length > 0) && (
+          <div className="flex flex-wrap items-center gap-2 px-4">
+            {textPages.length > 0 && (
+              <button
+                type="button"
+                className="button button-secondary inline-flex items-center justify-center text-sm"
+                onClick={handleDownloadAllText}
+              >
+                <FontAwesomeIcon
+                  icon={faDownload}
+                  className="mr-1"
+                  aria-hidden="true"
+                />
+                {l('Ladda ner text (.txt)')}
+              </button>
+            )}
+
+            {pdfObjects.map((pdfObject) => (
+              <a
+                key={pdfObject.source}
+                className="button button-secondary inline-flex items-center justify-center text-sm"
+                href={buildPdfUrl(pdfObject.source)}
+                download
+              >
+                <FontAwesomeIcon
+                  icon={faFilePdf}
+                  className="mr-1"
+                  aria-hidden="true"
+                />
+                {pdfObjects.length === 1
+                  ? l('Ladda ner PDF')
+                  : `${l('Ladda ner PDF')}: ${
+                    pdfObject.title || pdfObject.source.split('/').pop()
+                  }`}
+              </a>
+            ))}
+          </div>
+        )}
+
         {/* Contributor info (keep at the end) */}
         <ContributorInfo
           transcribedby={transcribedby}
@@ -463,11 +487,11 @@ export default function RecordTextPanel({
   return (
     <section aria-labelledby={headingId} className="space-y-3">
       <header className="flex items-center justify-between mb-1 px-4">
-        {segments.length > 0 && (
+        {/* {segments.length > 0 && (
           <h2 id={headingId} className="mr-4">
             {l("Text och bild")}
           </h2>
-        )}
+        )} */}
 
         {hasHighlights && (
           <HighlightSwitcher

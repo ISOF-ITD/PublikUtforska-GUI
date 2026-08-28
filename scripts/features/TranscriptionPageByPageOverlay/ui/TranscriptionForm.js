@@ -14,9 +14,9 @@ import { l } from '../../../lang/Lang';
 import ContributorInfoFields from './ContributorInfoFields';
 import TranscriptionHelpButton from './TranscriptionHelpButton';
 
-const field = 'w-full border border-gray-300 rounded-lg p-3 font-serif leading-relaxed '
-  + 'disabled:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-isof '
-  + 'focus-visible:border-isof transition !mb-2';
+const field = 'w-full rounded-lg border border-border bg-surface p-3 font-serif leading-relaxed text-body '
+  + 'disabled:bg-disabled focus:outline-none focus-visible:ring-2 focus-visible:ring-focus '
+  + 'focus-visible:border-focus transition !mb-2';
 
 export default function TranscriptionForm({
   sending,
@@ -71,7 +71,7 @@ export default function TranscriptionForm({
         <button
           type="button"
           onClick={onToggleMetaFields}
-          className="text-sm w-full flex items-center gap-2 !my-0"
+          className="flex w-full items-center gap-2 !my-0 rounded-sm text-sm text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           {showMetaFields ? (
             <span className="w-full flex items-center justify-between">
@@ -106,14 +106,14 @@ export default function TranscriptionForm({
       )}
 
       <fieldset
-        className="space-y-2 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
+        className="space-y-2 rounded-lg border border-border bg-surface p-4 text-body"
         disabled={disableInput}
       >
         <legend className="sr-only">
           Transkriberingstext
         </legend>
         {isReadyToTranscribe && (
-          <div className="bg-isof/5 text-sm text-gray-800 rounded-md p-2 mb-2">
+          <div className="mb-2 rounded-md bg-surface-muted p-2 text-sm text-body">
             <strong className="flex items-center mb-1 gap-2">
               <FontAwesomeIcon icon={faInfoCircle} />
               <span>
@@ -123,7 +123,7 @@ export default function TranscriptionForm({
                   label={l('instruktionerna')}
                   inline
                 />
-                {')'}
+                )
               </span>
             </strong>
             <ul className="list-disc list-inside space-y-0.5 !my-0">
@@ -147,9 +147,9 @@ export default function TranscriptionForm({
           spellCheck="false"
           value={transcriptionText}
           onChange={inputChangeHandler}
-          className="w-full min-h-[18rem] max-h-96 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100"
+          className="min-h-[18rem] max-h-96 w-full resize-y rounded border border-border bg-surface p-2 font-serif leading-relaxed text-body disabled:bg-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         />
-        <span className="text-sm text-gray-600 self-end" aria-live="polite">
+        <span className="self-end text-sm text-muted" aria-live="polite">
           {wordCount}
           {' '}
           {l('ord')}
@@ -158,7 +158,7 @@ export default function TranscriptionForm({
 
       {isReadyToTranscribe && (
         <fieldset
-          className="space-y-3 bg-white shadow-sm rounded-lg p-4 border border-gray-200"
+          className="space-y-3 rounded-lg border border-border bg-surface p-4 text-body"
           disabled={disableInput}
         >
           <legend className="sr-only">
@@ -176,10 +176,10 @@ export default function TranscriptionForm({
                 type="text"
                 value={pagenumberInput ?? ''}
                 onChange={inputChangeHandler}
-                className="w-32 rounded border p-2 font-serif disabled:bg-gray-100 mt-1 ml-2"
+                className="ml-2 mt-1 w-32 rounded border border-border bg-surface p-2 font-serif text-body disabled:bg-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
               />
             </label>
-            <span className="text-xs text-gray-500 mt-1">
+            <span className="mt-1 text-xs text-muted">
               Du kan ändra sidnummer om det inte stämmer
             </span>
           </div>
@@ -200,8 +200,8 @@ export default function TranscriptionForm({
                 Innehåller landsmålsalfabetet eller andra fonetiska tecken
               </span>
             </label>
-            <span className="text-xs text-gray-500 mb-2">
-              <a href="https://sok.folke.isof.se/?k=start%2Fanvanda-folke%2Flandsmalsalfabetet" target="_blank" rel="noreferrer" className="text-isof hover:underline">
+            <span className="mb-2 text-xs text-muted">
+              <a href="https://sok.folke.isof.se/?k=start%2Fanvanda-folke%2Flandsmalsalfabetet" target="_blank" rel="noreferrer" className="text-link hover:text-link-hover hover:underline">
                 Läs mer om landsmålsalfabetet.
                 {' '}
                 <FontAwesomeIcon icon={faExternalLink} />
@@ -227,7 +227,7 @@ export default function TranscriptionForm({
 
       {(isReadyToTranscribe || isSent) && (
         <fieldset
-          className="space-y-6 bg-white shadow-sm rounded-lg p-6 border border-gray-200"
+          className="space-y-6 rounded-lg border border-border bg-surface p-6 text-body"
           disabled={disableInput}
         >
           <legend className="sr-only">
@@ -249,7 +249,7 @@ export default function TranscriptionForm({
               onChange={inputChangeHandler}
               className={`${field} h-40 resize-y`}
             />
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted">
               {l(
                 'Har du stött på något problem med avskriften eller har du någon annan kommentar till den? Skriv då i kommentarsfältet.',
               )}
@@ -274,11 +274,11 @@ export default function TranscriptionForm({
                 data-gotonext="true"
                 className={`
                   inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
-                  font-semibold text-white shadow transition
+                  font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface
                   ${
                     sending || disableInput || !formValid
-                      ? 'bg-gray-400 !cursor-not-allowed !hover:text-white'
-                      : '!bg-isof hover:!text-white hover:!bg-darker-isof hover:brightness-110 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-darker-isof'
+                      ? 'bg-disabled !cursor-not-allowed !text-muted'
+                      : '!bg-primary !text-white hover:!bg-primary-hover'
                   }
                 `}
                 disabled={disableInput || sending || !formValid}

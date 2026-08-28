@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import PdfViewer from '../../../components/PdfViewer';
 import config from '../../../config';
 import { isImageMedia, isPdfMedia } from '../../../utils/mediaTypes';
-import PdfThumbnail from './PdfThumbnail';
 
 export function useMediaQuery(query) {
   const [matches, setMatches] = useState(() => {
@@ -49,30 +48,15 @@ export default function PdfElement({ data }) {
   const joinUrl = (base, path) => `${base ?? ''}${path ?? ''}`.replace(/([^:]\/)\/+/g, '$1');
   const buildPdfUrl = (src) => joinUrl(config.pdfUrl ?? config.imageUrl ?? '', src ?? '');
 
-  return (
-    <>
-      {isAtLeastMediumScreen
-        && !hasImageFiles
-        && pdfObjects.map((pdfObject) => (
-          <PdfViewer
-            height="80vh"
-            url={buildPdfUrl(pdfObject.source)}
-            key={`pdf-viewer-${pdfObject.source}`}
-          />
-        ))}
-      <div className="w-full">
-        <div className="flex gap-5 flex-wrap">
-          {pdfObjects.map((pdfObject) => (
-            <PdfThumbnail
-              key={`pdf-${pdfObject.source}`}
-              url={buildPdfUrl(pdfObject.source)}
-              title={pdfObject.title || pdfObject.source.split('/').pop()}
-            />
-          ))}
-        </div>
-      </div>
-    </>
-  );
+  if (!isAtLeastMediumScreen || hasImageFiles) return null;
+
+  return pdfObjects.map((pdfObject) => (
+    <PdfViewer
+      height="80vh"
+      url={buildPdfUrl(pdfObject.source)}
+      key={`pdf-viewer-${pdfObject.source}`}
+    />
+  ));
 }
 
 PdfElement.propTypes = {

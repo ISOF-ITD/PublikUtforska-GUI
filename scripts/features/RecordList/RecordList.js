@@ -8,12 +8,18 @@ import Pagination from "./ui/Pagination";
 import RecordCards from "./ui/RecordCards";
 import RecordTable from "./ui/RecordTable";
 import RecordViewToggle from "./ui/RecordViewToggle";
-import { createSearchRoute } from "../../utils/routeHelper";
+import {
+  createParamsFromSearchRoute,
+  createSearchRoute,
+  mergeRouteSearch,
+  removeViewParamsFromRoute,
+} from '../../utils/routeHelper';
 import useRecords from "./hooks/useRecords";
 import classNames from "classnames";
 
 const SCROLL_STORAGE_PREFIX = 'recordListScroll:';
 const ACTIVE_RECORD_STORAGE_SUFFIX = ':activeRecord';
+const WIDE_RESULTS_PANE_MIN_WIDTH = 760;
 const Timeline = lazy(() => import("./ui/Timeline"));
 
 function getScrollTopValue(container) {
@@ -33,8 +39,8 @@ function getScrollTopValue(container) {
 // vilken container som scrollas.
 function getScrollableContainer(rootElement) {
   if (rootElement?.closest) {
-    const popupContainer = rootElement.closest(".popup-content-wrapper");
-    if (popupContainer) return popupContainer;
+    const resultsPane = rootElement.closest('[data-record-list-scroll="true"]');
+    if (resultsPane) return resultsPane;
   }
 
   return window;
@@ -88,6 +94,8 @@ export default function RecordList(props) {
     useRouteParams,
     smallTitle,
     showViewToggle,
+    layoutContext = 'viewport',
+    detailSearch = '',
   } = props;
 
   const navigate = useNavigate();
@@ -96,6 +104,7 @@ export default function RecordList(props) {
   // vilken container som scrollas. rootRef pekar på den översta nivån i RecordList
   const rootRef = useRef(null);
   const hasRestoredScrollRef = useRef(false);
+  const [resultsPaneWidth, setResultsPaneWidth] = useState(0);
   const scrollStorageKey = createScrollStorageKey(mode, params);
   const activeRecordStorageKey = `${scrollStorageKey}${ACTIVE_RECORD_STORAGE_SUFFIX}`;
 
@@ -170,12 +179,17 @@ export default function RecordList(props) {
   );
   // If the URL contains record_ids, we are in a starred record list and should not include record_ids in the navigation params to avoid losing the starred filter when navigating between records.
   const recordNavigationParams = useMemo(() => {
-    if (!params?.record_ids) return params;
+    const baseParams = useRouteParams
+      ? createParamsFromSearchRoute(
+        removeViewParamsFromRoute(location.pathname),
+      )
+      : params;
+    if (!baseParams?.record_ids) return baseParams;
 
-    const cleanParams = { ...params };
+    const cleanParams = { ...baseParams };
     delete cleanParams.record_ids;
     return cleanParams;
-  }, [params]);
+  }, [location.pathname, params, useRouteParams]);
 
   const handleStepPage = (step) => {
     /* decide who owns page number */
@@ -199,15 +213,11 @@ export default function RecordList(props) {
   const markRecordAsActive = useCallback(
     (recordId) => {
       if (!recordId) return;
-      if (params?.record_ids) {
-        window.eventBus?.dispatch('starredRecords.openRecord');
-        window.eventBus?.dispatch('routePopup.hideManual');
-      }
       const normalized = String(recordId);
       setSelectedRecordId(normalized);
       writeSessionItem(activeRecordStorageKey, normalized);
     },
-    [activeRecordStorageKey, params],
+    [activeRecordStorageKey],
   );
 
   const clearActiveRecord = useCallback(() => {
@@ -218,7 +228,12 @@ export default function RecordList(props) {
   const archiveIdClick = (e) => {
     const { archiveidrow } = e.target.dataset;
     if (archiveidrow) {
-      navigate(`/records/${archiveidrow}`);
+      const searchSuffix = createSearchRoute(recordNavigationParams || {});
+      const prefix = mode === 'transcribe' ? '/transcribe' : '';
+      const recordPath = `${prefix}/records/${archiveidrow}${
+        searchSuffix === '/' ? '' : searchSuffix
+      }`;
+      navigate(mergeRouteSearch(recordPath, detailSearch));
     }
   };
 
@@ -303,20 +318,39 @@ export default function RecordList(props) {
     }
   }, [fetching, records.length, restoreScrollPosition]);
 
-  /* ------- side-effect: url hash “showlist” ------- */
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.has("showlist")) {
-      window.eventBus?.dispatch("routePopup.show");
+    if (layoutContext !== 'results-pane') return undefined;
+    const element = containerRef.current;
+    if (!element) return undefined;
+
+    const updateWidth = () => setResultsPaneWidth(element.clientWidth);
+    updateWidth();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateWidth);
+      return () => window.removeEventListener('resize', updateWidth);
     }
-  }, [location]);
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [containerRef, layoutContext]);
 
   /* ------- render ------- */
   const hasVisibleRecords = records.length > 0;
+  const resultsPaneIsWide = resultsPaneWidth >= WIDE_RESULTS_PANE_MIN_WIDTH;
+  const showCompactCards = layoutContext !== 'results-pane' || !resultsPaneIsWide;
+  const compactCardLayout = layoutContext === 'results-pane'
+    ? 'pane-compact'
+    : 'mobile-only';
+  let wideLayoutClass = 'hidden md:block';
+  if (layoutContext === 'results-pane') {
+    wideLayoutClass = resultsPaneIsWide ? 'block' : 'hidden';
+  }
 
   return (
-    <div ref={rootRef}>
-      {hasTimeline && (
+    <div ref={rootRef} aria-busy={fetching || undefined}>
+      {/* {hasTimeline && (
         <Suspense fallback={<p className="text-center text-subtle">Laddar tidslinje...</p>}>
           <Timeline
             containerRef={containerRef}
@@ -328,7 +362,7 @@ export default function RecordList(props) {
             resetOnYearFilter={() => setYearFilter(null)}
           />
         </Suspense>
-      )}
+      )} */}
 
       {(!fetching || hasVisibleRecords) && (
         <div
@@ -346,24 +380,28 @@ export default function RecordList(props) {
               total={total}
               onStep={handleStepPage}
               maxPage={maxPage}
+              showRange
             />
           )}
 
           {/* Mobile: always cards */}
-          <RecordCards
-            records={records}
-            params={recordNavigationParams}
-            mode={mode}
-            highlightRecordsWithMetadataField={
-              highlightRecordsWithMetadataField
-            }
-            selectedRecordId={selectedRecordId}
-            onRecordActivate={markRecordAsActive}
-            layout="mobile-only"
-          />
+          {showCompactCards && (
+            <RecordCards
+              records={records}
+              params={recordNavigationParams}
+              mode={mode}
+              highlightRecordsWithMetadataField={
+                highlightRecordsWithMetadataField
+              }
+              selectedRecordId={selectedRecordId}
+              onRecordActivate={markRecordAsActive}
+              layout={compactCardLayout}
+              detailSearch={detailSearch}
+            />
+          )}
 
           {/* Desktop: view toggle + chosen view */}
-          <div className="hidden md:block">
+          <div className={wideLayoutClass}>
             {showViewToggle && (
               <div className="flex justify-end mb-3">
                 <RecordViewToggle value={view} onChange={handleViewChange} />
@@ -381,6 +419,7 @@ export default function RecordList(props) {
                 selectedRecordId={selectedRecordId}
                 onRecordActivate={markRecordAsActive}
                 layout="desktop-grid"
+                detailSearch={detailSearch}
               />
             ) : (
               <RecordTable
@@ -401,6 +440,7 @@ export default function RecordList(props) {
                 columns={columns}
                 selectedRecordId={selectedRecordId}
                 onRecordActivate={markRecordAsActive}
+                detailSearch={detailSearch}
               />
             )}
           </div>
@@ -445,4 +485,6 @@ RecordList.propTypes = {
   containerRef: PropTypes.objectOf(PropTypes.any),
   smallTitle: PropTypes.bool,
   showViewToggle: PropTypes.bool,
+  layoutContext: PropTypes.oneOf(['viewport', 'results-pane']),
+  detailSearch: PropTypes.string,
 };

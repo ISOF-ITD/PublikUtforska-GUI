@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faClose,
   faList,
+  faMap,
   faPen,
   faSearch,
   faCircleQuestion,
@@ -44,6 +45,13 @@ export default function SearchPanel({
   loading,
   onOpenIntroOverlay,
   mobileCompact = false,
+  isListView = false,
+  onListViewChange = () => {},
+  resultViewOnSearch = null,
+  onSearchSubmit = () => {},
+  showResultViewControl = true,
+  showModeSwitch = true,
+  showSupplementaryContent = true,
 }) {
   const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
@@ -106,14 +114,20 @@ export default function SearchPanel({
 
   // Ensure the controlled input reflects any picked suggestion
   const navigateToSearch = useCallback(
-    (keywordOverwrite, searchFieldOverwrite) => {
-      const v = typeof keywordOverwrite === "string" ? keywordOverwrite : "";
+    (keywordOverwrite, searchFieldOverwrite, showResults = true) => {
+      const v = typeof keywordOverwrite === 'string' ? keywordOverwrite : '';
       // Update both pieces of state so the input text appear right away
       setInputValue(v);
       setQuery(v);
-      rawNavigateToSearch(keywordOverwrite, searchFieldOverwrite);
+      rawNavigateToSearch(
+        keywordOverwrite,
+        searchFieldOverwrite,
+        null,
+        showResults ? resultViewOnSearch : null,
+      );
+      if (showResults) onSearchSubmit();
     },
-    [rawNavigateToSearch]
+    [onSearchSubmit, rawNavigateToSearch, resultViewOnSearch],
   );
 
   // selection derived from route
@@ -200,7 +214,7 @@ export default function SearchPanel({
     setSelectedPlace(null);
     setSelectedArchiveId(null);
     setQuery("");
-    navigateToSearch("", null);
+    navigateToSearch('', null, false);
     setInputValue("");
     inputRef.current?.focus();
   }, [navigateToSearch, qParam, inputValue, selectedPerson, selectedPlace, selectedArchiveId]);
@@ -218,14 +232,17 @@ export default function SearchPanel({
     setInputValue(next);
   }, [qParam]); // do NOT include `category` here
 
-  const onFiltersToggle = (categoryId) => toggleCategory(categoryId, inputValue || qParam || '');
+  const onFiltersToggle = (categoryId) => toggleCategory(
+    categoryId,
+    inputValue || qParam || '',
+    resultViewOnSearch,
+  );
   const showStarredRecords = useCallback(() => {
     if (starredRecordIds.length === 0) return;
 
     const prefix = mode === 'transcribe' ? '/transcribe' : '';
     const starredParams = new URLSearchParams();
     starredParams.set('record_ids', starredRecordIds.join(','));
-    starredParams.set('showlist', '1');
     try {
       sessionStorage.setItem(
         STARRED_RECORDS_RETURN_STORAGE_KEY,
@@ -235,9 +252,6 @@ export default function SearchPanel({
       // Ignore storage failures from private/incognito storage contexts.
     }
     navigate(`${prefix}/?${starredParams.toString()}`);
-    window.setTimeout(() => {
-      window.eventBus?.dispatch('routePopup.show');
-    }, 0);
   }, [location.pathname, location.search, mode, navigate, starredRecordIds]);
   const fixedSearchControlHeightPx = 48;
   const desktopSearchRowStyle = mobileCompact
@@ -256,15 +270,18 @@ export default function SearchPanel({
     lineHeight: '1',
     boxSizing: 'border-box',
   };
+  const searchPlaceholder = mode === 'transcribe'
+    ? l('Sök bland uppteckningar att skriva av')
+    : l('Sök i arkivmaterial');
 
   return (
     <>
-      {isTranscriptionAvailable && (
+      {showModeSwitch && isTranscriptionAvailable && (
         <FilterSwitch mode={mode} className={mobileCompact ? 'mt-2' : ''} />
       )}
       <div
         className={classNames(
-          'left-0 z-[2000] flex max-w-full items-center cursor-auto relative overflow-visible text-body bg-surface rounded shadow-sm',
+          'left-0 z-[2000] box-border flex max-w-full items-center cursor-auto relative overflow-visible text-body bg-surface rounded shadow-sm',
           mobileCompact ? 'w-auto mx-2 px-2.5 py-1.5 text-sm' : 'w-full px-2.5 py-1.5 text-sm',
         )}
         style={desktopSearchRowStyle}
@@ -284,7 +301,7 @@ export default function SearchPanel({
                 'text-[16px]',
                 hasSelection ? 'opacity-0 pointer-events-none' : 'opacity-100',
               )}
-              placeholder={l("Sök i Folke")}
+              placeholder={searchPlaceholder}
               style={searchInputStyle}
               value={inputValue}
               onChange={onInput}
@@ -304,7 +321,7 @@ export default function SearchPanel({
                 activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
               }
               aria-hidden={hasSelection || undefined}
-              aria-label={l("Sök i Folke")}
+              aria-label={searchPlaceholder}
               aria-busy={loading || undefined}
               autoComplete="off"
               spellCheck="false"
@@ -446,70 +463,70 @@ export default function SearchPanel({
         ]}
       />
 
-      {total && (
-        <div className="mt-2 w-full">
-          {total.value > 0 && !loading && (
+      {showResultViewControl && (
+        <div
+          className="mt-2 grid w-full grid-cols-2 gap-2"
+          role="group"
+          aria-label={`${l('Välj resultatvy')}. ${
+            loading
+              ? l('Söker...')
+              : `${total.value}${total.relation === 'gte' ? '+' : ''} sökträffar`
+          }`}
+        >
+          {[
+            { id: 'list', label: l('Lista'), selected: isListView },
+            { id: 'map', label: l('Karta'), selected: !isListView },
+          ].map((view) => (
             <button
+              key={view.id}
               type="button"
               className={classNames(
-                'inline-flex w-full items-center justify-center gap-2 rounded-md bg-surface px-3 py-2 !text-base font-medium text-body shadow hover:bg-surface-hover',
+                'inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border px-3 py-2 !text-base font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary',
+                view.selected
+                  ? 'border-white bg-surface text-body'
+                  : 'border-white/70 bg-transparent !text-white hover:bg-primary-hover',
                 mobileCompact ? 'flex-wrap whitespace-normal break-words text-center' : '',
               )}
-              onClick={() => window.eventBus?.dispatch('routePopup.show')}
-              title={l('Visa sökträffar')}
+              onClick={() => onListViewChange(view.id === 'list')}
+              aria-controls={view.id === 'list' ? 'record-list-panel' : 'map-result-panel'}
+              aria-pressed={view.selected}
             >
-              <FontAwesomeIcon icon={faList} />
-              {` Visa ${total.value}${
-                total.relation === "gte" ? "+" : ""
-              } sökträffar som lista`}
+              <FontAwesomeIcon icon={view.id === 'list' ? faList : faMap} aria-hidden="true" />
+              {view.label}
             </button>
-          )}
-          {loading && (
-            <button
-              type="button"
-              className={classNames(
-                'inline-flex w-full items-center gap-2 rounded-md bg-surface px-3 py-2 !text-base font-medium text-body shadow cursor-not-allowed',
-                mobileCompact ? 'flex-wrap whitespace-normal break-words text-center' : '',
-              )}
-              disabled
-            >
-              <span>Söker...</span>
-            </button>
-          )}
-          {total.value === 0 && !loading && (
-            <button
-              type="button"
-              className={classNames(
-                'inline-flex w-full items-center gap-2 rounded-md bg-surface px-3 py-2 !text-base font-medium text-body shadow cursor-default',
-                mobileCompact ? 'flex-wrap whitespace-normal break-words text-center' : '',
-              )}
-              disabled
-            >
-              <span>0 sökträffar</span>
-            </button>
-          )}
+          ))}
         </div>
       )}
-      {isTranscriptionAvailable && (
-        <TranscribeButton
-          className={mobileCompact ? '!h-auto !min-h-[2.75rem] !whitespace-normal !break-words !leading-snug !py-2' : ''}
-          transcriptionstatus={"readytotranscribe"} // readytotranscribe to always show the button, even if there’s no specific record selected – it will then invite to transcribe a random record
-          label={(
-            <>
-              <FontAwesomeIcon icon={faPen} />
-              {' '}
-              {l('Skriv av slumpmässig uppteckning')}
-              {config.specialEventTranscriptionCategoryLabel && <br />}
-              {config.specialEventTranscriptionCategoryLabel || ''}
-            </>
-          )}
-          random
-          aria-label={l('Skriv av slumpmässig uppteckning')}
-          variant="listLike" // match "Visa sökträffar" look
-        />
+      {showSupplementaryContent && mode === 'transcribe' && isTranscriptionAvailable && (
+        <section
+          className="mt-3 rounded-md border border-border bg-surface-muted p-3 text-body"
+          aria-labelledby="random-transcription-heading"
+        >
+          <h2 id="random-transcription-heading" className="!m-0 !text-lg text-body">
+            {l('Kom igång direkt')}
+          </h2>
+          <TranscribeButton
+            className="!mb-0 !h-auto !min-h-[2.75rem] !whitespace-normal !break-words !py-2 !leading-snug"
+            transcriptionstatus="readytotranscribe"
+            label={(
+              <>
+                <FontAwesomeIcon icon={faPen} aria-hidden="true" />
+                {l('Skriv av slumpmässigt vald uppteckning')}
+                {config.specialEventTranscriptionCategoryLabel && (
+                  <span className="text-sm">
+                    {config.specialEventTranscriptionCategoryLabel}
+                  </span>
+                )}
+              </>
+            )}
+            random
+            ariaLabel={l('Skriv av slumpmässigt vald uppteckning')}
+            variant="listLike"
+          />
+        </section>
       )}
 
-      {onOpenIntroOverlay && (
+      {showSupplementaryContent && onOpenIntroOverlay && (
         <button
           type="button"
           onClick={onOpenIntroOverlay}
@@ -556,4 +573,11 @@ SearchPanel.propTypes = {
   loading: PropTypes.bool,
   onOpenIntroOverlay: PropTypes.func,
   mobileCompact: PropTypes.bool,
+  isListView: PropTypes.bool,
+  onListViewChange: PropTypes.func,
+  resultViewOnSearch: PropTypes.oneOf(['map', 'list']),
+  onSearchSubmit: PropTypes.func,
+  showResultViewControl: PropTypes.bool,
+  showModeSwitch: PropTypes.bool,
+  showSupplementaryContent: PropTypes.bool,
 };

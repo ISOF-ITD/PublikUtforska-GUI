@@ -1,4 +1,4 @@
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 import RecordCardItem from './RecordCardItem';
 
 export default function RecordCards({
@@ -8,12 +8,15 @@ export default function RecordCards({
   highlightRecordsWithMetadataField,
   selectedRecordId,
   onRecordActivate,
-  layout = "mobile-only", // 'mobile-only' | 'desktop-grid'
+  layout = 'mobile-only', // 'mobile-only' | 'pane-compact' | 'desktop-grid'
+  detailSearch = '',
 }) {
-  const wrapperClass =
-    layout === "desktop-grid"
-      ? "grid grid-cols-1 md:grid-cols-2 gap-4" // 2 columns on md+
-      : "md:hidden space-y-4";
+  let wrapperClass = 'md:hidden space-y-4';
+  if (layout === 'pane-compact') {
+    wrapperClass = 'space-y-4';
+  } else if (layout === 'desktop-grid') {
+    wrapperClass = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+  }
 
   return (
     <div className={wrapperClass}>
@@ -26,6 +29,7 @@ export default function RecordCards({
           highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
           isSelected={String(rec._source.id) === String(selectedRecordId)}
           onRecordActivate={onRecordActivate}
+          detailSearch={detailSearch}
         />
       ))}
     </div>
@@ -39,5 +43,6 @@ RecordCards.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   selectedRecordId: PropTypes.string,
   onRecordActivate: PropTypes.func,
-  layout: PropTypes.oneOf(["mobile-only", "desktop-grid"]),
+  layout: PropTypes.oneOf(['mobile-only', 'pane-compact', 'desktop-grid']),
+  detailSearch: PropTypes.string,
 };

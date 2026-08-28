@@ -2,6 +2,8 @@
 import PropTypes from 'prop-types';
 import { l } from '../../../lang/Lang';
 
+const inputField = 'w-full rounded border border-border bg-surface p-2 font-serif text-body disabled:bg-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
+
 export default function Uppteckningsblankett({
   informantNameInput = '',
   informantBirthDateInput = '',
@@ -43,7 +45,7 @@ export default function Uppteckningsblankett({
                       placeholder="Namn"
                       value={informantNameInput}
                       onChange={inputChangeHandler}
-                      className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
+                      className={inputField}
                     />
                   </label>
                 </div>
@@ -61,7 +63,7 @@ export default function Uppteckningsblankett({
                       placeholder="År"
                       value={informantBirthDateInput}
                       onChange={inputChangeHandler}
-                      className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
+                      className={inputField}
                     />
                   </label>
                 </div>
@@ -79,7 +81,7 @@ export default function Uppteckningsblankett({
                       placeholder="Ort"
                       value={informantBirthPlaceInput}
                       onChange={inputChangeHandler}
-                      className="w-full rounded border p-2 font-serif disabled:bg-gray-100"
+                      className={inputField}
                     />
                   </label>
                 </div>
@@ -95,7 +97,7 @@ export default function Uppteckningsblankett({
                     value={informantInformationInput}
                     onChange={inputChangeHandler}
                     placeholder="Om det finns fler uppgifter nedskrivna"
-                    className="w-full rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+                    className={`${inputField} mt-1`}
                   />
                 </label>
               </div>
@@ -112,7 +114,7 @@ export default function Uppteckningsblankett({
                 placeholder="Om titeln inte står på sidan kan du lämna detta tomt."
                 value={titleInput}
                 onChange={inputChangeHandler}
-                className="w-full rounded border p-2 font-serif disabled:bg-gray-100 mt-1"
+                className={`${inputField} mt-1`}
               />
             </label>
           </div>
@@ -133,9 +135,9 @@ export default function Uppteckningsblankett({
             spellCheck="false"
             value={messageInput}
             onChange={inputChangeHandler}
-            className="w-full min-h-[18rem] max-h-96 rounded border p-2 font-serif leading-relaxed resize-y disabled:bg-gray-100 !mb-0"
+            className={`${inputField} min-h-[18rem] max-h-96 resize-y leading-relaxed !mb-0`}
           />
-          <span className="text-sm text-gray-600 self-end" aria-live="polite">
+          <span className="self-end text-sm text-muted" aria-live="polite">
             {`${wordCount} ${l('ord')}`}
           </span>
         </div>

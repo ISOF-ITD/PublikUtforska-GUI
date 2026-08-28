@@ -1,13 +1,35 @@
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import {
-  lazy, memo, Suspense, useEffect, useRef, useState,
+  lazy, memo, Suspense, useCallback, useEffect, useRef, useState,
 } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MapMenu from './MapMenu';
 import MapLoadingPlaceholder from './MapLoadingPlaceholder';
+import RecordListLoadingPlaceholder from './RecordListLoadingPlaceholder';
+import { l } from '../lang/Lang';
+import { createParamsFromSearchRoute } from '../utils/routeHelper';
 
 const MapView = lazy(() => import('./views/MapView'));
+const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
+const MOBILE_MAP_MEDIA_QUERY = '(max-width: 1023px)';
+const WIDE_RESULTS_MEDIA_QUERY = '(min-width: 1440px)';
+const SEARCH_FIELD_LABELS = {
+  archive_id: 'Arkivsignum',
+  person: 'Person',
+  place: 'Ort',
+};
+
+function hasSearchValue(value) {
+  if (Array.isArray(value)) return value.some(hasSearchValue);
+  if (value && typeof value === 'object') {
+    return Object.values(value).some(hasSearchValue);
+  }
+  return value !== null && value !== undefined && value !== '';
+}
 
 function MapWrapper({
+  active,
   mapMarkerClick,
   mode,
   params,
@@ -17,52 +39,74 @@ function MapWrapper({
   audioRecordsData,
   pictureRecordsData,
 }) {
-  const getIsMobileViewport = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const getMediaQueryMatch = (query) => {
     if (typeof window === 'undefined') return false;
-    return window.matchMedia('(max-width: 767px)').matches;
+    return window.matchMedia(query).matches;
   };
-
-  // Debounce "loading" to avoid flicker on quick transitions
-  const [uiLoading, setUiLoading] = useState(!!loading);
-  const [isMobileViewport, setIsMobileViewport] = useState(getIsMobileViewport);
-  const [mobileView, setMobileView] = useState('search');
+  const locationParams = new URLSearchParams(location.search);
+  const routeSearchParams = createParamsFromSearchRoute(params['*']);
+  const hasRouteSearchContext = Object.entries(routeSearchParams)
+    .some(([key, value]) => key !== 'page' && hasSearchValue(value));
+  const hasSubmittedSearch = hasRouteSearchContext
+    || locationParams.has('showmap')
+    || locationParams.has('record_ids');
+  const narrowResultView = locationParams.has('showmap') ? 'map' : 'list';
+  const searchTerm = routeSearchParams.search?.trim();
+  const searchLabel = l(
+    SEARCH_FIELD_LABELS[routeSearchParams.search_field] || 'Sökning',
+  );
+  const searchSummary = searchTerm ? `${searchLabel}: ${searchTerm}` : null;
+  const resultTotal = recordsData?.metadata?.total;
+  const resultCountText = resultTotal
+    ? `${resultTotal.value}${resultTotal.relation === 'gte' ? '+' : ''} sökträffar.`
+    : '';
+  const [uiLoading, setUiLoading] = useState(Boolean(loading));
+  const [isMobileMapViewport, setIsMobileMapViewport] = useState(
+    () => getMediaQueryMatch(MOBILE_MAP_MEDIA_QUERY),
+  );
+  const [isWideResultsViewport, setIsWideResultsViewport] = useState(
+    () => getMediaQueryMatch(WIDE_RESULTS_MEDIA_QUERY),
+  );
+  const [shouldLoadMap, setShouldLoadMap] = useState(false);
+  const mapPanelRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
+    const mobileQuery = window.matchMedia(MOBILE_MAP_MEDIA_QUERY);
+    const wideQuery = window.matchMedia(WIDE_RESULTS_MEDIA_QUERY);
+    const onMobileChange = (event) => setIsMobileMapViewport(event.matches);
+    const onWideChange = (event) => setIsWideResultsViewport(event.matches);
 
-    const mql = window.matchMedia('(max-width: 767px)');
-    const onViewportChange = (event) => setIsMobileViewport(event.matches);
-
-    setIsMobileViewport(mql.matches);
-    if (typeof mql.addEventListener === 'function') {
-      mql.addEventListener('change', onViewportChange);
+    setIsMobileMapViewport(mobileQuery.matches);
+    setIsWideResultsViewport(wideQuery.matches);
+    if (typeof mobileQuery.addEventListener === 'function') {
+      mobileQuery.addEventListener('change', onMobileChange);
+      wideQuery.addEventListener('change', onWideChange);
     } else {
-      mql.addListener(onViewportChange);
+      mobileQuery.addListener(onMobileChange);
+      wideQuery.addListener(onWideChange);
     }
 
     return () => {
-      if (typeof mql.removeEventListener === 'function') {
-        mql.removeEventListener('change', onViewportChange);
+      if (typeof mobileQuery.removeEventListener === 'function') {
+        mobileQuery.removeEventListener('change', onMobileChange);
+        wideQuery.removeEventListener('change', onWideChange);
       } else {
-        mql.removeListener(onViewportChange);
+        mobileQuery.removeListener(onMobileChange);
+        wideQuery.removeListener(onWideChange);
       }
     };
   }, []);
 
   useEffect(() => {
-    if (!isMobileViewport) {
-      setMobileView('search');
-    }
-  }, [isMobileViewport]);
-
-  useEffect(() => {
-    let t;
-    if (loading) t = setTimeout(() => setUiLoading(true), 150);
+    let timeoutId;
+    if (loading) timeoutId = setTimeout(() => setUiLoading(true), 150);
     else setUiLoading(false);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timeoutId);
   }, [loading]);
 
-  // Preserve last non-empty mapData across mode switches
   const lastMapDataRef = useRef(mapData);
   useEffect(() => {
     if (mapData && Object.keys(mapData).length > 0) {
@@ -78,53 +122,182 @@ function MapWrapper({
   const mapSummaryText = mapResultCount > 0
     ? `Kartan visar ${mapResultCount} platser i nuvarande urval.`
     : 'Kartan visar inga platser i nuvarande urval.';
+  const showWideMap = active && isWideResultsViewport;
+  const listIsVisible = active
+    && (isWideResultsViewport || narrowResultView === 'list');
+  const mapIsVisible = active
+    && (showWideMap || narrowResultView === 'map');
+  const showContainedNarrowMap = mapIsVisible && !isWideResultsViewport;
+
+  useEffect(() => {
+    if (!mapIsVisible || shouldLoadMap) return undefined;
+    const mapPanel = mapPanelRef.current;
+    if (!mapPanel) return undefined;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setShouldLoadMap(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      setShouldLoadMap(true);
+      observer.disconnect();
+    }, { threshold: 0.01 });
+    observer.observe(mapPanel);
+
+    return () => observer.disconnect();
+  }, [mapIsVisible, shouldLoadMap]);
+
+  const modeAnnouncement = mode === 'transcribe'
+    ? l('Arbetsläge: Skriv av.')
+    : l('Arbetsläge: Utforska arkivmaterial.');
+  let viewAnnouncement = isWideResultsViewport
+    ? `${modeAnnouncement} ${l('Visar sökträffar som lista med karta.')}`
+    : `${modeAnnouncement} ${l(
+      narrowResultView === 'list'
+        ? 'Visar sökträffar som lista.'
+        : 'Visar sökträffar på karta.',
+    )}`;
+  viewAnnouncement = `${viewAnnouncement} ${resultCountText}`;
+  if (hasSubmittedSearch && searchSummary) {
+    viewAnnouncement = `${viewAnnouncement} ${searchSummary}.`;
+  }
+
+  const changeResultView = useCallback((nextView) => {
+    const nextParams = new URLSearchParams(location.search);
+    nextParams.delete('showlist');
+    nextParams.delete('showmap');
+    if (nextView === 'map') nextParams.set('showmap', '1');
+    const query = nextParams.toString();
+    navigate(`${location.pathname}${query ? `?${query}` : ''}${location.hash}`, {
+      replace: true,
+    });
+  }, [location.hash, location.pathname, location.search, navigate]);
 
   return (
     <div
-      className="relative h-screen w-screen print:hidden"
-      role="region"
-      aria-label="Kartvy för sökresultat"
-      aria-busy={uiLoading || undefined}
-    >
-      <span className="sr-only" aria-live="polite">
-        {mapSummaryText}
-      </span>
-      <MapMenu
-        mode={mode}
-        params={params}
-        recordsData={recordsData}
-        audioRecordsData={audioRecordsData}
-        pictureRecordsData={pictureRecordsData}
-        loading={uiLoading}
-        isMobileViewport={isMobileViewport}
-        mobileView={mobileView}
-        onMobileViewChange={setMobileView}
-      />
-
-      {uiLoading && (
-        <div
-          className="absolute inset-0 z-[1500] grid place-items-center gap-2 bg-black/10 backdrop-blur-[1px]"
-          role="status"
-          aria-live="polite"
-        >
-          <div className="h-10 w-10 rounded-full border-4 border-white border-t-transparent animate-spin" />
-          <span className="sr-only">Laddar kartan...</span>
-        </div>
+      id="results-viewport"
+      className={classNames(
+        'relative w-screen bg-isof print:hidden',
+        isWideResultsViewport && 'grid h-screen overflow-hidden',
+        !isWideResultsViewport && (
+          showContainedNarrowMap
+            ? 'flex h-screen flex-col overflow-hidden'
+            : 'h-screen overflow-x-hidden overflow-y-auto'
+        ),
       )}
+      style={{
+        '--desktop-map-pane-width': 'clamp(340px, 28vw, 480px)',
+        height: showContainedNarrowMap ? '100dvh' : undefined,
+        gridTemplateColumns: isWideResultsViewport
+          ? 'minmax(0, 1fr) var(--desktop-map-pane-width)'
+          : undefined,
+      }}
+      role="region"
+      aria-label={l('Sökresultat')}
+      aria-busy={uiLoading || undefined}
+      data-record-list-scroll={!isWideResultsViewport && listIsVisible ? 'true' : undefined}
+      tabIndex={-1}
+    >
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        {viewAnnouncement}
+      </span>
 
-      <Suspense fallback={<MapLoadingPlaceholder />}>
-        <MapView
-          onMarkerClick={mapMarkerClick}
-          mapData={stableMapData}
-          isMobileViewport={isMobileViewport}
-          mobileView={mobileView}
+      <div
+        className={classNames(
+          'min-w-0',
+          isWideResultsViewport ? 'h-screen overflow-x-hidden overflow-y-auto' : '',
+          showContainedNarrowMap
+            ? 'min-h-0 shrink overflow-x-hidden overflow-y-auto overscroll-contain focus-within:overflow-visible'
+            : '',
+        )}
+        data-record-list-scroll={isWideResultsViewport && listIsVisible ? 'true' : undefined}
+      >
+        <MapMenu
+          mode={mode}
+          params={params}
+          recordsData={recordsData}
+          audioRecordsData={audioRecordsData}
+          pictureRecordsData={pictureRecordsData}
+          loading={uiLoading}
+          hasSubmittedSearch={hasSubmittedSearch}
+          activeResultView={narrowResultView}
+          onResultViewChange={changeResultView}
+          showResultViewControl={!isWideResultsViewport}
         />
-      </Suspense>
+
+        <section
+          id="record-list-panel"
+          className="min-h-screen overflow-x-hidden bg-surface text-body"
+          hidden={!listIsVisible}
+          inert={!listIsVisible || undefined}
+          aria-hidden={!listIsVisible || undefined}
+          aria-label={l('Sökträffar som lista')}
+          aria-busy={uiLoading || undefined}
+          tabIndex={-1}
+        >
+          <Suspense fallback={<RecordListLoadingPlaceholder />}>
+            <RecordListWrapper
+              disableRouterPagination
+              mode={mode}
+              layoutContext="results-pane"
+              resultTotal={resultTotal}
+            />
+          </Suspense>
+        </section>
+      </div>
+
+      <div
+        id="map-result-panel"
+        ref={mapPanelRef}
+        hidden={!mapIsVisible}
+        inert={!mapIsVisible || undefined}
+        aria-hidden={!mapIsVisible || undefined}
+        role="region"
+        aria-label={l('Sökträffar på karta')}
+        tabIndex={-1}
+        className={classNames(
+          'relative w-full overflow-hidden bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-[-2px]',
+          isWideResultsViewport
+            ? 'results-map-panel--split h-screen border-l border-border'
+            : '',
+          showContainedNarrowMap
+            ? 'min-h-[clamp(16rem,40dvh,28rem)] flex-1'
+            : !isWideResultsViewport && 'min-h-screen h-screen',
+        )}
+      >
+        <span className="sr-only">{mapSummaryText}</span>
+        {uiLoading && (
+          <div
+            className="absolute inset-0 z-[1100] grid place-items-center gap-2 bg-black/10 backdrop-blur-[1px]"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent" />
+            <span className="sr-only">{l('Laddar kartan...')}</span>
+          </div>
+        )}
+        {shouldLoadMap ? (
+          <Suspense fallback={<MapLoadingPlaceholder />}>
+            <MapView
+              onMarkerClick={mapMarkerClick}
+              mapData={stableMapData}
+              isMobileViewport={isMobileMapViewport}
+              active={mapIsVisible}
+              layout={isWideResultsViewport ? 'desktop-split' : 'full'}
+            />
+          </Suspense>
+        ) : (
+          <MapLoadingPlaceholder />
+        )}
+      </div>
     </div>
   );
 }
 
 MapWrapper.propTypes = {
+  active: PropTypes.bool.isRequired,
   mapMarkerClick: PropTypes.func.isRequired,
   mode: PropTypes.string.isRequired,
   params: PropTypes.object.isRequired,

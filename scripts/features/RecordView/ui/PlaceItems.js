@@ -2,8 +2,9 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import SimpleMap from '../../../components/views/SimpleMap';
 import { l } from '../../../lang/Lang';
+import { createDetailLocation } from '../../../utils/routeHelper';
 
-function PlaceItems({ data, routeParams = '' }) {
+function PlaceItems({ data, location }) {
   const { places = [] } = data;
 
   if (!places.length) return null;
@@ -17,7 +18,12 @@ function PlaceItems({ data, routeParams = '' }) {
     const placeName = `${specification ? `${specification} i ` : ''}${name}, ${fylke || harad}, ${
       landskap || ''
     }`;
-    const linkUrl = `/places/${id}${routeParams}`;
+    const linkUrl = createDetailLocation({
+      resource: 'places',
+      id,
+      pathname: location.pathname,
+      search: location.search,
+    });
 
     return (
       <tr
@@ -78,7 +84,10 @@ PlaceItems.propTypes = {
       }),
     ),
   }),
-  routeParams: PropTypes.string,
+  location: PropTypes.shape({
+    pathname: PropTypes.string.isRequired,
+    search: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default PlaceItems;

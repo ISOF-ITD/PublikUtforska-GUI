@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from 'react';
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faDownload,
@@ -17,6 +17,7 @@ import config from "../../config";
 import ConfirmationModal from "./ConfirmationModal";
 import useAudioDuration from "./hooks/useAudioDuration";
 import { secondsToMMSS } from "../../utils/timeHelper";
+import { createRecordTaskLocation } from '../../utils/routeHelper';
 
 function AudioItemRow({
   item,
@@ -45,8 +46,15 @@ function AudioItemRow({
   canContribute,
   highlightData,
 }) {
+  const location = useLocation();
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
+  const correctionLocation = createRecordTaskLocation({
+    recordId,
+    taskPath: `audio/${item.id}/transcribe`,
+    pathname: location.pathname,
+    search: location.search,
+  });
 
   const durationSec = useAudioDuration(`${config.audioUrl}${item.source}`);
 
@@ -255,7 +263,7 @@ function AudioItemRow({
             // Read-only mode: "canContribute" is not nessesary
             hasUtterances && (
               <Link
-                to={`/records/${recordId}/audio/${item.id}/transcribe`}
+                to={correctionLocation}
                 className="text-link hover:text-link-hover transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               >
                 <span className="px-1 underline underline-offset-2">

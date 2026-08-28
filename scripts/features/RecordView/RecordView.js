@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { Suspense, useCallback, useEffect, useMemo } from "react";
+import { Suspense, useCallback, useEffect } from 'react';
 import {
   Await,
   useLoaderData,
@@ -10,10 +10,6 @@ import {
   useRevalidator,
 } from "react-router-dom";
 import PropTypes from "prop-types";
-import {
-  createSearchRoute,
-  createParamsFromRecordRoute,
-} from "../../utils/routeHelper";
 import ContentsElement from "./ui/ContentsElement";
 import HeadwordsElement from "./ui/HeadwordsElement";
 import License from "./ui/License";
@@ -31,16 +27,12 @@ import { getTitleText } from "../../utils/helpers";
 import config from "../../config";
 import AudioItems from "../AudioDescription/AudioItems";
 import RouteViewLoadingPlaceholder from "../../components/RouteViewLoadingPlaceholder";
+import ContributeInfoSection from '../../components/views/ContributeInfoSection';
 
 function RecordView({ mode = "material" }) {
   const { results: resultsPromise } = useLoaderData();
   const location = useLocation();
   const matches = useMatches();
-
-  const routeParams = useMemo(
-    () => createSearchRoute(createParamsFromRecordRoute(location.pathname)),
-    [location.pathname]
-  );
 
   const mediaImageClickHandler = useCallback(
     (mediaItem, mediaList, currentIndex) => {
@@ -56,13 +48,8 @@ function RecordView({ mode = "material" }) {
     []
   );
 
-  // Neutral title while the data is loading or if promise is pending
-  useEffect(() => {
-    document.title = config.siteTitle;
-  }, [location.pathname]);
-
   return (
-    <div className="container" aria-busy="true">
+    <div className="container">
       <Suspense fallback={<LoadingFallback />}>
         <Await resolve={resultsPromise} errorElement={<LoadError />}>
           {(value) => (
@@ -71,7 +58,6 @@ function RecordView({ mode = "material" }) {
               matches={matches}
               location={location}
               mode={mode}
-              routeParams={routeParams}
               mediaImageClickHandler={mediaImageClickHandler}
             />
           )}
@@ -131,7 +117,6 @@ function ResolvedRecord({
   matches,
   location,
   mode,
-  routeParams,
   mediaImageClickHandler,
 }) {
   const [highlightData, raw, sub] = value || [];
@@ -142,24 +127,22 @@ function ResolvedRecord({
   const descriptionHighlights = (
     recordHighlightHit.inner_hits?.['media.description']?.hits?.hits ?? []
   );
+  const activeRecordTask = matches.some((match) => match.handle?.task);
 
   // Set the final title when data is available
   useEffect(() => {
-    if (data) {
+    if (data && !activeRecordTask) {
       document.title = `${getTitleText(data, 0, 0)} – ${config.siteTitle}`;
       return () => {
         // Optional clean-up: reset to site title when leaving the page
         document.title = config.siteTitle;
       };
     }
-  }, [data]);
+  }, [activeRecordTask, data]);
 
   if (!data) return <div>Posten finns inte.</div>;
 
-  const onlyTranscribe = matches.some((m) =>
-    m.pathname.endsWith("/transcribe")
-  );
-  if (onlyTranscribe) {
+  if (activeRecordTask) {
     return <Outlet context={{ data, subrecordsCount }} />;
   }
 
@@ -189,19 +172,25 @@ function ResolvedRecord({
 
         <TranscriptionCTA data={data} />
         <AudioItems data={data} highlightData={highlightData} />
-        <PdfElement data={data} />
         <RecordTextPanel
           data={data}
           highlightData={highlightData}
           mediaImageClickHandler={mediaImageClickHandler}
         />
+        <PdfElement data={data} />
 
         <div className="my-6 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
           <ReferenceLinks data={data} />
           <License data={data} />
         </div>
-        <PersonItems data={data} routeParams={routeParams} />
-        <PlaceItems data={data} routeParams={routeParams} />
+        <PersonItems data={data} location={location} />
+        <PlaceItems data={data} location={location} />
+        <ContributeInfoSection
+          title={getTitleText(data, 0, 0)}
+          type="Uppteckning"
+          country={data.country}
+          id={data.id}
+        />
         <hr />
         <SimilarRecords data={data} />
         <hr />

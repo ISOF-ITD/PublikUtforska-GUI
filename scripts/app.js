@@ -1,12 +1,13 @@
 import { createRoot } from 'react-dom/client';
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider, defer, redirect } from 'react-router-dom';
+import {
+  createBrowserRouter, RouterProvider, defer, redirect,
+} from 'react-router-dom';
 import EventBus from 'eventbusjs';
+import { Toaster } from 'react-hot-toast';
 import Application from './components/Application';
-import RoutePopupWindow from './components/RoutePopupWindow';
+import RoutePageShell from './components/RoutePageShell';
 import RouteViewLoadingPlaceholder from './components/RouteViewLoadingPlaceholder';
-import "../tw.css";
-import { Toaster } from "react-hot-toast";
 
 import {
   getMapFetchLocation,
@@ -22,12 +23,16 @@ import {
 } from './utils/routeHelper';
 
 import '../less/style-basic.less';
-import NavigationContextProvider from './NavigationContext';
+import '../tw.css';
 
 const PlaceView = lazy(() => import('./components/views/PlaceView'));
 const PersonView = lazy(() => import('./components/views/PersonView'));
 const RecordView = lazy(() => import('./features/RecordView/RecordView'));
 const CorrectionView = lazy(() => import('./features/ASRCorrection/CorrectionView'));
+const TranscriptionPage = lazy(
+  () => import('./features/TranscriptionPageByPageOverlay/TranscriptionPageByPageOverlay'),
+);
+const StatisticsPage = lazy(() => import('./features/Statistics/StatisticsPage'));
 
 const container = document.getElementById('app');
 const root = createRoot(container);
@@ -35,8 +40,10 @@ const root = createRoot(container);
 window.eventBus = EventBus;
 
 function fetchMapAndCountRecords(params, signal) {
-  const mapPromise = fetch(getMapFetchLocation(params), { signal }).then((r) => r.json());
-  const recordsPromise = fetch(getRecordsCountLocation(params), { signal }).then((r) => r.json());
+  const mapPromise = fetch(getMapFetchLocation(params), { signal })
+    .then((response) => response.json());
+  const recordsPromise = fetch(getRecordsCountLocation(params), { signal })
+    .then((response) => response.json());
   return Promise.all([mapPromise, recordsPromise]);
 }
 
@@ -48,25 +55,24 @@ function fetchPlace(placeId, signal) {
   return fetch(getPlaceFetchLocation(placeId), { signal }).then((r) => r.json());
 }
 
-function fetchRecordAndCountSubrecords(recordId, searchValue = null, signal) {
+function fetchRecordAndCountSubrecords(recordId, searchValue, signal) {
   // if there was a search, also get the highlighted version
- const searchPromise = searchValue
-    ? fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }), { signal }).then((r) => r.json())
+  const searchPromise = searchValue
+    ? fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }), { signal })
+      .then((response) => response.json())
     : Promise.resolve(null);
 
-  const recordPromise = fetch(getRecordFetchLocation(recordId), { signal }).then((r) => r.json());
+  const recordPromise = fetch(getRecordFetchLocation(recordId), { signal })
+    .then((response) => response.json());
 
   // return both
   return Promise.all([searchPromise, recordPromise]);
 }
-
-
 function fetchPerson(personId, signal) {
   return fetch(getPersonFetchLocation(personId), { signal }).then((r) => r.json());
- }
+}
 
-// Normalize old-style "accession_subrecord" IDs to just the accession ID.
-// Example: "03644_49362_1" -> "03644_49362"
+// Normalize old-style accession subrecord IDs to just the accession ID.
 function normalizeRecordId(recordId) {
   const str = String(recordId || '');
   const parts = str.split('_');
@@ -74,7 +80,7 @@ function normalizeRecordId(recordId) {
   // Only treat as an "uppteckning suffix" if there are at least 2 underscores
   // and the last segment is all digits (the "_1", "_2", ... part).
   // Only replace when id for outdated one_record starts with ifgh, vff, liu to avoid:
-  // Do not replace last part for ids that may be part of valid IDs, 
+  // Do not replace last part for ids that may be part of valid IDs,
   // for example: s03781:b_f_128340
   if (parts.length > 2 && /^(ifgh|vff|liu)/.test(parts[0])) {
     const last = parts[parts.length - 1];
@@ -86,29 +92,42 @@ function normalizeRecordId(recordId) {
   // Everything else is a canonical ID already
   return str;
 }
-
-
 // prefix is either 'transcribe' or '' for respectively Application mode trnascribe or material
-function createPopupRoutes(prefix) {
+function createPageRoutes(prefix) {
+  const mode = prefix ? 'transcribe' : 'material';
   return [
     {
-      path: "places/:placeId/*?",
-      id: `${prefix}place`,
-      loader: ({ params, request }) =>
-        defer({ results: fetchPlace(params.placeId, request.signal) }),
+      path: 'statistik/*?',
+      id: `${prefix}statistics`,
+      handle: { surface: 'page' },
       element: (
-        <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}place`}>
-          <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" />}>
-            <PlaceView mode={prefix.slice(0, -1) || "material"} />
+        <RoutePageShell>
+          <Suspense fallback={<RouteViewLoadingPlaceholder />}>
+            <StatisticsPage />
           </Suspense>
-        </RoutePopupWindow>
+        </RoutePageShell>
       ),
     },
     {
-      path: "records/:recordId/*?",
+      path: 'places/:placeId/*?',
+      id: `${prefix}place`,
+      handle: { surface: 'page' },
+      loader: ({ params, request }) => (
+        defer({ results: fetchPlace(params.placeId, request.signal) })
+      ),
+      element: (
+        <RoutePageShell>
+          <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" />}>
+            <PlaceView mode={mode} />
+          </Suspense>
+        </RoutePageShell>
+      ),
+    },
+    {
+      path: 'records/:recordId',
       id: `${prefix}record`,
-      loader: ({ params: { recordId, "*": star }, request }) => {
-        // 1) Normalize "03644_49362_1" -> "03644_49362"
+      handle: { surface: 'page' },
+      loader: ({ params: { recordId, '*': star }, request }) => {
         const normalizedId = normalizeRecordId(recordId);
 
         // 2) If it changed, redirect to the canonical accession URL
@@ -118,7 +137,7 @@ function createPopupRoutes(prefix) {
           // Works for both "/records/…" and "/transcribe/records/…"
           url.pathname = url.pathname.replace(
             `/records/${recordId}`,
-            `/records/${normalizedId}`
+            `/records/${normalizedId}`,
           );
 
           // Keep any existing ?query params
@@ -126,47 +145,70 @@ function createPopupRoutes(prefix) {
         }
 
         // 3) Normal loader behavior
-        const cleaned = star?.startsWith("audio/") ? "" : star;
-        const { search } = createParamsFromSearchRoute(cleaned);
+        const { search } = createParamsFromSearchRoute(star);
 
         return defer({
           results: fetchRecordAndCountSubrecords(
             normalizedId,
             search,
-            request.signal
+            request.signal,
           ),
         });
       },
+      shouldRevalidate: ({ currentParams, nextParams }) => {
+        if (currentParams.recordId !== nextParams.recordId) return true;
+        const currentContext = removeViewParamsFromRoute(currentParams['*'] || '');
+        const nextContext = removeViewParamsFromRoute(nextParams['*'] || '');
+        return currentContext !== nextContext;
+      },
       element: (
-        <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}record`}>
+        <RoutePageShell>
           <Suspense fallback={<RouteViewLoadingPlaceholder kind="record" />}>
-            <RecordView mode={prefix.slice(0, -1) || "material"} />
+            <RecordView mode={mode} />
           </Suspense>
-        </RoutePopupWindow>
+        </RoutePageShell>
       ),
       // This was added to point to the exact audio file, not used for text transcriptions yet
       children: [
         {
-          path: "audio/:id/transcribe",
+          path: 'audio/:audioId/transcribe/*?',
+          id: `${prefix}record-correction`,
+          handle: { surface: 'page', task: 'correction' },
           element: (
             <Suspense fallback={<RouteViewLoadingPlaceholder kind="correction" />}>
               <CorrectionView />
             </Suspense>
           ),
         },
+        {
+          path: 'transcribe/*?',
+          id: `${prefix}record-transcription`,
+          handle: { surface: 'page', task: 'transcription' },
+          element: (
+            <Suspense fallback={<RouteViewLoadingPlaceholder kind="record" />}>
+              <TranscriptionPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: '*?',
+          id: `${prefix}record-details`,
+        },
       ],
     },
     {
-      path: "persons/:personId/*?",
+      path: 'persons/:personId/*?',
       id: `${prefix}person`,
-      loader: async ({ params: { personId }, request }) =>
-        fetchPerson(personId, request.signal),
+      handle: { surface: 'page' },
+      loader: ({ params: { personId }, request }) => (
+        fetchPerson(personId, request.signal)
+      ),
       element: (
-        <RoutePopupWindow manuallyOpen={false} routeId={`${prefix}person`}>
+        <RoutePageShell>
           <Suspense fallback={<RouteViewLoadingPlaceholder kind="person" />}>
-            <PersonView mode={prefix.slice(0, -1) || "material"} />
+            <PersonView mode={mode} />
           </Suspense>
-        </RoutePopupWindow>
+        </RoutePageShell>
       ),
     },
   ];
@@ -177,7 +219,7 @@ function createRootRoute() {
   return {
     path: '/*?',
     loader: ({ params, request }) => {
-      const basePath = removeViewParamsFromRoute(params['*'] || "");
+      const basePath = removeViewParamsFromRoute(params['*'] || '');
 
       const queryParams = {
         ...createParamsFromSearchRoute(basePath),
@@ -190,23 +232,23 @@ function createRootRoute() {
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),
         audioResults: countRecords(
-          { ...queryParams, category: "contentG5" },
-          request.signal
+          { ...queryParams, category: 'contentG5' },
+          request.signal,
         ),
         pictureResults: countRecords(
-          { ...queryParams, category: "contentG2" },
-          request.signal
+          { ...queryParams, category: 'contentG2' },
+          request.signal,
         ),
       });
     },
     shouldRevalidate: ({ currentParams, nextParams }) => {
-      const current = currentParams['*'] || '';
-      const next = nextParams['*'] || '';
+      const current = removeViewParamsFromRoute(currentParams['*'] || '');
+      const next = removeViewParamsFromRoute(nextParams['*'] || '');
       return current !== next;
     },
     id: 'root',
     element: <Application mode="material" />,
-    children: createPopupRoutes(''),
+    children: createPageRoutes(''),
   };
 }
 
@@ -215,7 +257,7 @@ function createTranscribeRoute() {
   return {
     path: '/transcribe/*?',
     loader: async ({ params, request }) => {
-      const basePath = removeViewParamsFromRoute(params['*'] || "");
+      const basePath = removeViewParamsFromRoute(params['*'] || '');
       const base = createParamsFromSearchRoute(basePath);
 
       const queryParams = {
@@ -223,29 +265,29 @@ function createTranscribeRoute() {
         recordtype: base.recordtype ?? 'one_accession_row',
         // Used in counting untranscribed records
         transcriptionstatus: base.transcriptionstatus ?? 'readytotranscribe,undertranscription',
-        //has_untranscribed_records: base.has_untranscribed_records ?? true,
+        // has_untranscribed_records: base.has_untranscribed_records ?? true,
       };
 
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),
         audioResults: countRecords(
           { ...queryParams, category: 'contentG5' },
-          request.signal
+          request.signal,
         ),
         pictureResults: countRecords(
           { ...queryParams, category: 'contentG2' },
-          request.signal
+          request.signal,
         ),
       });
     },
     shouldRevalidate: ({ currentParams, nextParams }) => {
-      const current = currentParams['*'] || '';
-      const next = nextParams['*'] || '';
-      return JSON.stringify(current) !== JSON.stringify(next);
+      const current = removeViewParamsFromRoute(currentParams['*'] || '');
+      const next = removeViewParamsFromRoute(nextParams['*'] || '');
+      return current !== next;
     },
     id: 'transcribe-root',
     element: <Application mode="transcribe" />,
-    children: createPopupRoutes('transcribe-'),
+    children: createPageRoutes('transcribe-'),
   };
 }
 
@@ -256,9 +298,8 @@ const router = createBrowserRouter([
 ]);
 
 root.render(
-  // vi vill hålla koll på Navigationen i hela appen
-  <NavigationContextProvider>
+  <>
     <RouterProvider router={router} />
     <Toaster position="bottom-center" toastOptions={{ duration: 3500 }} />
-  </NavigationContextProvider>,
+  </>,
 );

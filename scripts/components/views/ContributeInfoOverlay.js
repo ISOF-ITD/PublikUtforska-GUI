@@ -16,6 +16,12 @@ import { getFocusableElements } from "../../utils/focusHelper";
 import { toastOk, toastError } from "../../utils/toast";
 import { IconButton } from "../IconButton";
 
+const MESSAGE_KIND_OPTIONS = [
+  { value: 'information', label: 'Komplettera eller rätta en uppgift' },
+  { value: 'question', label: 'Ställ en fråga' },
+  { value: 'feedback', label: 'Lämna en synpunkt' },
+];
+
 /**
  * Drop‑in modal with focus management, ESC + backdrop close,
  * scroll lock and createPortal. No external deps.
@@ -126,6 +132,7 @@ export default function ContributeInfoOverlay() {
   const [nameInput, setNameInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [messageInput, setMessageInput] = useState("");
+  const [messageKind, setMessageKind] = useState('information');
   const [emailValid, setEmailValid] = useState(true);
 
   // context passed from the event
@@ -144,6 +151,7 @@ export default function ContributeInfoOverlay() {
   const emailId = useId();
   const nameId = useId();
   const msgId = useId();
+  const messageKindId = useId();
 
   const location = useLocation();
 
@@ -173,6 +181,7 @@ export default function ContributeInfoOverlay() {
         setNameInput("");
         setEmailInput("");
         setMessageInput("");
+        setMessageKind('information');
         setEmailValid(true);
         setErrorMsg("");
       }
@@ -223,18 +232,22 @@ export default function ContributeInfoOverlay() {
 
     let subject = ctx.appUrl || window.location.origin || "";
     if (subject.endsWith("/")) subject = subject.slice(0, -1);
+    const messageKindLabel = MESSAGE_KIND_OPTIONS.find(
+      ({ value }) => value === messageKind,
+    )?.label || MESSAGE_KIND_OPTIONS[0].label;
 
     const data = {
       from_email: emailInput,
       from_name: nameInput,
-      subject: `${subject.split(/[/]+/).pop()}: ContributeInfo`,
+      subject: `${subject.split(/[/]+/).pop()}: VetDuMer-${messageKind}`,
       recordid: ctx.id,
-      message:
-        `${ctx.type}: ${ctx.title}\n${location.pathname}\n\n` +
-        `Från: ${nameInput || l("Anonym")} (${
-          emailInput || l("ingen e-post")
-        })\n\n` +
-        `${messageInput}`,
+      message: [
+        `Ärende: ${messageKindLabel}\n${ctx.type}: ${ctx.title}\n${location.pathname}`,
+        `Från: ${nameInput || l('Anonym')} (${
+          emailInput || l('ingen e-post')
+        })`,
+        messageInput,
+      ].join('\n\n'),
     };
 
     const controller = new AbortController();
@@ -303,9 +316,9 @@ export default function ContributeInfoOverlay() {
     >
       <div className="overlay-header m-0 p-0">
         <div className="flex items-center justify-between !m-0 bg-center text-white font-bold text-[1.2rem] rounded-t-md">
-          <h1 id={headerTitleId} className="m-0">
+          <h2 id={headerTitleId} className="m-0">
             {l("Vet du mer?")}
-          </h1>
+          </h2>
           <IconButton
             icon={faXmark}
             label={l("stäng")}
@@ -317,22 +330,26 @@ export default function ContributeInfoOverlay() {
 
       <form onSubmit={handleSubmit} noValidate className="">
         {/* Intro / description */}
-        <span id={headerDescId}>
-          {config.siteOptions.contributeInfoText ||
-            l(
-              "Känner du till någon av personerna som nämns eller har mer sammanhang? " +
-                "Kontakta oss gärna! Vill du hjälpa till mer? På Institutets webbplats publiceras frågelistor."
-            )}
-          &nbsp;
-          <a
-            href="https://www.isof.se/folkminnen/beratta-for-oss.html"
-            target="_blank"
-            rel="noreferrer"
-            className="!mb-4"
-          >
-            <strong>{l("Läs mer.")}</strong>
-          </a>
-        </span>
+        <div id={headerDescId}>
+          <p className="mb-3 text-body">
+            {l('Här kan du komplettera eller rätta en uppgift, ställa en fråga eller lämna en synpunkt om materialet.')}
+          </p>
+          {config.siteOptions.contributeInfoText && (
+            <details className="mb-4 rounded border border-border bg-surface-muted px-3 py-2 text-body">
+              <summary className="cursor-pointer font-semibold text-link">
+                {l('Mer om att bidra med kunskap')}
+              </summary>
+              <p className="mb-2 mt-3">{config.siteOptions.contributeInfoText}</p>
+              <a
+                href="https://www.isof.se/folkminnen/beratta-for-oss.html"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <strong>{l('Läs mer.')}</strong>
+              </a>
+            </details>
+          )}
+        </div>
         {/* Inline status */}
         {errorMsg && (
           <div
@@ -343,6 +360,33 @@ export default function ContributeInfoOverlay() {
             {errorMsg}
           </div>
         )}
+
+        <fieldset className="mb-4 border-0 p-0">
+          <legend className="mb-2 font-medium text-body">
+            {l('Vad gäller ditt meddelande?')}
+          </legend>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {MESSAGE_KIND_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                htmlFor={`${messageKindId}-${option.value}`}
+                className="flex cursor-pointer items-start gap-2 rounded border border-border bg-surface px-3 py-2 text-body hover:bg-surface-hover"
+              >
+                <input
+                  id={`${messageKindId}-${option.value}`}
+                  type="radio"
+                  name="message-kind"
+                  value={option.value}
+                  checked={messageKind === option.value}
+                  onChange={(event) => setMessageKind(event.target.value)}
+                  disabled={sending}
+                  className="mt-1 shrink-0 accent-primary"
+                />
+                <span>{l(option.label)}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         {/* Name */}
         <label htmlFor={nameId} className="block font-medium !mt-4">

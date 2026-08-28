@@ -186,7 +186,6 @@ export default {
     // Inaktivera länker till informanter, visa bara namnet
     // disableInformantLinks: true,
 
-    feedbackText: 'Har du frågor eller synpunkter på hur applikationen fungerar? Har du hittat fel, till exempel i avskrifterna? Kontakta oss gärna!',
     contributeInfoText: 'Känner du till någon av personerna som nämns: en upptecknare, någon som intervjuats eller som nämns i en berättelse? Vid 1900-talets början var arkiven framför allt intresserade av berättelserna, inte berättarna. Därför vet vi idag ganska lite om människorna i arkiven. Kontakta oss gärna nedan om du har information om eller fotografier på någon av personerna som nämns på uppteckningen! 					Vill du vara med och bevara minnen och berättelser från vår tid till framtiden? På Institutets webbplats publiceras regelbundet frågelistor om olika ämnen. ',
     helpText: 'Här kan du läsa mer om hur du använder applikationen: Här kan du läsa mer om hur du bidrar genom att t.ex. skriva av uppteckningar: ',
     helpTexts: {
@@ -200,17 +199,6 @@ export default {
                     <a href="https://www.isof.se/arkiv-och-insamling/digitala-arkivtjanster/folke/instruktioner-och-sokhjalp"><strong>Läs mer</strong></a>
                 </p>
         </div>`,
-      },
-      similarRecords: {
-        title: 'Hur "Liknande uppteckningar" tas fram',
-        content: `<div>
-        <p><strong>Liknande uppteckningar genereras genom att analysera innehållet i den valda uppteckningen och identifiera andra uppteckningar med liknande ord och teman.</strong></p>
-        <p>
-          När en uppteckning visas analyseras dess innehåll noggrant för att identifiera viktiga nyckelord och teman. Dessa identifierade element används sedan för
-          att söka igenom databasen och hitta andra uppteckningar som delar liknande ämnen eller termer. Resultatet är en lista med uppteckningar som är relevanta och relaterade
-          till den ursprungliga uppteckningen, vilket underlättar utforskning av liknande innehåll.
-        </p>
-      </div>`,
       },
     },
     copyrightContent: {
