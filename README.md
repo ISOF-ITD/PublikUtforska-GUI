@@ -37,6 +37,117 @@ Recommended VS Code extensions:
 
 `AGENTS.md` and `.github/copilot-instructions.md` have project instructions for coding assistants.
 
+## Intro-overlay och SiteVision
+
+Folke visar SiteVisions hjälpsidor i en iframe. SiteVision och Folke ligger på
+olika webbadresser, så koden på de två sidorna får inte anropa varandras
+funktioner direkt. De skickar i stället små meddelanden till varandra med
+`window.postMessage`.
+
+Folke-sidan finns i [`IntroOverlay.js`](scripts/components/views/IntroOverlay.js).
+Adressen till SiteVision och namnet på startsidan finns i
+[`scripts/config.js`](scripts/config.js). [`MapMenu`](scripts/components/MapMenu.js)
+öppnar och stänger overlayen och kommer ihåg i `localStorage` att användaren har
+sett den.
+
+### Filerna i SiteVision
+
+SiteVision-filerna finns inte i detta repository. Om meddelandena ändras här
+måste de därför även ändras i SiteVision.
+
+#### `postMessage.js`
+
+Den här filen ligger i sidmallen och körs på alla hjälpsidor.
+
+- När en sida har laddats skickar skriptet sidans adress till Folke som
+  `newSrc`. Folke sparar den i URL-parametern `k`. Det gör att en viss hjälpsida
+  kan öppnas igen direkt. Startsidan blir `k=start`.
+- När användaren klickar på en länk med `target="_parent"` skickar skriptet
+  `navigateAway`. Folke stänger då overlayen innan länken tar över hela
+  webbläsarfönstret.
+- Skriptet skickar också `introScroll` när användaren scrollar. Det behövs inte
+  av den nuvarande Folke-koden, eftersom sökfältet numera ligger inne på
+  SiteVision-sidan och scrollar med innehållet. Koden finns kvar för äldre
+  versioner och kan tas bort när de inte längre behöver stödjas.
+
+Klickkontrollen tittar just nu bara på det element som träffades. Om en länk
+innehåller en ikon eller en `<span>` kan ett klick på det inre elementet därför
+missas. En tåligare lösning är:
+
+```javascript
+const link = event.target.closest('a[href][target="_parent"]');
+```
+
+#### `folke-search-hero.js`
+
+Den här filen ligger bara på startsidan `/folke/start`.
+
+Hela filen ligger i en funktion som körs direkt. Det gör att variablerna i filen
+inte blandas ihop med SiteVisions övriga JavaScript. Mönstret kallas ibland IIFE,
+men namnet är inte viktigt för att förstå lösningen.
+
+Skriptet gör följande:
+
+1. Kontrollerar att sidan visas i en iframe och att adressen är
+   `/folke/start`.
+2. Frågar Folke om den nya sökfunktionen stöds. Frågan skickas högst fem gånger
+   med 400 ms mellan försöken, eftersom Folke ibland behöver lite tid för att
+   starta sin meddelandelyssnare.
+3. Skapar bara sökfältet om Folke svarar att version 1 stöds. En gammal
+   produktionsversion svarar inte, så där visas inget oanvändbart sökfält.
+4. Lägger in CSS och sökformuläret först i sidans `<main>`. CSS-reglerna gäller
+   bara söksektionen och innehåller mobilanpassning och dark mode.
+5. Aktiverar sökknappen när fältet innehåller text. Vid sökning trimmas texten
+   och skickas till Folke som `introSearch`.
+
+Formuläret har en kopplad etikett och hjälptext för skärmläsare, tydlig
+fokusmarkering, läsbara kontraster och ett statusmeddelande när resultatet
+öppnas. Det har också attribut som minskar risken att lösenordshanterare
+misstolkar sökfältet som ett inloggningsfält.
+
+### Meddelanden mellan sidorna
+
+| Från | Meddelande | Vad mottagaren gör |
+| --- | --- | --- |
+| SiteVision | `{ newSrc: window.location.href }` | Folke uppdaterar URL-parametern `k`. |
+| SiteVision | `{ type: 'navigateAway' }` | Folke stänger overlayen efter 100 ms. |
+| SiteVision | `{ type: 'introScroll', scrollY: number }` | Nuvarande Folke-version ignorerar meddelandet. |
+| SiteVision | `{ type: 'introSearchCapabilityRequest', version: 1 }` | Folke svarar om sökfunktionen stöds. |
+| Folke | `{ type: 'introSearchCapabilityResponse', version: 1, supported: true }` | SiteVision skapar sökfältet. |
+| SiteVision | `{ type: 'introSearch', search: string }` | Folke öppnar det vanliga sökresultatet som lista. |
+
+När Folke tar emot en sökning kontrolleras att söktexten verkligen är en text,
+och blanksteg i början och slutet tas bort. En tom sökning ignoreras. En giltig
+sökning använder samma routing som det vanliga sökfältet och behåller aktuellt
+material- eller transkriptionsläge. Overlayen stängs och markeras samtidigt som
+visad.
+
+### Kontroller av avsändaren
+
+Folke tar bara emot meddelanden från den iframe som `IntroOverlay` själv har
+skapat. SiteVision kontrollerar på samma sätt att svaret om sökstöd kommer från
+föräldrafönstret. När förälderns webbadress går att läsa från
+`document.referrer` används den som mottagaradress. `'*'` används som reserv om
+adressen saknas.
+
+### Publicering och test
+
+Sökstödet är gjort så att SiteVision-koden kan publiceras först:
+
+1. Publicera `postMessage.js` och `folke-search-hero.js` i SiteVision.
+2. Kontrollera att den gamla Folke-versionen inte visar sökfältet.
+3. Publicera den nya Folke-versionen.
+4. Ladda om utan cache och kontrollera startsidan och en undersida.
+5. Kontrollera sökning, interna länkar, `target="_parent"`-länkar, mobil bredd
+   samt ljust och mörkt systemtema.
+
+Om sökfältet inte visas, kontrollera först att iframe-adressen är exakt
+`/folke/start` och att SiteVision inte serverar en äldre cachad fil. I
+webbläsarens utvecklarverktyg går det sedan att kontrollera att frågan
+`introSearchCapabilityRequest` skickas och att Folke svarar med
+`introSearchCapabilityResponse`. Kontrollera även `document.referrer` och att
+URL-parametern `k` ändras när en annan hjälpsida öppnas.
+
 ## Deploy code on server
 
 Run on server:
