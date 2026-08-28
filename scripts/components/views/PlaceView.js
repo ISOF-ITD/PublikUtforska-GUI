@@ -109,13 +109,6 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                 </div>
               </div>
 
-              <ContributeInfoSection
-                title={data.name || l('Ort')}
-                type="Ort"
-                country={data.country}
-                id={String(data.id)}
-              />
-
               {/* do not show contextual place results if we're not in a search context */}
               {shouldShowPlaceRecordLists && (
                 <div className="row search-results-container">
@@ -174,8 +167,15 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                   />
                 </div>
               </div>
+              <ContributeInfoSection
+                title={data.name || l('Ort')}
+                type="Ort"
+                country={data.country}
+                id={String(data.id)}
+              />
             </div>
           )}
+
         </Await>
       </Suspense>
 

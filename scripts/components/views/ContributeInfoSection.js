@@ -20,7 +20,7 @@ export default function ContributeInfoSection({
       aria-labelledby={headingId}
     >
       <h3 id={headingId} className="text-xl font-bold mb-4">
-        {l('Hjälp oss förbättra informationen')}
+        {l('Hjälp oss att förbättra informationen')}
       </h3>
       <ContributeInfoButton
         title={title}

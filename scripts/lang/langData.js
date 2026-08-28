@@ -119,7 +119,7 @@ export default {
 		'Tryckt källa': 'Tryckt källa',
 		'Avskriven': 'Avskriven',
 		'Vet du mer?': 'Vet du mer?',
-		'Hjälp oss förbättra informationen': 'Hjelp oss med å forbedre informasjonen',
+		'Hjälp oss att förbättra informationen': 'Hjelp oss med å forbedre informasjonen',
 		'Komplettera eller rätta en uppgift, ställ en fråga eller lämna en synpunkt.': 'Suppler eller rett en opplysning, still et spørsmål eller gi en tilbakemelding.',
 		'Här kan du komplettera eller rätta en uppgift, ställa en fråga eller lämna en synpunkt om materialet.': 'Her kan du supplere eller rette en opplysning, stille et spørsmål eller gi en tilbakemelding om materialet.',
 		'Mer om att bidra med kunskap': 'Mer om å bidra med kunnskap',
