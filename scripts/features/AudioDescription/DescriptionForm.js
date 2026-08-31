@@ -446,7 +446,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
       <div>
         <label htmlFor={fieldIds.name} className="block font-semibold mb-1">
-          Ditt namn (ej obligatoriskt)
+          Ditt namn (inte obligatoriskt)
           <input
             id={fieldIds.name}
             autoComplete="name"
@@ -460,7 +460,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
       </div>
       <div>
         <label htmlFor={fieldIds.email} className="block font-semibold mb-1">
-          Din e-post (ej obligatoriskt)
+          Din e-post (inte obligatoriskt)
           <input
             id={fieldIds.email}
             autoComplete="email"

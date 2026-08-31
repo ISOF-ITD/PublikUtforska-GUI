@@ -11,7 +11,7 @@ export default {
 		//Temporary solution to remove text "Fylke" for Finland (and this solution also Norway)
 		'Fylke': '',
 		// Transcription status to user:
-		'untranscribed':'Ej transkriberad',
+		'untranscribed':'Inte transkriberad',
 		'readytotranscribe':'Nej', 
 		'undertranscription':'Skrivs av',
 		'transcribed':'Granskas', 
@@ -135,7 +135,7 @@ export default {
 		'Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!': 'Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!',
 		'Skriv av': 'Skriv av',
 		// Transcription status to user:
-		'untranscribed':'Ej transkribera', 
+		'untranscribed':'Inte transkriberad', 
 		'readytotranscribe':'Nej', 
 		'transcribed':'Granskas', 
 		'reviewing':'Granskas', 
