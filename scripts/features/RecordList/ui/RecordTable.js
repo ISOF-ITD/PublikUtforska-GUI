@@ -10,9 +10,6 @@ export default function RecordTable({
   highlightRecordsWithMetadataField,
   shouldRenderColumn,
   archiveIdClick,
-  sort,
-  order,
-  handleSort,
   mode,
   useRouteParams,
   smallTitle,
@@ -41,14 +38,6 @@ export default function RecordTable({
     />
   ));
 
-  const ariaSortValue = (key) => {
-    if (sort !== key) return 'none';
-    // aria-sort expects: "ascending" | "descending" | "other" | "none"
-    if (order === 'asc') return 'ascending';
-    if (order === 'desc') return 'descending';
-    return 'none';
-  };
-
   return (
     <div>
       <table
@@ -63,17 +52,7 @@ export default function RecordTable({
 
             {shouldRenderColumn('archive_id')
               && !config.siteOptions.recordList?.hideAccessionpage && (
-                <th scope="col" className="text-left" aria-sort={ariaSortValue('archive.archive_id_row.keyword')}>
-                  <button
-                    type="button"
-                    onClick={() => handleSort('archive.archive_id_row.keyword')}
-                    className="record-table-sort-button inline-flex items-center gap-1 border-0 bg-transparent p-0 align-middle text-link hover:underline m-0"
-                  >
-                    {l('Arkivnummer')}
-                    {sort === 'archive.archive_id_row.keyword'
-                      && (order === 'asc' ? '▼' : '▲')}
-                  </button>
-                </th>
+                <th scope="col" className="text-left">{l('Arkivnummer')}</th>
             )}
 
             {shouldRenderColumn('place') && (
@@ -85,17 +64,7 @@ export default function RecordTable({
                 !== false && <th scope="col" className="text-center">{l('Insamlare')}</th>}
 
             {shouldRenderColumn('year') && (
-              <th scope="col" className="text-center" aria-sort={ariaSortValue('year')}>
-                <button
-                  type="button"
-                  className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-link hover:cursor-pointer hover:underline m-0"
-                  onClick={() => handleSort('year')}
-                >
-                  {sort === 'year' && (order === 'asc' ? '▼' : '▲')}
-                  {' '}
-                  {l('År')}
-                </button>
-              </th>
+              <th scope="col" className="text-center">{l('År')}</th>
             )}
 
             {shouldRenderColumn('material_type')
@@ -105,18 +74,7 @@ export default function RecordTable({
 
             {shouldRenderColumn('transcriptionstatus')
               && !config.siteOptions.recordList?.hideTranscriptionStatus && (
-                <th scope="col" className="text-center" aria-sort={ariaSortValue('transcriptionstatus')}>
-                  <button
-                    type="button"
-                    className="record-table-sort-button inline-flex items-center border-0 bg-transparent p-0 align-middle text-link hover:cursor-pointer hover:underline m-0"
-                    onClick={() => handleSort('transcriptionstatus')}
-                  >
-                    {sort === 'transcriptionstatus'
-                      && (order === 'asc' ? '▼' : '▲')}
-                    {' '}
-                    {l('Avskrivna')}
-                  </button>
-                </th>
+                <th scope="col" className="text-center">{l('Avskrivna')}</th>
             )}
 
             {columns?.includes('transcribedby') && (
@@ -148,9 +106,6 @@ RecordTable.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   shouldRenderColumn: PropTypes.func.isRequired,
   archiveIdClick: PropTypes.func.isRequired,
-  sort: PropTypes.string.isRequired,
-  order: PropTypes.string.isRequired,
-  handleSort: PropTypes.func.isRequired,
   mode: PropTypes.string,
   useRouteParams: PropTypes.bool,
   smallTitle: PropTypes.bool,

@@ -8,6 +8,7 @@ import Pagination from "./ui/Pagination";
 import RecordCards from "./ui/RecordCards";
 import RecordTable from "./ui/RecordTable";
 import RecordViewToggle from "./ui/RecordViewToggle";
+import RecordSortMenu from './ui/RecordSortMenu';
 import {
   createParamsFromSearchRoute,
   createSearchRoute,
@@ -130,6 +131,7 @@ export default function RecordList(props) {
 
   /* ------- desktop view mode (table|cards) ------- */
   const [view, setView] = useState("table"); // desktop default remains table
+  const [sortAnnouncement, setSortAnnouncement] = useState('');
   const [selectedRecordId, setSelectedRecordId] = useState(null);
   const isRecordViewOpen = /\/records\/[^/]+(?:\/|$)/.test(location.pathname);
 
@@ -203,11 +205,11 @@ export default function RecordList(props) {
     }
   };
 
-  const handleSort = (field) => {
-    const newOrder = sort === field && order === "asc" ? "desc" : "asc";
+  const handleSort = ({ field, order: nextOrder, label }) => {
     setSort(field);
-    setOrder(newOrder);
+    setOrder(nextOrder);
     setCurrentPage(1);
+    setSortAnnouncement(`${l('Sortering ändrad till')} ${l(label)}.`);
   };
 
   const markRecordAsActive = useCallback(
@@ -347,6 +349,8 @@ export default function RecordList(props) {
   if (layoutContext === 'results-pane') {
     wideLayoutClass = resultsPaneIsWide ? 'block' : 'hidden';
   }
+  const showWideViewToggle = layoutContext !== 'results-pane'
+    || resultsPaneIsWide;
 
   return (
     <div ref={rootRef} aria-busy={fetching || undefined}>
@@ -384,6 +388,18 @@ export default function RecordList(props) {
             />
           )}
 
+          {showViewToggle && (
+            <div className="mb-3 flex items-center justify-end gap-3">
+              {showWideViewToggle && (
+                <RecordViewToggle value={view} onChange={handleViewChange} />
+              )}
+              <RecordSortMenu sort={sort} order={order} onChange={handleSort} />
+              <p className="sr-only" aria-live="polite" aria-atomic="true">
+                {sortAnnouncement}
+              </p>
+            </div>
+          )}
+
           {/* Mobile: always cards */}
           {showCompactCards && (
             <RecordCards
@@ -402,12 +418,6 @@ export default function RecordList(props) {
 
           {/* Desktop: view toggle + chosen view */}
           <div className={wideLayoutClass}>
-            {showViewToggle && (
-              <div className="flex justify-end mb-3">
-                <RecordViewToggle value={view} onChange={handleViewChange} />
-              </div>
-            )}
-
             {showViewToggle && view === "cards" ? (
               <RecordCards
                 records={records}
@@ -431,9 +441,6 @@ export default function RecordList(props) {
                 }
                 shouldRenderColumn={shouldRenderColumn}
                 archiveIdClick={archiveIdClick}
-                sort={sort}
-                order={order}
-                handleSort={handleSort}
                 mode={mode}
                 useRouteParams={useRouteParams}
                 smallTitle={smallTitle}

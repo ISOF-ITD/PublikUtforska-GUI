@@ -1,51 +1,52 @@
-import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Menu, MenuButton, MenuItem, MenuItems,
 } from '@headlessui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCheck, faChevronDown, faGrip, faTable,
+  faCheck, faChevronDown, faSort,
 } from '@fortawesome/free-solid-svg-icons';
 import { l } from '../../../lang/Lang';
 
-const VIEW_OPTIONS = [
+const SORT_OPTIONS = [
   {
-    value: 'table',
-    label: 'Tabell',
-    icon: faTable,
+    field: 'archive.archive_id_row.keyword',
+    order: 'asc',
+    label: 'Arkivnummer, stigande',
   },
   {
-    value: 'cards',
-    label: 'Kort',
-    icon: faGrip,
+    field: 'archive.archive_id_row.keyword',
+    order: 'desc',
+    label: 'Arkivnummer, fallande',
+  },
+  {
+    field: 'year',
+    order: 'asc',
+    label: 'År, äldst först',
+  },
+  {
+    field: 'year',
+    order: 'desc',
+    label: 'År, nyast först',
   },
 ];
 
-export default function RecordViewToggle({ value, onChange }) {
-  const [viewAnnouncement, setViewAnnouncement] = useState('');
-  const currentOption = VIEW_OPTIONS.find((option) => option.value === value)
-    || VIEW_OPTIONS[0];
-  const buttonLabel = `${l('Visa som')}: ${l(currentOption.label)}`;
-
-  const handleChange = (option) => {
-    onChange(option.value);
-    setViewAnnouncement(
-      `${l('Visningsläge ändrat till')} ${l(option.label)}.`,
-    );
-  };
+export default function RecordSortMenu({ sort, order, onChange }) {
+  const currentOption = SORT_OPTIONS.find(
+    (option) => option.field === sort && option.order === order,
+  ) || SORT_OPTIONS[0];
+  const buttonLabel = `${l('Sortera')}: ${l(currentOption.label)}`;
 
   return (
-    <Menu as="div" className="relative hidden md:block">
+    <Menu as="div" className="relative">
       <MenuButton
-        type="button"
         className={[
           'flex items-center gap-2 rounded border border-border bg-surface px-3 py-1 text-body',
           'hover:bg-surface-hover focus-visible:outline focus-visible:outline-2',
           'focus-visible:outline-offset-2 focus-visible:outline-focus',
         ].join(' ')}
       >
-        <FontAwesomeIcon icon={currentOption.icon} aria-hidden="true" />
+        <FontAwesomeIcon icon={faSort} aria-hidden="true" />
         <span>{buttonLabel}</span>
         <FontAwesomeIcon icon={faChevronDown} aria-hidden="true" />
       </MenuButton>
@@ -58,16 +59,16 @@ export default function RecordViewToggle({ value, onChange }) {
           'focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0',
         ].join(' ')}
       >
-        {VIEW_OPTIONS.map((option) => {
-          const isSelected = option.value === value;
+        {SORT_OPTIONS.map((option) => {
+          const isSelected = option.field === sort && option.order === order;
 
           return (
-            <MenuItem key={option.value}>
+            <MenuItem key={`${option.field}-${option.order}`}>
               {({ focus }) => (
                 <button
                   type="button"
                   aria-current={isSelected ? 'true' : undefined}
-                  onClick={() => handleChange(option)}
+                  onClick={() => onChange(option)}
                   className={[
                     'flex w-full items-center gap-2 whitespace-nowrap rounded px-3 py-2 text-left',
                     focus ? 'bg-surface-hover' : '',
@@ -77,7 +78,6 @@ export default function RecordViewToggle({ value, onChange }) {
                   <span className="inline-flex w-4 justify-center" aria-hidden="true">
                     {isSelected && <FontAwesomeIcon icon={faCheck} />}
                   </span>
-                  <FontAwesomeIcon icon={option.icon} aria-hidden="true" />
                   <span>{l(option.label)}</span>
                   {isSelected && (
                     <span className="sr-only">{` (${l('valt')})`}</span>
@@ -88,15 +88,12 @@ export default function RecordViewToggle({ value, onChange }) {
           );
         })}
       </MenuItems>
-
-      <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {viewAnnouncement}
-      </p>
     </Menu>
   );
 }
 
-RecordViewToggle.propTypes = {
-  value: PropTypes.oneOf(['table', 'cards']).isRequired,
+RecordSortMenu.propTypes = {
+  sort: PropTypes.string.isRequired,
+  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   onChange: PropTypes.func.isRequired,
 };
