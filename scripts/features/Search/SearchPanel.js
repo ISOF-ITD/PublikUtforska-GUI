@@ -34,6 +34,7 @@ import useStarredRecords, {
   STARRED_RECORDS_RETURN_STORAGE_KEY,
 } from '../../hooks/useStarredRecords';
 import RandomTranscriptionPrompt from './ui/RandomTranscriptionPrompt';
+import Spinner from '../../components/Spinner';
 
 export default function SearchPanel({
   mode,
@@ -375,14 +376,13 @@ export default function SearchPanel({
               )}
 
               {loading && query && (
-                <span
+                <Spinner
+                  decorative
+                  size="sm"
                   className={classNames(
-                    'h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent',
-                    hasSelection ? 'hidden' : 'inline-block'
+                    'text-muted',
+                    hasSelection ? 'hidden' : 'inline-block',
                   )}
-                  aria-label="Laddar"
-                  role="status"
-                  aria-live="polite"
                 />
               )}
             </div>

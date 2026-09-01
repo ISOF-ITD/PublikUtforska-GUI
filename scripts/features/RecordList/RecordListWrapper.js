@@ -16,6 +16,7 @@ export default function RecordListWrapper({
   mode = 'material',
   layoutContext = 'viewport',
   resultTotal = null,
+  loading = false,
 }) {
   const params = useParams();
   const location = useLocation();
@@ -77,12 +78,7 @@ export default function RecordListWrapper({
             highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
             disableListPagination={disableListPagination}
             disableRouterPagination={disableRouterPagination}
-            params={{
-              ...searchParams,
-              // Ignore other (older) record types:
-              // In requiredParams in config.js:
-              // recordtype: 'one_accession_row',
-            }}
+            params={searchParams}
             mode={mode}
             hasFilter={mode !== 'transcribe'}
             hasTimeline={!isStarredRecordList}
@@ -91,6 +87,7 @@ export default function RecordListWrapper({
             containerRef={containerRef}
             layoutContext={layoutContext}
             detailSearch={detailSearch}
+            loading={loading}
           />
         </div>
       </div>
@@ -108,4 +105,5 @@ RecordListWrapper.propTypes = {
     relation: PropTypes.string,
     value: PropTypes.number,
   }),
+  loading: PropTypes.bool,
 };

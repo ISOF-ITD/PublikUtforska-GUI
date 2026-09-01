@@ -17,6 +17,7 @@ import {
 } from '../../utils/routeHelper';
 import useRecords from "./hooks/useRecords";
 import classNames from "classnames";
+import RecordListLoadingPlaceholder from '../../components/RecordListLoadingPlaceholder';
 
 const SCROLL_STORAGE_PREFIX = 'recordListScroll:';
 const ACTIVE_RECORD_STORAGE_SUFFIX = ':activeRecord';
@@ -97,6 +98,7 @@ export default function RecordList(props) {
     showViewToggle,
     layoutContext = 'viewport',
     detailSearch = '',
+    loading = false,
   } = props;
 
   const navigate = useNavigate();
@@ -337,7 +339,6 @@ export default function RecordList(props) {
   }, [containerRef, layoutContext]);
 
   /* ------- render ------- */
-  const hasVisibleRecords = records.length > 0;
   const resultsPaneIsWide = resultsPaneWidth >= WIDE_RESULTS_PANE_MIN_WIDTH;
   const showCompactCards = layoutContext !== 'results-pane' || !resultsPaneIsWide;
   const compactCardLayout = layoutContext === 'results-pane'
@@ -351,7 +352,7 @@ export default function RecordList(props) {
     || resultsPaneIsWide;
 
   return (
-    <div ref={rootRef} aria-busy={fetching || undefined}>
+    <div ref={rootRef} aria-busy={loading || undefined}>
       {/* {hasTimeline && (
         <Suspense fallback={<p className="text-center text-subtle">Laddar tidslinje...</p>}>
           <Timeline
@@ -366,7 +367,7 @@ export default function RecordList(props) {
         </Suspense>
       )} */}
 
-      {(!fetching || hasVisibleRecords) && (
+      {!loading && (
         <div
           className={classNames(
             "mb-10 md:mb-2 rounded",
@@ -466,12 +467,10 @@ export default function RecordList(props) {
         </div>
       )}
 
-      {fetching && !hasVisibleRecords && (
-        <p className="text-center">
-          <strong>{l("Söker...")}</strong>
-        </p>
+      {loading && (
+        <RecordListLoadingPlaceholder embedded announce={false} />
       )}
-      {!fetching && records.length === 0 && (
+      {!loading && !fetching && records.length === 0 && (
         <div className="block h-64 text-center py-10">
           <h3>{l("Inga sökträffar.")}</h3>
         </div>
@@ -497,4 +496,5 @@ RecordList.propTypes = {
   showViewToggle: PropTypes.bool,
   layoutContext: PropTypes.oneOf(['viewport', 'results-pane']),
   detailSearch: PropTypes.string,
+  loading: PropTypes.bool,
 };

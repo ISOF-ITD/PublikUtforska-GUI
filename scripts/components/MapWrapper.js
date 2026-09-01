@@ -85,6 +85,8 @@ function MapWrapper({
     ? `${resultTotal.value}${resultTotal.relation === 'gte' ? '+' : ''} sökträffar.`
     : '';
   const [uiLoading, setUiLoading] = useState(Boolean(loading));
+  const [mapUiLoading, setMapUiLoading] = useState(Boolean(loading));
+  const [recordListFetching, setRecordListFetching] = useState(false);
   const [isMobileMapViewport, setIsMobileMapViewport] = useState(
     () => getMediaQueryMatch(MOBILE_MAP_MEDIA_QUERY),
   );
@@ -122,12 +124,36 @@ function MapWrapper({
     };
   }, []);
 
+  const searchLoading = Boolean(loading || recordListFetching);
+
   useEffect(() => {
     let timeoutId;
-    if (loading) timeoutId = setTimeout(() => setUiLoading(true), 150);
+    if (searchLoading) timeoutId = setTimeout(() => setUiLoading(true), 150);
     else setUiLoading(false);
     return () => clearTimeout(timeoutId);
+  }, [searchLoading]);
+
+  useEffect(() => {
+    let timeoutId;
+    if (loading) timeoutId = setTimeout(() => setMapUiLoading(true), 150);
+    else setMapUiLoading(false);
+    return () => clearTimeout(timeoutId);
   }, [loading]);
+
+  useEffect(() => {
+    const handleRecordListFetching = (event) => {
+      setRecordListFetching(Boolean(event?.target));
+    };
+
+    window.eventBus?.addEventListener(
+      'recordList.fetchingPage',
+      handleRecordListFetching,
+    );
+    return () => window.eventBus?.removeEventListener(
+      'recordList.fetchingPage',
+      handleRecordListFetching,
+    );
+  }, []);
 
   const lastMapDataRef = useRef(mapData);
   useEffect(() => {
@@ -228,7 +254,10 @@ function MapWrapper({
       tabIndex={-1}
     >
       <span className="sr-only" aria-live="polite" aria-atomic="true">
-        {viewAnnouncement}
+        {uiLoading ? '' : viewAnnouncement}
+      </span>
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {uiLoading ? l('Söker efter arkivmaterial') : ''}
       </span>
 
       <div
@@ -264,12 +293,13 @@ function MapWrapper({
           aria-busy={uiLoading || undefined}
           tabIndex={-1}
         >
-          <Suspense fallback={<RecordListLoadingPlaceholder />}>
+          <Suspense fallback={<RecordListLoadingPlaceholder announce={false} />}>
             <RecordListWrapper
               disableRouterPagination
               mode={mode}
               layoutContext="results-pane"
               resultTotal={resultTotal}
+              loading={uiLoading}
             />
           </Suspense>
         </section>
@@ -283,6 +313,7 @@ function MapWrapper({
         aria-hidden={!mapIsVisible || undefined}
         role="region"
         aria-label={l('Sökträffar på karta')}
+        aria-busy={mapUiLoading || undefined}
         tabIndex={-1}
         className={classNames(
           'relative w-full overflow-hidden bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-[-2px]',
@@ -295,18 +326,11 @@ function MapWrapper({
         )}
       >
         <span className="sr-only">{mapSummaryText}</span>
-        {uiLoading && (
-          <div
-            className="absolute inset-0 z-[1100] grid place-items-center gap-2 bg-black/10 backdrop-blur-[1px]"
-            role="status"
-            aria-live="polite"
-          >
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent" />
-            <span className="sr-only">{l('Laddar kartan...')}</span>
-          </div>
+        {mapUiLoading && (
+          <MapLoadingPlaceholder overlay announce={false} />
         )}
         {shouldLoadMap ? (
-          <Suspense fallback={<MapLoadingPlaceholder />}>
+          <Suspense fallback={<MapLoadingPlaceholder announce={false} />}>
             <MapView
               onMarkerClick={mapMarkerClick}
               mapData={visibleMapData}
@@ -316,7 +340,7 @@ function MapWrapper({
             />
           </Suspense>
         ) : (
-          <MapLoadingPlaceholder />
+          <MapLoadingPlaceholder announce={false} />
         )}
       </div>
     </div>

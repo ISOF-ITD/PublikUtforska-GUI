@@ -63,7 +63,6 @@ export default function MapMenu({
   const previousModeRef = useRef(mode);
   const initialLoadRef = useRef(true);
   const [justSwitched, setJustSwitched] = useState(false);
-  const [panelLoading, setPanelLoading] = useState(Boolean(loading));
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
   const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
   const lastGoodRef = useRef({
@@ -96,17 +95,6 @@ export default function MapMenu({
       };
     }
   }, [anyTotals, audioRecordsData, pictureRecordsData, recordsData]);
-
-  useEffect(() => {
-    let timeoutId;
-    if (justSwitched && loading) {
-      setPanelLoading(false);
-      return undefined;
-    }
-    if (loading) timeoutId = setTimeout(() => setPanelLoading(true), 150);
-    else setPanelLoading(false);
-    return () => clearTimeout(timeoutId);
-  }, [justSwitched, loading]);
 
   useEffect(() => {
     if (!activateIntroOverlay) return;
@@ -147,6 +135,7 @@ export default function MapMenu({
   const stable = justSwitched && loading
     ? lastGoodRef.current
     : { recordsData, audioRecordsData, pictureRecordsData };
+  const panelLoading = loading && !justSwitched;
   const mapMenuPanelStyle = {
     backgroundImage: `var(--image-header-back-tint), url(${headerBack})`,
     backgroundPosition: 'center top',
