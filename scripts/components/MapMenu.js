@@ -236,7 +236,6 @@ export default function MapMenu({
             onListViewChange={(showList) => {
               onResultViewChange(showList ? 'list' : 'map');
             }}
-            resultViewOnSearch="list"
             showResultViewControl={showResultViewControl}
             showModeSwitch={false}
             showSupplementaryContent={!hasSubmittedSearch}
