@@ -130,7 +130,7 @@ export default function RecordList(props) {
   } = useRecords(params, mode, interval);
 
   /* ------- desktop view mode (table|cards) ------- */
-  const [view, setView] = useState("table"); // desktop default remains table
+  const [view, setView] = useState('cards');
   const [sortAnnouncement, setSortAnnouncement] = useState('');
   const [selectedRecordId, setSelectedRecordId] = useState(null);
   const isRecordViewOpen = /\/records\/[^/]+(?:\/|$)/.test(location.pathname);
