@@ -393,7 +393,7 @@ export default function MapView({
   ), []);
 
   const getSockenName = useCallback((obj) => (
-    obj.name?.replace?.(/ sn$/, ' socken')
+    (obj.name?.replace?.(/ sn$/, ' socken') || '')
     // add landskap if available and is not "ingen"
     + (obj.landskap && obj.landskap.trim().toLocaleLowerCase('sv') !== 'ingen'
       ? `, ${obj.landskap}`
@@ -508,14 +508,31 @@ export default function MapView({
 
   const createSockenCircle = useCallback((obj) => {
     const count = getDocumentCount(obj);
+    const currentZoom = mapView.current?.map?.getZoom() ?? 0;
     const circleTooltip = `${getSockenName(obj)}: ${formatHitCount(count)}`;
+
+    // Adjust circle radius based on document count and zoom level:
+    // The radius increases with the number of documents and the zoom level
+    // but is capped to avoid overly large circles at high zoom levels.
+    // and has a minimum size to ensure visibility at low zoom levels and low document counts.
+    // == fler träffar ger större cirklar, men cirklarna får aldrig bli mindre än den zoomanpassade minimistorleken. ==
+    const circleRadius = Math.max(
+      (count / 14) * (currentZoom / 5),
+      currentZoom / 1.5,
+    );
+
     const sockenCircle = circleMarker([obj.location[0], obj.location[1]], {
       color: 'white',
       fillColor: '#01666e',
-      fillOpacity: 0.65,
+
+      // Adjust fill opacity based on zoom level:
+      // The map is more detailed at higher zoom levels,
+      // so we can use a higher fill opacity to make the circles more visible.
+      fillOpacity: currentZoom < 8 ? 0.65 : 0.9,
+
       title: `${obj.name}`,
       weight: 1,
-      radius: Math.max(count / 14, 3),
+      radius: circleRadius,
       interactive: true,
     }).bindTooltip(
       circleTooltip,
@@ -679,7 +696,7 @@ export default function MapView({
   }, [updateMap]);
 
   const handleZoomEnd = useCallback(() => {
-    updateMap();
+    updateMap({ force: true });
   }, [updateMap]);
 
   // Keep overlays in sync on zoom changes
