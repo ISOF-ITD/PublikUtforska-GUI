@@ -6,7 +6,7 @@ import "../../lib/leaflet.active-layers";
 
 import mapHelper from "../../utils/mapHelper";
 
-const SWEDEN_BOUNDS = latLngBounds(
+export const SWEDEN_BOUNDS = latLngBounds(
   [55.34267812700013, 11.108164910000113],
   [69.03635569300009, 24.163413534000114],
 );

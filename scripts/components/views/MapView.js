@@ -3,6 +3,7 @@ import {
 } from 'react';
 import {
   circleMarker,
+  latLngBounds,
   layerGroup,
 } from 'leaflet';
 // import L, {
@@ -15,7 +16,7 @@ import {
 import '../../lib/leaflet-heat';
 import PropTypes from 'prop-types';
 
-import MapBase from './MapBase';
+import MapBase, { SWEDEN_BOUNDS } from './MapBase';
 
 /* Inaktiv kluster- och landskapsvy.
 const LANDSCAPE_MAX_ZOOM = 6;
@@ -694,6 +695,26 @@ export default function MapView({
   useEffect(() => {
     updateMap({ force: true });
   }, [updateMap]);
+
+  useEffect(() => {
+    if (!active || !points.length) return;
+
+    const map = mapView.current?.map;
+    if (!map) return;
+
+    const pointsInSweden = points.filter(({ location }) => (
+      SWEDEN_BOUNDS.contains(location)
+    ));
+    if (!pointsInSweden.length) return;
+
+    map.whenReady(() => {
+      map.invalidateSize({ animate: false });
+      map.fitBounds(
+        latLngBounds(pointsInSweden.map(({ location }) => location)),
+        { maxZoom: 7, padding: [24, 24] },
+      );
+    });
+  }, [active, points]);
 
   const handleZoomEnd = useCallback(() => {
     updateMap({ force: true });
