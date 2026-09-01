@@ -466,6 +466,28 @@ export default function MapView({
     });
   }, [getDocumentCount]);
 
+  const createSockenCircle = useCallback((obj) => {
+    const count = getDocumentCount(obj);
+    const sockenCircle = circleMarker([obj.location[0], obj.location[1]], {
+      color: '#01666e',
+      fillColor: '#01666e',
+      fillOpacity: 0.25,
+      title: `${obj.name}`,
+      weight: 1,
+      radius: Math.max(count / 14, 3),
+      interactive: true,
+    }).bindTooltip(
+      `${getSockenName(obj)}: ${formatHitCount(count)}`,
+      { permanent: false, direction: 'top' },
+    );
+
+    if (onMarkerClick) {
+      sockenCircle.on('click', () => onMarkerClick(obj.id));
+    }
+
+    return sockenCircle;
+  }, [getDocumentCount, getSockenName, onMarkerClick]);
+
   const showClusterPreview = useCallback((cluster) => {
     const map = mapView.current?.map;
     if (!map) return;
@@ -509,14 +531,21 @@ export default function MapView({
     if (!map) return;
 
     const doUpdate = () => {
-      const overlayMode = map.getZoom() <= LANDSCAPE_MAX_ZOOM
-        ? 'landscapes'
-        : 'clusters';
+      const overlayMode = 'circles';
+      // const overlayMode = map.getZoom() <= LANDSCAPE_MAX_ZOOM
+      //   ? 'landscapes'
+      //   : 'clusters';
 
       if (!force && renderedOverlayModeRef.current === overlayMode) return;
       removeOverlays(map);
 
-      if (overlayMode === 'landscapes') {
+      if (overlayMode === 'circles') {
+        const circleGroup = layerGroup(points.map(createSockenCircle));
+        if (circleGroup.getLayers().length > 0) {
+          map.addLayer(circleGroup);
+          clusterGroupRef.current = circleGroup;
+        }
+      } else if (overlayMode === 'landscapes') {
         const landscapeMarkers = regions.map(
           (region) => createLandscapeMarker(region, map),
         );
@@ -590,10 +619,12 @@ export default function MapView({
     map.whenReady(doUpdate);
   }, [
     regions,
+    points,
     removeOverlays,
     clearClusterPreview,
     createLandscapeMarker,
     createPointMarker,
+    createSockenCircle,
     getMarkerTotals,
     showLandscapePreview,
     showClusterPreview,
