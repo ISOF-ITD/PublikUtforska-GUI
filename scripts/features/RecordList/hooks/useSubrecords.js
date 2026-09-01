@@ -5,6 +5,8 @@ import { fetchRecordMediaCount } from "../../../utils/helpers";
 import config from "../../../config";
 import buildSegments from "../../../utils/buildSegments";
 
+const EMPTY_ARRAY = [];
+
 /**
  * Loads sub-records + derived counters for a one_accession_row.
  * New data model: if the accession already contains `segments`,
@@ -18,10 +20,10 @@ export default function useSubrecords({
   numberoftranscribedpages,
   transcriptiontype,
   transcriptionstatus,
-  persons = [],
+  persons = EMPTY_ARRAY,
   // new fields that now arrive on the accession
-  segments = [],
-  media = [],
+  segments = EMPTY_ARRAY,
+  media = EMPTY_ARRAY,
   update_status,
 }) {
   const [subrecords, setSubrecords] = useState([]);
