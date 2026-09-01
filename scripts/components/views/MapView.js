@@ -1,23 +1,27 @@
 import {
   useRef, useEffect, useState, useCallback, useMemo, useId,
 } from 'react';
-import L, {
-  marker,
+import {
   circleMarker,
-  DivIcon,
-  Point,
   layerGroup,
-  latLngBounds,
 } from 'leaflet';
-import 'leaflet.markercluster';
+// import L, {
+//   marker,
+//   DivIcon,
+//   Point,
+//   latLngBounds,
+// } from 'leaflet';
+// import 'leaflet.markercluster';
 import '../../lib/leaflet-heat';
 import PropTypes from 'prop-types';
 
 import MapBase from './MapBase';
 
+/* Inaktiv kluster- och landskapsvy.
 const LANDSCAPE_MAX_ZOOM = 6;
 const SOCKEN_MARKER_MIN_ZOOM = 9;
 const FALLBACK_REGION_NAME = '';
+*/
 const MARKER_NAVIGATION_ROW_HEIGHT = 44;
 const MARKER_NAVIGATION_SELECTOR = [
   '.leaflet-marker-pane .leaflet-marker-icon',
@@ -26,6 +30,7 @@ const MARKER_NAVIGATION_SELECTOR = [
 const NEXT_MARKER_KEYS = new Set(['ArrowDown', 'ArrowRight']);
 const PREVIOUS_MARKER_KEYS = new Set(['ArrowUp', 'ArrowLeft']);
 const COUNT_FORMATTER = new Intl.NumberFormat('sv-SE');
+/* Inaktiva hjälpfunktioner för kluster- och landskapsvyn.
 const HTML_ENTITIES = {
   '&': '&amp;',
   '<': '&lt;',
@@ -96,6 +101,7 @@ function findNearestLandscape(point, landscapePoints) {
   }, null);
   return nearestPoint?.landscape || '';
 }
+*/
 
 function getElementCenter(element, containerBounds) {
   const bounds = element.getBoundingClientRect();
@@ -174,14 +180,17 @@ function prepareMarkerElement(element, activeElement) {
   }
 }
 
+/* Inaktiva hjälpfunktioner för kluster- och landskapsvyn.
 function sortPointsById(firstPoint, secondPoint) {
   return String(firstPoint.id).localeCompare(String(secondPoint.id), 'sv');
 }
+*/
 
 function formatHitCount(count) {
   return `${COUNT_FORMATTER.format(count)} ${count === 1 ? 'träff' : 'träffar'}`;
 }
 
+/* Inaktiva formatterare och ikoner för kluster- och landskapsvyn.
 function formatPlaceCount(count) {
   return `${COUNT_FORMATTER.format(count)} ${count === 1 ? 'socken' : 'socknar'}`;
 }
@@ -207,7 +216,10 @@ function getLandscapeClusterDetails(childMarkers) {
     0,
   );
   const regionNames = formatRegionNames(regionData.map((region) => region.name));
-  const summary = `${regionNames}: ${formatHitCount(documentCount)} i ${formatPlaceCount(placeCount)}`;
+  const summary = [
+    `${regionNames}: ${formatHitCount(documentCount)}`,
+    `i ${formatPlaceCount(placeCount)}`,
+  ].join(' ');
 
   return {
     documentCount,
@@ -223,12 +235,20 @@ function createCountIcon(count, { accessibleLabel = '', large = false } = {}) {
   const backgroundClass = count < 100 ? 'bg-primary' : 'bg-primary-hover';
   const escapedLabel = escapeHtml(accessibleLabel);
   const accessibilityAttributes = accessibleLabel
-    ? `role="img" aria-label="${escapedLabel}" title="${escapedLabel}" data-map-marker-label="${escapedLabel}"`
+    ? [
+      'role="img"',
+      `aria-label="${escapedLabel}"`,
+      `title="${escapedLabel}"`,
+      `data-map-marker-label="${escapedLabel}"`,
+    ].join(' ')
     : 'aria-hidden="true"';
 
   return new DivIcon({
     html: `
-      <div ${accessibilityAttributes} data-map-marker-kind="cluster" class="flex items-center justify-center rounded-full border-solid border-primary-hover ${sizeClasses} ${backgroundClass} ${textSizeClass} font-bold text-white shadow-sm">
+      <div ${accessibilityAttributes} data-map-marker-kind="cluster"
+        class="flex items-center justify-center rounded-full border-solid
+          border-primary-hover ${sizeClasses} ${backgroundClass} ${textSizeClass}
+          font-bold text-white shadow-sm">
         ${countText}
       </div>
     `,
@@ -248,8 +268,14 @@ function createSockenCountIcon(count, { accessibleLabel, highlighted = false }) 
 
   return new DivIcon({
     html: `
-      <div role="img" aria-label="${escapedLabel}" title="${escapedLabel}" data-map-marker-kind="socken" data-map-marker-label="${escapedLabel}" class="relative h-11 w-11">
-        <div aria-hidden="true" class="absolute left-1/2 top-1 flex h-8 w-8 -translate-x-1/2 -rotate-45 items-center justify-center rounded-[50%_50%_50%_0] border-2 border-solid border-focus ${backgroundClass} ${highlightClass} shadow-md">
+      <div role="img" aria-label="${escapedLabel}" title="${escapedLabel}"
+        data-map-marker-kind="socken" data-map-marker-label="${escapedLabel}"
+        class="relative h-11 w-11">
+        <div aria-hidden="true"
+          class="absolute left-1/2 top-1 flex h-8 w-8 -translate-x-1/2
+            -rotate-45 items-center justify-center rounded-[50%_50%_50%_0]
+            border-2 border-solid border-focus ${backgroundClass} ${highlightClass}
+            shadow-md">
           <span class="rotate-45 ${textSizeClass} ${textColorClass} font-bold">${countText}</span>
         </div>
       </div>
@@ -260,11 +286,12 @@ function createSockenCountIcon(count, { accessibleLabel, highlighted = false }) 
     popupAnchor: new Point(0, -44),
   });
 }
+*/
 
 export default function MapView({
   onMarkerClick = undefined,
-  highlightedMarkerIcon = undefined,
-  defaultMarkerIcon = undefined,
+  // highlightedMarkerIcon = undefined,
+  // defaultMarkerIcon = undefined,
   layersControlPosition = 'bottomright',
   zoomControlPosition = 'bottomright',
   zoom = undefined,
@@ -280,7 +307,7 @@ export default function MapView({
 
   // Keep references to overlays so we can remove them cleanly
   const clusterGroupRef = useRef(null);
-  const clusterPreviewGroupRef = useRef(null);
+  // const clusterPreviewGroupRef = useRef(null);
   const renderedOverlayModeRef = useRef(null);
   const pendingMarkerFocusRef = useRef(null);
 
@@ -298,6 +325,7 @@ export default function MapView({
       );
     });
   }, [mapData]);
+  /* Inaktiv gruppering för kluster- och landskapsvyn.
   const regions = useMemo(() => {
     const groupedPoints = new Map();
     const landscapePoints = points
@@ -331,30 +359,32 @@ export default function MapView({
       firstRegion.name.localeCompare(secondRegion.name, 'sv')
     ));
   }, [points]);
+  */
   const mapSummaryId = useId();
   const mapKeyboardInstructionsId = useId();
   const mapSummaryText = useMemo(() => {
     if (!points.length) {
       return 'Kartan visar inga platser för nuvarande urval.';
     }
-    return `Kartan visar ${points.length} platser i klustervy. Välj ett kluster för att zooma in eller en sockenmarkör för att visa relaterade sökresultat.`;
+    return `Kartan visar ${points.length} platser i cirkelvy. Välj en cirkel för att visa relaterade sökresultat.`;
   }, [points.length]);
 
+  /* Inaktiv förhandsvisning för kluster- och landskapsvyn.
   const clearClusterPreview = useCallback((map = mapView.current?.map) => {
     if (map && clusterPreviewGroupRef.current) {
       map.removeLayer(clusterPreviewGroupRef.current);
       clusterPreviewGroupRef.current = null;
     }
   }, []);
+  */
 
   const removeOverlays = useCallback((map) => {
-    clearClusterPreview(map);
     if (clusterGroupRef.current) {
       map.removeLayer(clusterGroupRef.current);
       clusterGroupRef.current = null;
     }
     renderedOverlayModeRef.current = null;
-  }, [clearClusterPreview]);
+  }, []);
 
   const getDocumentCount = useCallback((obj) => (
     typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count)
@@ -363,9 +393,15 @@ export default function MapView({
   ), []);
 
   const getSockenName = useCallback((obj) => (
-    obj.name?.replace?.(/ sn$/, ' socken') || ''
+    obj.name?.replace?.(/ sn$/, ' socken')
+    // add landskap if available and is not "ingen"
+    + (obj.landskap && obj.landskap.trim().toLocaleLowerCase('sv') !== 'ingen'
+      ? `, ${obj.landskap}`
+      : ''
+    )
   ), []);
 
+  /* Inaktiva markörer och förhandsvisningar för kluster- och landskapsvyn.
   const createPointMarker = useCallback((obj) => {
     const count = getDocumentCount(obj);
     const sockenName = getSockenName(obj);
@@ -423,7 +459,10 @@ export default function MapView({
     });
 
     const placeCount = region.points.length;
-    const summary = `${region.name}: ${formatHitCount(documentCount)} i ${formatPlaceCount(placeCount)}`;
+    const summary = [
+      `${region.name}: ${formatHitCount(documentCount)}`,
+      `i ${formatPlaceCount(placeCount)}`,
+    ].join(' ');
     const regionMarker = marker(
       [latitudeTotal / placeCount, longitudeTotal / placeCount],
       {
@@ -465,19 +504,21 @@ export default function MapView({
       interactive: false,
     });
   }, [getDocumentCount]);
+  */
 
   const createSockenCircle = useCallback((obj) => {
     const count = getDocumentCount(obj);
+    const circleTooltip = `${getSockenName(obj)}: ${formatHitCount(count)}`;
     const sockenCircle = circleMarker([obj.location[0], obj.location[1]], {
-      color: '#01666e',
+      color: 'white',
       fillColor: '#01666e',
-      fillOpacity: 0.25,
+      fillOpacity: 0.65,
       title: `${obj.name}`,
       weight: 1,
       radius: Math.max(count / 14, 3),
       interactive: true,
     }).bindTooltip(
-      `${getSockenName(obj)}: ${formatHitCount(count)}`,
+      circleTooltip,
       { permanent: false, direction: 'top' },
     );
 
@@ -488,6 +529,7 @@ export default function MapView({
     return sockenCircle;
   }, [getDocumentCount, getSockenName, onMarkerClick]);
 
+  /* Inaktiva förhandsvisningar för kluster- och landskapsvyn.
   const showClusterPreview = useCallback((cluster) => {
     const map = mapView.current?.map;
     if (!map) return;
@@ -525,6 +567,7 @@ export default function MapView({
       clusterPreviewGroupRef.current = previewGroup;
     }
   }, [clearClusterPreview, createPreviewCircle]);
+  */
 
   const updateMap = useCallback(({ force = false } = {}) => {
     const map = mapView.current?.map;
@@ -545,7 +588,10 @@ export default function MapView({
           map.addLayer(circleGroup);
           clusterGroupRef.current = circleGroup;
         }
-      } else if (overlayMode === 'landscapes') {
+      }
+
+      /* Inaktiv kluster- och landskapsvy.
+      else if (overlayMode === 'landscapes') {
         const landscapeMarkers = regions.map(
           (region) => createLandscapeMarker(region, map),
         );
@@ -591,7 +637,10 @@ export default function MapView({
             iconCreateFunction(cluster) {
               const childMarkers = cluster.getAllChildMarkers();
               const { documentCount, placeCount } = getMarkerTotals(childMarkers);
-              const summary = `${region.name}: ${formatHitCount(documentCount)} i ${formatPlaceCount(placeCount)}`;
+              const summary = [
+                `${region.name}: ${formatHitCount(documentCount)}`,
+                `i ${formatPlaceCount(placeCount)}`,
+              ].join(' ');
               return createCountIcon(documentCount, {
                 accessibleLabel: summary,
               });
@@ -612,22 +661,16 @@ export default function MapView({
           clusterGroupRef.current = clusterContainer;
         }
       }
+      */
       renderedOverlayModeRef.current = overlayMode;
     };
 
     // Public API – safe in all cases (fires immediately if ready)
     map.whenReady(doUpdate);
   }, [
-    regions,
     points,
     removeOverlays,
-    clearClusterPreview,
-    createLandscapeMarker,
-    createPointMarker,
     createSockenCircle,
-    getMarkerTotals,
-    showLandscapePreview,
-    showClusterPreview,
   ]);
 
   // Rebuild overlays when data or view changes
@@ -935,8 +978,8 @@ export default function MapView({
 
 MapView.propTypes = {
   onMarkerClick: PropTypes.func,
-  highlightedMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
-  defaultMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
+  // highlightedMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
+  // defaultMarkerIcon: PropTypes.oneOfType([PropTypes.object]),
   layersControlPosition: PropTypes.string,
   zoomControlPosition: PropTypes.string,
   zoom: PropTypes.number,
