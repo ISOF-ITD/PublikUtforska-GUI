@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import {
-  lazy, memo, Suspense, useCallback, useEffect, useRef, useState,
+  lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import MapMenu from './MapMenu';
@@ -19,6 +19,7 @@ const SEARCH_FIELD_LABELS = {
   person: 'Person',
   place: 'Ort',
 };
+const PLACE_NAME_FIELDS = ['name', 'harad', 'landskap', 'lan'];
 
 function hasSearchValue(value) {
   if (Array.isArray(value)) return value.some(hasSearchValue);
@@ -26,6 +27,27 @@ function hasSearchValue(value) {
     return Object.values(value).some(hasSearchValue);
   }
   return value !== null && value !== undefined && value !== '';
+}
+
+// Show only places that match a place search. The API otherwise returns every place
+// linked to a matching record, which can add unrelated locations to the map.
+function filterMapDataByPlaceSearch(data, searchTerm) {
+  if (!Array.isArray(data?.data) || !searchTerm) return data;
+
+  const trimmedSearchTerm = searchTerm.trim();
+  const normalizedSearchTerm = trimmedSearchTerm.toLocaleLowerCase('sv');
+  if (!normalizedSearchTerm) return data;
+
+  return {
+    ...data,
+    data: data.data.filter((point) => (
+      String(point?.id ?? '') === trimmedSearchTerm
+      || PLACE_NAME_FIELDS.some((field) => (
+        typeof point?.[field] === 'string'
+        && point[field].trim().toLocaleLowerCase('sv').startsWith(normalizedSearchTerm)
+      ))
+    )),
+  };
 }
 
 function MapWrapper({
@@ -116,8 +138,13 @@ function MapWrapper({
 
   const hasMapData = mapData && Object.keys(mapData).length > 0;
   const stableMapData = hasMapData ? mapData : lastMapDataRef.current;
-  const mapResultCount = Array.isArray(stableMapData?.data)
-    ? stableMapData.data.length
+  const visibleMapData = useMemo(() => (
+    routeSearchParams.search_field === 'place'
+      ? filterMapDataByPlaceSearch(stableMapData, searchTerm)
+      : stableMapData
+  ), [routeSearchParams.search_field, searchTerm, stableMapData]);
+  const mapResultCount = Array.isArray(visibleMapData?.data)
+    ? visibleMapData.data.length
     : 0;
   const mapSummaryText = mapResultCount > 0
     ? `Kartan visar ${mapResultCount} platser i nuvarande urval.`
@@ -282,7 +309,7 @@ function MapWrapper({
           <Suspense fallback={<MapLoadingPlaceholder />}>
             <MapView
               onMarkerClick={mapMarkerClick}
-              mapData={stableMapData}
+              mapData={visibleMapData}
               isMobileViewport={isMobileMapViewport}
               active={mapIsVisible}
               layout={isWideResultsViewport ? 'desktop-split' : 'full'}
