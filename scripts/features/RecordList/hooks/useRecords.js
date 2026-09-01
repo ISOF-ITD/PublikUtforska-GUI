@@ -199,6 +199,7 @@ export default function useRecords(params, mode, interval) {
         )
       ),
       size: params.size || hitsPerPage,
+      response_profile: 'list',
       search: params.search || undefined,
       search_field: params.search_field || undefined,
       type: params.type,

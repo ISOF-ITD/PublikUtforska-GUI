@@ -104,7 +104,10 @@ export default function RecordListItem(props) {
 
   // does any audio file contain utterances?
   const hasTranscription = media.some(
-    (m) => m.type === "audio" && m.utterances?.utterances?.length > 0
+    (m) => m.type === "audio" && (
+      m.has_transcription
+      || m.utterances?.utterances?.length > 0
+    )
   );
   const transcriptionBadgeClass = [
     'ml-1 inline-flex items-center gap-1 rounded border border-border',

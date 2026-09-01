@@ -103,7 +103,10 @@ export default function RecordCardItem({
 
   const hasTranscription = useMemo(
     () => !!media?.some?.(
-      (m) => m?.type === 'audio' && m?.utterances?.utterances?.length > 0,
+      (m) => m?.type === 'audio' && (
+        m?.has_transcription
+        || m?.utterances?.utterances?.length > 0
+      ),
     ),
     [media],
   );
