@@ -10,6 +10,11 @@ import { l } from '../../../lang/Lang';
 
 const SORT_OPTIONS = [
   {
+    field: '_score',
+    order: 'desc',
+    label: 'Relevans',
+  },
+  {
     field: 'archive.archive_id_row.keyword',
     order: 'asc',
     label: 'Arkivnummer, stigande',
@@ -31,10 +36,18 @@ const SORT_OPTIONS = [
   },
 ];
 
-export default function RecordSortMenu({ sort, order, onChange }) {
-  const currentOption = SORT_OPTIONS.find(
+export default function RecordSortMenu({
+  sort,
+  order,
+  onChange,
+  showRelevance,
+}) {
+  const visibleSortOptions = showRelevance
+    ? SORT_OPTIONS
+    : SORT_OPTIONS.filter((option) => option.field !== '_score');
+  const currentOption = visibleSortOptions.find(
     (option) => option.field === sort && option.order === order,
-  ) || SORT_OPTIONS[0];
+  ) || visibleSortOptions[0];
   const buttonLabel = `${l('Sortera')}: ${l(currentOption.label)}`;
 
   return (
@@ -59,7 +72,7 @@ export default function RecordSortMenu({ sort, order, onChange }) {
           'focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0',
         ].join(' ')}
       >
-        {SORT_OPTIONS.map((option) => {
+        {visibleSortOptions.map((option) => {
           const isSelected = option.field === sort && option.order === order;
 
           return (
@@ -96,4 +109,5 @@ RecordSortMenu.propTypes = {
   sort: PropTypes.string.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   onChange: PropTypes.func.isRequired,
+  showRelevance: PropTypes.bool.isRequired,
 };

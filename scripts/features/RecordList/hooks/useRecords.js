@@ -8,6 +8,15 @@ const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
   config;
 const RECORDS_CACHE_TTL_MS = 5 * 60 * 1000;
 const RECORDS_CACHE_MAX_ENTRIES = 100;
+const ARCHIVE_SORTING = {
+  field: 'archive.archive_id_row.keyword',
+  order: 'asc',
+};
+const RELEVANCE_SORTING = {
+  field: '_score',
+  order: 'desc',
+};
+const ENTITY_SEARCH_FIELDS = new Set(['person', 'place', 'archive_id']);
 const MATERIAL_TRANSCRIPTION_STATUSES = [
   'published',
   'accession',
@@ -16,6 +25,17 @@ const MATERIAL_TRANSCRIPTION_STATUSES = [
   'undertranscription',
 ].join(',');
 const recordsCache = new Map();
+
+function createSearchContext(params = {}) {
+  const search = typeof params.search === 'string' ? params.search.trim() : '';
+  const searchField = params.search_field || '';
+
+  return {
+    key: JSON.stringify([search, searchField]),
+    relevanceSortingAvailable: Boolean(search)
+      && !ENTITY_SEARCH_FIELDS.has(searchField),
+  };
+}
 
 function createCacheKey(fetchParams) {
   return JSON.stringify(fetchParams || {});
@@ -67,6 +87,14 @@ function writeCached(cacheKey, records, total) {
  * calls this hook is almost stateless.
  */
 export default function useRecords(params, mode, interval) {
+  const searchContext = useMemo(
+    () => createSearchContext(params),
+    [params.search, params.search_field],
+  );
+  const defaultSorting = searchContext.relevanceSortingAvailable
+    ? RELEVANCE_SORTING
+    : ARCHIVE_SORTING;
+
   /* ---------------- state ---------------- */
   const [records, setRecords] = useState([]);
   const [total, setTotal] = useState(0);
@@ -74,10 +102,20 @@ export default function useRecords(params, mode, interval) {
   const [currentPage, setCurrentPage] = useState(params.page || 1);
   const [filter, setFilter] = useState("");
   const [yearFilter, setYearFilter] = useState(null);
-  const [sort, setSort] = useState("archive.archive_id_row.keyword");
-  const [order, setOrder] = useState("asc");
+  const [sorting, setSortingState] = useState(() => ({
+    contextKey: searchContext.key,
+    ...defaultSorting,
+  }));
   const [fetching, setFetching] = useState(false);
   const activeCacheKeyRef = useRef(null);
+
+  const sortingMatchesSearchContext = sorting.contextKey === searchContext.key;
+  const contextSorting = sortingMatchesSearchContext ? sorting : defaultSorting;
+  const sort = params.sort || contextSorting.field;
+  const order = params.order || contextSorting.order;
+  const effectiveCurrentPage = sortingMatchesSearchContext
+    ? currentPage
+    : params.page || 1;
 
   /* ---------------- helpers ---------------- */
   const uniqueId = useMemo(
@@ -127,11 +165,38 @@ export default function useRecords(params, mode, interval) {
     setCurrentPage(params.page || 1);
   }, [params.page]);
 
+  useEffect(() => {
+    if (sortingMatchesSearchContext) return;
+
+    setSortingState({
+      contextKey: searchContext.key,
+      ...defaultSorting,
+    });
+    setCurrentPage(params.page || 1);
+  }, [
+    defaultSorting,
+    params.page,
+    searchContext.key,
+    sortingMatchesSearchContext,
+  ]);
+
+  const setSorting = useCallback(({ field, order: nextOrder }) => {
+    setSortingState({
+      contextKey: searchContext.key,
+      field,
+      order: nextOrder,
+    });
+    setCurrentPage(1);
+  }, [searchContext.key]);
+
   const getFetchParams = useCallback(
     () => ({
       from: Math.max(
         0,
-        Math.min((currentPage - 1) * hitsPerPage, maxTotal - hitsPerPage)
+        Math.min(
+          (effectiveCurrentPage - 1) * hitsPerPage,
+          maxTotal - hitsPerPage,
+        )
       ),
       size: params.size || hitsPerPage,
       search: params.search || undefined,
@@ -173,8 +238,8 @@ export default function useRecords(params, mode, interval) {
         (mode === "transcribe" ? "one_accession_row" : filter || null),
       person_id: params.person_id || undefined,
       socken_id: params.place_id || undefined,
-      sort: params.sort || sort || undefined,
-      order: params.order || order || undefined,
+      sort: sort || undefined,
+      order: order || undefined,
       ...(filterParameterName && filterParameterValues && "filter" in params
         ? {
             [filterParameterName]:
@@ -184,7 +249,7 @@ export default function useRecords(params, mode, interval) {
           }
         : {}),
     }),
-    [currentPage, params, yearFilter, mode, filter, sort, order]
+    [effectiveCurrentPage, params, yearFilter, mode, filter, sort, order]
   );
 
   /* ---------------- fetch ---------------- */
@@ -240,14 +305,14 @@ export default function useRecords(params, mode, interval) {
     setFilter,
     setYearFilter,
     setCurrentPage,
-    setSort,
-    setOrder,
+    setSorting,
 
     /* values the UI layer needs to know about */
-    currentPage,
+    currentPage: effectiveCurrentPage,
     filter,
     yearFilter,
     sort,
     order,
+    relevanceSortingAvailable: searchContext.relevanceSortingAvailable,
   };
 }

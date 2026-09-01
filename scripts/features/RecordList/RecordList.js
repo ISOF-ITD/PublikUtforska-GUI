@@ -124,8 +124,8 @@ export default function RecordList(props) {
     uniqueId,
     sort,
     order,
-    setSort,
-    setOrder,
+    setSorting,
+    relevanceSortingAvailable,
     setYearFilter,
   } = useRecords(params, mode, interval);
 
@@ -206,9 +206,7 @@ export default function RecordList(props) {
   };
 
   const handleSort = ({ field, order: nextOrder, label }) => {
-    setSort(field);
-    setOrder(nextOrder);
-    setCurrentPage(1);
+    setSorting({ field, order: nextOrder });
     setSortAnnouncement(`${l('Sortering ändrad till')} ${l(label)}.`);
   };
 
@@ -393,7 +391,12 @@ export default function RecordList(props) {
               {showWideViewToggle && (
                 <RecordViewToggle value={view} onChange={handleViewChange} />
               )}
-              <RecordSortMenu sort={sort} order={order} onChange={handleSort} />
+              <RecordSortMenu
+                sort={sort}
+                order={order}
+                onChange={handleSort}
+                showRelevance={relevanceSortingAvailable}
+              />
               <p className="sr-only" aria-live="polite" aria-atomic="true">
                 {sortAnnouncement}
               </p>
