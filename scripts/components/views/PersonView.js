@@ -183,7 +183,6 @@ export default function PersonView({ mode = "material" }) {
           <RecordList
             disableRouterPagination
             disableAutoFetch
-            showViewToggle={false}
             params={recordListParams}
             mode={mode}
             hasFilter={mode !== "transcribe"}

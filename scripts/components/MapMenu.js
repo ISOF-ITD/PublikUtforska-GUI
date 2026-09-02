@@ -3,14 +3,22 @@ import {
   useCallback, useEffect, useRef, useState,
 } from 'react';
 import PropTypes from 'prop-types';
-import { faChartColumn, faQuestion } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChartColumn,
+  faQuestion,
+  faStar,
+} from '@fortawesome/free-solid-svg-icons';
+import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Folkelogga from '../../img/folke-white.svg';
 import headerBack from '../../img/header-back.gif';
 import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
 import { l } from '../lang/Lang';
 import SearchPanel from '../features/Search/SearchPanel';
+import useStarredRecords, {
+  STARRED_RECORDS_RETURN_STORAGE_KEY,
+} from '../hooks/useStarredRecords';
 import useTranscriptionAvailability from '../hooks/useTranscriptionAvailability';
 import { createStatisticsLocation } from '../utils/routeHelper';
 import FilterSwitch from './FilterSwitch';
@@ -60,6 +68,11 @@ export default function MapMenu({
 }) {
   const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
+  const navigate = useNavigate();
+  const {
+    ids: starredRecordIds,
+    count: starredRecordCount,
+  } = useStarredRecords();
   const previousModeRef = useRef(mode);
   const initialLoadRef = useRef(true);
   const [justSwitched, setJustSwitched] = useState(false);
@@ -144,6 +157,22 @@ export default function MapMenu({
     location.pathname,
     location.search,
   );
+  const showStarredRecords = useCallback(() => {
+    if (starredRecordIds.length === 0) return;
+
+    const prefix = mode === 'transcribe' ? '/transcribe' : '';
+    const starredParams = new URLSearchParams();
+    starredParams.set('record_ids', starredRecordIds.join(','));
+    try {
+      sessionStorage.setItem(
+        STARRED_RECORDS_RETURN_STORAGE_KEY,
+        `${location.pathname}${location.search}`,
+      );
+    } catch {
+      // Ignore storage failures from private/incognito storage contexts.
+    }
+    navigate(`${prefix}/?${starredParams.toString()}`);
+  }, [location.pathname, location.search, mode, navigate, starredRecordIds]);
 
   return (
     <>
@@ -181,6 +210,33 @@ export default function MapMenu({
               </a>
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={showStarredRecords}
+                disabled={starredRecordCount === 0}
+                aria-label={
+                  starredRecordCount > 0
+                    ? `Visa ${starredRecordCount} stjärnmarkerat arkivmaterial`
+                    : l('Inget stjärnmarkerat arkivmaterial att visa')
+                }
+                title={
+                  starredRecordCount > 0
+                    ? `Visa ${starredRecordCount} stjärnmarkerat arkivmaterial`
+                    : l('Inget stjärnmarkerat arkivmaterial att visa')
+                }
+                className="relative !m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                <FontAwesomeIcon
+                  icon={starredRecordCount > 0 ? faStar : faStarRegular}
+                  aria-hidden="true"
+                  className="text-lg"
+                />
+                {starredRecordCount > 0 && (
+                  <span className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-surface px-1 text-center text-[11px] font-semibold leading-5 !text-primary shadow">
+                    {starredRecordCount}
+                  </span>
+                )}
+              </button>
               <Link
                 to={statisticsLocation}
                 aria-label={l('Statistik')}

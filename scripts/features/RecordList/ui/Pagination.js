@@ -84,7 +84,7 @@ export default function Pagination({
   const pageWindow = buildPageWindow(currentPage, maxPage);
   const previousLabel = l('Föregående');
   const nextLabel = l('Nästa');
-  const rangeLabel = `${l('Visar')} ${from}–${to}`;
+  const rangeLabel = `${total.toLocaleString('sv-SE')} ${l('sökträffar')}. ${l('Visar')} ${from}–${to}`;
   const pageStatus = `${l('Sida')} ${currentPage} ${l('av')} ${maxPage}`;
 
   return (

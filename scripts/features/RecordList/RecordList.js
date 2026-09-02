@@ -21,8 +21,28 @@ import RecordListLoadingPlaceholder from '../../components/RecordListLoadingPlac
 
 const SCROLL_STORAGE_PREFIX = 'recordListScroll:';
 const ACTIVE_RECORD_STORAGE_SUFFIX = ':activeRecord';
+const VIEW_STORAGE_KEY = 'recordListView';
+const VIEW_CHANGE_EVENT = 'recordListViewChange';
 const WIDE_RESULTS_PANE_MIN_WIDTH = 760;
 const Timeline = lazy(() => import("./ui/Timeline"));
+
+function isRecordListView(value) {
+  return value === 'table' || value === 'cards';
+}
+
+function getInitialView(search) {
+  const routeView = new URLSearchParams(search).get('view');
+  if (isRecordListView(routeView)) return routeView;
+
+  try {
+    const storedView = localStorage.getItem(VIEW_STORAGE_KEY);
+    if (isRecordListView(storedView)) return storedView;
+  } catch {
+    // Ignore storage failures (private mode / disabled storage).
+  }
+
+  return 'cards';
+}
 
 function getScrollTopValue(container) {
   if (container === window) {
@@ -95,7 +115,6 @@ export default function RecordList(props) {
     containerRef,
     useRouteParams,
     smallTitle,
-    showViewToggle,
     layoutContext = 'viewport',
     detailSearch = '',
     loading = false,
@@ -132,41 +151,45 @@ export default function RecordList(props) {
   } = useRecords(params, mode, interval);
 
   /* ------- desktop view mode (table|cards) ------- */
-  const [view, setView] = useState('cards');
+  const [view, setView] = useState(() => getInitialView(location.search));
   const [sortAnnouncement, setSortAnnouncement] = useState('');
   const [selectedRecordId, setSelectedRecordId] = useState(null);
   const isRecordViewOpen = /\/records\/[^/]+(?:\/|$)/.test(location.pathname);
-
-  // initialize from URL or localStorage on mount
-  useEffect(() => {
-    const sp = new URLSearchParams(location.search);
-    const v = sp.get("view");
-    if (v === "table" || v === "cards") {
-      setView(v);
-      return;
-    }
-    try {
-      const saved = localStorage.getItem("recordListView");
-      if (saved === "table" || saved === "cards") setView(saved);
-    } catch {
-      /* ignore */
-    }
-    // run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // keep state in sync if user navigates to a URL with ?view=
   useEffect(() => {
     const sp = new URLSearchParams(location.search);
     const v = sp.get("view");
-    if (v === "table" || v === "cards") setView(v);
+    if (isRecordListView(v)) setView(v);
   }, [location.search]);
+
+  // Keep all record lists on the page, as well as other tabs, in sync.
+  useEffect(() => {
+    const handleViewChange = (event) => {
+      if (isRecordListView(event.detail)) setView(event.detail);
+    };
+    const handleStorageChange = (event) => {
+      if (event.key === VIEW_STORAGE_KEY && isRecordListView(event.newValue)) {
+        setView(event.newValue);
+      }
+    };
+
+    window.addEventListener(VIEW_CHANGE_EVENT, handleViewChange);
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener(VIEW_CHANGE_EVENT, handleViewChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleViewChange = (next) => {
     setView(next);
     try {
-      localStorage.setItem("recordListView", next);
-    } catch {}
+      localStorage.setItem(VIEW_STORAGE_KEY, next);
+    } catch {
+      // Ignore storage failures (private mode / disabled storage).
+    }
+    window.dispatchEvent(new CustomEvent(VIEW_CHANGE_EVENT, { detail: next }));
     if (!disableRouterPagination) {
       const newParams = { ...params, view: next };
       // stay on same path; replace history entry to avoid back-button noise
@@ -387,22 +410,20 @@ export default function RecordList(props) {
             />
           )}
 
-          {showViewToggle && (
-            <div className="mb-3 flex items-center justify-end gap-3">
-              {showWideViewToggle && (
-                <RecordViewToggle value={view} onChange={handleViewChange} />
-              )}
-              <RecordSortMenu
-                sort={sort}
-                order={order}
-                onChange={handleSort}
-                showRelevance={relevanceSortingAvailable}
-              />
-              <p className="sr-only" aria-live="polite" aria-atomic="true">
-                {sortAnnouncement}
-              </p>
-            </div>
-          )}
+          <div className="mb-3 flex items-center justify-end gap-3">
+            {showWideViewToggle && (
+              <RecordViewToggle value={view} onChange={handleViewChange} />
+            )}
+            <RecordSortMenu
+              sort={sort}
+              order={order}
+              onChange={handleSort}
+              showRelevance={relevanceSortingAvailable}
+            />
+            <p className="sr-only" aria-live="polite" aria-atomic="true">
+              {sortAnnouncement}
+            </p>
+          </div>
 
           {/* Mobile: always cards */}
           {showCompactCards && (
@@ -422,7 +443,7 @@ export default function RecordList(props) {
 
           {/* Desktop: view toggle + chosen view */}
           <div className={wideLayoutClass}>
-            {showViewToggle && view === "cards" ? (
+            {view === 'cards' ? (
               <RecordCards
                 records={records}
                 params={recordNavigationParams}
@@ -493,7 +514,6 @@ RecordList.propTypes = {
   useRouteParams: PropTypes.bool,
   containerRef: PropTypes.objectOf(PropTypes.any),
   smallTitle: PropTypes.bool,
-  showViewToggle: PropTypes.bool,
   layoutContext: PropTypes.oneOf(['viewport', 'results-pane']),
   detailSearch: PropTypes.string,
   loading: PropTypes.bool,

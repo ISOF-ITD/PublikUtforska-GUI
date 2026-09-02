@@ -82,7 +82,6 @@ export default function RecordListWrapper({
             mode={mode}
             hasFilter={mode !== 'transcribe'}
             hasTimeline={!isStarredRecordList}
-            showViewToggle
             openSwitcherHelptext={openSwitcherHelptext}
             containerRef={containerRef}
             layoutContext={layoutContext}

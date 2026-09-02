@@ -119,7 +119,6 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                     <RecordList
                       key={`PlaceView-RecordList-${data.id}`}
                       disableRouterPagination
-                      showViewToggle={false}
                       highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
                       params={{
                         ...createParamsFromSearchRoute(params['*']),
