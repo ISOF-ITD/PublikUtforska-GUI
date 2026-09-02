@@ -121,7 +121,8 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     // Add first baselayer to map
     //const visibleLayers = [layers[Object.keys(layers)[0]]];
     
-    const defaultBase = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const defaultBase = colorSchemeQuery.matches
       ? 'Lantmäteriet topografisk karta nedtonad'
       : 'Lantmäteriet topografisk karta';
     const visibleLayers = [
@@ -204,6 +205,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       }
     };
     let removeLayerOverlayListeners = () => {};
+    let removeColorSchemeListener = () => {};
 
     map.whenReady(() => {
       fitInitialBounds();
@@ -296,6 +298,23 @@ const MapBase = forwardRef(function MapBase(props, ref) {
 
       map.on("baselayerchange", handleBaseLayerChange);
 
+      const handleColorSchemeChange = (event) => {
+        const nextLayerName = event.matches
+          ? 'Lantmäteriet topografisk karta nedtonad'
+          : 'Lantmäteriet topografisk karta';
+        const nextLayer = layers[nextLayerName];
+        if (!nextLayer || map.hasLayer(nextLayer)) return;
+
+        Object.values(layers).forEach((layer) => {
+          if (map.hasLayer(layer)) map.removeLayer(layer);
+        });
+        nextLayer.addTo(map);
+      };
+      colorSchemeQuery.addEventListener('change', handleColorSchemeChange);
+      removeColorSchemeListener = () => {
+        colorSchemeQuery.removeEventListener('change', handleColorSchemeChange);
+      };
+
       if (typeof window !== "undefined" && window.eventBus) {
         const handler = (event, data) => {
           if (
@@ -330,6 +349,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     return () => {
       try {
         removeLayerOverlayListeners();
+        removeColorSchemeListener();
         if (
           typeof window !== 'undefined'
           && window.eventBus
