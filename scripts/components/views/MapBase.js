@@ -121,10 +121,11 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     // Add first baselayer to map
     //const visibleLayers = [layers[Object.keys(layers)[0]]];
     
-    // Prefer Lantmäteriet as default
-    const DEFAULT_BASE = "Lantmäteriet";
+    const defaultBase = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'Lantmäteriet topografisk karta nedtonad'
+      : 'Lantmäteriet topografisk karta';
     const visibleLayers = [
-      layers[DEFAULT_BASE] ?? layers[Object.keys(layers)[0]],
+      layers[defaultBase] ?? layers[Object.keys(layers)[0]],
     ];
 
     // Add first overlay layer if it’s explicitly not hidden

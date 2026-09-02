@@ -212,6 +212,19 @@ I LESS/CSS används variablerna direkt:
 }
 ```
 
+## Kartan i dark mode
+
+I dark mode används ”Lantmäteriet topografisk karta nedtonad” som standardlager med en särkild dark mode css-filter:
+
+```css
+// map.less
+@media (prefers-color-scheme: dark) {
+  .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(1.1) contrast(0.8);
+  }
+}
+```
+
 ## Länkar i dark mode
 
 Länkfärgerna definieras som CSS custom properties i `less/theme-tokens.less`:

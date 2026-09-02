@@ -6,6 +6,14 @@
 	}
 }
 
+@media (prefers-color-scheme: dark) {
+	// TODO: Jobba med vector tiles istället för att invertera raster tiles.
+	// Invertering är inte bra för kartor med mycket färg.
+	.leaflet-tile-pane {
+		filter: invert(1) hue-rotate(180deg) brightness(1.1) contrast(0.8);
+	}
+}
+
 .leaflet-popup-content-wrapper {
 	border-radius: 3px;
 }
