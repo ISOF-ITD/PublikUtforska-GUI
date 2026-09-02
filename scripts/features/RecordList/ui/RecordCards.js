@@ -15,7 +15,7 @@ export default function RecordCards({
   if (layout === 'pane-compact') {
     wrapperClass = 'space-y-4';
   } else if (layout === 'desktop-grid') {
-    wrapperClass = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+    wrapperClass = 'grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-4';
   }
 
   return (

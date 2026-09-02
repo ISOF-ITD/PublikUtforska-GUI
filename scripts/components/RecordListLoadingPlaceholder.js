@@ -23,7 +23,7 @@ export default function RecordListLoadingPlaceholder({
       <div aria-hidden="true">
         {!embedded && (
           <header className="bg-primary px-4 pb-6 pt-[9rem] md:px-8 md:py-8">
-            <div className="mx-auto w-full max-w-6xl">
+            <div className="mx-auto w-full max-w-screen-2xl">
               <div className="h-8 w-2/3 rounded bg-surface/70 motion-safe:animate-pulse" />
             </div>
           </header>
@@ -31,7 +31,7 @@ export default function RecordListLoadingPlaceholder({
 
         <div className={embedded
           ? 'w-full py-4'
-          : 'mx-auto w-full max-w-6xl px-4 pb-28 pt-6 md:px-8 md:pb-24'}
+          : 'mx-auto w-full max-w-screen-2xl px-4 pb-28 pt-6 md:px-8 md:pb-24'}
         >
           <div className="w-full space-y-4">
             <div className="rounded-2xl border border-border bg-gradient-to-br from-surface-muted via-surface to-surface p-4 shadow-sm">

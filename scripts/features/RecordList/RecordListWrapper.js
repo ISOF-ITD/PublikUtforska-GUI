@@ -60,7 +60,7 @@ export default function RecordListWrapper({
         ? 'border-b border-border bg-surface px-4 py-3 text-body min-[1440px]:px-8'
         : 'bg-primary px-4 pb-6 pt-8 text-[var(--color-text-inverted)] lg:px-8'}
       >
-        <div className="mx-auto w-full max-w-6xl">
+        <div className="mx-auto w-full max-w-screen-2xl">
           <Heading className={isEmbeddedResults
             ? 'm-0 !text-xl text-body sm:!text-2xl'
             : 'm-0 !text-[var(--color-text-inverted)]'}
@@ -72,7 +72,7 @@ export default function RecordListWrapper({
         </div>
       </header>
 
-      <div className="mx-auto box-border w-full max-w-6xl px-4 pb-28 pt-2 min-[1440px]:px-8 min-[1440px]:pb-24">
+      <div className="mx-auto box-border w-full max-w-screen-2xl px-4 pb-28 pt-2 min-[1440px]:px-8 min-[1440px]:pb-24">
         <div ref={containerRef}>
           <RecordList
             highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
