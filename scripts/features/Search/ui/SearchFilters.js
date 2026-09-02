@@ -19,9 +19,8 @@ export function SearchFilters({
   const filtersRowClass = compact
     ? 'flex flex-wrap items-center gap-2 pb-1 !text-white'
     : 'flex items-center gap-1 !text-white';
-  let displayClass = 'flex';
-  if (compact) displayClass = 'block';
-  if (loading) displayClass = 'hidden';
+  const displayClass = compact ? 'block' : 'flex';
+  const filtersDisabled = disabled || loading;
 
   return (
     <div
@@ -30,11 +29,17 @@ export function SearchFilters({
           ? 'w-full p-2'
           : 'lg:ml-0 lg:text-base text-lg flex items-center gap-1 lg:flex-nowrap flex-wrap p-2',
         displayClass,
+        loading ? 'opacity-70' : '',
         className,
       )}
       aria-label={l('Begränsa sökningen till')}
+      aria-busy={loading || undefined}
     >
-      <span className={classNames('whitespace-nowrap !text-white', compact ? 'block text-sm' : '')}>
+      <span className={classNames(
+        'whitespace-nowrap !text-white text-sm',
+        compact ? 'block' : '',
+      )}
+      >
         {l('Begränsa sökningen till: ')}
       </span>
 
@@ -45,12 +50,12 @@ export function SearchFilters({
           const labelId = `${categoryId}-label`;
 
           const handleActivate = () => {
-            if (disabled) return;
+            if (filtersDisabled) return;
             onToggle?.(categoryId);
           };
 
           const onKeyDown = (e) => {
-            if (disabled) return;
+            if (filtersDisabled) return;
             if (e.key === ' ' || e.key === 'Enter') {
               e.preventDefault();
               handleActivate();
@@ -67,8 +72,8 @@ export function SearchFilters({
                 role="checkbox"
                 aria-checked={checked}
                 aria-labelledby={labelId}
-                aria-disabled={disabled || undefined}
-                disabled={disabled}
+                aria-disabled={filtersDisabled || undefined}
+                disabled={filtersDisabled}
                 onClick={handleActivate}
                 onKeyDown={onKeyDown}
                 className={classNames(
@@ -76,7 +81,7 @@ export function SearchFilters({
                   compact
                     ? 'rounded-full border border-solid border-white/60 bg-transparent px-2.5 py-1.5 hover:bg-primary-hover focus-visible:bg-primary-hover'
                     : 'rounded-md !px-0 py-1',
-                  disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+                  filtersDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
                 )}
               >
                 {checked ? (
