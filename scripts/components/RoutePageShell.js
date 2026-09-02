@@ -67,7 +67,7 @@ export default function RoutePageShell({ children }) {
           <Link
             to={resultLocation}
             replace
-            className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-sm px-1 py-2 font-semibold !text-white underline underline-offset-4 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white print:hidden"
+            className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-sm px-1 py-2 !text-white underline underline-offset-4 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white print:hidden"
           >
             <FontAwesomeIcon icon={faArrowLeft} aria-hidden="true" />
             <span>{l('Till sökresultaten')}</span>
