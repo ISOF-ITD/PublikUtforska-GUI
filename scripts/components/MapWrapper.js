@@ -4,7 +4,7 @@ import {
   lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import MapMenu from './MapMenu';
+import SearchControls from './SearchControls';
 import MapLoadingPlaceholder from './MapLoadingPlaceholder';
 import RecordListLoadingPlaceholder from './RecordListLoadingPlaceholder';
 import { l } from '../lang/Lang';
@@ -270,7 +270,7 @@ function MapWrapper({
         )}
         data-record-list-scroll={isWideResultsViewport && listIsVisible ? 'true' : undefined}
       >
-        <MapMenu
+        <SearchControls
           mode={mode}
           params={params}
           recordsData={recordsData}

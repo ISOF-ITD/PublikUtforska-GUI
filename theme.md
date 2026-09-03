@@ -346,7 +346,7 @@ Theme-aware logotyper använder klasserna:
 
 De styrs av `prefers-color-scheme`.
 
-För bakgrundsbilden i mapmenu används en separat tint-token:
+För bakgrundsbilden i searchcontrols används en separat tint-token:
 
 ```css
 --image-header-back-tint
@@ -366,7 +366,7 @@ När du ändrar en komponent, kontrollera minst:
 - Formulärfält: kontrollera bakgrund, text, placeholder, border och disabled state.
 - Ikoner: kontrollera att de syns mot både ljus och mörk bakgrund.
 - Hover/focus: kontrollera att tillståndet syns men inte bryter färgidentiteten.
-- Mobilvy: kontrollera särskilt mapmenu, sökpanel och list-/kortvyer.
+- Mobilvy: kontrollera särskilt searchcontrols, sökpanel och list-/kortvyer.
 
 ## Praktisk testning
 
@@ -385,7 +385,7 @@ Testa gärna både desktop och mobil bredd, särskilt:
 - personer och platser
 - audioitems och global audio player
 - sökpanelen med kryssrutor
-- mapmenu-panelen
+- searchcontrols-panelen
 - formulär och overlays
 
 ## Vanliga fallgropar

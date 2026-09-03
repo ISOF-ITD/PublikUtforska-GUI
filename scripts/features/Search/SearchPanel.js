@@ -265,7 +265,7 @@ export default function SearchPanel({
           <div className="relative min-w-0 flex-1 items-center">
             <input
               ref={inputRef}
-              id="searchInputMapMenu"
+              id="searchInput"
               type="text"
               className={classNames(
                 'w-full border bg-surface !p-2 text-body placeholder-subtle shadow-sm',

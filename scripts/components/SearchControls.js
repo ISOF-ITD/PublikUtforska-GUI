@@ -54,7 +54,7 @@ function Warning() {
   ) : null;
 }
 
-export default function MapMenu({
+export default function SearchControls({
   mode = 'material',
   params,
   recordsData = { data: [], metadata: {} },
@@ -149,7 +149,7 @@ export default function MapMenu({
     ? lastGoodRef.current
     : { recordsData, audioRecordsData, pictureRecordsData };
   const panelLoading = loading && !justSwitched;
-  const mapMenuPanelStyle = {
+  const searchControlsPanelStyle = {
     backgroundImage: `var(--image-header-back-tint), url(${headerBack})`,
     backgroundPosition: 'center top',
   };
@@ -177,10 +177,10 @@ export default function MapMenu({
   return (
     <>
       <section
-        id="mapmenu-panel"
+        id="searchcontrols-panel"
         aria-label={l('Sök och filter')}
         className="relative z-[1201] max-w-full overflow-visible bg-isof print:hidden"
-        style={mapMenuPanelStyle}
+        style={searchControlsPanelStyle}
       >
         <Warning />
         <header className="max-w-full border-b border-white/20">
@@ -301,7 +301,7 @@ export default function MapMenu({
   );
 }
 
-MapMenu.propTypes = {
+SearchControls.propTypes = {
   mode: PropTypes.string,
   params: PropTypes.object.isRequired,
   recordsData: PropTypes.object,

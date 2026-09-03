@@ -46,7 +46,7 @@ funktioner direkt. De skickar i stället små meddelanden till varandra med
 
 Folke-sidan finns i [`IntroOverlay.js`](scripts/components/views/IntroOverlay.js).
 Adressen till SiteVision och namnet på startsidan finns i
-[`scripts/config.js`](scripts/config.js). [`MapMenu`](scripts/components/MapMenu.js)
+[`scripts/config.js`](scripts/config.js). [`SearchControls`](scripts/components/SearchControls.js)
 öppnar och stänger overlayen och kommer ihåg i `localStorage` att användaren har
 sett den.
 
