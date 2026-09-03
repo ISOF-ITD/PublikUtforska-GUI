@@ -118,6 +118,7 @@ export default function RecordList(props) {
     layoutContext = 'viewport',
     detailSearch = '',
     loading = false,
+    showPaginationTotal = true,
   } = props;
 
   const navigate = useNavigate();
@@ -397,9 +398,9 @@ export default function RecordList(props) {
             records.length && "min-h-[200px]"
           )}
         >
-          <div aria-live="polite" className="sr-only">
-            {l("Sida")} {currentPage} {l("av")} {maxPage}
-          </div>
+          <p role="status" aria-atomic="true" className="sr-only">
+            {`${l('Sida')} ${currentPage} ${l('av')} ${maxPage}`}
+          </p>
           {!disableListPagination && (
             <Pagination
               currentPage={currentPage}
@@ -407,6 +408,7 @@ export default function RecordList(props) {
               onStep={handleStepPage}
               maxPage={maxPage}
               showRange
+              showTotal={showPaginationTotal}
             />
           )}
 
@@ -517,4 +519,5 @@ RecordList.propTypes = {
   layoutContext: PropTypes.oneOf(['viewport', 'results-pane']),
   detailSearch: PropTypes.string,
   loading: PropTypes.bool,
+  showPaginationTotal: PropTypes.bool,
 };

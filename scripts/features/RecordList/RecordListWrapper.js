@@ -41,7 +41,8 @@ export default function RecordListWrapper({
   const isEmbeddedResults = layoutContext === 'results-pane';
   const Heading = isEmbeddedResults ? 'h2' : 'h1';
   const resultCount = resultTotal?.value;
-  const resultHeading = Number.isFinite(resultCount)
+  const hasResultCount = Number.isFinite(resultCount);
+  const resultHeading = hasResultCount
     ? `${resultCount.toLocaleString('sv-SE')}${resultTotal.relation === 'gte' ? '+' : ''} ${
       l(resultCount === 1 ? 'sökträff' : 'sökträffar')
     }`
@@ -61,9 +62,11 @@ export default function RecordListWrapper({
         : 'bg-primary px-4 pb-6 pt-8 text-[var(--color-text-inverted)] lg:px-8'}
       >
         <div className="mx-auto w-full max-w-screen-2xl">
-          <Heading className={isEmbeddedResults
-            ? 'm-0 !text-xl text-body sm:!text-2xl'
-            : 'm-0 !text-[var(--color-text-inverted)]'}
+          <Heading
+            id="record-list-heading"
+            className={isEmbeddedResults
+              ? 'm-0 !text-xl text-body sm:!text-2xl'
+              : 'm-0 !text-[var(--color-text-inverted)]'}
           >
             {isStarredRecordList
               ? l('Stjärnmarkerat arkivmaterial')
@@ -87,6 +90,7 @@ export default function RecordListWrapper({
             layoutContext={layoutContext}
             detailSearch={detailSearch}
             loading={loading}
+            showPaginationTotal={isStarredRecordList || !hasResultCount}
           />
         </div>
       </div>

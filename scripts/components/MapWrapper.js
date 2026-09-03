@@ -289,7 +289,7 @@ function MapWrapper({
           hidden={!listIsVisible}
           inert={!listIsVisible || undefined}
           aria-hidden={!listIsVisible || undefined}
-          aria-label={l('Sökträffar som lista')}
+          aria-labelledby="record-list-heading"
           aria-busy={uiLoading || undefined}
           tabIndex={-1}
         >

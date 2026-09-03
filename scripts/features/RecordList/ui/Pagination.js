@@ -76,6 +76,7 @@ export default function Pagination({
   onStep,
   maxPage,
   showRange = false,
+  showTotal = true,
 }) {
   if (total <= hitsPerPage) return null;
 
@@ -84,7 +85,9 @@ export default function Pagination({
   const pageWindow = buildPageWindow(currentPage, maxPage);
   const previousLabel = l('Föregående');
   const nextLabel = l('Nästa');
-  const rangeLabel = `${total.toLocaleString('sv-SE')} ${l('sökträffar')}. ${l('Visar')} ${from}–${to}`;
+  const rangeLabel = showTotal
+    ? `${total.toLocaleString('sv-SE')} ${l('sökträffar')}. ${l('Visar')} ${from}–${to}`
+    : `${l('Visar')} ${from}–${to}`;
   const pageStatus = `${l('Sida')} ${currentPage} ${l('av')} ${maxPage}`;
 
   return (
@@ -168,4 +171,5 @@ Pagination.propTypes = {
   onStep: PropTypes.func.isRequired,
   maxPage: PropTypes.number.isRequired,
   showRange: PropTypes.bool,
+  showTotal: PropTypes.bool,
 };
