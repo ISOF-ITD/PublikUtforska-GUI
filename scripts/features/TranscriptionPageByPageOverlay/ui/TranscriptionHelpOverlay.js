@@ -164,7 +164,10 @@ function TranscriptionHelpOverlay() {
         <p>
           <strong>Sidnummer</strong>
           <br />
-          Ange korrekt sidnummer som står på uppteckningen till höger.
+          Ange korrekt sidnummer om det finns på sidan. 
+          Sidnummer står på uppteckningen till höger. 
+          Om inget sidnummer finns så anges inget sidnummer, exempelvis 
+          för sådant som bilder av kuvert, försättsblad och pärmrygg.
         </p>
 
         <p>
