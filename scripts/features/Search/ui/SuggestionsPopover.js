@@ -1,24 +1,38 @@
 /* eslint-disable react/require-default-props */
 import { forwardRef } from "react";
 import PropTypes from "prop-types";
+import classNames from 'classnames';
 import config from "../../../config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { highlight } from "../utils/highlight";
 
 const SuggestionsPopover = forwardRef(
-  ({ search, groups, activeIdx, onClose }, ref) => {
+  ({
+    search,
+    groups,
+    activeIdx,
+    onClose,
+    containerId = 'search-suggestions-container',
+    listId = 'search-suggestions',
+    optionIdPrefix = 'suggestion',
+    listLabel = 'Sökförslag',
+  }, ref) => {
     let runningIdx = -1;
 
     return (
       <div
         ref={ref}
-        id="search-suggestions-container"
+        id={containerId}
         className="absolute left-0 right-0 top-full mt-2 w-full rounded-lg border border-border bg-surface shadow-lg z-[2100] pointer-events-auto overflow-hidden"
       >
         <button
           type="button"
-          className="absolute z-[2000] right-3 !p-2 !border-none top-3 cursor-pointer !text-subtle text-xl leading-none  rounded"
+          className={classNames(
+            'absolute z-[2000] right-3 !p-2 !border-none top-3 cursor-pointer',
+            '!text-subtle text-xl leading-none rounded focus-visible:outline',
+            'focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2',
+          )}
           onClick={onClose}
           aria-label="Stäng förslag"
         >
@@ -26,9 +40,9 @@ const SuggestionsPopover = forwardRef(
         </button>
 
         <div
-          id="search-suggestions"
+          id={listId}
           role="listbox"
-          aria-label="Sökförslag"
+          aria-label={listLabel}
           aria-live="polite"
           className="max-h-96 overflow-y-auto py-1"
         >
@@ -57,7 +71,7 @@ const SuggestionsPopover = forwardRef(
                     return (
                       <div
                         key={`${title}:${item.value}`}
-                        id={`suggestion-${currentIdx}`}
+                        id={`${optionIdPrefix}-${currentIdx}`}
                         role="option"
                         aria-selected={isActive}
                         tabIndex={-1}
@@ -135,6 +149,10 @@ SuggestionsPopover.propTypes = {
     })
   ).isRequired,
   activeIdx: PropTypes.number.isRequired,
+  containerId: PropTypes.string,
+  listId: PropTypes.string,
+  optionIdPrefix: PropTypes.string,
+  listLabel: PropTypes.string,
 };
 
 export default SuggestionsPopover;

@@ -6,6 +6,7 @@ import { faCheck, faSquare } from '@fortawesome/free-solid-svg-icons';
 import { l } from '../../../lang/Lang';
 
 export function SearchFilters({
+  children,
   filters,
   selectedCategories,
   onToggle,
@@ -16,122 +17,104 @@ export function SearchFilters({
 }) {
   if (!filters?.length) return null;
 
-  const filtersRowClass = compact
-    ? 'flex flex-wrap items-center gap-2 pb-1 !text-white'
-    : 'flex items-center gap-1 !text-white';
-  const displayClass = compact ? 'block' : 'flex';
   const filtersDisabled = disabled || loading;
 
   return (
     <div
       className={classNames(
-        compact
-          ? 'w-full p-2'
-          : 'lg:ml-0 lg:text-base text-lg flex items-center gap-1 lg:flex-nowrap flex-wrap p-2',
-        displayClass,
+        'search-filter-controls flex min-w-0 w-full flex-wrap items-center gap-2 px-2.5 py-2',
         loading ? 'opacity-70' : '',
         className,
       )}
+      role="group"
       aria-label={l('Begränsa sökningen till')}
       aria-busy={loading || undefined}
     >
       <span className={classNames(
         'whitespace-nowrap !text-white text-sm',
-        compact ? 'block' : '',
+        compact ? 'w-full' : '',
       )}
       >
         {l('Begränsa sökningen till: ')}
       </span>
 
-      <div className={filtersRowClass}>
-        {filters.map(({ label, categoryId, total }) => {
-          const checked = selectedCategories.includes(categoryId);
-          const count = total?.value ?? 0;
-          const labelId = `${categoryId}-label`;
+      {filters.map(({ label, categoryId, total }) => {
+        const checked = selectedCategories.includes(categoryId);
+        const count = total?.value ?? 0;
+        const labelId = `${categoryId}-label`;
 
-          const handleActivate = () => {
-            if (filtersDisabled) return;
-            onToggle?.(categoryId);
-          };
+        const handleActivate = () => {
+          if (filtersDisabled) return;
+          onToggle?.(categoryId);
+        };
 
-          const onKeyDown = (e) => {
-            if (filtersDisabled) return;
-            if (e.key === ' ' || e.key === 'Enter') {
-              e.preventDefault();
-              handleActivate();
-            }
-          };
+        const onKeyDown = (e) => {
+          if (filtersDisabled) return;
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            handleActivate();
+          }
+        };
 
-          return (
-            <div
-              key={categoryId}
-              className="flex items-center select-none align-middle overflow-visible outline-none p-0"
-            >
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={checked}
-                aria-labelledby={labelId}
-                aria-disabled={filtersDisabled || undefined}
-                disabled={filtersDisabled}
-                onClick={handleActivate}
-                onKeyDown={onKeyDown}
-                className={classNames(
-                  'inline-flex border-none items-center !m-0 gap-1 !text-white',
-                  compact
-                    ? 'rounded-full border border-solid border-white/60 bg-transparent px-2.5 py-1.5 hover:bg-primary-hover focus-visible:bg-primary-hover'
-                    : 'rounded-md !px-0 py-1',
-                  filtersDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
-                )}
+        return (
+          <button
+            key={categoryId}
+            type="button"
+            role="checkbox"
+            aria-checked={checked}
+            aria-labelledby={labelId}
+            aria-disabled={filtersDisabled || undefined}
+            disabled={filtersDisabled}
+            onClick={handleActivate}
+            onKeyDown={onKeyDown}
+            className={classNames(
+              'inline-flex min-h-9 items-center gap-2 !m-0 border px-3 py-1.5 text-sm font-medium',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2',
+              checked
+                ? 'border-border bg-surface !text-body hover:bg-surface-hover disabled:hover:bg-surface'
+                : 'border-white/70 bg-transparent !text-white hover:bg-primary-hover disabled:hover:bg-transparent',
+              filtersDisabled
+                ? 'cursor-not-allowed opacity-60'
+                : 'cursor-pointer',
+            )}
+          >
+            {checked ? (
+              <span
+                className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center"
+                aria-hidden="true"
               >
-                {checked ? (
-                  <span
-                    className={classNames(
-                      'relative inline-flex shrink-0 items-center justify-center',
-                      compact ? 'h-4 w-4' : 'h-5 w-5',
-                    )}
-                    aria-hidden="true"
-                  >
-                    <FontAwesomeIcon
-                      icon={faSquare}
-                      className="absolute inset-0 h-full w-full text-[var(--color-search-filter-checkbox-checked-bg)]"
-                    />
-                    <FontAwesomeIcon
-                      icon={faCheck}
-                      className={classNames(
-                        'relative text-[var(--color-search-filter-checkbox-check)]',
-                        compact ? 'h-3 w-3' : 'h-3.5 w-3.5',
-                      )}
-                    />
-                  </span>
-                ) : (
-                  <FontAwesomeIcon
-                    icon={faSquare}
-                    className={classNames(
-                      'text-[var(--color-search-filter-checkbox)]',
-                      compact ? 'h-4 w-4' : 'h-5 w-5',
-                    )}
-                    aria-hidden="true"
-                  />
-                )}
-                <span
-                  id={labelId}
-                  className={classNames('whitespace-nowrap text-sm', compact ? 'font-semibold' : '')}
-                >
-                  {l(label)}
-                  {' '}
-                  {`(${count})`}
-                </span>
-              </button>
-            </div>
-          );
-        })}
-      </div>
+                <FontAwesomeIcon
+                  icon={faSquare}
+                  className="absolute inset-0 h-full w-full text-[var(--color-search-filter-checkbox-checked-bg)]"
+                />
+                <FontAwesomeIcon
+                  icon={faCheck}
+                  className="relative h-3 w-3 text-[var(--color-search-filter-checkbox-check)]"
+                />
+              </span>
+            ) : (
+              <FontAwesomeIcon
+                icon={faSquare}
+                className="h-4 w-4 text-[var(--color-search-filter-checkbox)]"
+                aria-hidden="true"
+              />
+            )}
+            <span id={labelId} className="whitespace-nowrap">
+              {l(label)}
+              {' '}
+              {`(${count})`}
+            </span>
+          </button>
+        );
+      })}
+
+      {children}
     </div>
   );
 }
 
 SearchFilters.propTypes = {
+  children: PropTypes.node,
   filters: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string.isRequired,

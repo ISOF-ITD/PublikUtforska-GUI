@@ -1,48 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   getPersonFetchLocation,
-} from "../../../utils/helpers";
+} from '../../../utils/helpers';
 
-export default function useSelectionFromRoute(qParam, search_field) {
-  const [selectedPerson, setSelectedPerson] = useState(null);
-  const [selectedPlace, setSelectedPlace] = useState(null);
-  const [selectedArchiveId, setSelectedArchiveId] = useState(null);
+export default function useSelectionFromRoute({ person, place, archiveId }) {
+  const [personDetails, setPersonDetails] = useState(null);
 
   useEffect(() => {
+    if (!person) {
+      setPersonDetails(null);
+      return undefined;
+    }
+
     let cancelled = false;
 
     async function run() {
       try {
-        if (search_field === "person" && qParam) {
-          const r = await fetch(getPersonFetchLocation(qParam));
-          if (!r.ok) throw new Error("Failed to fetch person");
-          console.log("Fetched person:", r, qParam);
-          const json = await r.json();
-          if (!cancelled) {
-            setSelectedPerson(json);
-            setSelectedPlace(null);
-          }
-        } else if (search_field === "place" && qParam) {
-          if (!cancelled) {
-            console.log("Setting selected place:", qParam);
-            setSelectedPlace(qParam);
-            setSelectedPerson(null);
-          }
-        } else if (search_field === "archive_id" && qParam) {
-          setSelectedArchiveId(qParam);
-          setSelectedPerson(null);
-          setSelectedPlace(null);
-        } else if (!cancelled) {
-          setSelectedPerson(null);
-          setSelectedPlace(null);
-          setSelectedArchiveId(null);
-        }
+        const response = await fetch(getPersonFetchLocation(person));
+        if (!response.ok) throw new Error('Failed to fetch person');
+        const json = await response.json();
+        if (!cancelled) setPersonDetails(json);
       } catch {
-        if (!cancelled) {
-          setSelectedPerson(null);
-          setSelectedPlace(null);
-          setSelectedArchiveId(null);
-        }
+        if (!cancelled) setPersonDetails(null);
       }
     }
 
@@ -50,35 +29,13 @@ export default function useSelectionFromRoute(qParam, search_field) {
     return () => {
       cancelled = true;
     };
-  }, [qParam, search_field]);
-
-  const hasSelection = !!(selectedPerson || selectedPlace || selectedArchiveId);
-  const labelPrefix = selectedPerson
-    ? "Person: "
-    : selectedPlace
-    ? "Ort: "
-    : selectedArchiveId
-    ? "Arkivsignum: "
-    : "";
-  // const labelValue = selectedPerson?.name ?? selectedPlace?.name ?? "";
-  const labelValue = selectedPerson
-    ? selectedPerson.name
-    : selectedPlace
-    ? selectedPlace
-    : selectedArchiveId
-    ? selectedArchiveId
-    : "";
-
+  }, [person]);
 
   return {
-    selectedPerson,
-    selectedPlace,
-    selectedArchiveId,
-    hasSelection,
-    labelPrefix,
-    labelValue,
-    setSelectedPerson,
-    setSelectedPlace,
-    setSelectedArchiveId,
+    selectedPerson: person
+      ? personDetails || { id: person, name: person }
+      : null,
+    selectedPlace: place || null,
+    selectedArchiveId: archiveId || null,
   };
 }

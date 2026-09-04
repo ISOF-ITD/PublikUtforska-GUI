@@ -202,6 +202,9 @@ export default function useRecords(params, mode, interval) {
       response_profile: 'list',
       search: params.search || undefined,
       search_field: params.search_field || undefined,
+      person: params.person || undefined,
+      place: params.place || undefined,
+      archive_id: params.archive_id || undefined,
       type: params.type,
       category: params.category
         ? `${params.category}${

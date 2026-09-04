@@ -11,10 +11,12 @@ export default function useSuggestionGroups({
   provinces,
   archiveIds,
   navigateToSearch,
+  selectFilter,
+  includeSearchSuggestions = true,
 }) {
   const suggestionGroups = useMemo(
-    () => [
-      {
+    () => {
+      const searchGroup = {
         title: "Search",
         label: l("Vanligaste sökningar"),
         items: popularQueries.filter(({ label }) =>
@@ -22,35 +24,42 @@ export default function useSuggestionGroups({
         ),
         click: (s) => navigateToSearch(s.value),
         maxHeight: 240,
-      },
-      {
-        title: "Person",
-        label: l("Personer"),
-        items: [...people].sort(suggestionSort(query)),
-        field: "person",
-        click: (p) => navigateToSearch(p.value, "person"),
-      },
-      {
-        title: "Place",
-        label: l("Orter"),
-        items: places,
-        field: "place",
-        click: (p) => navigateToSearch(p.value, "place"),
-      },
-      {
-        title: "Province",
-        label: l("Landskap"),
-        items: provinces,
-        field: "place",
-        click: (p) => navigateToSearch(p.value, "place"),
-      },
-      {
-        title: "ArchiveId",
-        label: l("Arkivsignum"),
-        items: archiveIds,
-        click: (p) => navigateToSearch(p.value, "archive_id"),
-      },
-    ],
+      };
+      const filterGroups = [
+        {
+          title: "Person",
+          label: l("Personer"),
+          items: [...people].sort(suggestionSort(query)),
+          field: "person",
+          click: (p) => selectFilter('person', p.value),
+        },
+        {
+          title: "Place",
+          label: l("Orter"),
+          items: places,
+          field: "place",
+          click: (p) => selectFilter('place', p.value),
+        },
+        {
+          title: "Province",
+          label: l("Landskap"),
+          items: provinces,
+          field: "place",
+          click: (p) => selectFilter('place', p.value),
+        },
+        {
+          title: "ArchiveId",
+          label: l("Arkivsignum"),
+          items: archiveIds,
+          field: 'archive_id',
+          click: (p) => selectFilter('archive_id', p.value),
+        },
+      ];
+
+      return includeSearchSuggestions
+        ? [searchGroup, ...filterGroups]
+        : filterGroups;
+    },
     [
       popularQueries,
       people,
@@ -58,6 +67,8 @@ export default function useSuggestionGroups({
       provinces,
       archiveIds,
       navigateToSearch,
+      selectFilter,
+      includeSearchSuggestions,
       query,
     ]
   );

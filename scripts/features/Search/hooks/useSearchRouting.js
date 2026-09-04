@@ -1,11 +1,16 @@
 import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { createSearchRoute } from '../../../utils/routeHelper';
+
+const SEARCH_FILTER_FIELDS = ['person', 'place', 'archive_id'];
 
 export default function useSearchRouting({
   mode,
-  search_field: searchField,
   categories,
   setCategories,
+  person,
+  place,
+  archiveId,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -13,9 +18,12 @@ export default function useSearchRouting({
   const navigateToSearch = useCallback(
     (
       keywordOverwrite,
-      searchFieldOverwriteProp = searchField ?? null,
-      toggleCategory = null,
-      resultView = null,
+      {
+        filterUpdate = null,
+        toggleCategory = null,
+        resultView = null,
+        clearFilters = false,
+      } = {},
     ) => {
       let newCategories = categories;
       if (toggleCategory) {
@@ -30,31 +38,39 @@ export default function useSearchRouting({
 
       setCategories(newCategories);
 
-      const searchFieldOverwrite = keywordOverwrite
-        ? searchFieldOverwriteProp
-        : null;
-      const segments = [];
-      if (keywordOverwrite) {
-        segments.push('search', encodeURIComponent(keywordOverwrite));
-      }
-      if (searchFieldOverwrite) {
-        segments.push('search_field', searchFieldOverwrite);
-      }
-      if (newCategories.length) {
-        segments.push('category', newCategories.join(','));
+      const selectedFilters = clearFilters
+        ? {}
+        : {
+          person,
+          place,
+          archive_id: archiveId,
+        };
+
+      if (filterUpdate && SEARCH_FILTER_FIELDS.includes(filterUpdate.field)) {
+        selectedFilters[filterUpdate.field] = filterUpdate.value || undefined;
       }
 
-      const transcribePrefix = mode === 'transcribe' ? 'transcribe/' : '';
-      const pathname = `/${transcribePrefix}${segments.join('/')}`;
+      const route = createSearchRoute({
+        search: keywordOverwrite || undefined,
+        ...selectedFilters,
+        category: newCategories.length ? newCategories : undefined,
+      });
+      const pathname = mode === 'transcribe' ? `/transcribe${route}` : route;
       const queryParams = new URLSearchParams(location.search);
       queryParams.delete('media');
       queryParams.delete('record_ids');
 
-      if (keywordOverwrite) {
-        queryParams.set(
-          's',
-          `${searchFieldOverwrite ? `${searchFieldOverwrite}:` : ''}${keywordOverwrite}`,
-        );
+      const trackingSearch = [
+        keywordOverwrite,
+        selectedFilters.person ? `person:${selectedFilters.person}` : null,
+        selectedFilters.place ? `place:${selectedFilters.place}` : null,
+        selectedFilters.archive_id
+          ? `archive_id:${selectedFilters.archive_id}`
+          : null,
+      ].filter(Boolean).join(' ');
+
+      if (trackingSearch) {
+        queryParams.set('s', trackingSearch);
       } else {
         queryParams.delete('s');
       }
@@ -74,12 +90,24 @@ export default function useSearchRouting({
       const searchParam = queryParams.toString();
       navigate(`${pathname}${searchParam ? `?${searchParam}` : ''}`);
     },
-    [categories, location.search, mode, navigate, searchField, setCategories],
+    [
+      archiveId,
+      categories,
+      location.search,
+      mode,
+      navigate,
+      person,
+      place,
+      setCategories,
+    ],
   );
 
   const toggleCategory = useCallback(
     (categoryId, keywordOverwrite, resultView = null) => (
-      navigateToSearch(keywordOverwrite, undefined, categoryId, resultView)
+      navigateToSearch(keywordOverwrite, {
+        toggleCategory: categoryId,
+        resultView,
+      })
     ),
     [navigateToSearch],
   );

@@ -76,10 +76,20 @@ function MapWrapper({
     || locationParams.has('record_ids');
   const narrowResultView = locationParams.has('showmap') ? 'map' : 'list';
   const searchTerm = routeSearchParams.search?.trim();
+  const placeTerm = routeSearchParams.place?.trim();
   const searchLabel = l(
     SEARCH_FIELD_LABELS[routeSearchParams.search_field] || 'Sökning',
   );
-  const searchSummary = searchTerm ? `${searchLabel}: ${searchTerm}` : null;
+  const searchSummary = [
+    searchTerm ? `${searchLabel}: ${searchTerm}` : null,
+    routeSearchParams.person
+      ? `${l('Person')}: ${routeSearchParams.person}`
+      : null,
+    placeTerm ? `${l('Ort')}: ${placeTerm}` : null,
+    routeSearchParams.archive_id
+      ? `${l('Arkivsignum')}: ${routeSearchParams.archive_id}`
+      : null,
+  ].filter(Boolean).join('. ');
   const resultTotal = recordsData?.metadata?.total;
   const resultCountText = resultTotal
     ? `${resultTotal.value}${resultTotal.relation === 'gte' ? '+' : ''} sökträffar.`
@@ -165,10 +175,10 @@ function MapWrapper({
   const hasMapData = mapData && Object.keys(mapData).length > 0;
   const stableMapData = hasMapData ? mapData : lastMapDataRef.current;
   const visibleMapData = useMemo(() => (
-    routeSearchParams.search_field === 'place'
-      ? filterMapDataByPlaceSearch(stableMapData, searchTerm)
+    placeTerm
+      ? filterMapDataByPlaceSearch(stableMapData, placeTerm)
       : stableMapData
-  ), [routeSearchParams.search_field, searchTerm, stableMapData]);
+  ), [placeTerm, stableMapData]);
   const mapResultCount = Array.isArray(visibleMapData?.data)
     ? visibleMapData.data.length
     : 0;

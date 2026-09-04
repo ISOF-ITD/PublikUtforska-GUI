@@ -17,6 +17,12 @@ body:not(.tab-navigation) *:focus-visible {
 	box-shadow: none !important;
 }
 
+body.tab-navigation .search-filter-controls button:focus-visible,
+body.tab-navigation .search-filter-controls input:focus-visible {
+	outline: 3px solid var(--color-focus) !important;
+	outline-offset: 2px !important;
+}
+
 //TODO: @color parameters in less files based basic less parameters named on either:
 // 1) color intensity perspective or 
 // 2) color function perspective

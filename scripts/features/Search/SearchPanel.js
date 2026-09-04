@@ -30,6 +30,7 @@ import FilterSwitch from '../../components/FilterSwitch';
 import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
 import RandomTranscriptionPrompt from './ui/RandomTranscriptionPrompt';
 import Spinner from '../../components/Spinner';
+import SearchFilterPicker from './ui/SearchFilterPicker';
 
 export default function SearchPanel({
   mode,
@@ -62,7 +63,9 @@ export default function SearchPanel({
 
   const {
     search: qParam,
-    search_field: searchField,
+    person: personParam,
+    place: placeParam,
+    archive_id: archiveIdParam,
     category,
   } = useMemo(
     () => createParamsFromSearchRoute(baseSearchPath),
@@ -77,6 +80,7 @@ export default function SearchPanel({
     category ? category.split(",") : []
   );
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
+  const [filterPickerOpen, setFilterPickerOpen] = useState(false);
 
   // totals
   const total = recordsData?.metadata?.total ?? { value: 0, relation: "eq" };
@@ -96,24 +100,24 @@ export default function SearchPanel({
   // routing helpers
   const { navigateToSearch: rawNavigateToSearch, toggleCategory } = useSearchRouting({
     mode,
-    search_field: searchField,
     categories,
     setCategories,
+    person: personParam,
+    place: placeParam,
+    archiveId: archiveIdParam,
   });
 
   // Ensure the controlled input reflects any picked suggestion
   const navigateToSearch = useCallback(
-    (keywordOverwrite, searchFieldOverwrite, showResults = true) => {
+    (keywordOverwrite, showResults = true) => {
       const v = typeof keywordOverwrite === 'string' ? keywordOverwrite : '';
       // Update both pieces of state so the input text appear right away
       setInputValue(v);
       setQuery(v);
-      rawNavigateToSearch(
-        keywordOverwrite,
-        searchFieldOverwrite,
-        null,
-        showResults ? resultViewOnSearch : null,
-      );
+      rawNavigateToSearch(keywordOverwrite, {
+        resultView: showResults ? resultViewOnSearch : null,
+      });
+      setFilterPickerOpen(false);
       if (showResults) onSearchSubmit();
     },
     [onSearchSubmit, rawNavigateToSearch, resultViewOnSearch],
@@ -124,13 +128,54 @@ export default function SearchPanel({
     selectedPerson,
     selectedPlace,
     selectedArchiveId,
-    hasSelection,
-    labelPrefix,
-    labelValue,
-    setSelectedPerson,
-    setSelectedPlace,
-    setSelectedArchiveId,
-  } = useSelectionFromRoute(qParam, searchField);
+  } = useSelectionFromRoute({
+    person: personParam,
+    place: placeParam,
+    archiveId: archiveIdParam,
+  });
+
+  const selectFilter = useCallback((field, value) => {
+    setInputValue('');
+    setQuery('');
+    setFilterPickerOpen(false);
+    rawNavigateToSearch('', {
+      filterUpdate: { field, value },
+      resultView: resultViewOnSearch,
+    });
+    onSearchSubmit();
+  }, [onSearchSubmit, rawNavigateToSearch, resultViewOnSearch]);
+
+  const addFilter = useCallback((field, value) => {
+    setFilterPickerOpen(false);
+    rawNavigateToSearch(inputValue, {
+      filterUpdate: { field, value },
+      resultView: resultViewOnSearch,
+    });
+    onSearchSubmit();
+  }, [inputValue, onSearchSubmit, rawNavigateToSearch, resultViewOnSearch]);
+
+  const onFilterPickerOpenChange = useCallback((nextOpen) => {
+    setFilterPickerOpen(nextOpen);
+    if (nextOpen) setSuggestionsVisible(false);
+  }, []);
+
+  const selectedFilters = [
+    selectedPerson && {
+      field: 'person',
+      label: l('Person'),
+      value: selectedPerson.name || personParam,
+    },
+    selectedPlace && {
+      field: 'place',
+      label: l('Ort'),
+      value: selectedPlace,
+    },
+    selectedArchiveId && {
+      field: 'archive_id',
+      label: l('Arkivsignum'),
+      value: selectedArchiveId,
+    },
+  ].filter(Boolean);
 
   // suggestions model
   const { visibleSuggestionGroups, flatSuggestions, hasSuggestions } =
@@ -142,6 +187,7 @@ export default function SearchPanel({
       provinces,
       archiveIds,
       navigateToSearch,
+      selectFilter,
     });
 
   // keyboard nav
@@ -181,11 +227,15 @@ export default function SearchPanel({
     const { value } = target;
     setInputValue(value);
     debouncedChange(value);
-    setSuggestionsVisible(true);
+    setSuggestionsVisible(!filterPickerOpen);
   };
   const onKeyDown = (e) => {
     if (e.key === 'Enter') {
-      if (pickActiveSuggestion()) return;
+      e.preventDefault();
+      if (pickActiveSuggestion()) {
+        e.stopPropagation();
+        return;
+      }
       navigateToSearch(inputValue);
       setSuggestionsVisible(false);
     } else if (e.key === 'Tab') {
@@ -195,18 +245,43 @@ export default function SearchPanel({
     }
   };
   const clearSearch = useCallback(() => {
-    if (!qParam && !inputValue && !selectedPerson && !selectedPlace && !selectedArchiveId) {
+    if (
+      !qParam
+      && !inputValue
+      && !personParam
+      && !placeParam
+      && !archiveIdParam
+    ) {
       inputRef.current?.focus();
       return;
     }
-    setSelectedPerson(null);
-    setSelectedPlace(null);
-    setSelectedArchiveId(null);
-    setQuery("");
-    navigateToSearch('', null, false);
-    setInputValue("");
+    setQuery('');
+    setInputValue('');
+    rawNavigateToSearch('', { clearFilters: true });
     inputRef.current?.focus();
-  }, [navigateToSearch, qParam, inputValue, selectedPerson, selectedPlace, selectedArchiveId]);
+  }, [
+    archiveIdParam,
+    inputValue,
+    personParam,
+    placeParam,
+    qParam,
+    rawNavigateToSearch,
+  ]);
+
+  const removeFilter = useCallback((field) => {
+    rawNavigateToSearch(inputValue || qParam || '', {
+      filterUpdate: { field, value: null },
+      resultView: resultViewOnSearch,
+    });
+    onSearchSubmit();
+    inputRef.current?.focus();
+  }, [
+    inputValue,
+    onSearchSubmit,
+    qParam,
+    rawNavigateToSearch,
+    resultViewOnSearch,
+  ]);
 
   // keep categories in sync with the route
   useEffect(() => {
@@ -254,7 +329,7 @@ export default function SearchPanel({
       )}
       <div
         className={classNames(
-          'left-0 z-[2000] box-border flex max-w-full items-center cursor-auto relative overflow-visible text-body bg-surface rounded shadow-sm',
+          'left-0 z-[2000] box-border flex max-w-full flex-col items-stretch cursor-auto relative overflow-visible text-body bg-surface rounded shadow-sm',
           mobileCompact ? 'w-auto mx-2 px-2.5 py-1.5 text-sm' : 'w-full px-2.5 py-1.5 text-sm',
         )}
         style={desktopSearchRowStyle}
@@ -272,14 +347,15 @@ export default function SearchPanel({
                 'border-border focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus/60 focus:outline-none !mb-0',
                 'h-12 rounded-md pr-20',
                 'text-[16px]',
-                hasSelection ? 'opacity-0 pointer-events-none' : 'opacity-100',
               )}
               placeholder={searchPlaceholder}
               style={searchInputStyle}
               value={inputValue}
               onChange={onInput}
               onKeyDown={onKeyDown}
-              onFocus={() => setSuggestionsVisible(true)}
+              onFocus={() => {
+                if (!filterPickerOpen) setSuggestionsVisible(true);
+              }}
               onBlur={({ relatedTarget }) => {
                 if (!relatedTarget?.closest("#search-suggestions-container")) {
                   setSuggestionsVisible(false);
@@ -293,26 +369,11 @@ export default function SearchPanel({
               aria-activedescendant={
                 activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
               }
-              aria-hidden={hasSelection || undefined}
               aria-label={searchPlaceholder}
               aria-busy={loading || undefined}
               autoComplete="off"
               spellCheck="false"
-              tabIndex={hasSelection ? -1 : 0}
             />
-
-            {/* Read-only label overlay – tighten right edge since search is now outside */}
-            <div
-              className={classNames(
-                'absolute pointer-events-none block left-4 right-12',
-                mobileCompact ? 'top-2' : 'top-2.5',
-                'truncate text-body leading-6',
-                hasSelection ? 'opacity-100' : 'opacity-0'
-              )}
-            >
-              {labelPrefix}
-              <strong>{labelValue}</strong>
-            </div>
 
             {suggestionsVisible && hasSuggestions && (
               <SuggestionsPopover
@@ -329,7 +390,7 @@ export default function SearchPanel({
                 <button
                   type="button"
                   className={classNames(
-                    'pointer-events-auto rounded-full !py-0 !border-none !m-0 text-subtle hover:text-body focus-visible:outline-none',
+                    'pointer-events-auto !py-0 !border-none !m-0 text-subtle hover:text-body focus-visible:outline-none',
                     mobileCompact ? 'h-8 w-8 flex items-center justify-center' : '',
                   )}
                   onClick={clearSearch}
@@ -349,14 +410,11 @@ export default function SearchPanel({
                 </button>
               )}
 
-              {loading && query && (
+              {loading && (query || selectedFilters.length > 0) && (
                 <Spinner
                   decorative
                   size="sm"
-                  className={classNames(
-                    'text-muted',
-                    hasSelection ? 'hidden' : 'inline-block',
-                  )}
+                  className="text-muted"
                 />
               )}
             </div>
@@ -396,7 +454,34 @@ export default function SearchPanel({
           { label: "Ljud", categoryId: "contentG5", total: audioTotal },
           { label: "Bild", categoryId: "contentG2", total: pictureTotal },
         ]}
-      />
+      >
+        <SearchFilterPicker
+          open={filterPickerOpen}
+          onOpenChange={onFilterPickerOpenChange}
+          onSelect={addFilter}
+        >
+          {selectedFilters.map(({ field, label, value }) => (
+            <button
+              key={field}
+              type="button"
+              className="inline-flex min-h-9 max-w-full items-center gap-2 !m-0 border border-border bg-surface px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+              onClick={() => removeFilter(field)}
+              aria-label={`${l('Ta bort')} ${label.toLowerCase()}: ${value}`}
+              title={`${l('Ta bort')} ${label.toLowerCase()}: ${value}`}
+            >
+              <span className="min-w-0 break-words">
+                {`${label}: `}
+                <strong>{value}</strong>
+              </span>
+              <FontAwesomeIcon
+                icon={faClose}
+                className="shrink-0"
+                aria-hidden="true"
+              />
+            </button>
+          ))}
+        </SearchFilterPicker>
+      </SearchFilters>
 
       {showSupplementaryContent && mode === 'transcribe' && isTranscriptionAvailable && (
         <RandomTranscriptionPrompt />

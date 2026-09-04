@@ -27,8 +27,9 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
   const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const searchParams = createParamsFromSearchRoute(params['*']);
   // only show the contextual place record lists if we're in a search context
-  const shouldShowPlaceRecordLists = params['*'] && !params['*'].includes('search_field/place');
+  const shouldShowPlaceRecordLists = params['*'] && !searchParams.place;
 
   function validateResults(data) {
     if (!data) {
@@ -121,7 +122,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                       disableRouterPagination
                       highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
                       params={{
-                        ...createParamsFromSearchRoute(params['*']),
+                        ...searchParams,
                         place_id: data.id,
                       }}
                       mode={mode}

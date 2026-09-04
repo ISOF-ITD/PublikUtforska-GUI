@@ -28,8 +28,8 @@ export default function useSuggestionKeyboard({
       }
       if (e.key === "Enter" && activeIdx > -1) {
         e.preventDefault();
-        const { group, ...item } = flatSuggestions[activeIdx];
-        onPick(() => group.click(item));
+        const suggestion = flatSuggestions[activeIdx];
+        onPick(() => suggestion.click(suggestion));
       }
     },
     [enabled, flatSuggestions, activeIdx, onPick, onClose],

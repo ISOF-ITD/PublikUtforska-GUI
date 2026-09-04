@@ -15,6 +15,9 @@ const SCHEMA = {
     "record_ids",
     "search",
     "search_field",
+    'person',
+    'place',
+    'archive_id',
     "type",
     "category",
     "recordtype",
@@ -85,6 +88,22 @@ const b64url = {
 
 function isNil(x) {
   return x === undefined || x === null || x === "";
+}
+
+function normalizeLegacySelection(params = {}) {
+  const out = { ...params };
+  const { search_field: searchField, search } = out;
+  const selectionFields = ['person', 'place', 'archive_id'];
+
+  if (selectionFields.includes(searchField)) {
+    if (!isNil(search) && isNil(out[searchField])) {
+      out[searchField] = search;
+      delete out.search;
+    }
+    delete out.search_field;
+  }
+
+  return out;
 }
 
 function toStringValue(key, val) {
@@ -238,7 +257,7 @@ export function createPlacesPathFromRecord(recordArg) {
 export function createSearchRoute(params) {
   const router = getParser("search");
 
-  const raw = { ...(params || {}) };
+  const raw = normalizeLegacySelection(params);
   // normalize + stringify per schema
   const normalized = Object.fromEntries(
     SCHEMA.keys.map((k) => [k, toStringValue(k, raw[k])])
@@ -452,7 +471,7 @@ export function createParamsFromPlacesRoute(path) {
     Object.entries(matched).map(([k, v]) => [k, fromStringValue(k, v)])
   );
   const { params } = extractAdvancedEnvelopeFromParse(typed);
-  return params;
+  return normalizeLegacySelection(params);
 }
 
 export function createParamsFromRecordRoute(path) {
@@ -465,7 +484,7 @@ export function createParamsFromRecordRoute(path) {
     Object.entries(matched).map(([k, v]) => [k, fromStringValue(k, v)])
   );
   const { params } = extractAdvancedEnvelopeFromParse(typed);
-  return params;
+  return normalizeLegacySelection(params);
 }
 
 export function createParamsFromSearchRoute(path) {
@@ -480,7 +499,7 @@ export function createParamsFromSearchRoute(path) {
 
   const { params } = extractAdvancedEnvelopeFromParse(typed);
   // Ensure we always return an object (compat)
-  return params || {};
+  return normalizeLegacySelection(params);
 }
 
 export default {
