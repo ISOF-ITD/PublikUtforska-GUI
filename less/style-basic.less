@@ -17,8 +17,13 @@ body:not(.tab-navigation) *:focus-visible {
 	box-shadow: none !important;
 }
 
-body.tab-navigation .search-filter-controls button:focus-visible,
-body.tab-navigation .search-filter-controls input:focus-visible {
+body.tab-navigation .search-filter-controls > button:focus-visible {
+	outline: 3px solid var(--color-text-inverted) !important;
+	outline-offset: 2px !important;
+}
+
+body.tab-navigation .search-filter-controls input:focus-visible,
+body.tab-navigation .search-filter-controls div button:focus-visible {
 	outline: 3px solid var(--color-focus) !important;
 	outline-offset: 2px !important;
 }
