@@ -140,8 +140,8 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     const mapOptions = {
       center: props.center || SWEDEN_BOUNDS.getCenter(),
       zoom: parseInt(props.zoom, 10) || 5,
-      minZoom: parseInt(props.minZoom, 10) || 5,
-      maxZoom: parseInt(props.maxZoom, 10) || 17,
+      minZoom: parseInt(props.minZoom, 10) || 4,
+      maxZoom: parseInt(props.maxZoom, 10) || 18,
       layers: visibleLayers,
       scrollWheelZoom: false,
       zoomControl: false,
