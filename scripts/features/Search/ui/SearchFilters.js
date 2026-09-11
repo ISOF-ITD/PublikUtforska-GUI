@@ -30,13 +30,13 @@ export function SearchFilters({
       aria-label={l('Begränsa sökningen till')}
       aria-busy={loading || undefined}
     >
-      <span className={classNames(
+      {/* <span className={classNames(
         'whitespace-nowrap !text-white text-sm',
         compact ? 'w-full' : '',
       )}
       >
         {l('Begränsa sökningen till: ')}
-      </span>
+      </span> */}
 
       {filters.map(({ label, categoryId, total }) => {
         const checked = selectedCategories.includes(categoryId);
