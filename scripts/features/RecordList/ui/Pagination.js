@@ -77,6 +77,7 @@ export default function Pagination({
   maxPage,
   showRange = false,
   showTotal = true,
+  className = '',
 }) {
   if (total <= hitsPerPage) return null;
 
@@ -92,7 +93,10 @@ export default function Pagination({
 
   return (
     <nav
-      className={showRange ? 'mb-3 mt-1 text-sm' : 'mb-0 mt-6 text-sm'}
+      className={[
+        showRange ? 'mb-3 mt-1 text-sm' : 'mb-0 mt-6 text-sm',
+        className,
+      ].join(' ')}
       aria-label={l('Paginering')}
     >
       {showRange && (
@@ -172,4 +176,5 @@ Pagination.propTypes = {
   maxPage: PropTypes.number.isRequired,
   showRange: PropTypes.bool,
   showTotal: PropTypes.bool,
+  className: PropTypes.string,
 };

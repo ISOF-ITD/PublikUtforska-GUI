@@ -404,30 +404,33 @@ export default function RecordList(props) {
           <p role="status" aria-atomic="true" className="sr-only">
             {`${l('Sida')} ${currentPage} ${l('av')} ${maxPage}`}
           </p>
-          {!disableListPagination && (
-            <Pagination
-              currentPage={currentPage}
-              total={total}
-              onStep={handleStepPage}
-              maxPage={maxPage}
-              showRange
-              showTotal={showPaginationTotal}
-            />
-          )}
-
-          <div className="mb-3 flex items-center justify-end gap-3">
-            {showWideViewToggle && (
-              <RecordViewToggle value={view} onChange={handleViewChange} />
+          <div className="mb-3 flex flex-wrap items-end gap-3">
+            {!disableListPagination && (
+              <Pagination
+                currentPage={currentPage}
+                total={total}
+                onStep={handleStepPage}
+                maxPage={maxPage}
+                showRange
+                showTotal={showPaginationTotal}
+                className="!m-0"
+              />
             )}
-            <RecordSortMenu
-              sort={sort}
-              order={order}
-              onChange={handleSort}
-              showRelevance={relevanceSortingAvailable}
-            />
-            <p className="sr-only" aria-live="polite" aria-atomic="true">
-              {sortAnnouncement}
-            </p>
+            <span className="min-w-0 flex-1" aria-hidden="true" />
+            <div className="flex flex-wrap items-center justify-start gap-3">
+              {showWideViewToggle && (
+                <RecordViewToggle value={view} onChange={handleViewChange} />
+              )}
+              <RecordSortMenu
+                sort={sort}
+                order={order}
+                onChange={handleSort}
+                showRelevance={relevanceSortingAvailable}
+              />
+              <p className="sr-only" aria-live="polite" aria-atomic="true">
+                {sortAnnouncement}
+              </p>
+            </div>
           </div>
 
           {/* Mobile: always cards */}
