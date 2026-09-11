@@ -1,5 +1,7 @@
-import config from "../../../config";
-import { getArchiveName, getPages } from "../../../utils/helpers";
+import config from '../../../config';
+import { getArchiveName, getPages } from '../../../utils/helpers';
+
+const ISOF_NAME = 'Institutet för språk och folkminnen';
 
 export function buildCitation(data) {
   const {
@@ -7,11 +9,12 @@ export function buildCitation(data) {
   } = data;
 
   const pages = getPages(data);
-  const idHuman = archiveIdDisplaySearch.join(", ");
+  const idHuman = archiveIdDisplaySearch.join(', ');
   const orgName = getArchiveName(archiveOrg);
+  const citationOrgName = orgName.startsWith(ISOF_NAME) ? ISOF_NAME : orgName;
 
-  // Example: "A123:45, s. 12–14, Arkivnamn"
-  return `${idHuman}${pages ? `, s. ${pages}` : ""}, ${orgName}`;
+  // Example: "Arkivnamn, A123:45, s. 12–14"
+  return `${citationOrgName}, ${idHuman}${pages ? `, s. ${pages}` : ''}`;
 }
 
 export const DEFAULT_LICENSE = 'https://creativecommons.org/licenses/by/4.0/deed.sv';
