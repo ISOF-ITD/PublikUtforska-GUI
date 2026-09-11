@@ -86,7 +86,7 @@ function writeCached(cacheKey, records, total) {
  * Returns data *and* all UI handlers so the component that
  * calls this hook is almost stateless.
  */
-export default function useRecords(params, mode, interval) {
+export default function useRecords(params, mode, interval, enabled = true) {
   const searchContext = useMemo(
     () => createSearchContext(params),
     [params.search, params.search_field],
@@ -262,6 +262,12 @@ export default function useRecords(params, mode, interval) {
       collections.abort();
       activeCacheKeyRef.current = null;
 
+      if (!enabled) {
+        setFetching(false);
+        window.eventBus?.dispatch('recordList.fetchingPage', false);
+        return;
+      }
+
       const fetchParams = getFetchParams();
       const cached = force ? null : readCached(fetchParams);
       if (cached) {
@@ -279,7 +285,7 @@ export default function useRecords(params, mode, interval) {
       window.eventBus?.dispatch('recordList.fetchingPage', true);
       collections.fetch(fetchParams);
     },
-    [collections, getFetchParams],
+    [collections, enabled, getFetchParams],
   );
 
   useEffect(() => {
@@ -288,13 +294,13 @@ export default function useRecords(params, mode, interval) {
 
   // Update "Latest transcribed" list every minute
   useEffect(() => {
-    if (!interval) return;
+    if (!interval || !enabled) return;
     const id = setInterval(() => {
       fetchData({ force: true });
     }, interval);
 
     return () => clearInterval(id);
-  }, [interval, fetchData]);
+  }, [interval, enabled, fetchData]);
 
   /* ---------------- outward API ---------------- */
   return {

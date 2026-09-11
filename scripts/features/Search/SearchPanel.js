@@ -31,6 +31,7 @@ import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailabili
 import RandomTranscriptionPrompt from './ui/RandomTranscriptionPrompt';
 import Spinner from '../../components/Spinner';
 import SearchFilterPicker from './ui/SearchFilterPicker';
+import ParishGroupingToggle from '../../components/ParishGroupingToggle';
 
 export default function SearchPanel({
   mode,
@@ -45,6 +46,9 @@ export default function SearchPanel({
   resultViewOnSearch = null,
   onSearchSubmit = () => {},
   showResultViewControl = true,
+  showParishGroupingControl = false,
+  parishGrouped = false,
+  onParishGroupingToggle = () => {},
   showModeSwitch = true,
   showSupplementaryContent = true,
 }) {
@@ -521,6 +525,15 @@ export default function SearchPanel({
           ))}
         </div>
       )}
+      {showParishGroupingControl && (
+        <div className="mt-2 flex justify-start">
+          <ParishGroupingToggle
+            grouped={parishGrouped}
+            onToggle={onParishGroupingToggle}
+            variant="inverse"
+          />
+        </div>
+      )}
       {showSupplementaryContent && onOpenIntroOverlay && (
         <button
           type="button"
@@ -573,6 +586,9 @@ SearchPanel.propTypes = {
   resultViewOnSearch: PropTypes.oneOf(['map', 'list']),
   onSearchSubmit: PropTypes.func,
   showResultViewControl: PropTypes.bool,
+  showParishGroupingControl: PropTypes.bool,
+  parishGrouped: PropTypes.bool,
+  onParishGroupingToggle: PropTypes.func,
   showModeSwitch: PropTypes.bool,
   showSupplementaryContent: PropTypes.bool,
 };

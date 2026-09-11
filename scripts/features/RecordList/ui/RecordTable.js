@@ -2,6 +2,9 @@ import PropTypes from 'prop-types';
 import RecordListItem from './RecordListItem';
 import { l } from '../../../lang/Lang';
 import config from '../../../config';
+import {
+  RESULT_TABLE_CLASS, RESULT_TABLE_HEADER_ROW_CLASS,
+} from './resultListStyles';
 
 export default function RecordTable({
   records,
@@ -16,6 +19,7 @@ export default function RecordTable({
   columns,
   selectedRecordId,
   onRecordActivate,
+  parishPreview,
   detailSearch,
 }) {
   const items = records.map((item, index) => (
@@ -34,6 +38,7 @@ export default function RecordTable({
       smallTitle={smallTitle}
       isSelected={String(item._source.id) === String(selectedRecordId)}
       onRecordActivate={onRecordActivate}
+      parishPreview={parishPreview}
       detailSearch={detailSearch}
     />
   ));
@@ -41,11 +46,11 @@ export default function RecordTable({
   return (
     <div>
       <table
-        className="mobile-table w-full text-sm border-collapse"
+        className={RESULT_TABLE_CLASS}
       >
         {/* ---------- header ---------- */}
         <thead>
-          <tr className="border-b border-border last:border-0">
+          <tr className={RESULT_TABLE_HEADER_ROW_CLASS}>
             {shouldRenderColumn('title') && (
               <th scope="col" className="text-left w-1/2">{l('Titel')}</th>
             )}
@@ -112,5 +117,9 @@ RecordTable.propTypes = {
   columns: PropTypes.array,
   selectedRecordId: PropTypes.string,
   onRecordActivate: PropTypes.func,
+  parishPreview: PropTypes.shape({
+    onHover: PropTypes.func.isRequired,
+    onFocus: PropTypes.func.isRequired,
+  }),
   detailSearch: PropTypes.string,
 };

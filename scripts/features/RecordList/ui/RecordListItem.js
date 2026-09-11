@@ -24,6 +24,8 @@ import {
   pageFromTo,
   getSegmentTitle,
 } from "../../../utils/helpers";
+import { RESULT_TABLE_ROW_CLASS } from './resultListStyles';
+import { getParishIdsFromPlaces } from '../../../utils/parishHelper';
 
 export default function RecordListItem(props) {
   const {
@@ -39,6 +41,7 @@ export default function RecordListItem(props) {
     smallTitle,
     isSelected,
     onRecordActivate,
+    parishPreview,
     detailSearch,
   } = props;
 
@@ -170,13 +173,20 @@ export default function RecordListItem(props) {
   const handleRecordLinkClick = () => {
     onRecordActivate?.(id);
   };
+  const parishPreviewIds = getParishIdsFromPlaces(places);
 
   /* ---------- render ---------- */
   return (
     <tr
       tabIndex={0}
       onKeyDown={onRowKeyDown}
-      className={`border-b border-border last:border-0 even:bg-surface odd:bg-surface-muted ${
+      onMouseEnter={() => parishPreview?.onHover(parishPreviewIds)}
+      onMouseLeave={() => parishPreview?.onHover(null)}
+      onFocus={() => parishPreview?.onFocus(parishPreviewIds)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) parishPreview?.onFocus(null);
+      }}
+      className={`${RESULT_TABLE_ROW_CLASS} ${
         displayTextSummary ? 'bg-surface-muted' : ''
       } ${
         isSelected ? 'outline outline-2 outline-focus outline-offset-[-2px]' : ''
@@ -615,5 +625,9 @@ RecordListItem.propTypes = {
   smallTitle: PropTypes.bool,
   isSelected: PropTypes.bool,
   onRecordActivate: PropTypes.func,
+  parishPreview: PropTypes.shape({
+    onHover: PropTypes.func.isRequired,
+    onFocus: PropTypes.func.isRequired,
+  }),
   detailSearch: PropTypes.string,
 };

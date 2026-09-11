@@ -10,7 +10,6 @@ import RoutePageShell from './components/RoutePageShell';
 import RouteViewLoadingPlaceholder from './components/RouteViewLoadingPlaceholder';
 
 import {
-  getMapFetchLocation,
   getPlaceFetchLocation,
   getRecordFetchLocation,
   getRecordsCountLocation,
@@ -38,14 +37,6 @@ const container = document.getElementById('app');
 const root = createRoot(container);
 
 window.eventBus = EventBus;
-
-function fetchMapAndCountRecords(params, signal) {
-  const mapPromise = fetch(getMapFetchLocation(params), { signal })
-    .then((response) => response.json());
-  const recordsPromise = fetch(getRecordsCountLocation(params), { signal })
-    .then((response) => response.json());
-  return Promise.all([mapPromise, recordsPromise]);
-}
 
 function countRecords(params, signal) {
   return fetch(getRecordsCountLocation(params), { signal }).then((r) => r.json());
@@ -230,7 +221,7 @@ function createRootRoute() {
       };
 
       return defer({
-        results: fetchMapAndCountRecords(queryParams, request.signal),
+        results: countRecords(queryParams, request.signal),
         audioResults: countRecords(
           { ...queryParams, category: 'contentG5' },
           request.signal,
@@ -269,7 +260,7 @@ function createTranscribeRoute() {
       };
 
       return defer({
-        results: fetchMapAndCountRecords(queryParams, request.signal),
+        results: countRecords(queryParams, request.signal),
         audioResults: countRecords(
           { ...queryParams, category: 'contentG5' },
           request.signal,

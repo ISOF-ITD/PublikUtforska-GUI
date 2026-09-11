@@ -1,5 +1,5 @@
 import {
-  lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState,
+  lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState,
 } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -16,8 +16,14 @@ import {
   removeViewParamsFromRoute,
 } from '../../utils/routeHelper';
 import useRecords from "./hooks/useRecords";
+import useResultGrouping from './hooks/useResultGrouping';
+import useParishMapPreview from './hooks/useParishMapPreview';
 import classNames from "classnames";
 import RecordListLoadingPlaceholder from '../../components/RecordListLoadingPlaceholder';
+import {
+  RESULT_TOOLBAR_CLASS,
+  RESULT_VIEW_CONTROLS_CLASS,
+} from './ui/resultListStyles';
 
 const SCROLL_STORAGE_PREFIX = 'recordListScroll:';
 const ACTIVE_RECORD_STORAGE_SUFFIX = ':activeRecord';
@@ -25,6 +31,8 @@ const VIEW_STORAGE_KEY = 'recordListView';
 const VIEW_CHANGE_EVENT = 'recordListViewChange';
 const WIDE_RESULTS_PANE_MIN_WIDTH = 760;
 const Timeline = lazy(() => import("./ui/Timeline"));
+const ParishList = lazy(() => import('./ui/ParishList'));
+const NOOP = () => {};
 
 function isRecordListView(value) {
   return value === 'table' || value === 'cards';
@@ -119,16 +127,38 @@ export default function RecordList(props) {
     detailSearch = '',
     loading = false,
     showPaginationTotal = true,
+    allowGrouping = false,
+    parishData = null,
+    parishLoading = false,
+    listVisible = true,
+    onParishPreview = NOOP,
   } = props;
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { grouped } = useResultGrouping(allowGrouping);
+  const [parishListLoaded, setParishListLoaded] = useState(false);
+  const showParishes = grouped && listVisible;
+  const parishContextKey = useMemo(() => JSON.stringify([
+    mode,
+    Object.fromEntries(Object.entries(params).filter(
+      ([key]) => !['page', 'sort', 'order'].includes(key),
+    )),
+  ]), [mode, params]);
+
+  useEffect(() => {
+    if (showParishes) setParishListLoaded(true);
+  }, [showParishes]);
   // För att kunna återställa scrollpositionen på rätt sätt behöver vi veta
   // vilken container som scrollas. rootRef pekar på den översta nivån i RecordList
   const rootRef = useRef(null);
   const hasRestoredScrollRef = useRef(false);
+  const scrollSnapshotRef = useRef(null);
+  const restoreFrameRef = useRef(null);
   const [resultsPaneWidth, setResultsPaneWidth] = useState(0);
-  const scrollStorageKey = createScrollStorageKey(mode, params);
+  const scrollStorageKey = grouped
+    ? `${SCROLL_STORAGE_PREFIX}parish:${parishContextKey}`
+    : createScrollStorageKey(mode, params);
   const activeRecordStorageKey = `${scrollStorageKey}${ACTIVE_RECORD_STORAGE_SUFFIX}`;
 
   /* ------- business logic extracted to hook ------- */
@@ -149,13 +179,20 @@ export default function RecordList(props) {
     setSorting,
     relevanceSortingAvailable,
     setYearFilter,
-  } = useRecords(params, mode, interval);
+  } = useRecords(params, mode, interval, !grouped);
 
   /* ------- desktop view mode (table|cards) ------- */
   const [view, setView] = useState(() => getInitialView(location.search));
   const [sortAnnouncement, setSortAnnouncement] = useState('');
   const [selectedRecordId, setSelectedRecordId] = useState(null);
   const isRecordViewOpen = /\/records\/[^/]+(?:\/|$)/.test(location.pathname);
+  const accessionPreview = useParishMapPreview({
+    active: allowGrouping && !grouped && listVisible,
+    loading: loading || fetching,
+    onPreview: onParishPreview,
+    data: records,
+    resetKey: `${currentPage}:${sort}:${order}:${view}`,
+  });
 
   // keep state in sync if user navigates to a URL with ?view=
   useEffect(() => {
@@ -191,10 +228,10 @@ export default function RecordList(props) {
       // Ignore storage failures (private mode / disabled storage).
     }
     window.dispatchEvent(new CustomEvent(VIEW_CHANGE_EVENT, { detail: next }));
-    if (!disableRouterPagination) {
-      const newParams = { ...params, view: next };
-      // stay on same path; replace history entry to avoid back-button noise
-      navigate(`${location.pathname}${createSearchRoute(newParams)}`, {
+    if (allowGrouping || !disableRouterPagination) {
+      const query = new URLSearchParams(location.search);
+      query.set('view', next);
+      navigate({ ...location, search: `?${query}` }, {
         replace: true,
       });
     }
@@ -227,7 +264,10 @@ export default function RecordList(props) {
       setCurrentPage(newPage);
     } else {
       const newParams = { ...params, page: newPage };
-      navigate(`${location.pathname}${createSearchRoute(newParams)}`);
+      navigate(mergeRouteSearch(
+        `${location.pathname}${createSearchRoute(newParams)}`,
+        location.search,
+      ));
     }
   };
 
@@ -265,7 +305,9 @@ export default function RecordList(props) {
 
   const saveScrollPosition = useCallback(() => {
     const scrollableContainer = getScrollableContainer(rootRef.current);
-    const top = getScrollTopValue(scrollableContainer);
+    const snapshot = scrollSnapshotRef.current;
+    const top = snapshot?.key === scrollStorageKey
+      ? snapshot.top : getScrollTopValue(scrollableContainer);
     if (top > 0) {
       writeSessionItem(scrollStorageKey, String(top));
     } else {
@@ -278,9 +320,9 @@ export default function RecordList(props) {
 
     let savedTop = null;
     const raw = readSessionItem(scrollStorageKey);
-    if (raw == null) return;
-    const parsed = Number(raw);
-    if (!Number.isFinite(parsed) || parsed <= 0) return;
+    if (raw == null && !allowGrouping) return;
+    const parsed = Number(raw ?? 0);
+    if (!Number.isFinite(parsed) || parsed < 0) return;
     savedTop = parsed;
 
     const scrollableContainer = getScrollableContainer(rootRef.current);
@@ -295,14 +337,11 @@ export default function RecordList(props) {
       removeSessionItem(scrollStorageKey);
     };
 
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(restore);
+    hasRestoredScrollRef.current = true;
+    restoreFrameRef.current = window.requestAnimationFrame(() => {
+      restoreFrameRef.current = window.requestAnimationFrame(restore);
     });
-  }, [scrollStorageKey]);
-
-  useEffect(() => {
-    hasRestoredScrollRef.current = false;
-  }, [scrollStorageKey]);
+  }, [allowGrouping, scrollStorageKey]);
 
   useEffect(() => {
     const saved = readSessionItem(activeRecordStorageKey);
@@ -331,25 +370,43 @@ export default function RecordList(props) {
     };
   }, [selectedRecordId, isRecordViewOpen, clearActiveRecord]);
 
-  useEffect(
-    () => () => {
+  useLayoutEffect(() => {
+    if (!listVisible) return undefined;
+    const scrollableContainer = getScrollableContainer(rootRef.current);
+    const rememberScroll = () => {
+      scrollSnapshotRef.current = {
+        key: scrollStorageKey,
+        top: getScrollTopValue(scrollableContainer),
+      };
+    };
+    rememberScroll();
+    scrollableContainer.addEventListener('scroll', rememberScroll, { passive: true });
+    hasRestoredScrollRef.current = false;
+    return () => {
+      window.cancelAnimationFrame(restoreFrameRef.current);
+      scrollableContainer.removeEventListener('scroll', rememberScroll);
       saveScrollPosition();
-    },
-    [saveScrollPosition]
-  );
+    };
+  }, [listVisible, saveScrollPosition, scrollStorageKey]);
 
   useEffect(() => {
-    if (!fetching && records.length > 0) {
+    if (!grouped && listVisible && !loading && !fetching
+      && (records.length > 0 || allowGrouping)) {
       restoreScrollPosition();
     }
-  }, [fetching, records.length, restoreScrollPosition]);
+  }, [
+    allowGrouping, fetching, grouped, listVisible, loading, records.length,
+    restoreScrollPosition,
+  ]);
 
   useEffect(() => {
     if (layoutContext !== 'results-pane') return undefined;
     const element = containerRef.current;
     if (!element) return undefined;
 
-    const updateWidth = () => setResultsPaneWidth(element.clientWidth);
+    const updateWidth = () => {
+      if (element.clientWidth > 0) setResultsPaneWidth(element.clientWidth);
+    };
     updateWidth();
 
     if (typeof ResizeObserver === 'undefined') {
@@ -374,9 +431,12 @@ export default function RecordList(props) {
   }
   const showWideViewToggle = layoutContext !== 'results-pane'
     || resultsPaneIsWide;
+  const viewControls = showWideViewToggle
+    ? <RecordViewToggle value={view} onChange={handleViewChange} />
+    : null;
 
   return (
-    <div ref={rootRef} aria-busy={loading || undefined}>
+    <div ref={rootRef} aria-busy={loading || (grouped && parishLoading) || undefined}>
       {/* {hasTimeline && (
         <Suspense fallback={<p className="text-center text-subtle">Laddar tidslinje...</p>}>
           <Timeline
@@ -391,7 +451,25 @@ export default function RecordList(props) {
         </Suspense>
       )} */}
 
-      {!loading && (
+      {allowGrouping && (showParishes || parishListLoaded) && (
+        <Suspense fallback={showParishes
+          ? <RecordListLoadingPlaceholder embedded /> : null}
+        >
+          <ParishList
+            key={parishContextKey}
+            data={parishData}
+            active={showParishes}
+            loading={parishLoading}
+            view={resultsPaneIsWide ? view : 'cards'}
+            cardLayout={resultsPaneIsWide ? 'desktop-grid' : 'pane-compact'}
+            controls={viewControls}
+            onPreview={onParishPreview}
+            onReady={restoreScrollPosition}
+          />
+        </Suspense>
+      )}
+
+      {!loading && !grouped && (
         <div
           className={classNames(
             "mb-10 md:mb-2 rounded",
@@ -401,30 +479,31 @@ export default function RecordList(props) {
           <p role="status" aria-atomic="true" className="sr-only">
             {`${l('Sida')} ${currentPage} ${l('av')} ${maxPage}`}
           </p>
-          {!disableListPagination && (
-            <Pagination
-              currentPage={currentPage}
-              total={total}
-              onStep={handleStepPage}
-              maxPage={maxPage}
-              showRange
-              showTotal={showPaginationTotal}
-            />
-          )}
-
-          <div className="mb-3 flex items-center justify-end gap-3">
-            {showWideViewToggle && (
-              <RecordViewToggle value={view} onChange={handleViewChange} />
+          <div className={RESULT_TOOLBAR_CLASS}>
+            {!disableListPagination && (
+              <Pagination
+                currentPage={currentPage}
+                total={total}
+                onStep={handleStepPage}
+                maxPage={maxPage}
+                showRange
+                showTotal={showPaginationTotal}
+                className="!m-0"
+              />
             )}
-            <RecordSortMenu
-              sort={sort}
-              order={order}
-              onChange={handleSort}
-              showRelevance={relevanceSortingAvailable}
-            />
-            <p className="sr-only" aria-live="polite" aria-atomic="true">
-              {sortAnnouncement}
-            </p>
+            <span className="min-w-0 flex-1" aria-hidden="true" />
+            <div className={RESULT_VIEW_CONTROLS_CLASS}>
+              {viewControls}
+              <RecordSortMenu
+                sort={sort}
+                order={order}
+                onChange={handleSort}
+                showRelevance={relevanceSortingAvailable}
+              />
+              <p className="sr-only" aria-live="polite" aria-atomic="true">
+                {sortAnnouncement}
+              </p>
+            </div>
           </div>
 
           {/* Mobile: always cards */}
@@ -438,6 +517,7 @@ export default function RecordList(props) {
               }
               selectedRecordId={selectedRecordId}
               onRecordActivate={markRecordAsActive}
+              parishPreview={accessionPreview}
               layout={compactCardLayout}
               detailSearch={detailSearch}
             />
@@ -455,6 +535,7 @@ export default function RecordList(props) {
                 }
                 selectedRecordId={selectedRecordId}
                 onRecordActivate={markRecordAsActive}
+                parishPreview={accessionPreview}
                 layout="desktop-grid"
                 detailSearch={detailSearch}
               />
@@ -474,6 +555,7 @@ export default function RecordList(props) {
                 columns={columns}
                 selectedRecordId={selectedRecordId}
                 onRecordActivate={markRecordAsActive}
+                parishPreview={accessionPreview}
                 detailSearch={detailSearch}
               />
             )}
@@ -490,10 +572,10 @@ export default function RecordList(props) {
         </div>
       )}
 
-      {loading && (
+      {loading && !grouped && (
         <RecordListLoadingPlaceholder embedded announce={false} />
       )}
-      {!loading && !fetching && records.length === 0 && (
+      {!loading && !grouped && !fetching && records.length === 0 && (
         <div className="block h-64 text-center py-10">
           <h3>{l("Inga sökträffar.")}</h3>
         </div>
@@ -520,4 +602,9 @@ RecordList.propTypes = {
   detailSearch: PropTypes.string,
   loading: PropTypes.bool,
   showPaginationTotal: PropTypes.bool,
+  allowGrouping: PropTypes.bool,
+  parishData: PropTypes.object,
+  parishLoading: PropTypes.bool,
+  listVisible: PropTypes.bool,
+  onParishPreview: PropTypes.func,
 };

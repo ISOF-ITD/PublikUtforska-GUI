@@ -65,6 +65,9 @@ export default function SearchControls({
   activeResultView = 'list',
   onResultViewChange = () => {},
   showResultViewControl = false,
+  showParishGroupingControl = false,
+  parishGrouped = false,
+  onParishGroupingToggle = () => {},
 }) {
   const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
@@ -282,6 +285,9 @@ export default function SearchControls({
               onResultViewChange(showList ? 'list' : 'map');
             }}
             showResultViewControl={showResultViewControl}
+            showParishGroupingControl={showParishGroupingControl}
+            parishGrouped={parishGrouped}
+            onParishGroupingToggle={onParishGroupingToggle}
             showModeSwitch={false}
             showSupplementaryContent={!hasSubmittedSearch}
           />
@@ -312,4 +318,7 @@ SearchControls.propTypes = {
   activeResultView: PropTypes.oneOf(['map', 'list']),
   onResultViewChange: PropTypes.func,
   showResultViewControl: PropTypes.bool,
+  showParishGroupingControl: PropTypes.bool,
+  parishGrouped: PropTypes.bool,
+  onParishGroupingToggle: PropTypes.func,
 };

@@ -95,7 +95,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
               <div className="row">
                 <div className="twelve columns">
                   {
-                    data.location.lat && data.location.lon
+                    data.location?.lat && data.location?.lon
                       ? (
                         <SimpleMap
                           marker={{

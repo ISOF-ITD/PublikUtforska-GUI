@@ -17,6 +17,10 @@ export default function RecordListWrapper({
   layoutContext = 'viewport',
   resultTotal = null,
   loading = false,
+  parishData = null,
+  parishLoading = false,
+  listVisible = true,
+  onParishPreview,
 }) {
   const params = useParams();
   const location = useLocation();
@@ -91,6 +95,11 @@ export default function RecordListWrapper({
             detailSearch={detailSearch}
             loading={loading}
             showPaginationTotal={isStarredRecordList || !hasResultCount}
+            allowGrouping={isEmbeddedResults && !isStarredRecordList}
+            parishData={parishData}
+            parishLoading={parishLoading}
+            listVisible={listVisible}
+            onParishPreview={onParishPreview}
           />
         </div>
       </div>
@@ -109,4 +118,8 @@ RecordListWrapper.propTypes = {
     value: PropTypes.number,
   }),
   loading: PropTypes.bool,
+  parishData: PropTypes.object,
+  parishLoading: PropTypes.bool,
+  listVisible: PropTypes.bool,
+  onParishPreview: PropTypes.func,
 };

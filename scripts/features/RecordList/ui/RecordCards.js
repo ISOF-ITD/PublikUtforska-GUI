@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import RecordCardItem from './RecordCardItem';
+import { RESULT_CARD_GRID_CLASS } from './resultListStyles';
 
 export default function RecordCards({
   records,
@@ -8,6 +9,7 @@ export default function RecordCards({
   highlightRecordsWithMetadataField,
   selectedRecordId,
   onRecordActivate,
+  parishPreview,
   layout = 'mobile-only', // 'mobile-only' | 'pane-compact' | 'desktop-grid'
   detailSearch = '',
 }) {
@@ -15,7 +17,7 @@ export default function RecordCards({
   if (layout === 'pane-compact') {
     wrapperClass = 'space-y-4';
   } else if (layout === 'desktop-grid') {
-    wrapperClass = 'grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-4';
+    wrapperClass = RESULT_CARD_GRID_CLASS;
   }
 
   return (
@@ -29,6 +31,7 @@ export default function RecordCards({
           highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
           isSelected={String(rec._source.id) === String(selectedRecordId)}
           onRecordActivate={onRecordActivate}
+          parishPreview={parishPreview}
           detailSearch={detailSearch}
         />
       ))}
@@ -43,6 +46,10 @@ RecordCards.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   selectedRecordId: PropTypes.string,
   onRecordActivate: PropTypes.func,
+  parishPreview: PropTypes.shape({
+    onHover: PropTypes.func.isRequired,
+    onFocus: PropTypes.func.isRequired,
+  }),
   layout: PropTypes.oneOf(['mobile-only', 'pane-compact', 'desktop-grid']),
   detailSearch: PropTypes.string,
 };

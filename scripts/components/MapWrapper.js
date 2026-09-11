@@ -9,6 +9,11 @@ import MapLoadingPlaceholder from './MapLoadingPlaceholder';
 import RecordListLoadingPlaceholder from './RecordListLoadingPlaceholder';
 import { l } from '../lang/Lang';
 import { createParamsFromSearchRoute } from '../utils/routeHelper';
+import { hasMapPosition } from '../utils/parishHelper';
+import { getMapFetchLocation } from '../utils/helpers';
+import { toastError } from '../utils/toast';
+import useResultGrouping from '../features/RecordList/hooks/useResultGrouping';
+import ParishGroupingToggle from './ParishGroupingToggle';
 
 const MapView = lazy(() => import('./views/MapView'));
 const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
@@ -20,6 +25,13 @@ const SEARCH_FIELD_LABELS = {
   place: 'Ort',
 };
 const PLACE_NAME_FIELDS = ['name', 'harad', 'landskap', 'lan'];
+const MATERIAL_TRANSCRIPTION_STATUSES = [
+  'published',
+  'accession',
+  'readytocontribute',
+  'readytotranscribe',
+  'undertranscription',
+].join(',');
 
 function hasSearchValue(value) {
   if (Array.isArray(value)) return value.some(hasSearchValue);
@@ -55,7 +67,6 @@ function MapWrapper({
   mapMarkerClick,
   mode,
   params,
-  mapData,
   loading = true,
   recordsData,
   audioRecordsData,
@@ -68,7 +79,10 @@ function MapWrapper({
     return window.matchMedia(query).matches;
   };
   const locationParams = new URLSearchParams(location.search);
-  const routeSearchParams = createParamsFromSearchRoute(params['*']);
+  const routeSearchParams = useMemo(
+    () => createParamsFromSearchRoute(params['*']),
+    [params['*']],
+  );
   const hasRouteSearchContext = Object.entries(routeSearchParams)
     .some(([key, value]) => key !== 'page' && hasSearchValue(value));
   const hasSubmittedSearch = hasRouteSearchContext
@@ -104,7 +118,12 @@ function MapWrapper({
     () => getMediaQueryMatch(WIDE_RESULTS_MEDIA_QUERY),
   );
   const [shouldLoadMap, setShouldLoadMap] = useState(false);
+  const [parishPreview, setParishPreview] = useState(null);
+  const [parishResult, setParishResult] = useState({ url: null, data: null });
+  const [parishFetchingUrl, setParishFetchingUrl] = useState(null);
   const mapPanelRef = useRef(null);
+  const groupingAllowed = !locationParams.has('record_ids');
+  const { grouped, toggleGrouping } = useResultGrouping(groupingAllowed);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -144,13 +163,6 @@ function MapWrapper({
   }, [searchLoading]);
 
   useEffect(() => {
-    let timeoutId;
-    if (loading) timeoutId = setTimeout(() => setMapUiLoading(true), 150);
-    else setMapUiLoading(false);
-    return () => clearTimeout(timeoutId);
-  }, [loading]);
-
-  useEffect(() => {
     const handleRecordListFetching = (event) => {
       setRecordListFetching(Boolean(event?.target));
     };
@@ -165,32 +177,85 @@ function MapWrapper({
     );
   }, []);
 
-  const lastMapDataRef = useRef(mapData);
-  useEffect(() => {
-    if (mapData && Object.keys(mapData).length > 0) {
-      lastMapDataRef.current = mapData;
-    }
-  }, [mapData]);
-
-  const hasMapData = mapData && Object.keys(mapData).length > 0;
-  const stableMapData = hasMapData ? mapData : lastMapDataRef.current;
-  const visibleMapData = useMemo(() => (
-    placeTerm
-      ? filterMapDataByPlaceSearch(stableMapData, placeTerm)
-      : stableMapData
-  ), [placeTerm, stableMapData]);
-  const mapResultCount = Array.isArray(visibleMapData?.data)
-    ? visibleMapData.data.length
-    : 0;
-  const mapSummaryText = mapResultCount > 0
-    ? `Kartan visar ${mapResultCount} platser i nuvarande urval.`
-    : 'Kartan visar inga platser i nuvarande urval.';
   const showWideMap = active && isWideResultsViewport;
   const listIsVisible = active
     && (isWideResultsViewport || narrowResultView === 'list');
   const mapIsVisible = active
     && (showWideMap || narrowResultView === 'map');
   const showContainedNarrowMap = mapIsVisible && !isWideResultsViewport;
+
+  const parishFetchUrl = useMemo(() => getMapFetchLocation({
+    ...routeSearchParams,
+    recordtype: mode === 'transcribe'
+      ? routeSearchParams.recordtype ?? 'one_accession_row'
+      : routeSearchParams.recordtype,
+    transcriptionstatus: routeSearchParams.transcriptionstatus || (
+      mode === 'transcribe'
+        ? 'readytotranscribe,undertranscription'
+        : MATERIAL_TRANSCRIPTION_STATUSES
+    ),
+  }), [mode, routeSearchParams]);
+  const parishData = parishResult.url === parishFetchUrl
+    ? parishResult.data : null;
+  const showParishList = active && listIsVisible && grouped;
+  const shouldFetchParishes = active && (showParishList || shouldLoadMap);
+  const parishLoading = shouldFetchParishes
+    && (!parishData || parishFetchingUrl === parishFetchUrl);
+
+  useEffect(() => {
+    if (!shouldFetchParishes || parishData) return undefined;
+    const controller = new AbortController();
+    let alive = true;
+    setParishFetchingUrl(parishFetchUrl);
+    fetch(parishFetchUrl, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        if (alive) setParishResult({ url: parishFetchUrl, data });
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') {
+          if (alive) setParishResult({ url: parishFetchUrl, data: { data: [] } });
+          toastError('Kunde inte läsa in socknar. Försök igen.');
+        }
+      })
+      .finally(() => {
+        if (alive) setParishFetchingUrl(null);
+      });
+    return () => {
+      alive = false;
+      controller.abort();
+    };
+  }, [parishData, parishFetchUrl, shouldFetchParishes]);
+
+  useEffect(() => {
+    let timeoutId;
+    if (parishLoading) timeoutId = setTimeout(() => setMapUiLoading(true), 150);
+    else setMapUiLoading(false);
+    return () => clearTimeout(timeoutId);
+  }, [parishLoading]);
+
+  const visibleMapData = useMemo(() => (
+    placeTerm
+      ? filterMapDataByPlaceSearch(parishData, placeTerm)
+      : parishData
+  ), [parishData, placeTerm]);
+  const mapResultCount = Array.isArray(visibleMapData?.data)
+    ? visibleMapData.data.filter(hasMapPosition).length
+    : 0;
+  const mapSummaryText = mapResultCount > 0
+    ? `Kartan visar ${mapResultCount} platser i nuvarande urval.`
+    : 'Kartan visar inga platser i nuvarande urval.';
+  const handleParishPreview = useCallback((id) => {
+    const ids = (Array.isArray(id) ? id : [id])
+      .filter((value) => value !== null && value !== undefined && value !== '')
+      .map(String);
+    setParishPreview(ids.length === 0 ? null : { ids: [...new Set(ids)], data: visibleMapData });
+  }, [visibleMapData]);
+  const previewParishIds = !parishLoading && listIsVisible && mapIsVisible
+    && parishPreview?.data === visibleMapData ? parishPreview?.ids ?? null : null;
 
   useEffect(() => {
     if (!mapIsVisible || shouldLoadMap) return undefined;
@@ -237,6 +302,9 @@ function MapWrapper({
       replace: true,
     });
   }, [location.hash, location.pathname, location.search, navigate]);
+  const handleGroupingToggle = useCallback(() => {
+    toggleGrouping({ showList: !isWideResultsViewport });
+  }, [isWideResultsViewport, toggleGrouping]);
 
   return (
     <div
@@ -291,6 +359,9 @@ function MapWrapper({
           activeResultView={narrowResultView}
           onResultViewChange={changeResultView}
           showResultViewControl={!isWideResultsViewport}
+          showParishGroupingControl={active && groupingAllowed && !isWideResultsViewport}
+          parishGrouped={grouped}
+          onParishGroupingToggle={handleGroupingToggle}
         />
 
         <section
@@ -300,7 +371,7 @@ function MapWrapper({
           inert={!listIsVisible || undefined}
           aria-hidden={!listIsVisible || undefined}
           aria-labelledby="record-list-heading"
-          aria-busy={uiLoading || undefined}
+          aria-busy={uiLoading || (grouped && parishLoading) || undefined}
           tabIndex={-1}
         >
           <Suspense fallback={<RecordListLoadingPlaceholder announce={false} />}>
@@ -310,6 +381,10 @@ function MapWrapper({
               layoutContext="results-pane"
               resultTotal={resultTotal}
               loading={uiLoading}
+              parishData={visibleMapData}
+              parishLoading={parishLoading}
+              listVisible={listIsVisible}
+              onParishPreview={handleParishPreview}
             />
           </Suspense>
         </section>
@@ -326,7 +401,7 @@ function MapWrapper({
         aria-busy={mapUiLoading || undefined}
         tabIndex={-1}
         className={classNames(
-          'relative w-full overflow-hidden bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-[-2px]',
+          'relative flex w-full flex-col overflow-hidden bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-[-2px]',
           isWideResultsViewport
             ? 'results-map-panel--split h-screen border-l border-border'
             : '',
@@ -336,22 +411,33 @@ function MapWrapper({
         )}
       >
         <span className="sr-only">{mapSummaryText}</span>
-        {mapUiLoading && (
-          <MapLoadingPlaceholder overlay announce={false} />
-        )}
-        {shouldLoadMap ? (
-          <Suspense fallback={<MapLoadingPlaceholder announce={false} />}>
-            <MapView
-              onMarkerClick={mapMarkerClick}
-              mapData={visibleMapData}
-              isMobileViewport={isMobileMapViewport}
-              active={mapIsVisible}
-              layout={isWideResultsViewport ? 'desktop-split' : 'full'}
+        {isWideResultsViewport && groupingAllowed && (
+          <div className="z-[1200] flex shrink-0 items-center border-b border-border bg-surface px-3 py-2">
+            <ParishGroupingToggle
+              grouped={grouped}
+              onToggle={handleGroupingToggle}
             />
-          </Suspense>
-        ) : (
-          <MapLoadingPlaceholder announce={false} />
+          </div>
         )}
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          {mapUiLoading && (
+            <MapLoadingPlaceholder overlay announce={false} />
+          )}
+          {shouldLoadMap ? (
+            <Suspense fallback={<MapLoadingPlaceholder announce={false} />}>
+              <MapView
+                onMarkerClick={mapMarkerClick}
+                mapData={visibleMapData}
+                isMobileViewport={isMobileMapViewport}
+                active={mapIsVisible}
+                previewParishIds={previewParishIds}
+                layout={isWideResultsViewport ? 'desktop-split' : 'full'}
+              />
+            </Suspense>
+          ) : (
+            <MapLoadingPlaceholder announce={false} />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -362,7 +448,6 @@ MapWrapper.propTypes = {
   mapMarkerClick: PropTypes.func.isRequired,
   mode: PropTypes.string.isRequired,
   params: PropTypes.object.isRequired,
-  mapData: PropTypes.object,
   loading: PropTypes.bool,
   recordsData: PropTypes.object,
   audioRecordsData: PropTypes.object,

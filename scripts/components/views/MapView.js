@@ -17,6 +17,9 @@ import '../../lib/leaflet-heat';
 import PropTypes from 'prop-types';
 
 import MapBase, { SWEDEN_BOUNDS } from './MapBase';
+import {
+  getParishHitCount, getParishMetadata, getParishName, hasMapPosition,
+} from '../../utils/parishHelper';
 
 /* Inaktiv kluster- och landskapsvy.
 const LANDSCAPE_MAX_ZOOM = 6;
@@ -301,6 +304,7 @@ export default function MapView({
   mapData,
   isMobileViewport = false,
   active = true,
+  previewParishIds = null,
   layout = 'full',
 }) {
   const [keyboardAnnouncement, setKeyboardAnnouncement] = useState('');
@@ -311,20 +315,14 @@ export default function MapView({
   // const clusterPreviewGroupRef = useRef(null);
   const renderedOverlayModeRef = useRef(null);
   const pendingMarkerFocusRef = useRef(null);
+  const parishCirclesRef = useRef(new Map());
+  const requestedParishIdsRef = useRef([]);
+  const previewCirclesRef = useRef(new Set());
 
   // Compute valid points once per mapData change
   const points = useMemo(() => {
     const raw = Array.isArray(mapData?.data) ? mapData.data : [];
-    return raw.filter((obj) => {
-      const loc = obj?.location;
-      return (
-        Array.isArray(loc)
-        && loc.length === 2
-        && Number.isFinite(loc[0])
-        && Number.isFinite(loc[1])
-        && !(loc[0] === 0 && loc[1] === 0)
-      );
-    });
+    return raw.filter(hasMapPosition);
   }, [mapData]);
   /* Inaktiv gruppering för kluster- och landskapsvyn.
   const regions = useMemo(() => {
@@ -380,6 +378,9 @@ export default function MapView({
   */
 
   const removeOverlays = useCallback((map) => {
+    previewCirclesRef.current.forEach((circle) => circle.closeTooltip());
+    previewCirclesRef.current.clear();
+    parishCirclesRef.current.clear();
     if (clusterGroupRef.current) {
       map.removeLayer(clusterGroupRef.current);
       clusterGroupRef.current = null;
@@ -388,18 +389,11 @@ export default function MapView({
   }, []);
 
   const getDocumentCount = useCallback((obj) => (
-    typeof obj.doc_count === 'number' && !Number.isNaN(obj.doc_count)
-      ? obj.doc_count
-      : 1
+    getParishHitCount(obj)
   ), []);
 
   const getSockenName = useCallback((obj) => (
-    (obj.name?.replace?.(/ sn$/, ' socken') || '')
-    // add landskap if available and is not "ingen"
-    + (obj.landskap && obj.landskap.trim().toLocaleLowerCase('sv') !== 'ingen'
-      ? `, ${obj.landskap}`
-      : ''
-    )
+    [getParishName(obj), getParishMetadata(obj.landskap)].filter(Boolean).join(', ')
   ), []);
 
   /* Inaktiva markörer och förhandsvisningar för kluster- och landskapsvyn.
@@ -544,6 +538,8 @@ export default function MapView({
       sockenCircle.on('click', () => onMarkerClick(obj.id));
     }
 
+    parishCirclesRef.current.set(String(obj.id), sockenCircle);
+
     return sockenCircle;
   }, [getDocumentCount, getSockenName, onMarkerClick]);
 
@@ -586,6 +582,23 @@ export default function MapView({
     }
   }, [clearClusterPreview, createPreviewCircle]);
   */
+
+  const synchronizeParishPreview = useCallback(() => {
+    const nextCircles = new Set(requestedParishIdsRef.current
+      .map((id) => parishCirclesRef.current.get(id))
+      .filter(Boolean));
+    previewCirclesRef.current.forEach((circle) => {
+      if (!nextCircles.has(circle)) circle.closeTooltip();
+    });
+    nextCircles.forEach((circle) => circle.openTooltip());
+    previewCirclesRef.current = nextCircles;
+  }, []);
+
+  useEffect(() => {
+    requestedParishIdsRef.current = active && Array.isArray(previewParishIds)
+      ? previewParishIds.map(String) : [];
+    synchronizeParishPreview();
+  }, [active, previewParishIds, synchronizeParishPreview]);
 
   const updateMap = useCallback(({ force = false } = {}) => {
     const map = mapView.current?.map;
@@ -681,6 +694,7 @@ export default function MapView({
       }
       */
       renderedOverlayModeRef.current = overlayMode;
+      synchronizeParishPreview();
     };
 
     // Public API – safe in all cases (fires immediately if ready)
@@ -689,6 +703,7 @@ export default function MapView({
     points,
     removeOverlays,
     createSockenCircle,
+    synchronizeParishPreview,
   ]);
 
   // Rebuild overlays when data or view changes
@@ -1026,5 +1041,6 @@ MapView.propTypes = {
   mapData: PropTypes.object,
   isMobileViewport: PropTypes.bool,
   active: PropTypes.bool,
+  previewParishIds: PropTypes.arrayOf(PropTypes.string),
   layout: PropTypes.oneOf(['full', 'desktop-split']),
 };

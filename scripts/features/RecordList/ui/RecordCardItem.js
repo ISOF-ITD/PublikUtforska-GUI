@@ -21,7 +21,18 @@ import HighlightedText from './HighlightedText';
 import { secondsToMMSS } from '../../../utils/timeHelper';
 import { createSearchRoute, mergeRouteSearch } from '../../../utils/routeHelper';
 import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
+import { getParishIdsFromPlaces } from '../../../utils/parishHelper';
 import countPageProgressFromMedia from '../utils/countPageProgressFromMedia';
+import {
+  RESULT_CARD_BASE_CLASS,
+  RESULT_CARD_LINK_CLASS,
+  RESULT_CARD_METADATA_CLASS,
+  RESULT_CARD_METADATA_ROW_CLASS,
+  RESULT_CARD_LABEL_CLASS,
+  RESULT_CARD_TITLE_CLASS,
+  RESULT_CARD_VALUE_CLASS,
+  RESULT_CARD_VALUE_ADDITIONAL_CLASS,
+} from './resultListStyles';
 
 export default function RecordCardItem({
   item,
@@ -30,6 +41,7 @@ export default function RecordCardItem({
   highlightRecordsWithMetadataField,
   isSelected,
   onRecordActivate,
+  parishPreview,
   detailSearch = '',
 }) {
   const src = item?._source ?? {};
@@ -93,6 +105,11 @@ export default function RecordCardItem({
     if (!places || places.length <= 1) return '';
     return `${places.length - 1} andra`;
   }, [places]);
+  const extraPlacesListString = useMemo(() => {
+    if (!places || places.length <= 1) return '';
+    return places.slice(1).map((p) => p?.name).filter(Boolean).join(', ');
+  }, [places]);
+  const parishPreviewIds = useMemo(() => getParishIdsFromPlaces(places), [places]);
 
   // build a search suffix from the current list params
   const searchSuffix = createSearchRoute(searchParams || {});
@@ -213,7 +230,13 @@ export default function RecordCardItem({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-md !border bg-[var(--color-result-card-bg)] p-3 shadow-sm transition-all hover:shadow-md ${
+      onPointerEnter={() => parishPreview?.onHover(parishPreviewIds)}
+      onPointerLeave={() => parishPreview?.onHover(null)}
+      onFocusCapture={() => parishPreview?.onFocus(parishPreviewIds)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) parishPreview?.onFocus(null);
+      }}
+      className={`${RESULT_CARD_BASE_CLASS} ${
         isSelected
           ? '!border-focus ring-2 ring-focus ring-offset-1'
           : '!border-[var(--color-result-card-rule)]'
@@ -244,11 +267,11 @@ export default function RecordCardItem({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <span className="block text-lg font-semibold leading-tight !text-link">
+          <span className={RESULT_CARD_TITLE_CLASS}>
             {recordUrl ? (
               <Link
                 to={recordUrl}
-                className="!text-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                className={RESULT_CARD_LINK_CLASS}
                 onClick={handleRecordClick}
               >
                 <span
@@ -288,20 +311,20 @@ export default function RecordCardItem({
           </span>
 
           {/* Metadata Grid */}
-          <div className="mt-3 flex flex-col text-sm leading-snug">
+          <div className={RESULT_CARD_METADATA_CLASS}>
             {placeString && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+            <div className={RESULT_CARD_METADATA_ROW_CLASS}>
+              <span className={RESULT_CARD_LABEL_CLASS}>
                 {l('Ort')}
               </span>
               <span className="min-w-0 break-words">
-                <span className="min-w-0 break-words font-medium text-body">
+                <span className={RESULT_CARD_VALUE_CLASS}>
                   {placeString}
                 </span>
                 {extraPlacesString && (
                   <>
-                    {' '}
-                    <span className="min-w-0 break-words text-muted">
+                    {' + '}
+                    <span className={RESULT_CARD_VALUE_ADDITIONAL_CLASS} title={extraPlacesListString}>
                       {extraPlacesString}
                     </span>
                   </>
@@ -311,19 +334,19 @@ export default function RecordCardItem({
             )}
 
             {displayYear && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+            <div className={RESULT_CARD_METADATA_ROW_CLASS}>
+              <span className={RESULT_CARD_LABEL_CLASS}>
                 {l('År')}
               </span>
-              <span className="min-w-0 break-words font-medium text-body">
+              <span className={RESULT_CARD_VALUE_CLASS}>
                 {displayYear}
               </span>
             </div>
             )}
 
             {showCollectors && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+            <div className={RESULT_CARD_METADATA_ROW_CLASS}>
+              <span className={RESULT_CARD_LABEL_CLASS}>
                 {l('Insamlare')}
               </span>
               <span className="flex min-w-0 flex-wrap gap-x-1 font-medium text-body">
@@ -350,8 +373,8 @@ export default function RecordCardItem({
             )}
 
             {transcriptionProgress && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
+            <div className={RESULT_CARD_METADATA_ROW_CLASS}>
+              <span className={RESULT_CARD_LABEL_CLASS}>
                 {l('Avskrivna')}
               </span>
               <div className="flex min-w-0 items-center gap-2">
@@ -533,5 +556,9 @@ RecordCardItem.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   isSelected: PropTypes.bool,
   onRecordActivate: PropTypes.func,
+  parishPreview: PropTypes.shape({
+    onHover: PropTypes.func.isRequired,
+    onFocus: PropTypes.func.isRequired,
+  }),
   detailSearch: PropTypes.string,
 };

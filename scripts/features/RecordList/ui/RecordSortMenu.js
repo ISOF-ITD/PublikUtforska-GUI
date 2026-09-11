@@ -7,6 +7,7 @@ import {
   faCheck, faChevronDown, faSort,
 } from '@fortawesome/free-solid-svg-icons';
 import { l } from '../../../lang/Lang';
+import { RESULT_TOOLBAR_BUTTON_CLASS } from './resultListStyles';
 
 const SORT_OPTIONS = [
   {
@@ -41,10 +42,11 @@ export default function RecordSortMenu({
   order,
   onChange,
   showRelevance,
+  options = SORT_OPTIONS,
 }) {
   const visibleSortOptions = showRelevance
-    ? SORT_OPTIONS
-    : SORT_OPTIONS.filter((option) => option.field !== '_score');
+    ? options
+    : options.filter((option) => option.field !== '_score');
   const currentOption = visibleSortOptions.find(
     (option) => option.field === sort && option.order === order,
   ) || visibleSortOptions[0];
@@ -52,13 +54,7 @@ export default function RecordSortMenu({
 
   return (
     <Menu as="div" className="relative">
-      <MenuButton
-        className={[
-          'flex items-center gap-2 rounded border border-border bg-surface px-3 py-1 text-body',
-          'hover:bg-surface-hover focus-visible:outline focus-visible:outline-2',
-          'focus-visible:outline-offset-2 focus-visible:outline-focus',
-        ].join(' ')}
-      >
+      <MenuButton className={RESULT_TOOLBAR_BUTTON_CLASS}>
         <FontAwesomeIcon icon={faSort} aria-hidden="true" />
         <span>{buttonLabel}</span>
         <FontAwesomeIcon icon={faChevronDown} aria-hidden="true" />
@@ -110,4 +106,9 @@ RecordSortMenu.propTypes = {
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   onChange: PropTypes.func.isRequired,
   showRelevance: PropTypes.bool.isRequired,
+  options: PropTypes.arrayOf(PropTypes.shape({
+    field: PropTypes.string.isRequired,
+    order: PropTypes.oneOf(['asc', 'desc']).isRequired,
+    label: PropTypes.string.isRequired,
+  })),
 };

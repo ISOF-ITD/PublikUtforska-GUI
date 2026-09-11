@@ -129,7 +129,6 @@ export default function Application({
   const location = useLocation();
   const matches = useMatches();
   const { results, audioResults, pictureResults } = useLoaderData();
-  const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: {} });
   const [audioRecordsData, setAudioRecordsData] = useState({ data: [], metadata: {} });
   const [pictureRecordsData, setPictureRecordsData] = useState({ data: [], metadata: {} });
@@ -179,9 +178,8 @@ export default function Application({
     let alive = true;
     setLoading(true);
     results
-      .then(([map, recs]) => {
+      .then((recs) => {
         if (!alive) return;
-        setMapData(map);
         setRecordsData(recs);
         setLoading(false);
       })
@@ -289,7 +287,6 @@ export default function Application({
               mapMarkerClick={mapMarkerClick}
               mode={mode}
               params={params}
-              mapData={mapData}
               recordsData={recordsData}
               audioRecordsData={audioRecordsData}
               pictureRecordsData={pictureRecordsData}

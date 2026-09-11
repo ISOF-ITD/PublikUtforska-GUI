@@ -8,6 +8,7 @@ import {
   faCheck, faChevronDown, faGrip, faTable,
 } from '@fortawesome/free-solid-svg-icons';
 import { l } from '../../../lang/Lang';
+import { RESULT_TOOLBAR_BUTTON_CLASS } from './resultListStyles';
 
 const VIEW_OPTIONS = [
   {
@@ -39,11 +40,7 @@ export default function RecordViewToggle({ value, onChange }) {
     <Menu as="div" className="relative hidden md:block">
       <MenuButton
         type="button"
-        className={[
-          'flex items-center gap-2 rounded border border-border bg-surface px-3 py-1 text-body',
-          'hover:bg-surface-hover focus-visible:outline focus-visible:outline-2',
-          'focus-visible:outline-offset-2 focus-visible:outline-focus',
-        ].join(' ')}
+        className={RESULT_TOOLBAR_BUTTON_CLASS}
       >
         <FontAwesomeIcon icon={currentOption.icon} aria-hidden="true" />
         <span>{buttonLabel}</span>
