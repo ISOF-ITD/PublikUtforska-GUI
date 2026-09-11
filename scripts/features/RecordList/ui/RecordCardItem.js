@@ -264,10 +264,10 @@ export default function RecordCardItem({
             </div>
           </div>
 
-          <dl className="mt-auto space-y-1 pt-4 text-sm leading-snug text-muted">
+          <dl className="mt-auto space-y-1 pt-4 text-sm leading-snug text-body">
             {displayPlace && (
               <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] gap-x-2">
-                <dt className="font-medium text-body">{l('Ort')}</dt>
+                <dt className="font-medium text-muted">{l('Ort')}</dt>
                 <dd className="m-0 min-w-0 break-words md:line-clamp-2">
                   {displayPlace}
                 </dd>
@@ -275,13 +275,13 @@ export default function RecordCardItem({
             )}
             {displayYear && (
               <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] gap-x-2">
-                <dt className="font-medium text-body">{l('År')}</dt>
+                <dt className="font-medium text-muted">{l('År')}</dt>
                 <dd className="m-0 min-w-0">{displayYear}</dd>
               </div>
             )}
             {showCollectors && (
               <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] gap-x-2">
-                <dt className="font-medium text-body">{l('Insamlare')}</dt>
+                <dt className="font-medium text-muted">{l('Insamlare')}</dt>
                 <dd className="m-0 min-w-0 break-words md:line-clamp-2">
                   {collectorNames}
                 </dd>
@@ -296,9 +296,9 @@ export default function RecordCardItem({
               </span>
             )}
             {showTranscriptionProgress && (
-              <dl className="w-full text-xs text-muted">
+              <dl className="w-full text-xs text-body">
                 <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] items-center gap-x-2">
-                  <dt className="font-medium text-body">{l('Avskrivna')}</dt>
+                  <dt className="font-medium text-muted">{l('Avskrivna')}</dt>
                   <dd className="m-0 flex min-w-0 items-center gap-2">
                     <span className="shrink-0">{transcriptionValue}</span>
                     <span
