@@ -1,10 +1,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons';
-import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
+import { faBookmark as faBookmarkSolid } from '@fortawesome/free-solid-svg-icons';
+import { faBookmark as faBookmarkRegular } from '@fortawesome/free-regular-svg-icons';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { l } from '../lang/Lang';
-import useStarredRecords from '../hooks/useStarredRecords';
+import useBookmarkedRecords from '../hooks/useBookmarkedRecords';
 
 const compactContactButtonClassName = [
   'feedback-button relative z-[1] inline-flex !h-auto self-start items-center gap-2',
@@ -14,21 +14,21 @@ const compactContactButtonClassName = [
   'focus-visible:outline-offset-2 focus-visible:outline-white',
 ].join(' ');
 
-export default function StarredRecordButton({
+export default function BookmarkedRecordButton({
   record,
   className = '',
   compact = false,
   variant = 'icon',
 }) {
-  const { isStarred, toggle } = useStarredRecords();
+  const { isBookmarked, toggle } = useBookmarkedRecords();
   const id = record?.id;
-  const active = id ? isStarred(id) : false;
+  const active = id ? isBookmarked(id) : false;
   const label = active
-    ? l('Ta bort stjärnmarkering')
-    : l('Stjärnmarkera');
+    ? l('Ta bort från sparade')
+    : l('Spara');
   const visibleLabel = active
-    ? l('Stjärnmarkerad')
-    : l('Stjärnmarkera');
+    ? l('Sparad')
+    : l('Spara');
 
   const handleClick = (event) => {
     event.preventDefault();
@@ -56,13 +56,13 @@ export default function StarredRecordButton({
       title={label}
       disabled={!id}
     >
-      <FontAwesomeIcon icon={active ? faStarSolid : faStarRegular} aria-hidden="true" />
+      <FontAwesomeIcon icon={active ? faBookmarkSolid : faBookmarkRegular} aria-hidden="true" />
       {variant === 'contact' && <span>{visibleLabel}</span>}
     </button>
   );
 }
 
-StarredRecordButton.propTypes = {
+BookmarkedRecordButton.propTypes = {
   record: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }).isRequired,

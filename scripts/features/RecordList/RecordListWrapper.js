@@ -36,7 +36,7 @@ export default function RecordListWrapper({
     },
     [location.search, searchRoutePath],
   );
-  const isStarredRecordList = Boolean(searchParams.record_ids);
+  const isBookmarkedRecordList = Boolean(searchParams.record_ids);
   const detailSearch = useMemo(() => location.search, [location.search]);
   const isEmbeddedResults = layoutContext === 'results-pane';
   const Heading = isEmbeddedResults ? 'h2' : 'h1';
@@ -68,8 +68,8 @@ export default function RecordListWrapper({
               ? 'm-0 !text-xl text-body sm:!text-2xl'
               : 'm-0 !text-[var(--color-text-inverted)]'}
           >
-            {isStarredRecordList
-              ? l('Stjärnmarkerat arkivmaterial')
+            {isBookmarkedRecordList
+              ? l('Sparat arkivmaterial')
               : resultHeading}
           </Heading>
         </div>
@@ -84,13 +84,13 @@ export default function RecordListWrapper({
             params={searchParams}
             mode={mode}
             hasFilter={mode !== 'transcribe'}
-            hasTimeline={!isStarredRecordList}
+            hasTimeline={!isBookmarkedRecordList}
             openSwitcherHelptext={openSwitcherHelptext}
             containerRef={containerRef}
             layoutContext={layoutContext}
             detailSearch={detailSearch}
             loading={loading}
-            showPaginationTotal={isStarredRecordList || !hasResultCount}
+            showPaginationTotal={isBookmarkedRecordList || !hasResultCount}
           />
         </div>
       </div>

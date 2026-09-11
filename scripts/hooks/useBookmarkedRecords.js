@@ -4,22 +4,22 @@ import {
 import config from '../config';
 import localLibrary from '../utils/localLibrary';
 
-export const STARRED_RECORDS_EVENT = 'starredRecords.changed';
-export const STARRED_RECORDS_RETURN_STORAGE_KEY = 'starredRecords.returnTo';
+export const BOOKMARKED_RECORDS_EVENT = 'bookmarkedRecords.changed';
+export const BOOKMARKED_RECORDS_RETURN_STORAGE_KEY = 'bookmarkedRecords.returnTo';
 
-function getStarredRecords() {
+function getBookmarkedRecords() {
   return localLibrary.list();
 }
 
-function dispatchStarredRecordsChanged() {
-  window.dispatchEvent(new CustomEvent(STARRED_RECORDS_EVENT));
+function dispatchBookmarkedRecordsChanged() {
+  window.dispatchEvent(new CustomEvent(BOOKMARKED_RECORDS_EVENT));
 }
 
-export default function useStarredRecords() {
-  const [items, setItems] = useState(() => getStarredRecords());
+export default function useBookmarkedRecords() {
+  const [items, setItems] = useState(() => getBookmarkedRecords());
 
   const refresh = useCallback(() => {
-    setItems(getStarredRecords());
+    setItems(getBookmarkedRecords());
   }, []);
 
   useEffect(() => {
@@ -29,11 +29,11 @@ export default function useStarredRecords() {
       }
     };
 
-    window.addEventListener(STARRED_RECORDS_EVENT, refresh);
+    window.addEventListener(BOOKMARKED_RECORDS_EVENT, refresh);
     window.addEventListener('storage', handleStorage);
 
     return () => {
-      window.removeEventListener(STARRED_RECORDS_EVENT, refresh);
+      window.removeEventListener(BOOKMARKED_RECORDS_EVENT, refresh);
       window.removeEventListener('storage', handleStorage);
     };
   }, [refresh]);
@@ -45,7 +45,7 @@ export default function useStarredRecords() {
 
   const idSet = useMemo(() => new Set(ids.map(String)), [ids]);
 
-  const isStarred = useCallback(
+  const isBookmarked = useCallback(
     (id) => idSet.has(String(id)),
     [idSet],
   );
@@ -61,13 +61,13 @@ export default function useStarredRecords() {
     }
 
     refresh();
-    dispatchStarredRecordsChanged();
+    dispatchBookmarkedRecordsChanged();
   }, [refresh]);
 
   return {
     ids,
     count: ids.length,
-    isStarred,
+    isBookmarked,
     toggle,
   };
 }

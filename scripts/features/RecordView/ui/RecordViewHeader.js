@@ -9,7 +9,7 @@ import {
 } from "../../../utils/helpers";
 import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
 import config from "../../../config";
-import StarredRecordButton from '../../../components/StarredRecordButton';
+import BookmarkedRecordButton from '../../../components/BookmarkedRecordButton';
 
 const renderMetadataItem = (label, value) => (
   <div key={label} className="mr-2.5 inline">
@@ -101,7 +101,7 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
         </div>
       </div>
       <ContactButtonGroup className="!static mt-2 w-full flex-wrap justify-end gap-2">
-        <StarredRecordButton record={data} variant="contact" />
+        <BookmarkedRecordButton record={data} variant="contact" />
       </ContactButtonGroup>
     </header>
   );

@@ -311,7 +311,7 @@ export function mergeRouteSearch(path, search = '') {
 
 /**
  * Return the persistent search surface represented by a detail/task route.
- * Detail-only media state is discarded while list and starred-result context
+ * Detail-only media state is discarded while list and bookmarked-result context
  * remain shareable through the query string.
  */
 export function createResultLocation(pathname, search = '') {

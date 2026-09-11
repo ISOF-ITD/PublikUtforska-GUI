@@ -206,7 +206,7 @@ export default function RecordList(props) {
     (name) => (columns ? columns.includes(name) : true),
     [columns]
   );
-  // If the URL contains record_ids, we are in a starred record list and should not include record_ids in the navigation params to avoid losing the starred filter when navigating between records.
+  // If the URL contains record_ids, we are in a bookmarked record list and should not include record_ids in the navigation params to avoid losing the bookmarked filter when navigating between records.
   const recordNavigationParams = useMemo(() => {
     const baseParams = useRouteParams
       ? createParamsFromSearchRoute(
