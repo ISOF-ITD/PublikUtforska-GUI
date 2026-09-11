@@ -187,11 +187,17 @@ export default function SearchControls({
           <div className="flex min-h-[4rem] max-w-full items-center justify-between gap-2 px-3 py-2 min-[1440px]:px-5">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <h1 className="!m-0">
-                <img
-                  src={Folkelogga}
-                  alt={l('Folkelogga')}
-                  className="h-10 w-auto max-w-[40vw] object-contain"
-                />
+                <Link
+                  to="/"
+                  aria-label={l('Till Folkes startsida')}
+                  className="inline-flex rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                >
+                  <img
+                    src={Folkelogga}
+                    alt=""
+                    className="h-10 w-auto max-w-[40vw] object-contain"
+                  />
+                </Link>
               </h1>
               <span aria-hidden="true" className="h-6 w-px bg-white/30" />
               <a

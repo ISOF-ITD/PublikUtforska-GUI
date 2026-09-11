@@ -44,11 +44,17 @@ export default function RoutePageShell({ children }) {
       >
         <div className="mx-auto box-border flex min-h-16 w-full items-center gap-4 px-4 py-2 md:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <img
-              src={FolkeLogo}
-              alt={l('Folkelogga')}
-              className="h-10 w-auto shrink-0 object-contain"
-            />
+            <Link
+              to="/"
+              aria-label={l('Till Folkes startsida')}
+              className="inline-flex shrink-0 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <img
+                src={FolkeLogo}
+                alt=""
+                className="h-10 w-auto object-contain"
+              />
+            </Link>
             <span aria-hidden className="h-6 w-px shrink-0 bg-white/30 max-[480px]:hidden" />
             <a
               href="https://www.isof.se"
