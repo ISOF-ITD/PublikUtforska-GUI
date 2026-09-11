@@ -89,6 +89,10 @@ export default function RecordCardItem({
   }, [archive]);
   const archiveDisplay = `${archiveId}${archivePage ? `:${archivePage}` : ''}`;
   const placeString = useMemo(() => getPlaceString(places || []), [places]);
+  const extraPlacesString = useMemo(() => {
+    if (!places || places.length <= 1) return '';
+    return `${places.length - 1} andra`;
+  }, [places]);
 
   // build a search suffix from the current list params
   const searchSuffix = createSearchRoute(searchParams || {});
@@ -290,8 +294,18 @@ export default function RecordCardItem({
               <span className="pr-2 text-right text-[var(--color-result-card-label)]">
                 {l('Ort')}
               </span>
-              <span className="min-w-0 break-words font-medium text-body">
-                {placeString}
+              <span className="min-w-0 break-words">
+                <span className="min-w-0 break-words font-medium text-body">
+                  {placeString}
+                </span>
+                {extraPlacesString && (
+                  <>
+                    {' '}
+                    <span className="min-w-0 break-words text-muted">
+                      {extraPlacesString}
+                    </span>
+                  </>
+                )}
               </span>
             </div>
             )}
