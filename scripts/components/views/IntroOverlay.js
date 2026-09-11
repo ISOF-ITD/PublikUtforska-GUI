@@ -25,7 +25,6 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
   const [categories, setCategories] = useState([]);
   const { navigateToSearch } = useSearchRouting({
     mode,
-    search_field: null,
     categories,
     setCategories,
   });
@@ -62,7 +61,7 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
             : '';
           if (!searchTerm) return;
 
-          navigateToSearch(searchTerm, null, null, 'list');
+          navigateToSearch(searchTerm, { resultView: 'list' });
           if (onClose) onClose();
           return;
         }
