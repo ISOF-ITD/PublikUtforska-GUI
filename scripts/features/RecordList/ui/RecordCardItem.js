@@ -257,7 +257,7 @@ export default function RecordCardItem({
                 {archiveDisplay}
               </p>
               <Heading
-                className="!mb-0 !mt-1 break-words !text-lg font-semibold leading-tight !text-link md:line-clamp-3"
+                className="!mb-0 !mt-1 break-words !text-lg/[1.25] font-semibold !text-link md:line-clamp-3"
                 dangerouslySetInnerHTML={{ __html: titleHtml }}
               />
               {snippet && <RecordCardSnippet text={snippet} />}
