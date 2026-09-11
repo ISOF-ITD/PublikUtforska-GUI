@@ -147,6 +147,23 @@ export default function RecordTextPanel({
     [mediaImagesAbsolute, rawSegments, transcriptionstatus, data.persons]
   );
 
+  const highlightedSegmentKeys = useMemo(() => {
+    const keys = new Set();
+
+    segments.forEach((seg, segmentIndex) => {
+      const containsHighlight = seg.items.some((_, itemIndex) => {
+        const mediaIndex = seg.startIndex + itemIndex + firstImageOffset;
+        return Boolean(highlightedMediaTexts[String(mediaIndex)]);
+      });
+
+      if (containsHighlight) {
+        keys.add(seg.id || `seg-${segmentIndex}`);
+      }
+    });
+
+    return keys;
+  }, [firstImageOffset, highlightedMediaTexts, segments]);
+
   // --- Segment open/close controls (for “Öppna alla / Stäng alla”) ---
   const handleToggleSegment = useCallback((segKey) => {
     setOpenSegments((prev) => ({
@@ -403,10 +420,15 @@ export default function RecordTextPanel({
             const segKey = seg.id || `seg-${i}`;
             const isOpen = Object.prototype.hasOwnProperty.call(
               openSegments,
-              segKey
+              segKey,
             )
+              // If the segment key is explicitly set in openSegments, use that value
+              // Otherwise, if there are no highlighted segments, default to open;
+              // if there are highlighted segments, default to closed unless
+              // this segment is highlighted
               ? openSegments[segKey]
-              : i === 0; // first segment open by default
+              : highlightedSegmentKeys.size === 0
+                || highlightedSegmentKeys.has(segKey);
 
             return (
               <RecordSegment
