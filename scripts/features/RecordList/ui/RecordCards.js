@@ -10,29 +10,37 @@ export default function RecordCards({
   onRecordActivate,
   layout = 'mobile-only', // 'mobile-only' | 'pane-compact' | 'desktop-grid'
   detailSearch = '',
+  headingLevel = 'h3',
 }) {
-  let wrapperClass = 'md:hidden space-y-4';
+  let wrapperClass = 'grid grid-cols-1 gap-4 md:hidden';
   if (layout === 'pane-compact') {
-    wrapperClass = 'space-y-4';
+    wrapperClass = 'grid grid-cols-1 gap-4';
   } else if (layout === 'desktop-grid') {
-    wrapperClass = 'grid grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-4';
+    wrapperClass = 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3';
   }
 
   return (
-    <div className={wrapperClass}>
-      {records.map((rec, index) => (
-        <RecordCardItem
-          key={`${rec?._id || rec?._source?.id || 'record'}-${index}`}
-          item={rec}
-          searchParams={params}
-          mode={mode}
-          highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
-          isSelected={String(rec._source.id) === String(selectedRecordId)}
-          onRecordActivate={onRecordActivate}
-          detailSearch={detailSearch}
-        />
-      ))}
-    </div>
+    <ul className={`${wrapperClass} !m-0 !list-none !p-0`}>
+      {records.map((rec) => {
+        const { _id: hitId, _source: source = {} } = rec || {};
+        const recordId = source.id || hitId;
+
+        return (
+          <li key={String(recordId)} className="h-full min-w-0">
+            <RecordCardItem
+              item={rec}
+              searchParams={params}
+              mode={mode}
+              highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
+              isSelected={String(source.id) === String(selectedRecordId)}
+              onRecordActivate={onRecordActivate}
+              detailSearch={detailSearch}
+              headingLevel={headingLevel}
+            />
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -45,4 +53,5 @@ RecordCards.propTypes = {
   onRecordActivate: PropTypes.func,
   layout: PropTypes.oneOf(['mobile-only', 'pane-compact', 'desktop-grid']),
   detailSearch: PropTypes.string,
+  headingLevel: PropTypes.oneOf(['h2', 'h3', 'h4']),
 };

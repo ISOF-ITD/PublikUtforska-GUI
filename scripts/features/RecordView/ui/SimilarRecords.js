@@ -188,6 +188,7 @@ function SimilarRecords({ data }) {
         params={{}}
         mode="material"
         layout="desktop-grid"
+        headingLevel="h4"
       />
     </section>
   );

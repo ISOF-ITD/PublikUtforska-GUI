@@ -129,6 +129,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                       hasFilter={mode !== 'transcribe'}
                       useRouteParams
                       detailSearch={location.search}
+                      cardHeadingLevel="h4"
                     />
                   </div>
                 </div>
@@ -163,6 +164,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                     hasFilter={mode !== 'transcribe'}
                     useRouteParams
                     detailSearch={location.search}
+                    cardHeadingLevel="h4"
                     // add a random id to be able to have the same form twice on the same page
                   />
                 </div>

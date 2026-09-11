@@ -188,6 +188,7 @@ export default function PersonView({ mode = "material" }) {
             hasFilter={mode !== "transcribe"}
             useRouteParams
             detailSearch={location.search}
+            cardHeadingLevel="h4"
           />
         </div>
       </div>

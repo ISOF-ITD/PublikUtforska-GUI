@@ -1,27 +1,51 @@
-import { Link } from 'react-router-dom';
-import { useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faPencil,
   faFileLines,
   faFilePdf,
-  faVolumeHigh,
 } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import config from '../../../config';
 import { l } from '../../../lang/Lang';
 import {
-  getTitle,
   getPlaceString,
+  getTitle,
   pageFromTo,
 } from '../../../utils/helpers';
-import config from '../../../config';
-import TranscribeButton from '../../TranscriptionPageByPageOverlay/ui/TranscribeButton';
-import useSubrecords from '../hooks/useSubrecords';
-import HighlightedText from './HighlightedText';
-import { secondsToMMSS } from '../../../utils/timeHelper';
-import { createSearchRoute, mergeRouteSearch } from '../../../utils/routeHelper';
 import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
+import { createSearchRoute, mergeRouteSearch } from '../../../utils/routeHelper';
+import useSubrecords from '../hooks/useSubrecords';
 import countPageProgressFromMedia from '../utils/countPageProgressFromMedia';
+import AudioWaveIcon from './AudioWaveIcon';
+import RecordCardSnippet, {
+  selectBestCardSnippet,
+  toSemanticHighlightHtml,
+} from './RecordCardSnippet';
+
+const COLLECTOR_RELATIONS = ['c', 'collector', 'interviewer', 'recorder'];
+
+function buildThumbnailUrl(source) {
+  if (!source) return '';
+
+  try {
+    return new URL(source, config?.imageUrl).toString();
+  } catch {
+    const base = String(config?.imageUrl || '');
+    const separator = base && !base.endsWith('/') ? '/' : '';
+    return `${base}${separator}${String(source)}`;
+  }
+}
+
+function getDisplayYear(year) {
+  if (typeof year === 'string') return year.split('-')[0];
+  if (typeof year === 'number') return String(year);
+  return '';
+}
+
+function hideBrokenImage(event) {
+  const imageElement = event.currentTarget;
+  imageElement.style.visibility = 'hidden';
+}
 
 export default function RecordCardItem({
   item,
@@ -31,152 +55,130 @@ export default function RecordCardItem({
   isSelected,
   onRecordActivate,
   detailSearch = '',
+  headingLevel = 'h3',
 }) {
-  const src = item?._source ?? {};
-
+  const {
+    _source: source = {},
+    highlight = {},
+    inner_hits: innerHits = {},
+    text: itemText,
+  } = item || {};
   const {
     archive = {},
+    contents,
+    id,
     media = [],
     metadata = [],
-    places = [],
     persons = [],
-    transcriptiontype,
-    transcriptionstatus,
-    title,
+    places = [],
     recordtype,
-    materialtype,
-    contents,
+    title,
+    transcriptionstatus,
+    transcriptiontype,
     year,
-    id,
-  } = src;
+  } = source;
+  const mediaItems = Array.isArray(media) ? media : [];
+  const metadataItems = Array.isArray(metadata) ? metadata : [];
+  const personItems = Array.isArray(persons) ? persons : [];
+  const placeItems = Array.isArray(places) ? places : [];
+  const Heading = headingLevel;
 
-  const highlight = item?.highlight ?? {};
-  const innerHits = item?.inner_hits ?? {};
-  const itemText = item?.text;
-
-  /* ───────────────── sub-records (needed for the counters) ─────────────── */
   const {
     count = 0,
     countDone = 0,
     mediaCount = 0,
     mediaCountDone = 0,
   } = useSubrecords({
-    // network request ≈ table row
     recordtype,
     id,
-    ...src,
+    ...source,
   });
 
-  // helpers
-  const displayTitle = useMemo(
-    () => getTitle(title, contents, archive, highlight),
-    [title, contents, archive, highlight],
-  );
-  const archiveId = useMemo(
-    () => archive?.archive_id_display_search?.join(', ') || '',
-    [archive, archive.archive_id_display_search],
-  );
-  const archivePage = useMemo(() => {
-    try {
-      const val = typeof pageFromTo === 'function'
-        ? pageFromTo({ _source: { archive } })
-        : archive?.page;
-
-      return val ? String(val) : '';
-    } catch (e) {
-      return '';
-    }
-  }, [archive]);
+  const displayTitle = getTitle(title, contents, archive, highlight) || l('(Utan titel)');
+  const titleHtml = toSemanticHighlightHtml(displayTitle);
+  const archiveId = archive?.archive_id_display_search?.join(', ')
+    || archive?.archive_id_row
+    || String(id || '');
+  let archivePage = '';
+  try {
+    archivePage = pageFromTo({ _source: { archive } });
+  } catch {
+    archivePage = '';
+  }
   const archiveDisplay = `${archiveId}${archivePage ? `:${archivePage}` : ''}`;
-  const placeString = useMemo(() => getPlaceString(places || []), [places]);
-  const extraPlacesString = useMemo(() => {
-    if (!places || places.length <= 1) return '';
-    return `${places.length - 1} andra`;
-  }, [places]);
+  const placeString = getPlaceString(placeItems);
+  const extraPlaceCount = Math.max(0, placeItems.length - 1);
+  const extraPlaces = extraPlaceCount > 0
+    ? `${extraPlaceCount} ${extraPlaceCount === 1 ? 'annan' : 'andra'}`
+    : '';
+  const displayPlace = `${placeString}${extraPlaces ? `, ${extraPlaces}` : ''}`;
+  const displayYear = getDisplayYear(year);
+  const collectorNames = personItems
+    .filter((person) => COLLECTOR_RELATIONS.includes(person?.relation))
+    .map((person) => person?.name?.trim())
+    .filter(Boolean)
+    .join(', ');
+  const showCollectors = config?.siteOptions?.recordList?.visibleCollecorPersons
+    && collectorNames;
 
-  // build a search suffix from the current list params
   const searchSuffix = createSearchRoute(searchParams || {});
-
-  // avoid adding a bare "/" when there are no params
   const recordUrl = mergeRouteSearch(
-    `${
-      mode === 'transcribe' ? '/transcribe' : ''
-    }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`,
+    `${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}${
+      searchSuffix === '/' ? '' : searchSuffix
+    }`,
     detailSearch,
   );
 
-  const hasTranscription = useMemo(
-    () => !!media?.some?.(
-      (m) => m?.type === 'audio' && (
-        m?.has_transcription
-        || m?.utterances?.utterances?.length > 0
-      ),
-    ),
-    [media],
+  const hasTranscription = mediaItems.some((mediaItem) => (
+    mediaItem?.type === 'audio'
+    && (
+      mediaItem?.has_transcription
+      || mediaItem?.utterances?.utterances?.length > 0
+    )
+  ));
+  const isAudioRecording = transcriptiontype === 'audio'
+    || recordtype === 'one_audio_record'
+    || mediaItems.some((mediaItem) => (
+      mediaItem?.type === 'audio'
+      || mediaItem?.source?.toLowerCase().endsWith('.mp3')
+    ));
+
+  const primaryMediaType = pickPrimaryMediaType(mediaItems);
+  const firstImageMedia = mediaItems.find(
+    (mediaItem) => mediaItem?.type?.startsWith('image'),
   );
-  const transcriptionBadgeClass = [
-    'mb-0.5 ml-1 inline-flex items-center gap-1 rounded border border-border',
-    'bg-white/80 px-1.5 py-0.5 align-middle text-[10px] font-semibold',
-    'leading-none text-link shadow-sm',
-  ].join(' ');
-  const contentHitLabelClass = 'mr-1 text-[var(--color-result-card-label)]';
-  const firstImageMedia = media.find((m) => m?.type?.startsWith('image')) || null;
-  let thumbnail = '';
-  if (firstImageMedia?.source) {
-    try {
-      thumbnail = new URL(firstImageMedia.source, config?.imageUrl).toString();
-    } catch {
-      const base = String(config?.imageUrl || '');
-      const sep = base && !base.endsWith('/') ? '/' : '';
-      thumbnail = `${base}${sep}${String(firstImageMedia.source || '')}`;
-    }
-  }
-  const primaryMediaType = pickPrimaryMediaType(media);
+  const thumbnail = primaryMediaType === 'audio'
+    ? ''
+    : buildThumbnailUrl(firstImageMedia?.source);
   const mediaPreview = {
     audio: {
-      icon: faVolumeHigh,
-      label: l('Inspelning'),
       className: 'text-primary',
     },
     image: {
       icon: faFileLines,
-      label: l('Uppteckning'),
       className: 'text-primary',
     },
     pdf: {
       icon: faFilePdf,
-      label: 'PDF',
       className: 'text-danger',
     },
   }[primaryMediaType];
 
-  // ───────── highlight / summary
-  const hasHighlightedSummary = !!highlightRecordsWithMetadataField
-    && metadata?.some?.((m) => m?.type === highlightRecordsWithMetadataField)
-    && itemText;
+  const hasHighlightedSummary = Boolean(highlightRecordsWithMetadataField)
+    && metadataItems.some((metadataItem) => (
+      metadataItem?.type === highlightRecordsWithMetadataField
+    ))
+    && typeof itemText === 'string';
+  const summary = hasHighlightedSummary ? itemText : '';
+  const snippet = selectBestCardSnippet({ summary, highlight, innerHits });
 
-  const summary = hasHighlightedSummary
-    ? itemText.length > 250
-      ? `${itemText.slice(0, 250)}…`
-      : itemText
-    : null;
-
-  // Collector filtering
-  const collectorPersons = persons?.filter?.((p) => ['c', 'collector', 'interviewer', 'recorder'].includes(p?.relation)) ?? [];
-
-  const isAudioRecording = transcriptiontype === 'audio'
-    || recordtype === 'one_audio_record'
-    || media.some(
-      (m) => m?.type === 'audio' || m?.source?.toLowerCase().endsWith('.mp3'),
-    );
-
-  let total;
-  let done;
+  let total = 0;
+  let done = 0;
   if (!isAudioRecording) {
     total = transcriptiontype === 'sida' ? mediaCount : count;
     done = transcriptiontype === 'sida' ? mediaCountDone : countDone;
   }
-  const fromMedia = countPageProgressFromMedia(media);
+  const fromMedia = countPageProgressFromMedia(mediaItems);
   const totalCount = Number(total);
   const hasSubrecordTotal = Number.isFinite(totalCount) && totalCount > 0;
   const pageTotal = hasSubrecordTotal ? totalCount : fromMedia.total;
@@ -188,340 +190,137 @@ export default function RecordCardItem({
       : fromMedia.done,
     safePageTotal,
   );
-  const transcriptionProgress = !isAudioRecording
+  const showTranscriptionProgress = !isAudioRecording
     && transcriptionstatus !== 'readytocontribute'
-    && pageTotal > 0
-    ? {
-      label: `${pageDone} av ${pageTotal} ${pageTotal === 1 ? 'sida' : 'sidor'}`,
-      pct: Math.round((pageDone / safePageTotal) * 100),
-    }
-    : null;
+    && pageTotal > 0;
+  const transcriptionValue = showTranscriptionProgress
+    ? `${pageDone} av ${pageTotal} ${pageTotal === 1 ? 'sida' : 'sidor'}`
+    : '';
+  const transcriptionLabel = showTranscriptionProgress
+    ? `${l('Avskrivna')}: ${transcriptionValue}`
+    : '';
+  const transcriptionPercentage = showTranscriptionProgress
+    ? Math.round((pageDone / safePageTotal) * 100)
+    : 0;
 
-  // normalize year to a displayable string safely
-  let displayYear = null;
-  if (typeof year === 'string') {
-    [displayYear] = year.split('-');
-  } else if (typeof year === 'number') {
-    displayYear = String(year);
-  }
+  const cardClasses = [
+    'group box-border block h-auto min-w-0 rounded-md !border p-4 no-underline shadow-sm',
+    'bg-[var(--color-result-card-bg)] !text-body md:h-[22rem]',
+    'transition-[background-color,border-color,box-shadow] duration-150',
+    'hover:!border-primary hover:bg-surface-hover hover:no-underline hover:shadow',
+    'focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-focus',
+    'focus-visible:outline-offset-2',
+    isSelected
+      ? '!border-focus ring-2 ring-focus ring-offset-1 ring-offset-surface'
+      : '!border-[var(--color-result-card-rule)]',
+  ].join(' ');
 
   const handleRecordClick = () => {
     onRecordActivate?.(id);
   };
-  const showCollectors = config?.siteOptions?.recordList?.visibleCollecorPersons
-    && collectorPersons.length > 0;
 
   return (
-    <article
-      className={`group relative overflow-hidden rounded-md !border bg-[var(--color-result-card-bg)] p-3 shadow-sm transition-all hover:shadow-md ${
-        isSelected
-          ? '!border-focus ring-2 ring-focus ring-offset-1'
-          : '!border-[var(--color-result-card-rule)]'
-      }`}
-    >
-      {/* Header Section */}
-      <div className="flex items-start gap-3">
-        {thumbnail && (
-          <img
-            src={thumbnail}
-            alt=""
-            className="h-28 w-[72px] shrink-0 rounded-sm border border-[var(--color-result-card-rule)] bg-surface object-contain p-0.5"
-            loading="lazy"
-            decoding="async"
-            onError={(e) => {
-              e.currentTarget.style.visibility = 'hidden';
-            }}
-          />
-        )}
-        {!thumbnail && mediaPreview && (
-          <div className="flex h-28 w-[72px] shrink-0 items-center justify-center rounded-sm border border-[var(--color-result-card-rule)] bg-surface-muted">
-            <FontAwesomeIcon
-              icon={mediaPreview.icon}
-              title={mediaPreview.label}
-              className={`${mediaPreview.className} text-3xl`}
-              aria-hidden="true"
-            />
-          </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <span className="block text-lg font-semibold leading-tight !text-link">
-            {recordUrl ? (
-              <Link
-                to={recordUrl}
-                className="!text-link hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-                onClick={handleRecordClick}
-              >
-                <span
-                // ensure string
-                  dangerouslySetInnerHTML={{ __html: String(displayTitle || '') }}
-                />
-                {hasTranscription && (
-                  <span
-                    className={transcriptionBadgeClass}
-                    title={l('Har avskrift')}
-                    aria-label={l('Har avskrift')}
-                  >
-                    <FontAwesomeIcon
-                      icon={faFileLines}
-                      className="text-[11px]"
-                      aria-hidden="true"
-                    />
-                    <span>{l('Avskrift')}</span>
-                  </span>
-                )}
-              </Link>
-            ) : (
+    <article className="h-full min-w-0">
+      <Link to={recordUrl} className={cardClasses} onClick={handleRecordClick}>
+        <div className="flex h-full min-w-0 flex-col">
+          <div className="flex min-w-0 items-start gap-3">
+            {thumbnail && (
+              <img
+                src={thumbnail}
+                alt=""
+                className="h-[112px] w-[72px] shrink-0 rounded-sm border border-[var(--color-result-card-rule)] object-contain p-0.5"
+                loading="lazy"
+                decoding="async"
+                onError={hideBrokenImage}
+              />
+            )}
+            {!thumbnail && mediaPreview && (
               <span
-                className="!text-link opacity-70 cursor-not-allowed"
-                aria-disabled="true"
+                className="flex h-[112px] w-[72px] shrink-0 items-center justify-center rounded-sm border border-[var(--color-result-card-rule)] bg-surface-muted"
+                aria-hidden="true"
               >
-                <span
-                  dangerouslySetInnerHTML={{ __html: String(displayTitle || '') }}
-                />
-              </span>
-            )}
-            {archiveDisplay && (
-            <span className="mt-0.5 block truncate text-sm font-normal leading-snug text-[var(--color-result-card-label)]">
-              {archiveDisplay}
-            </span>
-            )}
-          </span>
-
-          {/* Metadata Grid */}
-          <div className="mt-3 flex flex-col text-sm leading-snug">
-            {placeString && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
-                {l('Ort')}
-              </span>
-              <span className="min-w-0 break-words">
-                <span className="min-w-0 break-words font-medium text-body">
-                  {placeString}
-                </span>
-                {extraPlacesString && (
-                  <>
-                    {' '}
-                    <span className="min-w-0 break-words text-muted">
-                      {extraPlacesString}
-                    </span>
-                  </>
+                {primaryMediaType === 'audio' ? (
+                  <AudioWaveIcon
+                    className={`${mediaPreview.className} h-8 w-12`}
+                  />
+                ) : (
+                  <FontAwesomeIcon
+                    icon={mediaPreview.icon}
+                    className={`${mediaPreview.className} text-3xl`}
+                  />
                 )}
               </span>
-            </div>
             )}
 
-            {displayYear && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
-                {l('År')}
-              </span>
-              <span className="min-w-0 break-words font-medium text-body">
-                {displayYear}
-              </span>
+            <div className="min-w-0 flex-1">
+              <p className="m-0 break-words text-sm leading-snug text-[var(--color-result-card-label)]">
+                {archiveDisplay}
+              </p>
+              <Heading
+                className="!mb-0 !mt-1 break-words !text-lg font-semibold leading-tight !text-link md:line-clamp-3"
+                dangerouslySetInnerHTML={{ __html: titleHtml }}
+              />
+              {snippet && <RecordCardSnippet text={snippet} />}
             </div>
-            )}
+          </div>
 
-            {showCollectors && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
-                {l('Insamlare')}
-              </span>
-              <span className="flex min-w-0 flex-wrap gap-x-1 font-medium text-body">
-                {collectorPersons.map((p) => {
-                  const pid = (p?.id != null ? String(p.id) : '').toLowerCase();
-                  if (!pid) return null;
-                  return (
-                    <Link
-                      key={`collector-${pid}-${p?.relation ?? ''}-${p?.name ?? ''}`}
-                      to={mergeRouteSearch(
-                        `${
-                          mode === 'transcribe' ? '/transcribe' : ''
-                        }/persons/${pid}${searchSuffix === '/' ? '' : searchSuffix}`,
-                        detailSearch,
-                      )}
-                      className="text-body hover:underline"
-                    >
-                      {l(p?.name || '')}
-                    </Link>
-                  );
-                })}
-              </span>
-            </div>
-            )}
-
-            {transcriptionProgress && (
-            <div className="grid grid-cols-[5.75rem_minmax(0,1fr)] border-t border-[var(--color-result-card-rule)] py-1">
-              <span className="pr-2 text-right text-[var(--color-result-card-label)]">
-                {l('Avskrivna')}
-              </span>
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="min-w-0 shrink break-words font-medium text-body">
-                  {transcriptionProgress.label}
-                </span>
-                <div
-                  className="h-1.5 w-14 shrink-0 overflow-hidden rounded border border-primary border-solid bg-surface"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={safePageTotal}
-                  aria-valuenow={pageDone}
-                  aria-label={l('Avskrivna')}
-                  title={`${transcriptionProgress.pct}%`}
-                >
-                  <span
-                    className="block h-full rounded bg-accent"
-                    style={{ width: `${transcriptionProgress.pct}%` }}
-                  />
-                </div>
+          <dl className="mt-auto space-y-1 pt-4 text-sm leading-snug text-muted">
+            {displayPlace && (
+              <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] gap-x-2">
+                <dt className="font-medium text-body">{l('Ort')}</dt>
+                <dd className="m-0 min-w-0 break-words md:line-clamp-2">
+                  {displayPlace}
+                </dd>
               </div>
-            </div>
+            )}
+            {displayYear && (
+              <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] gap-x-2">
+                <dt className="font-medium text-body">{l('År')}</dt>
+                <dd className="m-0 min-w-0">{displayYear}</dd>
+              </div>
+            )}
+            {showCollectors && (
+              <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] gap-x-2">
+                <dt className="font-medium text-body">{l('Insamlare')}</dt>
+                <dd className="m-0 min-w-0 break-words md:line-clamp-2">
+                  {collectorNames}
+                </dd>
+              </div>
+            )}
+          </dl>
+
+          <div className="mt-3 flex items-center md:min-h-[1.75rem]">
+            {hasTranscription && (
+              <span className="inline-flex items-center rounded-full border border-border bg-surface-muted px-2 py-1 text-xs font-medium leading-none text-body">
+                {l('Automatisk transkribering')}
+              </span>
+            )}
+            {showTranscriptionProgress && (
+              <dl className="w-full text-xs text-muted">
+                <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] items-center gap-x-2">
+                  <dt className="font-medium text-body">{l('Avskrivna')}</dt>
+                  <dd className="m-0 flex min-w-0 items-center gap-2">
+                    <span className="shrink-0">{transcriptionValue}</span>
+                    <span
+                      className="h-1.5 min-w-12 flex-1 overflow-hidden rounded-full border border-border bg-surface-muted"
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={safePageTotal}
+                      aria-valuenow={pageDone}
+                      aria-label={transcriptionLabel}
+                    >
+                      <span
+                        className="block h-full rounded-full bg-accent"
+                        style={{ width: `${transcriptionPercentage}%` }}
+                      />
+                    </span>
+                  </dd>
+                </div>
+              </dl>
             )}
           </div>
         </div>
-      </div>
-
-      {/* Summary first (if any) */}
-      {summary && (
-        <span className="mt-2 text-sm text-muted line-clamp-4">
-          {summary}
-        </span>
-      )}
-
-      {innerHits?.['media.description']?.hits?.hits.map((descHit) => {
-        const highlighted = descHit.highlight?.['media.description.text']?.[0]
-              ?? descHit._source?.text
-              ?? '';
-
-        if (!highlighted) return null;
-
-        return (
-          <div
-            className="flex flex-col mt-2 text-sm leading-snug"
-            key={`description-${descHit?.['_id'] ?? 'hit'}-${
-              descHit?.['_nested']?.offset ?? highlighted
-            }`}
-          >
-            <span className={contentHitLabelClass}>Innehållsbeskrivning:</span>
-            <HighlightedText
-              text={highlighted}
-              className="inline"
-              maxSnippets={1}
-              maxWords={15}
-            />
-          </div>
-        );
-      })}
-      {innerHits?.['media.utterances.utterances']?.hits?.hits.map(
-        (descHit) => {
-          const highlighted = descHit.highlight?.['media.utterances.utterances.text']?.[0]
-                ?? descHit._source?.text
-                ?? '';
-
-          if (!highlighted) return null;
-
-          const startLabel = descHit._source?.start !== undefined
-            ? ` (${secondsToMMSS(descHit._source.start)})`
-            : '';
-
-          return (
-            <div
-              className="flex flex-col mt-2 text-sm leading-snug"
-              key={`utterance-${descHit?.['_id'] ?? 'hit'}-${
-                descHit?.['_nested']?.offset ?? ''
-              }-${descHit?.['_source']?.start ?? startLabel}`}
-            >
-              <span className={contentHitLabelClass}>
-                Ljudavskrift
-                {startLabel}
-                :
-              </span>
-              <HighlightedText
-                text={highlighted}
-                className="inline"
-                maxSnippets={1}
-                maxWords={15}
-              />
-            </div>
-          );
-        },
-      )}
-      {highlight?.text?.[0] && (
-      <div className="flex flex-col mt-2 text-sm leading-snug">
-        <span className={contentHitLabelClass}>Transkribering:</span>
-        <HighlightedText
-          text={highlight.text[0]} // only the ES highlight HTML
-          className="inline"
-          maxSnippets={1}
-          maxWords={15}
-        />
-      </div>
-      )}
-      {highlight?.headwords?.[0] && (
-      <div className="flex flex-col mt-2 text-sm leading-snug">
-        <span className={contentHitLabelClass}>
-          Uppgifter från äldre innehållsregister:
-        </span>
-        <HighlightedText
-          text={highlight.headwords[0]}
-          maxSnippets={1}
-          maxWords={15}
-          className="inline"
-        />
-      </div>
-      )}
-
-      {highlight?.contents?.[0] && (
-      <div className="flex flex-col mt-2 text-sm leading-snug">
-        <span className={contentHitLabelClass}>Beskrivning av innehåll:</span>
-        <HighlightedText
-          text={highlight.contents[0]}
-          maxSnippets={1}
-          maxWords={15}
-          className="inline"
-        />
-      </div>
-      )}
-
-      {innerHits?.media?.hits?.hits.map((hit) => {
-        const highlighted = hit.highlight?.['media.text']?.[0];
-        if (!highlighted) return null;
-
-        return (
-          <div
-            className="flex flex-col mt-2 text-sm leading-snug"
-            key={`media-${hit?.['_id'] ?? 'hit'}-${
-              hit?.['_nested']?.offset ?? highlighted
-            }`}
-          >
-            <span className={contentHitLabelClass}>Transkribering:</span>
-            <HighlightedText
-              text={highlighted}
-              className="inline"
-              maxSnippets={1}
-              maxWords={15}
-            />
-          </div>
-        );
-      })}
-
-      {/* Transcription CTA */}
-      {transcriptionstatus === 'readytotranscribe'
-        && (media?.length ?? 0) > 0 && (
-          <div className="mt-4 border-t border-border pt-3">
-            <TranscribeButton
-              transcriptionstatus={transcriptionstatus}
-              className="w-full justify-center bg-primary hover:bg-primary-hover !text-white font-medium rounded-lg transition-colors"
-              label={(
-                <>
-                  <FontAwesomeIcon icon={faPencil} />
-                  {' '}
-                  {l('Skriv av')}
-                </>
-              )}
-              recordId={id}
-              random={false}
-            />
-          </div>
-      )}
+      </Link>
     </article>
   );
 }
@@ -534,4 +333,5 @@ RecordCardItem.propTypes = {
   isSelected: PropTypes.bool,
   onRecordActivate: PropTypes.func,
   detailSearch: PropTypes.string,
+  headingLevel: PropTypes.oneOf(['h2', 'h3', 'h4']),
 };

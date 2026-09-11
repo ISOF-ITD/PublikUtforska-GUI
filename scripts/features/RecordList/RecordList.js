@@ -41,7 +41,7 @@ function getInitialView(search) {
     // Ignore storage failures (private mode / disabled storage).
   }
 
-  return 'cards';
+  return 'table';
 }
 
 function getScrollTopValue(container) {
@@ -119,6 +119,7 @@ export default function RecordList(props) {
     detailSearch = '',
     loading = false,
     showPaginationTotal = true,
+    cardHeadingLevel,
   } = props;
 
   const navigate = useNavigate();
@@ -374,6 +375,8 @@ export default function RecordList(props) {
   }
   const showWideViewToggle = layoutContext !== 'results-pane'
     || resultsPaneIsWide;
+  const resolvedCardHeadingLevel = cardHeadingLevel
+    || (layoutContext === 'results-pane' ? 'h3' : 'h2');
 
   return (
     <div ref={rootRef} aria-busy={loading || undefined}>
@@ -440,6 +443,7 @@ export default function RecordList(props) {
               onRecordActivate={markRecordAsActive}
               layout={compactCardLayout}
               detailSearch={detailSearch}
+              headingLevel={resolvedCardHeadingLevel}
             />
           )}
 
@@ -457,6 +461,7 @@ export default function RecordList(props) {
                 onRecordActivate={markRecordAsActive}
                 layout="desktop-grid"
                 detailSearch={detailSearch}
+                headingLevel={resolvedCardHeadingLevel}
               />
             ) : (
               <RecordTable
@@ -520,4 +525,5 @@ RecordList.propTypes = {
   detailSearch: PropTypes.string,
   loading: PropTypes.bool,
   showPaginationTotal: PropTypes.bool,
+  cardHeadingLevel: PropTypes.oneOf(['h2', 'h3', 'h4']),
 };
