@@ -296,7 +296,7 @@ export default function RecordCardItem({
               </span>
             )}
             {showTranscriptionProgress && (
-              <dl className="w-full text-xs text-body">
+              <dl className="m-0 w-full text-xs text-body">
                 <div className="grid min-w-0 grid-cols-[4.75rem_minmax(0,1fr)] items-center gap-x-2">
                   <dt className="font-medium text-muted">{l('Avskrivna')}</dt>
                   <dd className="m-0 flex min-w-0 items-center gap-2">
