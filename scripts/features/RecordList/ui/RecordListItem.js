@@ -299,7 +299,7 @@ export default function RecordListItem(props) {
                   }-${descHit?.['_source']?.start ?? startLabel}`}
                 >
                   <span className="mr-1">
-                    Ljudavskrift
+                    Automatisk ljudavskrift
                     {startLabel}
                     :
                   </span>

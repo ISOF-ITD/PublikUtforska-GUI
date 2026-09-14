@@ -49,7 +49,7 @@ export default function useSuggestionGroups({
         },
         {
           title: "ArchiveId",
-          label: l("Arkivsignum"),
+          label: l("Accessionsnummer"),
           items: archiveIds,
           field: 'archive_id',
           click: (p) => selectFilter('archive_id', p.value),

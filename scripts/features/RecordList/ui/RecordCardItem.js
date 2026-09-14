@@ -291,8 +291,8 @@ export default function RecordCardItem({
 
           <div className="mt-3 flex items-center md:min-h-[1.75rem]">
             {hasTranscription && (
-              <span className="inline-flex items-center rounded-full border border-border bg-surface-muted px-2 py-1 text-xs font-medium leading-none text-body">
-                {l('Automatisk transkribering')}
+              <span className="inline-flex items-center rounded-full border border-border bg-yellow-50 px-2 py-1 text-xs font-medium leading-none text-body">
+                {l('Automatisk ljudavskrift')}
               </span>
             )}
             {showTranscriptionProgress && (

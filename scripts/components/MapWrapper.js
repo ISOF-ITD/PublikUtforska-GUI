@@ -15,7 +15,7 @@ const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWr
 const MOBILE_MAP_MEDIA_QUERY = '(max-width: 1023px)';
 const WIDE_RESULTS_MEDIA_QUERY = '(min-width: 1440px)';
 const SEARCH_FIELD_LABELS = {
-  archive_id: 'Arkivsignum',
+  archive_id: 'Accessionsnummer',
   person: 'Person',
   place: 'Ort',
 };
@@ -87,7 +87,7 @@ function MapWrapper({
       : null,
     placeTerm ? `${l('Ort')}: ${placeTerm}` : null,
     routeSearchParams.archive_id
-      ? `${l('Arkivsignum')}: ${routeSearchParams.archive_id}`
+      ? `${l('Accessionsnummer')}: ${routeSearchParams.archive_id}`
       : null,
   ].filter(Boolean).join('. ');
   const resultTotal = recordsData?.metadata?.total;

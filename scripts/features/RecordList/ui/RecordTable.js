@@ -52,7 +52,7 @@ export default function RecordTable({
 
             {shouldRenderColumn('archive_id')
               && !config.siteOptions.recordList?.hideAccessionpage && (
-                <th scope="col" className="text-left">{l('Arkivnummer')}</th>
+                <th scope="col" className="text-left">{l('Accessionsnummer')}</th>
             )}
 
             {shouldRenderColumn('place') && (
@@ -86,7 +86,7 @@ export default function RecordTable({
           {/* hidden header for accessibility on small screens */}
           <tr className="sr-only md:hidden">
             <th>{l('Titel')}</th>
-            <th>{l('Arkivnummer')}</th>
+            <th>{l('Accessionsnummer')}</th>
             <th>{l('Ort')}</th>
             <th>{l('Insamlare')}</th>
             <th>{l('År')}</th>

@@ -149,7 +149,7 @@ export default function SearchFilterPicker({
             id="searchFilterInput"
             type="text"
             className="mb-0 h-11 w-full rounded-md border border-border bg-surface p-2 text-[16px] text-body placeholder-subtle shadow-sm focus-visible:border-focus focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
-            placeholder={l('Sök person, ort, landskap eller arkivsignum')}
+            placeholder={l('Sök person, ort, landskap eller accessionsnummer')}
             value={inputValue}
             onChange={onInput}
             role="combobox"

@@ -25,7 +25,7 @@ export default function AccessionIdCell({
   if (recordtype === "one_accession_row" || recordtype === "one_audio_record") {
     return (
       <td
-        data-title={`${l("Arkivnummer")}:`}
+        data-title={`${l("Accessionsnummer")}:`}
         className="py-2 whitespace-nowrap md:whitespace-normal"
       >
         <span className={pillClasses}>{base}</span>
@@ -37,7 +37,7 @@ export default function AccessionIdCell({
   if (recordtype === "one_record")
     return (
       <td
-        data-title={`${l("Arkivnummer")}:`}
+        data-title={`${l("Accessionsnummer")}:`}
         className="py-2 whitespace-nowrap md:whitespace-normal"
       >
         <button type="button"
@@ -52,7 +52,7 @@ export default function AccessionIdCell({
 
   // everything else → just show, no more "go to one_record"
   return (
-    <td data-title={`${l("Arkivnummer")}:`} className="py-2">
+    <td data-title={`${l("Accessionsnummer")}:`} className="py-2">
       <span className={pillClasses}>{base}</span>
     </td>
   );

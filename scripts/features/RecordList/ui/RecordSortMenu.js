@@ -17,12 +17,12 @@ const SORT_OPTIONS = [
   {
     field: 'archive.archive_id_row.keyword',
     order: 'asc',
-    label: 'Arkivnummer, stigande',
+    label: 'Accessionsnummer, stigande',
   },
   {
     field: 'archive.archive_id_row.keyword',
     order: 'desc',
-    label: 'Arkivnummer, fallande',
+    label: 'Accessionsnummer, fallande',
   },
   {
     field: 'year',

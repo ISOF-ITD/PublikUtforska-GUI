@@ -172,7 +172,7 @@ export default function SearchPanel({
     },
     selectedArchiveId && {
       field: 'archive_id',
-      label: l('Arkivsignum'),
+      label: l('Accessionsnummer'),
       value: selectedArchiveId,
     },
   ].filter(Boolean);

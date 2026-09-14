@@ -209,7 +209,7 @@ function AudioItemRow({
                     key={`utterance-${h.id}-${h._source.start}`}
                   >
                     <span className="font-mono ml-2 text-xs text-muted">
-                      Ljudavskrift
+                      Automatisk ljudavskrift
                       {' ('}
                       {secondsToMMSS(h._source.start)}
                       {'): '}
