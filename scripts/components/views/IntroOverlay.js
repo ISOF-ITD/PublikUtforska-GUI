@@ -147,14 +147,16 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
       document.removeEventListener('keydown', onDocumentKeyDown);
       window.cancelAnimationFrame(animationFrameId);
       try {
-        const activeFilterSwitchLink = document.querySelector(
-          'nav[data-focus-id="filter-switch"] a[aria-current="page"]',
-        ) || document.querySelector('nav[data-focus-id="filter-switch"] a');
-        if (activeFilterSwitchLink?.focus) {
-          activeFilterSwitchLink.focus();
-          return;
+        const restoreTarget = restoreFocusRef.current;
+        if (restoreTarget?.isConnected && restoreTarget !== document.body) {
+          restoreTarget.focus?.();
+          if (document.activeElement === restoreTarget) return;
         }
-        restoreFocusRef.current?.focus?.();
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput?.focus) {
+          searchInput.focus();
+        }
       } catch {
         // Ignore focus restoration failures if the previous element is gone.
       }

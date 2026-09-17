@@ -19,9 +19,7 @@ import SearchPanel from '../features/Search/SearchPanel';
 import useBookmarkedRecords, {
   BOOKMARKED_RECORDS_RETURN_STORAGE_KEY,
 } from '../hooks/useBookmarkedRecords';
-import useTranscriptionAvailability from '../hooks/useTranscriptionAvailability';
 import { createStatisticsLocation } from '../utils/routeHelper';
-import FilterSwitch from './FilterSwitch';
 import IntroOverlay from './views/IntroOverlay';
 import config from '../config';
 
@@ -66,7 +64,6 @@ export default function SearchControls({
   onResultViewChange = () => {},
   showResultViewControl = false,
 }) {
-  const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
   const navigate = useNavigate();
   const {
@@ -265,13 +262,6 @@ export default function SearchControls({
               )}
             </div>
           </div>
-          {isTranscriptionAvailable && (
-            <FilterSwitch
-              mode={mode}
-              className="max-w-[900px]"
-              resultView={hasSubmittedSearch ? activeResultView : null}
-            />
-          )}
         </header>
 
         <div className="box-border w-full max-w-[900px] px-2 pb-2 min-[1440px]:px-5 min-[1440px]:pb-5">
@@ -288,7 +278,6 @@ export default function SearchControls({
               onResultViewChange(showList ? 'list' : 'map');
             }}
             showResultViewControl={showResultViewControl}
-            showModeSwitch={false}
             showSupplementaryContent={!hasSubmittedSearch}
           />
 

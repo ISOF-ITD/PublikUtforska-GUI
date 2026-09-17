@@ -105,6 +105,9 @@ export default function SearchFilterPicker({
     setInputValue(target.value);
     debouncedChange(target.value);
   };
+  const onInputKeyDown = (event) => {
+    if (event.key === 'Enter') event.preventDefault();
+  };
 
   const closeSuggestions = useCallback(() => {
     setInputValue('');
@@ -152,6 +155,7 @@ export default function SearchFilterPicker({
             placeholder={l('Sök person, ort, landskap eller accessionsnummer')}
             value={inputValue}
             onChange={onInput}
+            onKeyDown={onInputKeyDown}
             role="combobox"
             aria-expanded={hasSuggestions}
             aria-controls={filterListId}

@@ -20,8 +20,8 @@ export default {
 		'published':'Ja'
 	},
 	'no': {
-    'Arbetsläge: Skriv av.': 'Arbeidsmodus: Skriv av.',
-    'Arbetsläge: Utforska arkivmaterial.': 'Arbeidsmodus: Utforsk arkivmateriale.',
+    'Kan skrivas av': 'Kan skrives av',
+    'Filtret Kan skrivas av är aktivt.': 'Filteret Kan skrives av er aktivt.',
     Arkivmaterial: 'Arkivmateriale',
     'Utforska arkivmaterial': 'Utforsk arkivmateriale',
     'Välj arbetsläge': 'Velg arbeidsmodus',

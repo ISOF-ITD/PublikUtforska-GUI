@@ -11,10 +11,11 @@ import {
   faClipboardList,
   faExternalLink,
 } from '@fortawesome/free-solid-svg-icons';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { l } from "../../lang/Lang";
 import {
   createParamsFromSearchRoute,
+  createSearchRoute,
   removeViewParamsFromRoute,
 } from '../../utils/routeHelper';
 import useAutocomplete from './hooks/useAutocomplete';
@@ -26,11 +27,13 @@ import useSearchRouting from './hooks/useSearchRouting';
 import useSelectionFromRoute from './hooks/useSelectionFromRoute';
 import useSuggestionGroups from './hooks/useSuggestionGroups';
 import useSuggestionKeyboard from './hooks/useSuggestionKeyboard';
-import FilterSwitch from '../../components/FilterSwitch';
 import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
 import RandomTranscriptionPrompt from './ui/RandomTranscriptionPrompt';
 import Spinner from '../../components/Spinner';
 import SearchFilterPicker from './ui/SearchFilterPicker';
+
+const TRANSCRIPTION_FILTER_FOCUS_TARGET = 'transcription-filter';
+const TRANSCRIPTION_FILTER_ID = 'search-filter-transcription';
 
 export default function SearchPanel({
   mode,
@@ -45,11 +48,11 @@ export default function SearchPanel({
   resultViewOnSearch = null,
   onSearchSubmit = () => {},
   showResultViewControl = true,
-  showModeSwitch = true,
   showSupplementaryContent = true,
 }) {
   const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
+  const navigate = useNavigate();
   // Normalise the path so it always starts from "search/…"
   const baseSearchPath = useMemo(() => {
     // 1. Strip view segments (/records/:id etc.)
@@ -230,13 +233,9 @@ export default function SearchPanel({
     setSuggestionsVisible(!filterPickerOpen);
   };
   const onKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && pickActiveSuggestion()) {
       e.preventDefault();
-      if (pickActiveSuggestion()) {
-        e.stopPropagation();
-        return;
-      }
-      navigateToSearch(inputValue);
+      e.stopPropagation();
       setSuggestionsVisible(false);
     } else if (e.key === 'Tab') {
       setSuggestionsVisible(false);
@@ -296,11 +295,77 @@ export default function SearchPanel({
     setInputValue(next);
   }, [qParam]); // do NOT include `category` here
 
+  useEffect(() => {
+    if (location.state?.focusTarget !== TRANSCRIPTION_FILTER_FOCUS_TARGET) {
+      return undefined;
+    }
+
+    const animationFrameId = window.requestAnimationFrame(() => {
+      document.getElementById(TRANSCRIPTION_FILTER_ID)?.focus();
+
+      const nextState = { ...location.state };
+      delete nextState.focusTarget;
+      navigate(
+        {
+          pathname: location.pathname,
+          search: location.search,
+          hash: location.hash,
+        },
+        {
+          replace: true,
+          state: Object.keys(nextState).length ? nextState : null,
+        },
+      );
+    });
+
+    return () => window.cancelAnimationFrame(animationFrameId);
+  }, [
+    location.hash,
+    location.pathname,
+    location.search,
+    location.state,
+    navigate,
+  ]);
+
   const onFiltersToggle = (categoryId) => toggleCategory(
     categoryId,
     inputValue || qParam || '',
     resultViewOnSearch,
   );
+  const onTranscriptionFilterChange = useCallback((checked) => {
+    if (checked === (mode === 'transcribe')) return;
+
+    const sharedRoute = createSearchRoute(
+      createParamsFromSearchRoute(baseSearchPath),
+    );
+    const sharedQuery = new URLSearchParams(location.search);
+    sharedQuery.delete('media');
+    sharedQuery.delete('record_ids');
+    sharedQuery.delete('showlist');
+    const sharedSearch = sharedQuery.toString();
+    const pathname = checked ? `/transcribe${sharedRoute}` : sharedRoute;
+
+    navigate(
+      {
+        pathname,
+        search: sharedSearch ? `?${sharedSearch}` : '',
+        hash: location.hash,
+      },
+      {
+        state: {
+          ...(location.state || {}),
+          focusTarget: TRANSCRIPTION_FILTER_FOCUS_TARGET,
+        },
+      },
+    );
+  }, [
+    baseSearchPath,
+    location.hash,
+    location.search,
+    location.state,
+    mode,
+    navigate,
+  ]);
   const fixedSearchControlHeightPx = 48;
   const desktopSearchRowStyle = mobileCompact
     ? undefined
@@ -321,167 +386,189 @@ export default function SearchPanel({
   const searchPlaceholder = mode === 'transcribe'
     ? l('Sök bland uppteckningar att skriva av')
     : l('Sök i arkivmaterial');
+  const submitSearch = (event) => {
+    event.preventDefault();
+    navigateToSearch(inputValue);
+    setSuggestionsVisible(false);
+  };
 
   return (
     <>
-      {showModeSwitch && isTranscriptionAvailable && (
-        <FilterSwitch mode={mode} className={mobileCompact ? 'mt-2' : ''} />
-      )}
-      <div
-        className={classNames(
-          'left-0 z-[2000] box-border flex max-w-full flex-col items-stretch cursor-auto relative overflow-visible text-body bg-surface rounded shadow-sm',
-          mobileCompact ? 'w-auto mx-2 px-2.5 py-1.5 text-sm' : 'w-full px-2.5 py-1.5 text-sm',
-        )}
-        style={desktopSearchRowStyle}
+      <form
+        className="!mb-0"
+        onSubmit={submitSearch}
       >
-        {/* Make the input and the external button siblings */}
-        <div className="w-full min-w-0 flex items-center gap-2">
-          {/* Input wrapper stays relative so the popover can be absolutely positioned */}
-          <div className="relative min-w-0 flex-1 items-center">
-            <input
-              ref={inputRef}
-              id="searchInput"
-              type="text"
-              className={classNames(
-                'w-full border bg-surface !p-2 text-body placeholder-subtle shadow-sm',
-                'border-border focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus/60 focus:outline-none !mb-0',
-                'h-12 rounded-md pr-20',
-                'text-[16px]',
-              )}
-              placeholder={searchPlaceholder}
-              style={searchInputStyle}
-              value={inputValue}
-              onChange={onInput}
-              onKeyDown={onKeyDown}
-              onFocus={() => {
-                if (!filterPickerOpen) setSuggestionsVisible(true);
-              }}
-              onBlur={({ relatedTarget }) => {
-                if (!relatedTarget?.closest("#search-suggestions-container")) {
-                  setSuggestionsVisible(false);
+        <div
+          className={classNames(
+            'left-0 z-[2000] box-border flex max-w-full flex-col items-stretch cursor-auto relative overflow-visible text-body bg-surface rounded shadow-sm',
+            mobileCompact ? 'w-auto mx-2 px-2.5 py-1.5 text-sm' : 'w-full px-2.5 py-1.5 text-sm',
+          )}
+          style={desktopSearchRowStyle}
+        >
+          {/* Make the input and the external button siblings */}
+          <div className="w-full min-w-0 flex items-center gap-2">
+            {/* Input wrapper stays relative so the popover can be absolutely positioned */}
+            <div className="relative min-w-0 flex-1 items-center">
+              <label htmlFor="searchInput" className="sr-only">
+                {searchPlaceholder}
+              </label>
+              <input
+                ref={inputRef}
+                id="searchInput"
+                type="text"
+                className={classNames(
+                  'w-full border bg-surface !p-2 text-body placeholder-subtle shadow-sm',
+                  'border-border focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus/60 focus:outline-none !mb-0',
+                  'h-12 rounded-md pr-20',
+                  'text-[16px]',
+                )}
+                placeholder={searchPlaceholder}
+                style={searchInputStyle}
+                value={inputValue}
+                onChange={onInput}
+                onKeyDown={onKeyDown}
+                onFocus={() => {
+                  if (!filterPickerOpen) setSuggestionsVisible(true);
+                }}
+                onBlur={({ relatedTarget }) => {
+                  if (!relatedTarget?.closest('#search-suggestions-container')) {
+                    setSuggestionsVisible(false);
+                  }
+                }}
+                role="combobox"
+                aria-expanded={suggestionsVisible}
+                aria-controls="search-suggestions"
+                aria-haspopup="listbox"
+                aria-autocomplete="list"
+                aria-activedescendant={
+                  activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
                 }
-              }}
-              role="combobox"
-              aria-expanded={suggestionsVisible}
-              aria-controls="search-suggestions"
-              aria-haspopup="listbox"
-              aria-autocomplete="list"
-              aria-activedescendant={
-                activeIdx > -1 ? `suggestion-${activeIdx}` : undefined
-              }
-              aria-label={searchPlaceholder}
-              aria-busy={loading || undefined}
-              autoComplete="off"
-              spellCheck="false"
-            />
-
-            {suggestionsVisible && hasSuggestions && (
-              <SuggestionsPopover
-                search={query}
-                activeIdx={activeIdx}
-                groups={visibleSuggestionGroups}
-                onClose={() => setSuggestionsVisible(false)}
+                aria-busy={loading || undefined}
+                autoComplete="off"
+                spellCheck="false"
               />
-            )}
 
-            {/* Keep only clear + loader inside the input */}
-            <div className="absolute inset-y-0 right-2 flex items-center gap-2">
-              {(query || selectedPerson || selectedPlace || selectedArchiveId) && (
-                <button
-                  type="button"
-                  className={classNames(
-                    'pointer-events-auto !py-0 !border-none !m-0 text-subtle hover:text-body focus-visible:outline-none',
-                    mobileCompact ? 'h-8 w-8 flex items-center justify-center' : '',
-                  )}
-                  onClick={clearSearch}
-                  aria-label="Rensa sökning"
-                  title={l("Rensa sökning")}
-                >
-                  <span aria-hidden>
-                    {mobileCompact ? (
-                      <FontAwesomeIcon icon={faClose} />
-                    ) : (
-                      <>
-                        Rensa
-                        <FontAwesomeIcon icon={faClose} />
-                      </>
-                    )}
-                  </span>
-                </button>
-              )}
-
-              {loading && (query || selectedFilters.length > 0) && (
-                <Spinner
-                  decorative
-                  size="sm"
-                  className="text-muted"
+              {suggestionsVisible && hasSuggestions && (
+                <SuggestionsPopover
+                  search={query}
+                  activeIdx={activeIdx}
+                  groups={visibleSuggestionGroups}
+                  onClose={() => setSuggestionsVisible(false)}
                 />
               )}
+
+              {/* Keep only clear + loader inside the input */}
+              <div className="absolute inset-y-0 right-2 flex items-center gap-2">
+                {(query || selectedPerson || selectedPlace || selectedArchiveId) && (
+                  <button
+                    type="button"
+                    className={classNames(
+                      'pointer-events-auto !py-0 !border-none !m-0 text-subtle hover:text-body focus-visible:outline-none',
+                      mobileCompact ? 'h-8 w-8 flex items-center justify-center' : '',
+                    )}
+                    onClick={clearSearch}
+                    aria-label="Rensa sökning"
+                    title={l('Rensa sökning')}
+                  >
+                    <span aria-hidden>
+                      {mobileCompact ? (
+                        <FontAwesomeIcon icon={faClose} />
+                      ) : (
+                        <>
+                          Rensa
+                          <FontAwesomeIcon icon={faClose} />
+                        </>
+                      )}
+                    </span>
+                  </button>
+                )}
+
+                {loading && (query || selectedFilters.length > 0) && (
+                  <Spinner
+                    decorative
+                    size="sm"
+                    className="text-muted"
+                  />
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* External “Sök” button */}
-          <button
-            type="button"
-            className={classNames(
-              'pointer-events-auto gap-1 flex items-center justify-center self-center rounded-md text-sm font-medium',
-              'bg-primary !text-white border-2 border-transparent hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-hover focus:outline-none',
-              'shrink-0 !mb-0',
-              mobileCompact ? 'h-12 min-w-[3rem] px-3' : 'h-12 px-3',
-            )}
-            onClick={() => {
-              navigateToSearch(inputValue);
-              setSuggestionsVisible(false);
-            }}
-            aria-label={l("Sök")}
-            disabled={loading}
-            title={l("Hämta sökresultat")}
-            style={searchButtonStyle}
-          >
-            <FontAwesomeIcon icon={faSearch} />
-            {!mobileCompact && l('Sök')}
-          </button>
-
-        </div>
-      </div>
-
-      <SearchFilters
-        loading={loading}
-        selectedCategories={categories}
-        onToggle={onFiltersToggle}
-        compact={mobileCompact}
-        filters={[
-          { label: "Ljud", categoryId: "contentG5", total: audioTotal },
-          { label: "Bild", categoryId: "contentG2", total: pictureTotal },
-        ]}
-      >
-        <SearchFilterPicker
-          open={filterPickerOpen}
-          onOpenChange={onFilterPickerOpenChange}
-          onSelect={addFilter}
-        >
-          {selectedFilters.map(({ field, label, value }) => (
+            {/* External “Sök” button */}
             <button
-              key={field}
-              type="button"
-              className="inline-flex min-h-9 max-w-full items-center gap-2 !m-0 border border-border bg-surface px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-              onClick={() => removeFilter(field)}
-              aria-label={`${l('Ta bort')} ${label.toLowerCase()}: ${value}`}
-              title={`${l('Ta bort')} ${label.toLowerCase()}: ${value}`}
+              type="submit"
+              className={classNames(
+                'pointer-events-auto gap-1 flex items-center justify-center self-center rounded-md text-sm font-medium',
+                'bg-primary !text-white border-2 border-transparent hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-hover focus:outline-none',
+                'shrink-0 !mb-0',
+                mobileCompact ? 'h-12 min-w-[3rem] px-3' : 'h-12 px-3',
+              )}
+              aria-label={l('Sök')}
+              disabled={loading}
+              title={l('Hämta sökresultat')}
+              style={searchButtonStyle}
             >
-              <span className="min-w-0 break-words">
-                {`${label}: `}
-                <strong>{value}</strong>
-              </span>
-              <FontAwesomeIcon
-                icon={faClose}
-                className="shrink-0"
-                aria-hidden="true"
-              />
+              <FontAwesomeIcon icon={faSearch} />
+              {!mobileCompact && l('Sök')}
             </button>
-          ))}
-        </SearchFilterPicker>
-      </SearchFilters>
+
+          </div>
+        </div>
+
+        <SearchFilters
+          loading={loading}
+          filters={[
+            isTranscriptionAvailable && {
+              id: 'transcription',
+              label: 'Kan skrivas av',
+              checked: mode === 'transcribe',
+              onChange: onTranscriptionFilterChange,
+            },
+            {
+              id: 'contentG5',
+              label: 'Ljud',
+              checked: categories.includes('contentG5'),
+              onChange: () => onFiltersToggle('contentG5'),
+              count: audioTotal.value,
+              disabled: loading,
+            },
+            {
+              id: 'contentG2',
+              label: 'Bild',
+              checked: categories.includes('contentG2'),
+              onChange: () => onFiltersToggle('contentG2'),
+              count: pictureTotal.value,
+              disabled: loading,
+            },
+          ].filter(Boolean)}
+        >
+          <SearchFilterPicker
+            open={filterPickerOpen}
+            onOpenChange={onFilterPickerOpenChange}
+            onSelect={addFilter}
+          >
+            {selectedFilters.map(({ field, label, value }) => (
+              <button
+                key={field}
+                type="button"
+                className="inline-flex min-h-9 max-w-full items-center gap-2 !m-0 border border-border bg-surface px-3 py-1.5 text-sm font-medium text-body hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                onClick={() => removeFilter(field)}
+                aria-label={`${l('Ta bort')} ${label.toLowerCase()}: ${value}`}
+                title={`${l('Ta bort')} ${label.toLowerCase()}: ${value}`}
+              >
+                <span className="min-w-0 break-words">
+                  {`${label}: `}
+                  <strong>{value}</strong>
+                </span>
+                <FontAwesomeIcon
+                  icon={faClose}
+                  className="shrink-0"
+                  aria-hidden="true"
+                />
+              </button>
+            ))}
+          </SearchFilterPicker>
+        </SearchFilters>
+      </form>
 
       {showSupplementaryContent && mode === 'transcribe' && isTranscriptionAvailable && (
         <RandomTranscriptionPrompt />
@@ -573,6 +660,5 @@ SearchPanel.propTypes = {
   resultViewOnSearch: PropTypes.oneOf(['map', 'list']),
   onSearchSubmit: PropTypes.func,
   showResultViewControl: PropTypes.bool,
-  showModeSwitch: PropTypes.bool,
   showSupplementaryContent: PropTypes.bool,
 };

@@ -212,12 +212,12 @@ function MapWrapper({
     return () => observer.disconnect();
   }, [mapIsVisible, shouldLoadMap]);
 
-  const modeAnnouncement = mode === 'transcribe'
-    ? l('Arbetsläge: Skriv av.')
-    : l('Arbetsläge: Utforska arkivmaterial.');
+  const filterAnnouncement = mode === 'transcribe'
+    ? `${l('Filtret Kan skrivas av är aktivt.')} `
+    : '';
   let viewAnnouncement = isWideResultsViewport
-    ? `${modeAnnouncement} ${l('Visar sökträffar som lista med karta.')}`
-    : `${modeAnnouncement} ${l(
+    ? `${filterAnnouncement}${l('Visar sökträffar som lista med karta.')}`
+    : `${filterAnnouncement}${l(
       narrowResultView === 'list'
         ? 'Visar sökträffar som lista.'
         : 'Visar sökträffar på karta.',
