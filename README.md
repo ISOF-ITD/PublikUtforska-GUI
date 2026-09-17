@@ -52,8 +52,15 @@ sett den.
 
 ### Filerna i SiteVision
 
-SiteVision-filerna finns inte i detta repository. Om meddelandena ändras här
-måste de därför även ändras i SiteVision.
+SiteVision-filerna publiceras separat från Folke-appen. De versionshanterade
+publiceringskällorna finns i [`docs/sitevision`](docs/sitevision):
+
+- [`postMessage.js`](docs/sitevision/postMessage.js) används av sidmallen på
+  alla hjälpsidor.
+- [`folke-search-hero.js`](docs/sitevision/folke-search-hero.js) används endast
+  på startsidan.
+
+Ändringar i filerna får ingen effekt förrän de har publicerats i SiteVision, i *Filarkiv* under `js/folke-search-hero.js` respektive `js/postMessage.js`.
 
 #### `postMessage.js`
 
@@ -70,9 +77,8 @@ Den här filen ligger i sidmallen och körs på alla hjälpsidor.
   SiteVision-sidan och scrollar med innehållet. Koden finns kvar för äldre
   versioner och kan tas bort när de inte längre behöver stödjas.
 
-Klickkontrollen tittar just nu bara på det element som träffades. Om en länk
-innehåller en ikon eller en `<span>` kan ett klick på det inre elementet därför
-missas. En tåligare lösning är:
+Klickkontrollen använder `closest`, så även klick på exempelvis en ikon eller
+en `<span>` inuti länken fångas:
 
 ```javascript
 const link = event.target.closest('a[href][target="_parent"]');
@@ -90,20 +96,24 @@ Skriptet gör följande:
 
 1. Kontrollerar att sidan visas i en iframe och att adressen är
    `/folke/start`.
-2. Frågar Folke om den nya sökfunktionen stöds. Frågan skickas högst fem gånger
+2. Frågar Folke vilken version av sökfunktionen som stöds. Frågan skickas högst fem gånger
    med 400 ms mellan försöken, eftersom Folke ibland behöver lite tid för att
    starta sin meddelandelyssnare.
-3. Skapar bara sökfältet om Folke svarar att version 1 stöds. En gammal
-   produktionsversion svarar inte, så där visas inget oanvändbart sökfält.
+3. Skapar bara sökfältet om Folke svarar att version 1 eller 2 stöds. Version 1
+   ger vanlig fritextsökning och version 2 aktiverar även sökförslag.
 4. Lägger in CSS och sökformuläret först i sidans `<main>`. CSS-reglerna gäller
    bara söksektionen och innehåller mobilanpassning och dark mode.
 5. Aktiverar sökknappen när fältet innehåller text. Vid sökning trimmas texten
    och skickas till Folke som `introSearch`.
+6. I version 2 skickas söktext och ett löpnummer till Folke. SiteVision visar
+   de returnerade grupperna men hämtar, sorterar eller tolkar inga förslag själv.
 
 Formuläret har en kopplad etikett och hjälptext för skärmläsare, tydlig
-fokusmarkering, läsbara kontraster och ett statusmeddelande när resultatet
-öppnas. Det har också attribut som minskar risken att lösenordshanterare
-misstolkar sökfältet som ett inloggningsfält.
+fokusmarkering, läsbara kontraster och ett statusmeddelande för sökförslag och
+när resultatet öppnas. I version 2 används combobox/listbox-mönstret: fokus
+stannar i fältet, piltangenter flyttar `aria-activedescendant`, Enter väljer,
+och Escape eller Tab stänger listan. Formuläret har också attribut som minskar
+risken att lösenordshanterare misstolkar sökfältet som ett inloggningsfält.
 
 ### Meddelanden mellan sidorna
 
@@ -112,15 +122,20 @@ misstolkar sökfältet som ett inloggningsfält.
 | SiteVision | `{ newSrc: window.location.href }` | Folke uppdaterar URL-parametern `k`. |
 | SiteVision | `{ type: 'navigateAway' }` | Folke stänger overlayen efter 100 ms. |
 | SiteVision | `{ type: 'introScroll', scrollY: number }` | Nuvarande Folke-version ignorerar meddelandet. |
-| SiteVision | `{ type: 'introSearchCapabilityRequest', version: 1 }` | Folke svarar om sökfunktionen stöds. |
-| Folke | `{ type: 'introSearchCapabilityResponse', version: 1, supported: true }` | SiteVision skapar sökfältet. |
+| SiteVision | `{ type: 'introSearchCapabilityRequest', version: 2 }` | Folke svarar med högsta gemensamma protokollversion. |
+| Folke | `{ type: 'introSearchCapabilityResponse', version: 1\|2, supported: true, suggestions: boolean }` | SiteVision skapar sökfältet och aktiverar förslag för version 2. |
 | SiteVision | `{ type: 'introSearch', search: string }` | Folke öppnar det vanliga sökresultatet som lista. |
+| SiteVision | `{ type: 'introSearchSuggestionsRequest', requestId, search }` | Folke använder huvudsökets gemensamma förslagsmodell. |
+| Folke | `{ type: 'introSearchSuggestionsResponse', requestId, search, groups, loading }` | SiteVision visar svaret om `requestId` fortfarande är aktuellt och anger laddningsstatus på comboboxen. |
+| SiteVision | `{ type: 'introSearchSuggestionSelect', requestId, suggestionId }` | Folke verifierar det opaka id:t och utför den kopplade sökningen eller filtreringen. |
 
 När Folke tar emot en sökning kontrolleras att söktexten verkligen är en text,
 och blanksteg i början och slutet tas bort. En tom sökning ignoreras. En giltig
 sökning använder samma routing som det vanliga sökfältet och behåller aktuellt
-material- eller transkriptionsläge. Overlayen stängs och markeras samtidigt som
-visad.
+material- eller transkriptionsläge. Förslagsgrupperna och deras gränser kommer
+från samma hooks som huvudsöket. SiteVision får opaka val-id:n och kan därför
+inte själv konstruera en filterroute. Overlayen stängs och markeras samtidigt
+som visad.
 
 ### Kontroller av avsändaren
 
@@ -132,14 +147,18 @@ adressen saknas.
 
 ### Publicering och test
 
-Sökstödet är gjort så att SiteVision-koden kan publiceras först:
+Version 2 är bakåtkompatibel och ska publiceras i denna ordning:
 
-1. Publicera `postMessage.js` och `folke-search-hero.js` i SiteVision.
-2. Kontrollera att den gamla Folke-versionen inte visar sökfältet.
-3. Publicera den nya Folke-versionen.
+1. Publicera `docs/sitevision/folke-search-hero.js` som
+   `folke-search-hero.js` i SiteVision.
+2. Kontrollera att den nya SiteVision-koden faller tillbaka till fritextsökning
+   när den gamla Folke-versionen svarar med version 1.
+3. Publicera Folke-versionen med protokollversion 2.
 4. Ladda om utan cache och kontrollera startsidan och en undersida.
-5. Kontrollera sökning, interna länkar, `target="_parent"`-länkar, mobil bredd
-   samt ljust och mörkt systemtema.
+5. Kontrollera fritext samt populära sökningar, personer, orter, landskap och
+   accessionsnummer med tangentbord, mus och touch.
+6. Kontrollera interna länkar, `target="_parent"`-länkar, mobil bredd samt ljust
+   och mörkt systemtema.
 
 Om sökfältet inte visas, kontrollera först att iframe-adressen är exakt
 `/folke/start` och att SiteVision inte serverar en äldre cachad fil. I

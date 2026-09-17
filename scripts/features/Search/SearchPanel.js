@@ -18,14 +18,12 @@ import {
   createSearchRoute,
   removeViewParamsFromRoute,
 } from '../../utils/routeHelper';
-import useAutocomplete from './hooks/useAutocomplete';
 import useDebouncedCallback from './hooks/useDebouncedCallback';
 import SuggestionsPopover from './ui/SuggestionsPopover';
 import { SearchFilters } from './ui/SearchFilters';
-import usePopularQueries from './hooks/usePopularQueries';
 import useSearchRouting from './hooks/useSearchRouting';
+import useSearchSuggestions from './hooks/useSearchSuggestions';
 import useSelectionFromRoute from './hooks/useSelectionFromRoute';
-import useSuggestionGroups from './hooks/useSuggestionGroups';
 import useSuggestionKeyboard from './hooks/useSuggestionKeyboard';
 import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
 import RandomTranscriptionPrompt from './ui/RandomTranscriptionPrompt';
@@ -95,10 +93,6 @@ export default function SearchPanel({
     value: 0,
     relation: "eq",
   };
-
-  // data
-  const { people, places, provinces, archiveIds } = useAutocomplete(query);
-  const popularQueries = usePopularQueries(suggestionsVisible);
 
   // routing helpers
   const { navigateToSearch: rawNavigateToSearch, toggleCategory } = useSearchRouting({
@@ -182,13 +176,9 @@ export default function SearchPanel({
 
   // suggestions model
   const { visibleSuggestionGroups, flatSuggestions, hasSuggestions } =
-    useSuggestionGroups({
+    useSearchSuggestions({
       query,
-      popularQueries,
-      people,
-      places,
-      provinces,
-      archiveIds,
+      suggestionsVisible,
       navigateToSearch,
       selectFilter,
     });

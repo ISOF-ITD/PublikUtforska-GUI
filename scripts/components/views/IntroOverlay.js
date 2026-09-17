@@ -4,13 +4,16 @@ import {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
+import useDebouncedCallback from '../../features/Search/hooks/useDebouncedCallback';
 import useSearchRouting from '../../features/Search/hooks/useSearchRouting';
+import useSearchSuggestions from '../../features/Search/hooks/useSearchSuggestions';
 import { l } from '../../lang/Lang';
 import { getFocusableElements } from '../../utils/focusHelper';
 import folkeWhiteLogo from '../../../img/folke-white.svg';
@@ -22,12 +25,70 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
   const iframeRef = useRef(null);
   const introRef = useRef(null);
   const restoreFocusRef = useRef(null);
+  const suggestionIdsRef = useRef(new Map());
+  const nextSuggestionIdRef = useRef(0);
   const [categories, setCategories] = useState([]);
+  const [suggestionQuery, setSuggestionQuery] = useState('');
+  const [suggestionsVisible, setSuggestionsVisible] = useState(false);
+  const [suggestionRequest, setSuggestionRequest] = useState(null);
   const { navigateToSearch } = useSearchRouting({
     mode,
     categories,
     setCategories,
   });
+  const debouncedSuggestionChange = useDebouncedCallback(setSuggestionQuery);
+
+  const finishSearch = useCallback((searchTerm, filterUpdate = null) => {
+    navigateToSearch(searchTerm, { filterUpdate, resultView: 'list' });
+    setSuggestionsVisible(false);
+    setSuggestionRequest(null);
+    if (onClose) onClose();
+  }, [navigateToSearch, onClose]);
+
+  const selectSearchSuggestion = useCallback((searchTerm) => {
+    finishSearch(searchTerm);
+  }, [finishSearch]);
+
+  const selectFilterSuggestion = useCallback((field, value) => {
+    finishSearch('', { field, value });
+  }, [finishSearch]);
+
+  const { visibleSuggestionGroups, loading: suggestionsLoading } = useSearchSuggestions({
+    query: suggestionQuery,
+    suggestionsVisible,
+    navigateToSearch: selectSearchSuggestion,
+    selectFilter: selectFilterSuggestion,
+  });
+
+  const suggestionModel = useMemo(() => {
+    const actions = new Map();
+    const groups = visibleSuggestionGroups.map((group) => ({
+      title: group.title,
+      label: group.label,
+      field: group.field,
+      items: group.items.map((item) => {
+        const suggestionKey = JSON.stringify([group.title, item.value]);
+        if (!suggestionIdsRef.current.has(suggestionKey)) {
+          suggestionIdsRef.current.set(
+            suggestionKey,
+            String(nextSuggestionIdRef.current),
+          );
+          nextSuggestionIdRef.current += 1;
+        }
+        const id = suggestionIdsRef.current.get(suggestionKey);
+        actions.set(id, () => group.click(item));
+
+        return {
+          id,
+          label: item.label,
+          secondaryLabel: item.secondaryLabel,
+          comment: item.comment,
+        };
+      }),
+    })).filter(({ items }) => items.length > 0);
+
+    return { actions, groups };
+  }, [visibleSuggestionGroups]);
 
   const getInitialSrc = () => {
     const params = new URLSearchParams(location.search);
@@ -47,11 +108,42 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
         if (event.source !== iframeRef.current?.contentWindow) return;
 
         if (event.data.type === 'introSearchCapabilityRequest') {
+          const requestedVersion = Number(event.data.version);
+          const responseVersion = requestedVersion >= 2 ? 2 : 1;
           event.source.postMessage({
             type: 'introSearchCapabilityResponse',
-            version: 1,
+            version: responseVersion,
             supported: true,
+            suggestions: responseVersion >= 2,
           }, event.origin);
+          return;
+        }
+
+        if (event.data.type === 'introSearchSuggestionsRequest') {
+          const { requestId, search } = event.data;
+          const validRequestId = typeof requestId === 'string'
+            || typeof requestId === 'number';
+          if (!validRequestId || typeof search !== 'string') return;
+
+          setSuggestionRequest({
+            origin: event.origin,
+            query: search,
+            requestId,
+          });
+          setSuggestionsVisible(true);
+          debouncedSuggestionChange(search);
+          return;
+        }
+
+        if (event.data.type === 'introSearchSuggestionSelect') {
+          const { requestId, suggestionId } = event.data;
+          if (
+            requestId !== suggestionRequest?.requestId
+            || typeof suggestionId !== 'string'
+          ) return;
+
+          const selectSuggestion = suggestionModel.actions.get(suggestionId);
+          if (selectSuggestion) selectSuggestion();
           return;
         }
 
@@ -61,8 +153,7 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
             : '';
           if (!searchTerm) return;
 
-          navigateToSearch(searchTerm, { resultView: 'list' });
-          if (onClose) onClose();
+          finishSearch(searchTerm);
           return;
         }
 
@@ -91,7 +182,43 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [navigate, navigateToSearch, location.search, onClose]);
+  }, [
+    debouncedSuggestionChange,
+    finishSearch,
+    location.search,
+    navigate,
+    suggestionModel.actions,
+    suggestionRequest?.requestId,
+  ]);
+
+  useEffect(() => {
+    if (
+      !suggestionRequest
+      || suggestionRequest.query !== suggestionQuery
+      || !suggestionsVisible
+    ) return;
+
+    iframeRef.current?.contentWindow?.postMessage({
+      type: 'introSearchSuggestionsResponse',
+      requestId: suggestionRequest.requestId,
+      search: suggestionRequest.query,
+      groups: suggestionModel.groups,
+      loading: suggestionsLoading,
+    }, suggestionRequest.origin);
+  }, [
+    suggestionModel.groups,
+    suggestionQuery,
+    suggestionRequest,
+    suggestionsLoading,
+    suggestionsVisible,
+  ]);
+
+  useEffect(() => {
+    if (show) return;
+    setSuggestionRequest(null);
+    setSuggestionsVisible(false);
+    setSuggestionQuery('');
+  }, [show]);
 
   const handleClose = useCallback(() => {
     if (onClose) onClose();

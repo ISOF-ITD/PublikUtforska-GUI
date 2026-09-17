@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import config from "../../../config";
 
+const EMPTY_SUGGESTIONS = {
+  people: [],
+  places: [],
+  provinces: [],
+  archiveIds: [],
+};
+
 export default function useAutocomplete(query) {
-  const [{ people, places, provinces, archiveIds }, setSuggestions] = useState({
-    people: [],
-    places: [],
-    provinces: [],
-    archiveIds: [],
+  const [suggestions, setSuggestions] = useState({
+    ...EMPTY_SUGGESTIONS,
+    sourceQuery: '',
   });
 
   const fetchJson = (endpoint, mapFn, signal) =>
@@ -20,10 +25,8 @@ export default function useAutocomplete(query) {
     if (query.length < 2) {
       controller.abort();
       return setSuggestions({
-        people: [],
-        places: [],
-        provinces: [],
-        archiveIds: [],
+        ...EMPTY_SUGGESTIONS,
+        sourceQuery: query,
       });
     }
 
@@ -67,7 +70,13 @@ export default function useAutocomplete(query) {
         const [pe, pl, pr, ar] = results.map((r) =>
           r.status === "fulfilled" ? r.value : []
         );
-        setSuggestions({ people: pe, places: pl, provinces: pr, archiveIds: ar });
+        setSuggestions({
+          people: pe,
+          places: pl,
+          provinces: pr,
+          archiveIds: ar,
+          sourceQuery: query,
+        });
       })
       .catch((err) => {
         if (err?.name !== "AbortError") console.error(err);
@@ -75,5 +84,12 @@ export default function useAutocomplete(query) {
     return () => controller.abort();
   }, [query]);
 
-  return { people, places, provinces, archiveIds };
+  const currentSuggestions = suggestions.sourceQuery === query
+    ? suggestions
+    : EMPTY_SUGGESTIONS;
+
+  return {
+    ...currentSuggestions,
+    loading: query.length >= 2 && suggestions.sourceQuery !== query,
+  };
 }
