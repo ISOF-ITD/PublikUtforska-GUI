@@ -110,7 +110,7 @@ module.exports = {
       patterns: [
         { from: 'varning*', to: '' }, // Copy varning-files to www-folder
         { from: 'googlef01bc830ea17f73e.html', to: '' }, // Copy google site verification to www-folder
-        { from: 'img/og-screenshot.png', to: 'img' }, // Copy og-screenshot.png to www/img-folder
+        { from: 'img/og-screenshot.jpg', to: 'img' }, // Copy og-screenshot.jpg to www/img-folder
         // Not needed because sitemaps are generated on server
         // { from: 'sitemap*.xml', to: '' }, // Copy all individual sitemaps (sitemap_0.txt, sitemap_1.txt, etc.)
       ],
