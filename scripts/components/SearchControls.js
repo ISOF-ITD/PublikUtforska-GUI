@@ -113,7 +113,7 @@ export default function SearchControls({
   useEffect(() => {
     if (!activateIntroOverlay) return;
     const isRoot = location.pathname === '/';
-    const noHash = !location.hash || location.hash === '#/';
+    const noHash = !location.hash;
     const locationParams = new URLSearchParams(location.search);
     const hasManualResults = locationParams.has('showlist')
       || locationParams.has('showmap')
