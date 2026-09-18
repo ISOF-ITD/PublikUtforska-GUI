@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { lazy, Suspense } from 'react';
 import {
-  createBrowserRouter, RouterProvider, defer, redirect, replace,
+  createBrowserRouter, RouterProvider, redirect, replace,
 } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import { Toaster } from 'react-hot-toast';
@@ -113,7 +113,7 @@ function createPageRoutes() {
       id: 'place',
       handle: { surface: 'page' },
       loader: ({ params, request }) => (
-        defer({ results: fetchPlace(params.placeId, request.signal) })
+        { results: fetchPlace(params.placeId, request.signal) }
       ),
       element: (
         <RoutePageShell>
@@ -147,13 +147,13 @@ function createPageRoutes() {
         // 3) Normal loader behavior
         const { search } = parseResultSearch(new URL(request.url).search);
 
-        return defer({
+        return {
           results: fetchRecordAndCountSubrecords(
             normalizedId,
             search,
             request.signal,
           ),
-        });
+        };
       },
       shouldRevalidate: ({
         currentParams, nextParams, currentUrl, nextUrl,
@@ -232,7 +232,7 @@ function createRootRoute() {
         { materialRecordtype: 'one_accession_row' },
       );
 
-      return defer({
+      return {
         results: fetchMapAndCountRecords(queryParams, request.signal),
         audioResults: countRecords(
           { ...queryParams, category: 'contentG5' },
@@ -242,7 +242,7 @@ function createRootRoute() {
           { ...queryParams, category: 'contentG2' },
           request.signal,
         ),
-      });
+      };
     },
     shouldRevalidate: ({ currentUrl, nextUrl }) => {
       if (canonicalizeLegacyLocation(nextUrl.pathname, nextUrl.search)) return true;
