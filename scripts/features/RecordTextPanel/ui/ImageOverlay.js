@@ -192,8 +192,8 @@ export default function ImageOverlay() {
       {/* Close button */}
       <button
         ref={closeButtonRef}
-        title="Stäng"
-        aria-label="Stäng overlay"
+        title="Stäng bildvisning"
+        aria-label="Stäng bildvisning"
         type="button"
         onClick={closeOverlay}
         className="fixed top-4 right-4 md:top-6 md:right-8 inline-flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full bg-black/45 !text-white text-2xl leading-none hover:bg-black/60 focus:outline-none focus-visible:bg-black/70 focus-visible:ring-4 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/80"

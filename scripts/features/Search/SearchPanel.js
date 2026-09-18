@@ -65,6 +65,7 @@ export default function SearchPanel({
 
   // state
   const inputRef = useRef(null);
+  const skipSuggestionOpenOnFocusRef = useRef(false);
   const [inputValue, setInputValue] = useState(qParam ?? "");
   const [query, setQuery] = useState(qParam ?? "");
   const [categories, setCategories] = useState(
@@ -163,6 +164,16 @@ export default function SearchPanel({
     },
   ].filter(Boolean);
 
+  const closeSuggestions = useCallback(() => {
+    const restoreInputFocus = document.activeElement !== inputRef.current;
+    setSuggestionsVisible(false);
+
+    if (restoreInputFocus) {
+      skipSuggestionOpenOnFocusRef.current = true;
+      inputRef.current?.focus();
+    }
+  }, []);
+
   // suggestions model
   const { visibleSuggestionGroups, flatSuggestions, hasSuggestions } =
     useSearchSuggestions({
@@ -182,7 +193,7 @@ export default function SearchPanel({
       // return focus to the input for good a11y
       inputRef.current?.focus();
     },
-    onClose: () => setSuggestionsVisible(false),
+    onClose: closeSuggestions,
   });
 
   // When pressing Enter on the input, prefer selecting the active suggestion
@@ -215,8 +226,6 @@ export default function SearchPanel({
     if (e.key === 'Enter' && pickActiveSuggestion()) {
       e.preventDefault();
       e.stopPropagation();
-      setSuggestionsVisible(false);
-    } else if (e.key === 'Tab') {
       setSuggestionsVisible(false);
     } else if (e.key === 'Escape') {
       setSuggestionsVisible(false);
@@ -408,6 +417,10 @@ export default function SearchPanel({
                 onChange={onInput}
                 onKeyDown={onKeyDown}
                 onFocus={() => {
+                  if (skipSuggestionOpenOnFocusRef.current) {
+                    skipSuggestionOpenOnFocusRef.current = false;
+                    return;
+                  }
                   if (!filterPickerOpen) setSuggestionsVisible(true);
                 }}
                 onBlur={({ relatedTarget }) => {
@@ -433,7 +446,7 @@ export default function SearchPanel({
                   search={query}
                   activeIdx={activeIdx}
                   groups={visibleSuggestionGroups}
-                  onClose={() => setSuggestionsVisible(false)}
+                  onClose={closeSuggestions}
                 />
               )}
 

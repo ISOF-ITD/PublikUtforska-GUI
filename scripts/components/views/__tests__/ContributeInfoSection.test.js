@@ -8,7 +8,7 @@ beforeEach(() => {
   window.requestAnimationFrame = (callback) => window.setTimeout(callback, 0);
 });
 
-test('visar Vet du mer-formuläret som en kontrollerad inline-region', async () => {
+test('Vet du mer-formulärets stängknapp fungerar med tangentbord', async () => {
   const user = userEvent.setup();
   render(
     <MemoryRouter>
@@ -29,9 +29,22 @@ test('visar Vet du mer-formuläret som en kontrollerad inline-region', async () 
   expect(screen.getByRole('region', { name: 'Vet du mer?' })).toBeInTheDocument();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-  await user.click(screen.getByRole('button', { name: 'Dölj formuläret' }));
+  const closeButton = screen.getByRole('button', { name: 'Dölj formuläret' });
+  const privacyLink = screen.getAllByRole('link', { name: 'Läs mer.' }).at(-1);
+  privacyLink.focus();
+  await user.tab();
+  expect(closeButton).toHaveFocus();
+  await user.keyboard('{Enter}');
 
   expect(screen.queryByRole('region', { name: 'Vet du mer?' })).not.toBeInTheDocument();
   expect(opener).toHaveAttribute('aria-expanded', 'false');
+  await waitFor(() => expect(opener).toHaveFocus());
+
+  await user.keyboard(' ');
+  const reopenedCloseButton = screen.getByRole('button', { name: 'Dölj formuläret' });
+  reopenedCloseButton.focus();
+  await user.keyboard(' ');
+
+  expect(screen.queryByRole('region', { name: 'Vet du mer?' })).not.toBeInTheDocument();
   await waitFor(() => expect(opener).toHaveFocus());
 });

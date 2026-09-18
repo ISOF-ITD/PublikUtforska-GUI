@@ -1,7 +1,5 @@
 /* global beforeEach, expect, test */
-import {
-  act, render, screen, waitFor,
-} from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ImageOverlay from '../../features/RecordTextPanel/ui/ImageOverlay';
 
@@ -27,7 +25,7 @@ beforeEach(() => {
   window.eventBus = createEventBus();
 });
 
-test('bildvisaren fokuserar stängknappen och återställer öppnaren', async () => {
+test('bildvisarens stängknapp fungerar med tangentbord och återställer öppnaren', async () => {
   const user = userEvent.setup();
   render(
     <>
@@ -51,14 +49,22 @@ test('bildvisaren fokuserar stängknappen och återställer öppnaren', async ()
   await user.keyboard('{Enter}');
 
   expect(await screen.findByRole('dialog', { name: 'Bildvisning: 1 / 1' })).toBeInTheDocument();
-  const closeButton = screen.getByRole('button', { name: 'Stäng overlay' });
+  const closeButton = screen.getByRole('button', { name: 'Stäng bildvisning' });
   await waitFor(() => expect(closeButton).toHaveFocus());
   expect(closeButton).toHaveClass(
     'modal-initial-focus-visible',
     'modal-initial-focus-visible--on-dark',
   );
 
-  act(() => window.eventBus.dispatch('overlay.hide'));
+  await user.keyboard('{Enter}');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(opener).toHaveFocus();
+
+  await user.keyboard(' ');
+  const reopenedCloseButton = await screen.findByRole('button', { name: 'Stäng bildvisning' });
+  await waitFor(() => expect(reopenedCloseButton).toHaveFocus());
+  await user.keyboard(' ');
+
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   expect(opener).toHaveFocus();
 });
