@@ -14,10 +14,7 @@ import { createResultLocation } from '../utils/routeHelper';
 export default function RoutePageShell({ children }) {
   const location = useLocation();
   const pageRef = useRef(null);
-  const resultLocation = createResultLocation(
-    location.pathname,
-    location.search,
-  );
+  const resultLocation = createResultLocation(location.search);
 
   useEffect(() => {
     const animationFrameId = window.requestAnimationFrame(() => {

@@ -8,7 +8,7 @@ import SearchControls from './SearchControls';
 import MapLoadingPlaceholder from './MapLoadingPlaceholder';
 import RecordListLoadingPlaceholder from './RecordListLoadingPlaceholder';
 import { l } from '../lang/Lang';
-import { createParamsFromSearchRoute } from '../utils/routeHelper';
+import { parseResultSearch } from '../utils/routeHelper';
 
 const MapView = lazy(() => import('./views/MapView'));
 const RecordListWrapper = lazy(() => import('../features/RecordList/RecordListWrapper'));
@@ -53,8 +53,6 @@ function filterMapDataByPlaceSearch(data, searchTerm) {
 function MapWrapper({
   active,
   mapMarkerClick,
-  mode,
-  params,
   mapData,
   loading = true,
   recordsData,
@@ -68,9 +66,9 @@ function MapWrapper({
     return window.matchMedia(query).matches;
   };
   const locationParams = new URLSearchParams(location.search);
-  const routeSearchParams = createParamsFromSearchRoute(params['*']);
+  const routeSearchParams = parseResultSearch(location.search);
   const hasRouteSearchContext = Object.entries(routeSearchParams)
-    .some(([key, value]) => key !== 'page' && hasSearchValue(value));
+    .some(([, value]) => hasSearchValue(value));
   const hasSubmittedSearch = hasRouteSearchContext
     || locationParams.has('showmap')
     || locationParams.has('record_ids');
@@ -212,7 +210,7 @@ function MapWrapper({
     return () => observer.disconnect();
   }, [mapIsVisible, shouldLoadMap]);
 
-  const filterAnnouncement = mode === 'transcribe'
+  const filterAnnouncement = routeSearchParams.transcribe
     ? `${l('Filtret Kan skrivas av är aktivt.')} `
     : '';
   let viewAnnouncement = isWideResultsViewport
@@ -281,8 +279,6 @@ function MapWrapper({
         data-record-list-scroll={isWideResultsViewport && listIsVisible ? 'true' : undefined}
       >
         <SearchControls
-          mode={mode}
-          params={params}
           recordsData={recordsData}
           audioRecordsData={audioRecordsData}
           pictureRecordsData={pictureRecordsData}
@@ -305,8 +301,6 @@ function MapWrapper({
         >
           <Suspense fallback={<RecordListLoadingPlaceholder announce={false} />}>
             <RecordListWrapper
-              disableRouterPagination
-              mode={mode}
               layoutContext="results-pane"
               resultTotal={resultTotal}
               loading={uiLoading}
@@ -360,8 +354,6 @@ function MapWrapper({
 MapWrapper.propTypes = {
   active: PropTypes.bool.isRequired,
   mapMarkerClick: PropTypes.func.isRequired,
-  mode: PropTypes.string.isRequired,
-  params: PropTypes.object.isRequired,
   mapData: PropTypes.object,
   loading: PropTypes.bool,
   recordsData: PropTypes.object,

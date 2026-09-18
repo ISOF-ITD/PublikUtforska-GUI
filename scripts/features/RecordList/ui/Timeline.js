@@ -10,6 +10,7 @@ import { pointer, select } from 'd3-selection';
 
 import config from '../../../config';
 import { l } from '../../../lang/Lang';
+import { buildResultApiParams } from '../../../utils/resultFilterHelper';
 
 const SVG_HEIGHT = 60;
 
@@ -29,13 +30,18 @@ const normalizeTimelineData = (payloadData) => {
     .sort((first, second) => first.year - second.year);
 };
 
-const getRecordType = (params, mode, filter) => {
-  if (params.recordtype) return params.recordtype;
-  if (mode === 'transcribe') return 'one_accession_row,one_audio_record';
-  return filter || null;
-};
-
-const getFetchUrl = (params, mode, filter) => {
+const getFetchUrl = (params, filter) => {
+  const resultApiParams = buildResultApiParams(
+    {
+      recordtype: params.recordtype,
+      transcriptionstatus: params.transcriptionstatus,
+      transcribe: params.transcribe,
+    },
+    {
+      materialRecordtype: filter || null,
+      transcribeRecordtype: 'one_accession_row,one_audio_record',
+    },
+  );
   const queryParams = {
     ...config.requiredParams,
     search: params.search || undefined,
@@ -43,8 +49,8 @@ const getFetchUrl = (params, mode, filter) => {
     person: params.person || undefined,
     place: params.place || undefined,
     archive_id: params.archive_id || undefined,
-    recordtype: getRecordType(params, mode, filter),
-    transcriptionstatus: 'published,accession,readytocontribute,readytotranscribe,undertranscription',
+    recordtype: resultApiParams.recordtype,
+    transcriptionstatus: resultApiParams.transcriptionstatus,
     category: params.category || undefined,
   };
 
@@ -104,7 +110,6 @@ function Timeline({
   params,
   filter,
   yearFilter,
-  mode,
   onYearFilter,
   resetOnYearFilter,
 }) {
@@ -169,7 +174,7 @@ function Timeline({
   }, [hasYearRange, yearFilter]);
 
   useEffect(() => {
-    const fetchUrl = getFetchUrl(params, mode, filter);
+    const fetchUrl = getFetchUrl(params, filter);
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -207,7 +212,7 @@ function Timeline({
         abortRef.current = null;
       }
     };
-  }, [filter, mode, params]);
+  }, [filter, params]);
 
   useEffect(() => {
     const svg = select(svgRef.current);
@@ -692,7 +697,6 @@ Timeline.propTypes = {
   params: PropTypes.object.isRequired,
   filter: PropTypes.string.isRequired,
   yearFilter: PropTypes.arrayOf(PropTypes.number),
-  mode: PropTypes.string.isRequired,
   onYearFilter: PropTypes.func.isRequired,
   resetOnYearFilter: PropTypes.func.isRequired,
 };

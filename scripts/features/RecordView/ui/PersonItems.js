@@ -33,7 +33,6 @@ function renderPersonItem(person, location, index) {
               to={createDetailLocation({
                 resource: 'persons',
                 id: person.id,
-                pathname: location.pathname,
                 search: location.search,
               })}
               className="text-link"
@@ -56,7 +55,6 @@ function renderPersonItem(person, location, index) {
             to={createDetailLocation({
               resource: 'places',
               id: person.home[0].id,
-              pathname: location.pathname,
               search: location.search,
             })}
             className="text-link hover:underline"
@@ -116,7 +114,6 @@ export default PersonItems;
 PersonItems.propTypes = {
   data: PropTypes.object.isRequired,
   location: PropTypes.shape({
-    pathname: PropTypes.string.isRequired,
     search: PropTypes.string.isRequired,
   }).isRequired,
 };

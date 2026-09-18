@@ -2,39 +2,25 @@
 import PropTypes from 'prop-types';
 
 import { useRef, useCallback, useMemo } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import RecordList from './RecordList';
-import { createParamsFromSearchRoute } from '../../utils/routeHelper';
+import { parseResultSearch } from '../../utils/routeHelper';
 
 import { l } from '../../lang/Lang';
 
 export default function RecordListWrapper({
   disableListPagination = false,
-  disableRouterPagination = true,
   highlightRecordsWithMetadataField = null,
-  mode = 'material',
   layoutContext = 'viewport',
   resultTotal = null,
   loading = false,
 }) {
-  const params = useParams();
   const location = useLocation();
-  const searchRoutePath = params['*'];
   const containerRef = useRef();
   const searchParams = useMemo(
-    () => {
-      const routeParams = createParamsFromSearchRoute(searchRoutePath);
-      const queryParams = new URLSearchParams(location.search);
-      const queryRecordIds = queryParams.get('record_ids');
-
-      if (!queryRecordIds || routeParams.record_ids) return routeParams;
-      return {
-        ...routeParams,
-        record_ids: queryRecordIds,
-      };
-    },
-    [location.search, searchRoutePath],
+    () => parseResultSearch(location.search),
+    [location.search],
   );
   const isBookmarkedRecordList = Boolean(searchParams.record_ids);
   const detailSearch = useMemo(() => location.search, [location.search]);
@@ -80,10 +66,7 @@ export default function RecordListWrapper({
           <RecordList
             highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
             disableListPagination={disableListPagination}
-            disableRouterPagination={disableRouterPagination}
             params={searchParams}
-            mode={mode}
-            hasFilter={mode !== 'transcribe'}
             hasTimeline={!isBookmarkedRecordList}
             openSwitcherHelptext={openSwitcherHelptext}
             containerRef={containerRef}
@@ -100,9 +83,7 @@ export default function RecordListWrapper({
 
 RecordListWrapper.propTypes = {
   disableListPagination: PropTypes.bool,
-  disableRouterPagination: PropTypes.bool,
   highlightRecordsWithMetadataField: PropTypes.string,
-  mode: PropTypes.string,
   layoutContext: PropTypes.oneOf(['viewport', 'results-pane']),
   resultTotal: PropTypes.shape({
     relation: PropTypes.string,

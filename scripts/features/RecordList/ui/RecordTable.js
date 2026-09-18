@@ -10,7 +10,6 @@ export default function RecordTable({
   highlightRecordsWithMetadataField,
   shouldRenderColumn,
   archiveIdClick,
-  mode,
   useRouteParams,
   smallTitle,
   columns,
@@ -29,7 +28,6 @@ export default function RecordTable({
       archiveIdClick={archiveIdClick}
       shouldRenderColumn={shouldRenderColumn}
       columns={columns}
-      mode={mode}
       useRouteParams={useRouteParams}
       smallTitle={smallTitle}
       isSelected={String(item._source.id) === String(selectedRecordId)}
@@ -106,7 +104,6 @@ RecordTable.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
   shouldRenderColumn: PropTypes.func.isRequired,
   archiveIdClick: PropTypes.func.isRequired,
-  mode: PropTypes.string,
   useRouteParams: PropTypes.bool,
   smallTitle: PropTypes.bool,
   columns: PropTypes.array,

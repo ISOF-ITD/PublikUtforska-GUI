@@ -14,9 +14,8 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { l } from "../../lang/Lang";
 import {
-  createParamsFromSearchRoute,
-  createSearchRoute,
-  removeViewParamsFromRoute,
+  createSearchLocation,
+  parseResultSearch,
 } from '../../utils/routeHelper';
 import useDebouncedCallback from './hooks/useDebouncedCallback';
 import SuggestionsPopover from './ui/SuggestionsPopover';
@@ -34,7 +33,6 @@ const TRANSCRIPTION_FILTER_FOCUS_TARGET = 'transcription-filter';
 const TRANSCRIPTION_FILTER_ID = 'search-filter-transcription';
 
 export default function SearchPanel({
-  mode,
   recordsData,
   audioRecordsData,
   pictureRecordsData,
@@ -51,27 +49,19 @@ export default function SearchPanel({
   const isTranscriptionAvailable = useTranscriptionAvailability();
   const location = useLocation();
   const navigate = useNavigate();
-  // Normalise the path so it always starts from "search/…"
-  const baseSearchPath = useMemo(() => {
-    // 1. Strip view segments (/records/:id etc.)
-    const stripped = removeViewParamsFromRoute(location.pathname);
-    // 2. Remove leading "/" and optional "transcribe/" prefix,
-    // so both "/search/…" and "/transcribe/search/…" become "search/…"
-    return stripped
-      .replace(/^\/?transcribe\/?/, '/') // drop "transcribe" mode prefix
-      .replace(/^\//, ''); // drop leading slash
-  }, [location.pathname]);
 
+  const resultParams = useMemo(
+    () => parseResultSearch(location.search),
+    [location.search],
+  );
   const {
     search: qParam,
     person: personParam,
     place: placeParam,
     archive_id: archiveIdParam,
     category,
-  } = useMemo(
-    () => createParamsFromSearchRoute(baseSearchPath),
-    [baseSearchPath],
-  );
+  } = resultParams;
+  const isTranscribeFilter = resultParams.transcribe === true;
 
   // state
   const inputRef = useRef(null);
@@ -96,7 +86,6 @@ export default function SearchPanel({
 
   // routing helpers
   const { navigateToSearch: rawNavigateToSearch, toggleCategory } = useSearchRouting({
-    mode,
     categories,
     setCategories,
     person: personParam,
@@ -323,22 +312,25 @@ export default function SearchPanel({
     resultViewOnSearch,
   );
   const onTranscriptionFilterChange = useCallback((checked) => {
-    if (checked === (mode === 'transcribe')) return;
+    if (checked === isTranscribeFilter) return;
 
-    const sharedRoute = createSearchRoute(
-      createParamsFromSearchRoute(baseSearchPath),
+    const sharedParams = { ...resultParams };
+    delete sharedParams.record_ids;
+    if (checked) sharedParams.transcribe = true;
+    else sharedParams.transcribe = undefined;
+
+    const existingSearch = new URLSearchParams(location.search);
+    existingSearch.delete('media');
+    existingSearch.delete('record_ids');
+    const searchLocation = createSearchLocation(
+      sharedParams,
+      existingSearch.toString(),
     );
-    const sharedQuery = new URLSearchParams(location.search);
-    sharedQuery.delete('media');
-    sharedQuery.delete('record_ids');
-    sharedQuery.delete('showlist');
-    const sharedSearch = sharedQuery.toString();
-    const pathname = checked ? `/transcribe${sharedRoute}` : sharedRoute;
 
     navigate(
       {
-        pathname,
-        search: sharedSearch ? `?${sharedSearch}` : '',
+        pathname: '/search',
+        search: searchLocation.slice('/search'.length),
         hash: location.hash,
       },
       {
@@ -349,12 +341,12 @@ export default function SearchPanel({
       },
     );
   }, [
-    baseSearchPath,
     location.hash,
     location.search,
     location.state,
-    mode,
     navigate,
+    isTranscribeFilter,
+    resultParams,
   ]);
   const fixedSearchControlHeightPx = 48;
   const desktopSearchRowStyle = mobileCompact
@@ -373,9 +365,7 @@ export default function SearchPanel({
     lineHeight: '1',
     boxSizing: 'border-box',
   };
-  const searchPlaceholder = mode === 'transcribe'
-    ? l('Sök bland uppteckningar att skriva av')
-    : l('Sök i arkivmaterial');
+  const searchPlaceholder = l('Sök i arkivmaterial');
   const submitSearch = (event) => {
     event.preventDefault();
     navigateToSearch(inputValue);
@@ -510,7 +500,7 @@ export default function SearchPanel({
             isTranscriptionAvailable && {
               id: 'transcription',
               label: 'Kan skrivas av',
-              checked: mode === 'transcribe',
+              checked: isTranscribeFilter,
               onChange: onTranscriptionFilterChange,
             },
             {
@@ -560,7 +550,7 @@ export default function SearchPanel({
         </SearchFilters>
       </form>
 
-      {showSupplementaryContent && mode === 'transcribe' && isTranscriptionAvailable && (
+      {showSupplementaryContent && isTranscribeFilter && isTranscriptionAvailable && (
         <RandomTranscriptionPrompt />
       )}
 
@@ -582,7 +572,7 @@ export default function SearchPanel({
               key={view.id}
               type="button"
               className={classNames(
-                'inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border px-3 py-2 !text-base font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary',
+                'search-result-view-button inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border px-3 py-2 !text-base font-semibold focus:outline-none',
                 view.selected
                   ? 'border-white bg-surface text-body'
                   : 'border-white/70 bg-transparent !text-white hover:bg-primary-hover',
@@ -637,7 +627,6 @@ export default function SearchPanel({
 }
 
 SearchPanel.propTypes = {
-  mode: PropTypes.string.isRequired,
   // These can be null/undefined while data loads; code already guards
   recordsData: PropTypes.object,
   audioRecordsData: PropTypes.object,

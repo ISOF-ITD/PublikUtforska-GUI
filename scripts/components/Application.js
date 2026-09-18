@@ -4,7 +4,6 @@ import {
 import {
   useNavigate,
   useLoaderData,
-  useParams,
   Outlet,
   useLocation,
   useMatches,
@@ -17,9 +16,10 @@ import MapWrapper from './MapWrapper';
 import Footer from './Footer';
 
 import {
-  createParamsFromSearchRoute,
-  createSearchRoute,
-  mergeRouteSearch,
+  createDetailLocation,
+  createResultSearch,
+  createSearchLocation,
+  parseResultSearch,
 } from '../utils/routeHelper';
 
 import config from '../config';
@@ -122,9 +122,7 @@ DeferredEventOverlay.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default function Application({
-  mode = 'material',
-}) {
+export default function Application() {
   const navigate = useNavigate();
   const location = useLocation();
   const matches = useMatches();
@@ -141,7 +139,7 @@ export default function Application({
     (match) => match.handle?.surface === 'page',
   );
 
-  const params = useParams();
+  const resultParams = parseResultSearch(location.search);
 
   // fallback for old hash routes
   useEffect(() => {
@@ -153,26 +151,31 @@ export default function Application({
   }, []);
 
   useEffect(() => {
-    if (mode !== 'transcribe' || isTranscriptionAvailable) return;
+    if (!resultParams.transcribe || isTranscriptionAvailable) return;
 
     const { pathname, search, hash } = location;
-    if (!pathname.startsWith('/transcribe')) return;
-
-    const targetPath = pathname.replace(/^\/transcribe(?=\/|$)/, '') || '/';
-    navigate(`${targetPath}${search}${hash}`, { replace: true });
+    const currentParams = parseResultSearch(search);
+    currentParams.transcribe = undefined;
+    const target = pathname === '/search'
+      ? createSearchLocation(currentParams, search)
+      : `${pathname}${createResultSearch(currentParams, search)}`;
+    navigate(
+      `${target}${hash}`,
+      { replace: true },
+    );
   }, [
     isTranscriptionAvailable,
     location,
-    mode,
     navigate,
+    resultParams.transcribe,
   ]);
 
   const mapMarkerClick = (placeId) => {
-    const current = createParamsFromSearchRoute(params['*']);
-    const query = { ...current, _advanced: true }; // keep advanced filters when rebuilding URLs
-    let target = `/places/${placeId}${createSearchRoute(query)}`;
-    if (mode === 'transcribe') target = `/transcribe${target}`;
-    navigate(mergeRouteSearch(target, location.search));
+    navigate(createDetailLocation({
+      resource: 'places',
+      id: placeId,
+      search: location.search,
+    }));
   };
 
   useEffect(() => {
@@ -287,8 +290,6 @@ export default function Application({
             <MapWrapper
               active={!hasRoutePage}
               mapMarkerClick={mapMarkerClick}
-              mode={mode}
-              params={params}
               mapData={mapData}
               recordsData={recordsData}
               audioRecordsData={audioRecordsData}
@@ -323,8 +324,3 @@ export default function Application({
     </AudioProvider>
   );
 }
-
-Application.propTypes = {
-  // The mode of the application, either 'transcribe' or 'material'
-  mode: PropTypes.string.isRequired,
-};

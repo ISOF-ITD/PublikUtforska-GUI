@@ -1,14 +1,17 @@
 /* eslint-disable react/require-default-props */
 
 import {
-  Await, useLoaderData, useLocation, useParams, useNavigate,
+  Await, useLoaderData, useLocation, useNavigate,
 } from 'react-router-dom';
 
 import { Suspense, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import SimpleMap from './SimpleMap';
 
-import { createParamsFromSearchRoute } from '../../utils/routeHelper';
+import {
+  hasResultSearchContext,
+  parseResultSearch,
+} from '../../utils/routeHelper';
 import config from '../../config';
 import { l } from '../../lang/Lang';
 import RecordList from '../../features/RecordList/RecordList';
@@ -22,14 +25,14 @@ const renderMetadataItem = (label, value) => (
   </div>
 );
 
-export default function PlaceView({ highlightRecordsWithMetadataField = null, mode = 'material' }) {
+export default function PlaceView({ highlightRecordsWithMetadataField = null }) {
   const { results } = useLoaderData();
-  const params = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const searchParams = createParamsFromSearchRoute(params['*']);
+  const searchParams = parseResultSearch(location.search);
   // only show the contextual place record lists if we're in a search context
-  const shouldShowPlaceRecordLists = params['*'] && !searchParams.place;
+  const shouldShowPlaceRecordLists = hasResultSearchContext(location.search)
+    && !searchParams.place;
 
   function validateResults(data) {
     if (!data) {
@@ -119,14 +122,11 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
 
                     <RecordList
                       key={`PlaceView-RecordList-${data.id}`}
-                      disableRouterPagination
                       highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
                       params={{
                         ...searchParams,
                         place_id: data.id,
                       }}
-                      mode={mode}
-                      hasFilter={mode !== 'transcribe'}
                       useRouteParams
                       detailSearch={location.search}
                       cardHeadingLevel="h4"
@@ -155,13 +155,11 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
                   )}
 
                   <RecordList
-                    disableRouterPagination
                     highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
                     params={{
                       place_id: data.id,
+                      transcribe: searchParams.transcribe || undefined,
                     }}
-                    mode={mode}
-                    hasFilter={mode !== 'transcribe'}
                     useRouteParams
                     detailSearch={location.search}
                     cardHeadingLevel="h4"
@@ -187,5 +185,4 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null, mo
 
 PlaceView.propTypes = {
   highlightRecordsWithMetadataField: PropTypes.string,
-  mode: PropTypes.string,
 };

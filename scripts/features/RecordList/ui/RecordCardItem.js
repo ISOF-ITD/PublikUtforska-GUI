@@ -13,7 +13,10 @@ import {
   pageFromTo,
 } from '../../../utils/helpers';
 import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
-import { createSearchRoute, mergeRouteSearch } from '../../../utils/routeHelper';
+import {
+  createDetailLocation,
+  createResultSearch,
+} from '../../../utils/routeHelper';
 import useSubrecords from '../hooks/useSubrecords';
 import countPageProgressFromMedia from '../utils/countPageProgressFromMedia';
 import AudioWaveIcon from './AudioWaveIcon';
@@ -50,7 +53,6 @@ function hideBrokenImage(event) {
 export default function RecordCardItem({
   item,
   searchParams,
-  mode = 'material',
   highlightRecordsWithMetadataField,
   isSelected,
   onRecordActivate,
@@ -121,13 +123,11 @@ export default function RecordCardItem({
   const showCollectors = config?.siteOptions?.recordList?.visibleCollecorPersons
     && collectorNames;
 
-  const searchSuffix = createSearchRoute(searchParams || {});
-  const recordUrl = mergeRouteSearch(
-    `${mode === 'transcribe' ? '/transcribe' : ''}/records/${id}${
-      searchSuffix === '/' ? '' : searchSuffix
-    }`,
-    detailSearch,
-  );
+  const recordUrl = createDetailLocation({
+    resource: 'records',
+    id,
+    search: createResultSearch(searchParams, detailSearch),
+  });
 
   const hasTranscription = mediaItems.some((mediaItem) => (
     mediaItem?.type === 'audio'
@@ -328,7 +328,6 @@ export default function RecordCardItem({
 RecordCardItem.propTypes = {
   item: PropTypes.object.isRequired,
   searchParams: PropTypes.object,
-  mode: PropTypes.string,
   highlightRecordsWithMetadataField: PropTypes.string,
   isSelected: PropTypes.bool,
   onRecordActivate: PropTypes.func,

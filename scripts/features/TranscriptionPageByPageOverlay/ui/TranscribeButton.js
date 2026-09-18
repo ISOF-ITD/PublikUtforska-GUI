@@ -37,11 +37,10 @@ export default function TranscribeButton({
     navigate(createRecordTaskLocation({
       recordId: id,
       taskPath: 'transcribe',
-      pathname: location.pathname,
       search: location.search,
       media,
     }));
-  }, [location.pathname, location.search, navigate]);
+  }, [location.search, navigate]);
 
   const fetchRandomAndStart = useCallback(async () => {
     try {

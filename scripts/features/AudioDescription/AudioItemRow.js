@@ -52,7 +52,6 @@ function AudioItemRow({
   const correctionLocation = createRecordTaskLocation({
     recordId,
     taskPath: `audio/${item.id}/transcribe`,
-    pathname: location.pathname,
     search: location.search,
   });
 

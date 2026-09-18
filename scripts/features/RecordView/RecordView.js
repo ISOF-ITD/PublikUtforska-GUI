@@ -9,7 +9,6 @@ import {
   useAsyncError,
   useRevalidator,
 } from "react-router-dom";
-import PropTypes from "prop-types";
 import ContentsElement from "./ui/ContentsElement";
 import HeadwordsElement from "./ui/HeadwordsElement";
 import License from "./ui/License";
@@ -29,7 +28,7 @@ import AudioItems from "../AudioDescription/AudioItems";
 import RouteViewLoadingPlaceholder from "../../components/RouteViewLoadingPlaceholder";
 import ContributeInfoSection from '../../components/views/ContributeInfoSection';
 
-function RecordView({ mode = "material" }) {
+function RecordView() {
   const { results: resultsPromise } = useLoaderData();
   const location = useLocation();
   const matches = useMatches();
@@ -57,7 +56,6 @@ function RecordView({ mode = "material" }) {
               value={value}
               matches={matches}
               location={location}
-              mode={mode}
               mediaImageClickHandler={mediaImageClickHandler}
             />
           )}
@@ -116,7 +114,6 @@ function ResolvedRecord({
   value,
   matches,
   location,
-  mode,
   mediaImageClickHandler,
 }) {
   const [highlightData, raw, sub] = value || [];
@@ -200,9 +197,5 @@ function ResolvedRecord({
     </article>
   );
 }
-
-RecordView.propTypes = {
-  mode: PropTypes.string,
-};
 
 export default RecordView;

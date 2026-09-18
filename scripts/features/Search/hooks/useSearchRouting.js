@@ -1,11 +1,13 @@
 import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { createSearchRoute } from '../../../utils/routeHelper';
+import {
+  createSearchLocation,
+  parseResultSearch,
+} from '../../../utils/routeHelper';
 
 const SEARCH_FILTER_FIELDS = ['person', 'place', 'archive_id'];
 
 export default function useSearchRouting({
-  mode,
   categories,
   setCategories,
   person,
@@ -38,42 +40,27 @@ export default function useSearchRouting({
 
       setCategories(newCategories);
 
-      const selectedFilters = clearFilters
-        ? {}
-        : {
-          person,
-          place,
-          archive_id: archiveId,
-        };
+      const resultParams = parseResultSearch(location.search);
+      const selectedFilters = {
+        person: clearFilters ? undefined : person,
+        place: clearFilters ? undefined : place,
+        archive_id: clearFilters ? undefined : archiveId,
+      };
 
       if (filterUpdate && SEARCH_FILTER_FIELDS.includes(filterUpdate.field)) {
         selectedFilters[filterUpdate.field] = filterUpdate.value || undefined;
       }
 
-      const route = createSearchRoute({
+      Object.assign(resultParams, {
         search: keywordOverwrite || undefined,
         ...selectedFilters,
         category: newCategories.length ? newCategories : undefined,
       });
-      const pathname = mode === 'transcribe' ? `/transcribe${route}` : route;
+      delete resultParams.record_ids;
+
       const queryParams = new URLSearchParams(location.search);
       queryParams.delete('media');
       queryParams.delete('record_ids');
-
-      const trackingSearch = [
-        keywordOverwrite,
-        selectedFilters.person ? `person:${selectedFilters.person}` : null,
-        selectedFilters.place ? `place:${selectedFilters.place}` : null,
-        selectedFilters.archive_id
-          ? `archive_id:${selectedFilters.archive_id}`
-          : null,
-      ].filter(Boolean).join(' ');
-
-      if (trackingSearch) {
-        queryParams.set('s', trackingSearch);
-      } else {
-        queryParams.delete('s');
-      }
       if (resultView === 'list') {
         queryParams.delete('showlist');
         queryParams.delete('showmap');
@@ -87,14 +74,12 @@ export default function useSearchRouting({
         queryParams.delete('showlist');
       }
 
-      const searchParam = queryParams.toString();
-      navigate(`${pathname}${searchParam ? `?${searchParam}` : ''}`);
+      navigate(createSearchLocation(resultParams, queryParams.toString()));
     },
     [
       archiveId,
       categories,
       location.search,
-      mode,
       navigate,
       person,
       place,

@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { lazy, Suspense } from 'react';
 import {
-  createBrowserRouter, RouterProvider, defer, redirect,
+  createBrowserRouter, RouterProvider, defer, redirect, replace,
 } from 'react-router-dom';
 import EventBus from 'eventbusjs';
 import { Toaster } from 'react-hot-toast';
@@ -18,9 +18,11 @@ import {
   getRecordsFetchLocation,
 } from './utils/helpers';
 import {
-  createParamsFromSearchRoute,
-  removeViewParamsFromRoute,
+  getResultSearchSignature,
+  parseResultSearch,
 } from './utils/routeHelper';
+import canonicalizeLegacyLocation from './utils/legacyRouteHelper';
+import { buildResultApiParams } from './utils/resultFilterHelper';
 
 import '../less/style-basic.less';
 import '../tw.css';
@@ -92,13 +94,11 @@ function normalizeRecordId(recordId) {
   // Everything else is a canonical ID already
   return str;
 }
-// prefix is either 'transcribe' or '' for respectively Application mode trnascribe or material
-function createPageRoutes(prefix) {
-  const mode = prefix ? 'transcribe' : 'material';
+function createPageRoutes() {
   return [
     {
       path: 'statistik/*?',
-      id: `${prefix}statistics`,
+      id: 'statistics',
       handle: { surface: 'page' },
       element: (
         <RoutePageShell>
@@ -110,7 +110,7 @@ function createPageRoutes(prefix) {
     },
     {
       path: 'places/:placeId/*?',
-      id: `${prefix}place`,
+      id: 'place',
       handle: { surface: 'page' },
       loader: ({ params, request }) => (
         defer({ results: fetchPlace(params.placeId, request.signal) })
@@ -118,23 +118,23 @@ function createPageRoutes(prefix) {
       element: (
         <RoutePageShell>
           <Suspense fallback={<RouteViewLoadingPlaceholder kind="place" />}>
-            <PlaceView mode={mode} />
+            <PlaceView />
           </Suspense>
         </RoutePageShell>
       ),
     },
     {
       path: 'records/:recordId',
-      id: `${prefix}record`,
+      id: 'record',
       handle: { surface: 'page' },
-      loader: ({ params: { recordId, '*': star }, request }) => {
+      loader: ({ params: { recordId }, request }) => {
         const normalizedId = normalizeRecordId(recordId);
 
         // 2) If it changed, redirect to the canonical accession URL
         if (normalizedId !== recordId) {
           const url = new URL(request.url);
 
-          // Works for both "/records/…" and "/transcribe/records/…"
+          // Keep the query string when redirecting to the canonical record ID.
           url.pathname = url.pathname.replace(
             `/records/${recordId}`,
             `/records/${normalizedId}`,
@@ -145,7 +145,7 @@ function createPageRoutes(prefix) {
         }
 
         // 3) Normal loader behavior
-        const { search } = createParamsFromSearchRoute(star);
+        const { search } = parseResultSearch(new URL(request.url).search);
 
         return defer({
           results: fetchRecordAndCountSubrecords(
@@ -155,16 +155,18 @@ function createPageRoutes(prefix) {
           ),
         });
       },
-      shouldRevalidate: ({ currentParams, nextParams }) => {
+      shouldRevalidate: ({
+        currentParams, nextParams, currentUrl, nextUrl,
+      }) => {
         if (currentParams.recordId !== nextParams.recordId) return true;
-        const currentContext = removeViewParamsFromRoute(currentParams['*'] || '');
-        const nextContext = removeViewParamsFromRoute(nextParams['*'] || '');
-        return currentContext !== nextContext;
+        const currentSearch = parseResultSearch(currentUrl.search).search;
+        const nextSearch = parseResultSearch(nextUrl.search).search;
+        return currentSearch !== nextSearch;
       },
       element: (
         <RoutePageShell>
           <Suspense fallback={<RouteViewLoadingPlaceholder kind="record" />}>
-            <RecordView mode={mode} />
+            <RecordView />
           </Suspense>
         </RoutePageShell>
       ),
@@ -172,7 +174,7 @@ function createPageRoutes(prefix) {
       children: [
         {
           path: 'audio/:audioId/transcribe/*?',
-          id: `${prefix}record-correction`,
+          id: 'record-correction',
           handle: { surface: 'page', task: 'correction' },
           element: (
             <Suspense fallback={<RouteViewLoadingPlaceholder kind="correction" />}>
@@ -182,7 +184,7 @@ function createPageRoutes(prefix) {
         },
         {
           path: 'transcribe/*?',
-          id: `${prefix}record-transcription`,
+          id: 'record-transcription',
           handle: { surface: 'page', task: 'transcription' },
           element: (
             <Suspense fallback={<RouteViewLoadingPlaceholder kind="record" />}>
@@ -192,13 +194,13 @@ function createPageRoutes(prefix) {
         },
         {
           path: '*?',
-          id: `${prefix}record-details`,
+          id: 'record-details',
         },
       ],
     },
     {
       path: 'persons/:personId/*?',
-      id: `${prefix}person`,
+      id: 'person',
       handle: { surface: 'page' },
       loader: ({ params: { personId }, request }) => (
         fetchPerson(personId, request.signal)
@@ -206,7 +208,7 @@ function createPageRoutes(prefix) {
       element: (
         <RoutePageShell>
           <Suspense fallback={<RouteViewLoadingPlaceholder kind="person" />}>
-            <PersonView mode={mode} />
+            <PersonView />
           </Suspense>
         </RoutePageShell>
       ),
@@ -214,20 +216,21 @@ function createPageRoutes(prefix) {
   ];
 }
 
-// Main Application mode 'material' (empty route) routes
 function createRootRoute() {
   return {
     path: '/*?',
-    loader: ({ params, request }) => {
-      const basePath = removeViewParamsFromRoute(params['*'] || '');
+    loader: ({ request }) => {
+      const url = new URL(request.url);
+      const canonicalLocation = canonicalizeLegacyLocation(
+        url.pathname,
+        url.search,
+      );
+      if (canonicalLocation) return replace(canonicalLocation);
 
-      const queryParams = {
-        ...createParamsFromSearchRoute(basePath),
-        transcriptionstatus: 'published,accession,readytotranscribe,readytocontribute,undertranscription',
-        // Mode Arkiv: only for: one_accession_row
-        // In requiredParams in config.js:
-        // recordtype: 'one_accession_row',
-      };
+      const queryParams = buildResultApiParams(
+        parseResultSearch(url.search),
+        { materialRecordtype: 'one_accession_row' },
+      );
 
       return defer({
         results: fetchMapAndCountRecords(queryParams, request.signal),
@@ -241,60 +244,19 @@ function createRootRoute() {
         ),
       });
     },
-    shouldRevalidate: ({ currentParams, nextParams }) => {
-      const current = removeViewParamsFromRoute(currentParams['*'] || '');
-      const next = removeViewParamsFromRoute(nextParams['*'] || '');
-      return current !== next;
+    shouldRevalidate: ({ currentUrl, nextUrl }) => {
+      if (canonicalizeLegacyLocation(nextUrl.pathname, nextUrl.search)) return true;
+      return getResultSearchSignature(currentUrl.search)
+        !== getResultSearchSignature(nextUrl.search);
     },
     id: 'root',
-    element: <Application mode="material" />,
-    children: createPageRoutes(''),
-  };
-}
-
-// Main Application mode 'transcribe' routes
-function createTranscribeRoute() {
-  return {
-    path: '/transcribe/*?',
-    loader: async ({ params, request }) => {
-      const basePath = removeViewParamsFromRoute(params['*'] || '');
-      const base = createParamsFromSearchRoute(basePath);
-
-      const queryParams = {
-        ...base,
-        recordtype: base.recordtype ?? 'one_accession_row',
-        // Used in counting untranscribed records
-        transcriptionstatus: base.transcriptionstatus ?? 'readytotranscribe,undertranscription',
-        // has_untranscribed_records: base.has_untranscribed_records ?? true,
-      };
-
-      return defer({
-        results: fetchMapAndCountRecords(queryParams, request.signal),
-        audioResults: countRecords(
-          { ...queryParams, category: 'contentG5' },
-          request.signal,
-        ),
-        pictureResults: countRecords(
-          { ...queryParams, category: 'contentG2' },
-          request.signal,
-        ),
-      });
-    },
-    shouldRevalidate: ({ currentParams, nextParams }) => {
-      const current = removeViewParamsFromRoute(currentParams['*'] || '');
-      const next = removeViewParamsFromRoute(nextParams['*'] || '');
-      return current !== next;
-    },
-    id: 'transcribe-root',
-    element: <Application mode="transcribe" />,
-    children: createPageRoutes('transcribe-'),
+    element: <Application />,
+    children: createPageRoutes(),
   };
 }
 
 const router = createBrowserRouter([
-  // Main routes changes Application mode: material or transcribe
   createRootRoute(),
-  createTranscribeRoute(),
 ]);
 
 root.render(

@@ -10,10 +10,9 @@ import RecordTable from "./ui/RecordTable";
 import RecordViewToggle from "./ui/RecordViewToggle";
 import RecordSortMenu from './ui/RecordSortMenu';
 import {
-  createParamsFromSearchRoute,
-  createSearchRoute,
-  mergeRouteSearch,
-  removeViewParamsFromRoute,
+  createDetailLocation,
+  createResultSearch,
+  parseResultSearch,
 } from '../../utils/routeHelper';
 import useRecords from "./hooks/useRecords";
 import classNames from "classnames";
@@ -68,9 +67,9 @@ function getScrollableContainer(rootElement) {
   return window;
 }
 
-// Skapa en unik nyckel för att lagra scrollpositionen i sessionStorage, baserat på mode och params.
-function createScrollStorageKey(mode, params = {}) {
-  return `${SCROLL_STORAGE_PREFIX}${mode}:${JSON.stringify(params)}`;
+// Skapa en unik nyckel för att lagra scrollpositionen i sessionStorage.
+function createScrollStorageKey(params = {}) {
+  return `${SCROLL_STORAGE_PREFIX}${JSON.stringify(params)}`;
 }
 
 // En enkel wrapper runt sessionStorage som tyst fångar eventuella fel
@@ -104,14 +103,11 @@ export default function RecordList(props) {
   const {
     columns,
     disableListPagination,
-    disableRouterPagination,
-    hasFilter,
     hasTimeline,
     highlightRecordsWithMetadataField,
     interval,
     openSwitcherHelptext,
     params,
-    mode,
     containerRef,
     useRouteParams,
     smallTitle,
@@ -129,7 +125,7 @@ export default function RecordList(props) {
   const rootRef = useRef(null);
   const hasRestoredScrollRef = useRef(false);
   const [resultsPaneWidth, setResultsPaneWidth] = useState(0);
-  const scrollStorageKey = createScrollStorageKey(mode, params);
+  const scrollStorageKey = createScrollStorageKey(params);
   const activeRecordStorageKey = `${scrollStorageKey}${ACTIVE_RECORD_STORAGE_SUFFIX}`;
 
   /* ------- business logic extracted to hook ------- */
@@ -150,7 +146,7 @@ export default function RecordList(props) {
     setSorting,
     relevanceSortingAvailable,
     setYearFilter,
-  } = useRecords(params, mode, interval);
+  } = useRecords(params, interval);
 
   /* ------- desktop view mode (table|cards) ------- */
   const [view, setView] = useState(() => getInitialView(location.search));
@@ -192,13 +188,6 @@ export default function RecordList(props) {
       // Ignore storage failures (private mode / disabled storage).
     }
     window.dispatchEvent(new CustomEvent(VIEW_CHANGE_EVENT, { detail: next }));
-    if (!disableRouterPagination) {
-      const newParams = { ...params, view: next };
-      // stay on same path; replace history entry to avoid back-button noise
-      navigate(`${location.pathname}${createSearchRoute(newParams)}`, {
-        replace: true,
-      });
-    }
   };
 
   /* ------- UI helpers ------- */
@@ -209,27 +198,18 @@ export default function RecordList(props) {
   // If the URL contains record_ids, we are in a bookmarked record list and should not include record_ids in the navigation params to avoid losing the bookmarked filter when navigating between records.
   const recordNavigationParams = useMemo(() => {
     const baseParams = useRouteParams
-      ? createParamsFromSearchRoute(
-        removeViewParamsFromRoute(location.pathname),
-      )
+      ? parseResultSearch(location.search)
       : params;
     if (!baseParams?.record_ids) return baseParams;
 
     const cleanParams = { ...baseParams };
     delete cleanParams.record_ids;
     return cleanParams;
-  }, [location.pathname, params, useRouteParams]);
+  }, [location.search, params, useRouteParams]);
 
   const handleStepPage = (step) => {
-    /* decide who owns page number */
     const newPage = Math.min(Math.max(currentPage + step, 1), maxPage);
-
-    if (disableRouterPagination) {
-      setCurrentPage(newPage);
-    } else {
-      const newParams = { ...params, page: newPage };
-      navigate(`${location.pathname}${createSearchRoute(newParams)}`);
-    }
+    setCurrentPage(newPage);
   };
 
   const handleSort = ({ field, order: nextOrder, label }) => {
@@ -255,12 +235,11 @@ export default function RecordList(props) {
   const archiveIdClick = (e) => {
     const { archiveidrow } = e.target.dataset;
     if (archiveidrow) {
-      const searchSuffix = createSearchRoute(recordNavigationParams || {});
-      const prefix = mode === 'transcribe' ? '/transcribe' : '';
-      const recordPath = `${prefix}/records/${archiveidrow}${
-        searchSuffix === '/' ? '' : searchSuffix
-      }`;
-      navigate(mergeRouteSearch(recordPath, detailSearch));
+      navigate(createDetailLocation({
+        resource: 'records',
+        id: archiveidrow,
+        search: createResultSearch(recordNavigationParams, detailSearch),
+      }));
     }
   };
 
@@ -387,7 +366,6 @@ export default function RecordList(props) {
             params={params}
             filter={filter}
             yearFilter={yearFilter}
-            mode={mode}
             onYearFilter={(f, l) => setYearFilter([f, l])}
             resetOnYearFilter={() => setYearFilter(null)}
           />
@@ -438,7 +416,6 @@ export default function RecordList(props) {
             <RecordCards
               records={records}
               params={recordNavigationParams}
-              mode={mode}
               highlightRecordsWithMetadataField={
                 highlightRecordsWithMetadataField
               }
@@ -456,7 +433,6 @@ export default function RecordList(props) {
               <RecordCards
                 records={records}
                 params={recordNavigationParams}
-                mode={mode}
                 highlightRecordsWithMetadataField={
                   highlightRecordsWithMetadataField
                 }
@@ -476,7 +452,6 @@ export default function RecordList(props) {
                 }
                 shouldRenderColumn={shouldRenderColumn}
                 archiveIdClick={archiveIdClick}
-                mode={mode}
                 useRouteParams={useRouteParams}
                 smallTitle={smallTitle}
                 columns={columns}
@@ -513,14 +488,11 @@ export default function RecordList(props) {
 RecordList.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.string),
   disableListPagination: PropTypes.bool,
-  disableRouterPagination: PropTypes.bool,
-  hasFilter: PropTypes.bool,
   hasTimeline: PropTypes.bool,
   highlightRecordsWithMetadataField: PropTypes.string,
   interval: PropTypes.number,
   openSwitcherHelptext: PropTypes.func,
   params: PropTypes.objectOf(PropTypes.any),
-  mode: PropTypes.string,
   useRouteParams: PropTypes.bool,
   containerRef: PropTypes.objectOf(PropTypes.any),
   smallTitle: PropTypes.bool,

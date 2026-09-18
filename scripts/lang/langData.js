@@ -26,7 +26,6 @@ export default {
     'Utforska arkivmaterial': 'Utforsk arkivmateriale',
     'Välj arbetsläge': 'Velg arbeidsmodus',
     'Sök i arkivmaterial': 'Søk i arkivmateriale',
-    'Sök bland uppteckningar att skriva av': 'Søk blant opptegnelser som kan skrives av',
     'Sök och filtrera': 'Søk og filtrer',
     'Till resultaten': 'Til resultatene',
     'Kom igång direkt': 'Kom i gang med en gang',

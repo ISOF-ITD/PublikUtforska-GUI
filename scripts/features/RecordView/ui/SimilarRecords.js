@@ -186,7 +186,6 @@ function SimilarRecords({ data }) {
       <RecordCards
         records={normalizedRecords}
         params={{}}
-        mode="material"
         layout="desktop-grid"
         headingLevel="h4"
       />

@@ -21,6 +21,25 @@ npm run analyze-bundle # Analyze bundle size with source-map-explorer
 npm run create-sitemap # Create or update sitemap.xml on the server
 ```
 
+## Routing and old links
+
+Current search state is stored in query parameters. Older versions stored the
+same state in path segments, and also used `/transcribe` as a route prefix.
+[`scripts/utils/legacyRouteHelper.js`](scripts/utils/legacyRouteHelper.js)
+keeps old bookmarks and external links working by redirecting those URLs to the
+current format. New routing code belongs in
+[`scripts/utils/routeHelper.js`](scripts/utils/routeHelper.js), not in the
+legacy helper.
+
+The compatibility support can be removed once old URLs no longer need to work:
+
+1. Remove the import and the two calls to `canonicalizeLegacyLocation` from
+   [`scripts/app.js`](scripts/app.js).
+2. Delete [`scripts/utils/legacyRouteHelper.js`](scripts/utils/legacyRouteHelper.js).
+3. Remove the unused `route-parser` dependency with `npm uninstall route-parser`.
+4. Verify that current search, detail, statistics and transcription URLs still
+   load and navigate correctly.
+
 ## Code style
 
 * Use EcmaScript syntax.

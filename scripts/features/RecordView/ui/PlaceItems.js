@@ -21,7 +21,6 @@ function PlaceItems({ data, location }) {
     const linkUrl = createDetailLocation({
       resource: 'places',
       id,
-      pathname: location.pathname,
       search: location.search,
     });
 
@@ -85,7 +84,6 @@ PlaceItems.propTypes = {
     ),
   }),
   location: PropTypes.shape({
-    pathname: PropTypes.string.isRequired,
     search: PropTypes.string.isRequired,
   }).isRequired,
 };

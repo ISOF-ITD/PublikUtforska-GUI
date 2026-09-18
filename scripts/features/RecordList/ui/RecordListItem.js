@@ -15,7 +15,11 @@ import CollectorList from "./CollectorList";
 import ListPlayButton from "../../../features/AudioDescription/ListPlayButton";
 import { l } from "../../../lang/Lang";
 import config from "../../../config";
-import { createSearchRoute, mergeRouteSearch } from '../../../utils/routeHelper';
+import {
+  createDetailLocation,
+  createResultSearch,
+  mergeRouteSearch,
+} from '../../../utils/routeHelper';
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
 import {
@@ -35,7 +39,6 @@ export default function RecordListItem(props) {
     columns,
     shouldRenderColumn,
     highlightRecordsWithMetadataField,
-    mode,
     smallTitle,
     isSelected,
     onRecordActivate,
@@ -147,14 +150,17 @@ export default function RecordListItem(props) {
   };
 
   const cleanParams = stripDetailParams(searchParams || {});
-  const searchSuffix = createSearchRoute(cleanParams);
-
-  const recordHref = mergeRouteSearch(
-    `${
-      mode === 'transcribe' ? '/transcribe' : ''
-    }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`,
-    detailSearch,
-  );
+  const resultSearch = createResultSearch(cleanParams, detailSearch);
+  const recordHref = createDetailLocation({
+    resource: 'records',
+    id,
+    search: resultSearch,
+  });
+  const createMediaHref = (mediaId) => {
+    const query = new URLSearchParams(resultSearch);
+    query.set('media', String(mediaId));
+    return `/records/${encodeURIComponent(id)}?${query.toString()}`;
+  };
 
   const onRowKeyDown = (e) => {
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -418,9 +424,7 @@ export default function RecordListItem(props) {
                             ? s.segmentTranscriptionstatus === "published"
                             : s._source.transcriptionstatus === "published";
 
-                          const parentHref = `${
-                            mode === 'transcribe' ? '/transcribe' : ''
-                          }/records/${id}${searchSuffix === '/' ? '' : searchSuffix}`;
+                          const parentHref = recordHref;
                           const subrecordSource = isNew
                             ? null
                             : Reflect.get(s, '_source');
@@ -430,16 +434,15 @@ export default function RecordListItem(props) {
 
                           let hrefWithoutListContext = parentHref;
                           if (isNew && Number.isFinite(s.startIndex)) {
-                            hrefWithoutListContext = `${parentHref}?media=${s.startIndex}`;
+                            hrefWithoutListContext = createMediaHref(s.startIndex);
                           } else if (subrecordSource?.href) {
                             hrefWithoutListContext = subrecordSource.href;
                           } else if (subrecordMediaId) {
-                            hrefWithoutListContext = `${parentHref}?media=${subrecordMediaId}`;
+                            hrefWithoutListContext = createMediaHref(subrecordMediaId);
                           }
-                          const href = mergeRouteSearch(
-                            hrefWithoutListContext,
-                            detailSearch,
-                          );
+                          const href = subrecordSource?.href
+                            ? mergeRouteSearch(hrefWithoutListContext, resultSearch)
+                            : hrefWithoutListContext;
 
                           const pageLabel = isNew
                             ? getSegmentTitle(s.items) || l("Segment")
@@ -523,12 +526,11 @@ export default function RecordListItem(props) {
                   )}
 
                   <Link
-                    to={mergeRouteSearch(
-                      `${mode === 'transcribe' ? '/transcribe' : ''}/places/${
-                        place.id
-                      }${searchSuffix === '/' ? '' : searchSuffix}`,
-                      detailSearch,
-                    )}
+                    to={createDetailLocation({
+                      resource: 'places',
+                      id: place.id,
+                      search: resultSearch,
+                    })}
                     className="text-link hover:underline"
                     // onClick={(e) => {
                     //   e.preventDefault();
@@ -548,7 +550,6 @@ export default function RecordListItem(props) {
         <td data-title={`${l("Insamlare")}:`} className="py-2">
           <CollectorList
             persons={persons}
-            mode={mode}
             searchParams={searchParams}
             pillClasses={pillClasses}
             detailSearch={detailSearch}
@@ -610,7 +611,6 @@ RecordListItem.propTypes = {
   columns: PropTypes.array,
   shouldRenderColumn: PropTypes.func.isRequired,
   highlightRecordsWithMetadataField: PropTypes.string,
-  mode: PropTypes.string,
   useRouteParams: PropTypes.bool,
   smallTitle: PropTypes.bool,
   isSelected: PropTypes.bool,

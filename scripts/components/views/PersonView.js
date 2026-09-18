@@ -1,16 +1,15 @@
 /* eslint-disable react/require-default-props */
 import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useLocation, Link } from "react-router-dom";
-import PropTypes from "prop-types";
 import SimpleMap from "./SimpleMap";
 import ContributeInfoSection from './ContributeInfoSection';
 import { l } from "../../lang/Lang";
 
 import config from "../../config";
 import RecordList from "../../features/RecordList/RecordList";
-import { createDetailLocation } from '../../utils/routeHelper';
+import { createDetailLocation, parseResultSearch } from '../../utils/routeHelper';
 
-export default function PersonView({ mode = "material" }) {
+export default function PersonView() {
   const {
     biography = "",
     birthplace,
@@ -22,6 +21,7 @@ export default function PersonView({ mode = "material" }) {
   } = useLoaderData() || {};
 
   const location = useLocation();
+  const searchParams = parseResultSearch(location.search);
 
   // Keep document title friendly & restore on unmount
   useEffect(() => {
@@ -44,20 +44,9 @@ export default function PersonView({ mode = "material" }) {
     return parts.filter(Boolean).join(", ");
   }, [personPlace]);
 
-  // Optional Nordic suffix (kept compatible with existing setting)
-  const nordicSuffix = useMemo(() => {
-    try {
-      return window?.applicationSettings?.includeNordic ? "/nordic/true" : "";
-    } catch {
-      return "";
-    }
-  }, []);
   const personPlaceLocation = personPlace ? createDetailLocation({
     resource: 'places',
     id: personPlace.id,
-    pathname: nordicSuffix
-      ? `${mode === 'transcribe' ? '/transcribe' : ''}${nordicSuffix}`
-      : location.pathname,
     search: location.search,
   }) : null;
 
@@ -76,8 +65,9 @@ export default function PersonView({ mode = "material" }) {
   const recordListParams = useMemo(
     () => ({
       person_id: id,
+      transcribe: searchParams.transcribe || undefined,
     }),
-    [id, mode],
+    [id, searchParams.transcribe],
   );
 
   return (
@@ -181,11 +171,8 @@ export default function PersonView({ mode = "material" }) {
           </div>
 
           <RecordList
-            disableRouterPagination
             disableAutoFetch
             params={recordListParams}
-            mode={mode}
-            hasFilter={mode !== "transcribe"}
             useRouteParams
             detailSearch={location.search}
             cardHeadingLevel="h4"
@@ -195,7 +182,3 @@ export default function PersonView({ mode = "material" }) {
     </div>
   );
 }
-
-PersonView.propTypes = {
-  mode: PropTypes.string,
-};

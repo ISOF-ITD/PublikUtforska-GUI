@@ -18,8 +18,9 @@ import { l } from '../../lang/Lang';
 import { getFocusableElements } from '../../utils/focusHelper';
 import folkeWhiteLogo from '../../../img/folke-white.svg';
 import IsofLogoWhite from '../../../img/logotyp-isof-vit.svg';
+import SpråkbankenLogo from '../../../img/logotyp_sprakbanken.svg';
 
-function IntroOverlay({ show = false, onClose, mode = 'material' }) {
+function IntroOverlay({ show = false, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const iframeRef = useRef(null);
@@ -32,7 +33,6 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
   const [suggestionRequest, setSuggestionRequest] = useState(null);
   const { navigateToSearch } = useSearchRouting({
-    mode,
     categories,
     setCategories,
   });
@@ -358,7 +358,6 @@ function IntroOverlay({ show = false, onClose, mode = 'material' }) {
 IntroOverlay.propTypes = {
   show: PropTypes.bool,
   onClose: PropTypes.func,
-  mode: PropTypes.string,
 };
 
 export default IntroOverlay;

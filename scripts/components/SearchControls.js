@@ -19,7 +19,11 @@ import SearchPanel from '../features/Search/SearchPanel';
 import useBookmarkedRecords, {
   BOOKMARKED_RECORDS_RETURN_STORAGE_KEY,
 } from '../hooks/useBookmarkedRecords';
-import { createStatisticsLocation } from '../utils/routeHelper';
+import {
+  createSearchLocation,
+  createStatisticsLocation,
+  parseResultSearch,
+} from '../utils/routeHelper';
 import IntroOverlay from './views/IntroOverlay';
 import config from '../config';
 
@@ -53,8 +57,6 @@ function Warning() {
 }
 
 export default function SearchControls({
-  mode = 'material',
-  params,
   recordsData = { data: [], metadata: {} },
   audioRecordsData = { data: [], metadata: {} },
   pictureRecordsData = { data: [], metadata: {} },
@@ -66,11 +68,13 @@ export default function SearchControls({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const resultParams = parseResultSearch(location.search);
+  const isTranscribeFilter = resultParams.transcribe === true;
   const {
     ids: bookmarkedRecordIds,
     count: bookmarkedRecordCount,
   } = useBookmarkedRecords();
-  const previousModeRef = useRef(mode);
+  const previousTranscribeFilterRef = useRef(isTranscribeFilter);
   const initialLoadRef = useRef(true);
   const [justSwitched, setJustSwitched] = useState(false);
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
@@ -86,15 +90,15 @@ export default function SearchControls({
 
   useEffect(() => {
     let timeoutId;
-    if (previousModeRef.current !== mode) {
-      previousModeRef.current = mode;
+    if (previousTranscribeFilterRef.current !== isTranscribeFilter) {
+      previousTranscribeFilterRef.current = isTranscribeFilter;
       setJustSwitched(true);
       timeoutId = setTimeout(() => setJustSwitched(false), 400);
     }
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [mode]);
+  }, [isTranscribeFilter]);
 
   useEffect(() => {
     if (anyTotals > 0) {
@@ -150,16 +154,14 @@ export default function SearchControls({
     backgroundImage: `var(--image-header-back-tint), url(${headerBack})`,
     backgroundPosition: 'center top',
   };
-  const statisticsLocation = createStatisticsLocation(
-    location.pathname,
-    location.search,
-  );
+  const statisticsLocation = createStatisticsLocation(location.search);
   const showBookmarkedRecords = useCallback(() => {
     if (bookmarkedRecordIds.length === 0) return;
 
-    const prefix = mode === 'transcribe' ? '/transcribe' : '';
-    const bookmarkedParams = new URLSearchParams();
-    bookmarkedParams.set('record_ids', bookmarkedRecordIds.join(','));
+    const bookmarkedParams = {
+      record_ids: bookmarkedRecordIds,
+      transcribe: isTranscribeFilter || undefined,
+    };
     try {
       sessionStorage.setItem(
         BOOKMARKED_RECORDS_RETURN_STORAGE_KEY,
@@ -168,8 +170,14 @@ export default function SearchControls({
     } catch {
       // Ignore storage failures from private/incognito storage contexts.
     }
-    navigate(`${prefix}/?${bookmarkedParams.toString()}`);
-  }, [location.pathname, location.search, mode, navigate, bookmarkedRecordIds]);
+    navigate(createSearchLocation(bookmarkedParams));
+  }, [
+    bookmarkedRecordIds,
+    isTranscribeFilter,
+    location.pathname,
+    location.search,
+    navigate,
+  ]);
 
   return (
     <>
@@ -267,8 +275,6 @@ export default function SearchControls({
         <div className="box-border w-full max-w-[900px] px-2 pb-2 min-[1440px]:px-5 min-[1440px]:pb-5">
           <h2 className="sr-only">{l('Sök och filtrera')}</h2>
           <SearchPanel
-            params={params}
-            mode={mode}
             recordsData={stable.recordsData}
             audioRecordsData={stable.audioRecordsData}
             pictureRecordsData={stable.pictureRecordsData}
@@ -278,7 +284,7 @@ export default function SearchControls({
               onResultViewChange(showList ? 'list' : 'map');
             }}
             showResultViewControl={showResultViewControl}
-            showSupplementaryContent={!hasSubmittedSearch}
+            showSupplementaryContent={!hasSubmittedSearch || isTranscribeFilter}
           />
 
         </div>
@@ -289,7 +295,6 @@ export default function SearchControls({
           id="intro-overlay"
           show={showIntroOverlay}
           onClose={handleCloseOverlay}
-          mode={mode}
         />
       )}
     </>
@@ -297,8 +302,6 @@ export default function SearchControls({
 }
 
 SearchControls.propTypes = {
-  mode: PropTypes.string,
-  params: PropTypes.object.isRequired,
   recordsData: PropTypes.object,
   audioRecordsData: PropTypes.object,
   pictureRecordsData: PropTypes.object,

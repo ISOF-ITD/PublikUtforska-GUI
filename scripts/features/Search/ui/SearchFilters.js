@@ -19,7 +19,7 @@ function SearchFilterCheckbox({
     <label
       htmlFor={inputId}
       className={classNames(
-        'relative inline-flex min-h-9 items-center gap-2 !m-0 border px-3 py-1.5 text-sm font-medium',
+        'relative inline-flex min-h-9 items-center gap-2 rounded-[3px] !m-0 border px-3 py-1.5 text-sm font-medium',
         checked
           ? 'border-border bg-surface !text-body'
           : 'border-white/70 bg-transparent !text-white',
@@ -69,7 +69,7 @@ function SearchFilterCheckbox({
       </span>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-focus peer-focus-visible:outline-offset-2"
+        className="pointer-events-none absolute inset-0 rounded-[3px] peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-white peer-focus-visible:outline-offset-2"
       />
     </label>
   );

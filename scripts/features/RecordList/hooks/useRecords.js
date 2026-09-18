@@ -3,6 +3,7 @@ import {
 } from 'react';
 import RecordsApiClient from "../api/RecordsApiClient";
 import config from "../../../config";
+import { buildResultApiParams } from '../../../utils/resultFilterHelper';
 
 const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
   config;
@@ -17,13 +18,6 @@ const RELEVANCE_SORTING = {
   order: 'desc',
 };
 const ENTITY_SEARCH_FIELDS = new Set(['person', 'place', 'archive_id']);
-const MATERIAL_TRANSCRIPTION_STATUSES = [
-  'published',
-  'accession',
-  'readytotranscribe',
-  'readytocontribute',
-  'undertranscription',
-].join(',');
 const recordsCache = new Map();
 
 function createSearchContext(params = {}) {
@@ -86,7 +80,7 @@ function writeCached(cacheKey, records, total) {
  * Returns data *and* all UI handlers so the component that
  * calls this hook is almost stateless.
  */
-export default function useRecords(params, mode, interval) {
+export default function useRecords(params, interval) {
   const searchContext = useMemo(
     () => createSearchContext(params),
     [params.search, params.search_field],
@@ -99,7 +93,7 @@ export default function useRecords(params, mode, interval) {
   const [records, setRecords] = useState([]);
   const [total, setTotal] = useState(0);
 
-  const [currentPage, setCurrentPage] = useState(params.page || 1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState("");
   const [yearFilter, setYearFilter] = useState(null);
   const [sorting, setSortingState] = useState(() => ({
@@ -113,9 +107,17 @@ export default function useRecords(params, mode, interval) {
   const contextSorting = sortingMatchesSearchContext ? sorting : defaultSorting;
   const sort = params.sort || contextSorting.field;
   const order = params.order || contextSorting.order;
+  const paramsSignature = useMemo(
+    () => JSON.stringify(
+      Object.entries(params).sort(([left], [right]) => left.localeCompare(right)),
+    ),
+    [params],
+  );
+  const pageParamsSignatureRef = useRef(paramsSignature);
   const effectiveCurrentPage = sortingMatchesSearchContext
+    && pageParamsSignatureRef.current === paramsSignature
     ? currentPage
-    : params.page || 1;
+    : 1;
 
   /* ---------------- helpers ---------------- */
   const uniqueId = useMemo(
@@ -162,8 +164,9 @@ export default function useRecords(params, mode, interval) {
   }, [collections]);
 
   useEffect(() => {
-    setCurrentPage(params.page || 1);
-  }, [params.page]);
+    pageParamsSignatureRef.current = paramsSignature;
+    setCurrentPage(1);
+  }, [paramsSignature]);
 
   useEffect(() => {
     if (sortingMatchesSearchContext) return;
@@ -172,10 +175,8 @@ export default function useRecords(params, mode, interval) {
       contextKey: searchContext.key,
       ...defaultSorting,
     });
-    setCurrentPage(params.page || 1);
   }, [
     defaultSorting,
-    params.page,
     searchContext.key,
     sortingMatchesSearchContext,
   ]);
@@ -188,6 +189,18 @@ export default function useRecords(params, mode, interval) {
     });
     setCurrentPage(1);
   }, [searchContext.key]);
+
+  const resultApiParams = useMemo(
+    () => buildResultApiParams(
+      {
+        recordtype: params.recordtype,
+        transcriptionstatus: params.transcriptionstatus,
+        transcribe: params.transcribe,
+      },
+      { materialRecordtype: filter || null },
+    ),
+    [filter, params.recordtype, params.transcribe, params.transcriptionstatus],
+  );
 
   const getFetchParams = useCallback(
     () => ({
@@ -226,20 +239,12 @@ export default function useRecords(params, mode, interval) {
         : undefined,
       record_ids: params.record_ids || undefined,
       has_metadata: params.has_metadata || undefined,
-      has_media: params.has_media || undefined,
-      has_transcribed_records: params.has_transcribed_records || undefined,
+      has_media: params.has_media ?? undefined,
+      has_transcribed_records: params.has_transcribed_records ?? undefined,
       // has_untranscribed_records not used anymore
       //has_untranscribed_records: params.has_untranscribed_records || undefined,
-      transcriptionstatus: params.transcriptionstatus || (
-        mode === 'transcribe'
-          ? 'readytotranscribe,undertranscription'
-          : MATERIAL_TRANSCRIPTION_STATUSES
-      ),
-      // Fanns:
-      //transcriptionstatus: params.transcriptionstatus || undefined,
-      recordtype:
-        params.recordtype ||
-        (mode === "transcribe" ? "one_accession_row" : filter || null),
+      transcriptionstatus: resultApiParams.transcriptionstatus,
+      recordtype: resultApiParams.recordtype,
       person_id: params.person_id || undefined,
       socken_id: params.place_id || undefined,
       sort: sort || undefined,
@@ -253,7 +258,7 @@ export default function useRecords(params, mode, interval) {
           }
         : {}),
     }),
-    [effectiveCurrentPage, params, yearFilter, mode, filter, sort, order]
+    [effectiveCurrentPage, params, resultApiParams, yearFilter, sort, order]
   );
 
   /* ---------------- fetch ---------------- */

@@ -4,7 +4,6 @@ import RecordCardItem from './RecordCardItem';
 export default function RecordCards({
   records,
   params,
-  mode,
   highlightRecordsWithMetadataField,
   selectedRecordId,
   onRecordActivate,
@@ -30,7 +29,6 @@ export default function RecordCards({
             <RecordCardItem
               item={rec}
               searchParams={params}
-              mode={mode}
               highlightRecordsWithMetadataField={highlightRecordsWithMetadataField}
               isSelected={String(source.id) === String(selectedRecordId)}
               onRecordActivate={onRecordActivate}
@@ -47,7 +45,6 @@ export default function RecordCards({
 RecordCards.propTypes = {
   records: PropTypes.array.isRequired,
   params: PropTypes.object.isRequired,
-  mode: PropTypes.string,
   highlightRecordsWithMetadataField: PropTypes.string,
   selectedRecordId: PropTypes.string,
   onRecordActivate: PropTypes.func,
