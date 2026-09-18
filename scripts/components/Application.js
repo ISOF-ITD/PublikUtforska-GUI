@@ -13,7 +13,6 @@ import PropTypes from 'prop-types';
 import { AudioProvider } from '../contexts/AudioContext';
 import GlobalAudioPlayer from '../features/AudioPlayer/GlobalAudioPlayer';
 import MapWrapper from './MapWrapper';
-import Footer from './Footer';
 
 import {
   createDetailLocation,
@@ -313,13 +312,6 @@ export default function Application() {
         <DeferredEventOverlay events={['overlay.HelpText']}>
           <HelpTextOverlay />
         </DeferredEventOverlay>
-        <div
-          hidden={hasRoutePage}
-          inert={hasRoutePage || undefined}
-          aria-hidden={hasRoutePage || undefined}
-        >
-          {/* <Footer /> */}
-        </div>
       </div>
     </AudioProvider>
   );
