@@ -1,7 +1,7 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
 
-import { useRef, useCallback, useMemo } from 'react';
+import { useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import RecordList from './RecordList';
@@ -34,13 +34,6 @@ export default function RecordListWrapper({
     }`
     : l('Sökträffar');
 
-  // Memoize openSwitcherHelptext för att undvika omrenderingar
-  const openSwitcherHelptext = useCallback(() => {
-    if (window.eventBus) {
-      window.eventBus.dispatch('overlay.HelpText', { kind: 'switcher' });
-    }
-  }, []); // Tom array för att se till att funktionen inte återskapas varje gång
-
   return (
     <div className="min-h-full bg-surface text-body">
       <header className={isEmbeddedResults
@@ -68,7 +61,6 @@ export default function RecordListWrapper({
             disableListPagination={disableListPagination}
             params={searchParams}
             hasTimeline={!isBookmarkedRecordList}
-            openSwitcherHelptext={openSwitcherHelptext}
             containerRef={containerRef}
             layoutContext={layoutContext}
             detailSearch={detailSearch}

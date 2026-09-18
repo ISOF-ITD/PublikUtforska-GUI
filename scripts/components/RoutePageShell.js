@@ -44,7 +44,7 @@ export default function RoutePageShell({ children }) {
             <Link
               to="/"
               aria-label={l('Till Folkes startsida')}
-              className="inline-flex shrink-0 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="header-keyboard-focus inline-flex shrink-0 rounded-sm"
             >
               <img
                 src={FolkeLogo}
@@ -57,7 +57,7 @@ export default function RoutePageShell({ children }) {
               href="https://www.isof.se"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white max-[480px]:hidden"
+              className="header-keyboard-focus inline-flex min-w-0 items-center rounded-sm max-[480px]:hidden"
               aria-label={l('Öppna Institutet för språk och folkminnens webbplats i nytt fönster')}
             >
               <img
@@ -70,7 +70,7 @@ export default function RoutePageShell({ children }) {
           <Link
             to={resultLocation}
             replace
-            className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-sm px-1 py-2 !text-white underline underline-offset-4 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white print:hidden"
+            className="header-keyboard-focus inline-flex min-h-10 shrink-0 items-center gap-2 rounded-sm px-2 py-2 !text-white underline underline-offset-4 hover:no-underline focus:no-underline print:hidden"
           >
             <FontAwesomeIcon icon={faArrowLeft} aria-hidden="true" />
             <span>{l('Till sökresultaten')}</span>

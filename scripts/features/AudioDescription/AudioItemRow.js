@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import PropTypes from "prop-types";
 import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -47,6 +47,7 @@ function AudioItemRow({
   highlightData,
 }) {
   const location = useLocation();
+  const rowToggleRef = useRef(null);
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
   const correctionLocation = createRecordTaskLocation({
@@ -226,7 +227,9 @@ function AudioItemRow({
         </td>
         <td className="py-2 px-4 flex gap-2 items-center justify-end">
           {canContribute && config.activateAudioDescription && (
-            <button type="button"
+            <button
+              ref={rowToggleRef}
+              type="button"
               className="text-link hover:text-link-hover transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               aria-expanded={openItems[item.source] ? "true" : "false"}
               aria-controls={`descriptions-${item.source}`}
@@ -406,6 +409,7 @@ function AudioItemRow({
           confirmLabel="Ta bort"
           cancelLabel="Avbryt"
           variant="delete"
+          fallbackFocus={rowToggleRef}
         />
       )}
     </>

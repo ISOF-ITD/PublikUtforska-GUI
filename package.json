@@ -8,7 +8,8 @@
     "build": "webpack --config webpack.prod.js",
     "create-sitemap": "node create-sitemap.js",
     "analyze-bundle": "webpack --config webpack.analyze.js",
-    "lint": "eslint scripts --ext .js,.jsx --max-warnings 0"
+    "lint": "eslint scripts --ext .js,.jsx --max-warnings 0",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -50,7 +51,11 @@
   "devDependencies": {
     "@babel/preset-env": "^7.25.7",
     "@babel/preset-react": "^7.25.7",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "axios": "^1.7.9",
+    "babel-jest": "^30.5.1",
     "babel-loader": "^9.2.1",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "copy-webpack-plugin": "^11.0.0",
@@ -64,6 +69,8 @@
     "eslint-webpack-plugin": "^4.2.0",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.6.0",
+    "jest": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.1",
     "less-loader": "^11.1.4",
     "path": "^0.12.7",
     "postcss": "^8.5.2",

@@ -195,7 +195,7 @@ export default function SearchControls({
                 <Link
                   to="/"
                   aria-label={l('Till Folkes startsida')}
-                  className="inline-flex rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="header-keyboard-focus inline-flex rounded-sm"
                 >
                   <img
                     src={Folkelogga}
@@ -209,7 +209,7 @@ export default function SearchControls({
                 href="https://www.isof.se"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                className="header-keyboard-focus inline-flex min-w-0 items-center rounded-sm"
                 aria-label={l('Öppna Institutet för språk och folkminnens webbplats i nytt fönster')}
                 title={l('Institutet för språk och folkminnen')}
               >
@@ -235,7 +235,7 @@ export default function SearchControls({
                     ? `Visa ${bookmarkedRecordCount} sparat arkivmaterial`
                     : l('Inget sparat arkivmaterial att visa')
                 }
-                className="relative !m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+                className="header-keyboard-focus relative !m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-transparent !text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <FontAwesomeIcon
                   icon={bookmarkedRecordCount > 0 ? faBookmark : faBookmarkRegular}
@@ -252,7 +252,7 @@ export default function SearchControls({
                 to={statisticsLocation}
                 aria-label={l('Statistik')}
                 title={l('Statistik')}
-                className="!m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white no-underline hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                className="header-keyboard-focus !m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-transparent !text-white no-underline hover:bg-primary-hover"
               >
                 <FontAwesomeIcon icon={faChartColumn} aria-hidden="true" className="text-lg" />
               </Link>
@@ -263,7 +263,7 @@ export default function SearchControls({
                   aria-controls="intro-overlay"
                   aria-label={l('Hjälp och nyheter')}
                   title={l('Hjälp och nyheter')}
-                  className="!m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/70 bg-transparent !text-white hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="header-keyboard-focus !m-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-transparent !text-white hover:bg-primary-hover"
                 >
                   <FontAwesomeIcon icon={faQuestion} aria-hidden="true" className="text-lg" />
                 </button>

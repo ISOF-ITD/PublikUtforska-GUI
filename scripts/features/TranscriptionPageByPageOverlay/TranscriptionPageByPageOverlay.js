@@ -1,7 +1,6 @@
 import {
   useState, useEffect, useRef, useCallback,
 } from 'react';
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import {
   useBlocker, useLocation, useNavigate, useOutletContext,
 } from 'react-router-dom';
@@ -15,6 +14,8 @@ import NavigationPanel from './ui/NavigationPanel';
 import OverlayHeader from './ui/OverlayHeader';
 import TranscribeButton from './ui/TranscribeButton';
 import TranscriptionHelpButton from './ui/TranscriptionHelpButton';
+import TranscriptionInstructions from './ui/TranscriptionInstructions';
+import DiscardChangesDialog from './ui/DiscardChangesDialog';
 import useTranscriptionApi from './hooks/useTranscriptionApi';
 import useTranscriptionForm, {
   getPersistedContributorFields,
@@ -22,6 +23,8 @@ import useTranscriptionForm, {
 } from './hooks/useTranscriptionForm';
 import { toastError, toastOk } from '../../utils/toast';
 import ContributeInfoSection from '../../components/views/ContributeInfoSection';
+
+const TRANSCRIPTION_INSTRUCTIONS_ID = 'transcription-instructions';
 
 /*
 TranscriptionPageByPageOverlay feature is handling the transcribe page-by-page use case for users.
@@ -35,6 +38,7 @@ export default function TranscriptionPage() {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [showMetaFields, setShowMetaFields] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [sessionStarting, setSessionStarting] = useState(false);
   const [sessionStartError, setSessionStartError] = useState(false);
 
@@ -43,7 +47,8 @@ export default function TranscriptionPage() {
   const cancelRef = useRef(null);
   const sessionCancelledRef = useRef(false);
   const initialMediaRef = useRef({ recordId: null, value: null });
-  const discardCancelButtonRef = useRef(null);
+  const instructionsHeadingRef = useRef(null);
+  const instructionsTriggerRef = useRef(null);
 
   if (data?.id && initialMediaRef.current.recordId !== data.id) {
     initialMediaRef.current = {
@@ -478,6 +483,22 @@ export default function TranscriptionPage() {
     window.eventBus?.dispatch?.('overlay.transcribe.sent');
   };
 
+  const toggleInstructions = (event) => {
+    instructionsTriggerRef.current = event.currentTarget;
+    setShowInstructions((visible) => !visible);
+  };
+
+  const openInstructions = (event) => {
+    instructionsTriggerRef.current = event.currentTarget;
+    setShowInstructions(true);
+    window.requestAnimationFrame(() => instructionsHeadingRef.current?.focus());
+  };
+
+  const closeInstructions = () => {
+    setShowInstructions(false);
+    window.requestAnimationFrame(() => instructionsTriggerRef.current?.focus());
+  };
+
   if (!recordDetails) return null;
 
   const currentPage = pages[currentPageIndex];
@@ -495,47 +516,11 @@ export default function TranscriptionPage() {
       className="transcription-page-by-page"
       aria-busy={sessionStarting || undefined}
     >
-      <Dialog
+      <DiscardChangesDialog
         open={showDiscardDialog}
-        onClose={cancelNavigation}
-        initialFocus={discardCancelButtonRef}
-        className="relative z-[3200]"
-      >
-        <div
-          className="fixed inset-0 bg-[var(--color-overlay-strong)]"
-          aria-hidden="true"
-        />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel
-            role="alertdialog"
-            className="w-full max-w-md rounded-xl border border-border bg-surface p-6 text-body shadow-xl"
-          >
-            <DialogTitle className="text-lg font-semibold">
-              {l('Lämna utan att spara?')}
-            </DialogTitle>
-            <p className="mt-3 text-sm text-muted">
-              {l('Det finns osparade ändringar. Är du säker på att du vill lämna sidan?')}
-            </p>
-            <div className="mt-5 flex justify-end gap-3">
-              <button
-                ref={discardCancelButtonRef}
-                type="button"
-                onClick={cancelNavigation}
-                className="rounded-lg border border-border bg-surface px-4 py-2 text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-              >
-                {l('Avbryt')}
-              </button>
-              <button
-                type="button"
-                onClick={confirmNavigation}
-                className="button button-primary rounded-lg px-4 py-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-              >
-                {l('Lämna sidan')}
-              </button>
-            </div>
-          </DialogPanel>
-        </div>
-      </Dialog>
+        onCancel={cancelNavigation}
+        onConfirm={confirmNavigation}
+      />
 
       <OverlayHeader
         recordDetails={recordDetails}
@@ -546,6 +531,9 @@ export default function TranscriptionPage() {
         {!config.siteOptions.hideContactButton && (
           <TranscriptionHelpButton
             className="button button-primary mb-4 flex h-10 items-center justify-center border border-solid border-white px-3 !text-base !leading-none tracking-normal !text-white no-underline transition-opacity duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            expanded={showInstructions}
+            controls={TRANSCRIPTION_INSTRUCTIONS_ID}
+            onClick={toggleInstructions}
           />
         )}
         <TranscribeButton
@@ -555,6 +543,31 @@ export default function TranscriptionPage() {
           transcriptionstatus="readytotranscribe"
         />
       </div>
+
+      {showInstructions && (
+        <section
+          id={TRANSCRIPTION_INSTRUCTIONS_ID}
+          aria-labelledby={`${TRANSCRIPTION_INSTRUCTIONS_ID}-heading`}
+          className="mb-6 rounded-lg border border-border bg-surface p-4 text-body shadow-sm"
+        >
+          <h2
+            id={`${TRANSCRIPTION_INSTRUCTIONS_ID}-heading`}
+            ref={instructionsHeadingRef}
+            tabIndex={-1}
+            className="mt-0 focus:outline-none"
+          >
+            {l('Instruktioner')}
+          </h2>
+          <TranscriptionInstructions />
+          <button
+            type="button"
+            className="button button-secondary mt-4"
+            onClick={closeInstructions}
+          >
+            {l('Dölj instruktioner')}
+          </button>
+        </section>
+      )}
 
       {sessionStarting && (
         <p role="status" className="mb-4 text-muted">
@@ -603,6 +616,9 @@ export default function TranscriptionPage() {
               sendButtonClickHandler={sendButtonClickHandler}
               showMetaFields={showMetaFields}
               onToggleMetaFields={() => setShowMetaFields((value) => !value)}
+              instructionsExpanded={showInstructions}
+              instructionsId={TRANSCRIPTION_INSTRUCTIONS_ID}
+              onInstructionsOpen={openInstructions}
             />
           </div>
 

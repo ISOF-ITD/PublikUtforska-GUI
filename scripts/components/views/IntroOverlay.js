@@ -311,7 +311,7 @@ function IntroOverlay({ show = false, onClose }) {
               href="https://www.isof.se"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-w-0 items-center rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="header-keyboard-focus inline-flex min-w-0 items-center rounded-sm"
               aria-label={l('Öppna Institutet för språk och folkminnens webbplats i nytt fönster')}
               title={l('Institutet för språk och folkminnen')}
             >
@@ -326,7 +326,7 @@ function IntroOverlay({ show = false, onClose }) {
             <button
               type="button"
               onClick={handleClose}
-              className="intro-close-button inline-flex items-center gap-1 rounded-sm border-0 bg-transparent p-0 text-white underline [font:inherit] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="header-keyboard-focus intro-close-button inline-flex items-center gap-1 rounded-sm bg-transparent p-0 text-white underline [font:inherit]"
               aria-label="Gå vidare"
             >
               Gå vidare

@@ -38,6 +38,9 @@ export default function TranscriptionForm({
   sendButtonClickHandler,
   showMetaFields,
   onToggleMetaFields,
+  instructionsExpanded,
+  instructionsId,
+  onInstructionsOpen,
 }) {
   const [emailValid, setEmailValid] = useState(true);
   const emailId = useId();
@@ -122,6 +125,9 @@ export default function TranscriptionForm({
                 <TranscriptionHelpButton
                   label={l('instruktionerna')}
                   inline
+                  expanded={instructionsExpanded}
+                  controls={instructionsId}
+                  onClick={onInstructionsOpen}
                 />
                 )
               </span>
@@ -334,4 +340,7 @@ TranscriptionForm.propTypes = {
   sendButtonClickHandler: PropTypes.func.isRequired,
   showMetaFields: PropTypes.bool.isRequired,
   onToggleMetaFields: PropTypes.func.isRequired,
+  instructionsExpanded: PropTypes.bool.isRequired,
+  instructionsId: PropTypes.string.isRequired,
+  onInstructionsOpen: PropTypes.func.isRequired,
 };

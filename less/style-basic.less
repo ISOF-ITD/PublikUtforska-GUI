@@ -29,6 +29,27 @@ body.tab-navigation .search-filter-controls div button:focus-visible {
 	outline-offset: 2px !important;
 }
 
+body .modal-initial-focus-visible:focus {
+	outline: 3px solid var(--color-focus) !important;
+	outline-offset: 3px !important;
+	box-shadow: none !important;
+}
+
+body .modal-initial-focus-visible--on-dark:focus {
+	outline-color: var(--color-text-inverted) !important;
+}
+
+.header-keyboard-focus {
+	box-sizing: border-box;
+	border: 3px solid transparent !important;
+}
+
+body.tab-navigation .header-keyboard-focus:focus {
+	border-color: var(--color-text-inverted) !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
+
 //TODO: @color parameters in less files based basic less parameters named on either:
 // 1) color intensity perspective or 
 // 2) color function perspective

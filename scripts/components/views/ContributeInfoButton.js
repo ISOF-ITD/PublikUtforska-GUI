@@ -1,7 +1,5 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
-import { useLocation } from 'react-router-dom';
-import config from '../../config';
 import { l } from '../../lang/Lang';
 import contactButtonClassName from './contactButtonClassName';
 
@@ -13,33 +11,20 @@ const inlineButtonClassName = [
 ].join(' ');
 
 export default function ContributeInfoButton({
-  title = '',
-  type,
-  country = undefined,
-  id = undefined,
+  expanded,
+  controls,
+  onClick,
+  buttonRef = undefined,
   variant = 'header',
 }) {
-  const { pathname } = useLocation();
-
-  const contributeinfoButtonClick = () => {
-    if (window.eventBus) {
-      window.eventBus.dispatch('overlay.contributeinfo', {
-        url: `${config.siteUrl}${pathname}`,
-        title,
-        type,
-        country,
-        appUrl: config.appUrl,
-        id,
-      });
-    }
-  };
-
   return (
     <button
+      ref={buttonRef}
       className={variant === 'inline' ? inlineButtonClassName : contactButtonClassName}
-      onClick={contributeinfoButtonClick}
+      onClick={onClick}
       type="button"
-      aria-haspopup="dialog"
+      aria-expanded={expanded}
+      aria-controls={controls}
     >
       {l('Komplettera eller rätta en uppgift, ställ en fråga eller lämna en synpunkt.')}
     </button>
@@ -47,9 +32,9 @@ export default function ContributeInfoButton({
 }
 
 ContributeInfoButton.propTypes = {
-  title: PropTypes.string,
-  type: PropTypes.string.isRequired,
-  country: PropTypes.string,
-  id: PropTypes.string,
+  expanded: PropTypes.bool.isRequired,
+  controls: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+  buttonRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
   variant: PropTypes.oneOf(['header', 'inline']),
 };

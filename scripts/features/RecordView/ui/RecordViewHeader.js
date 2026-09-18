@@ -1,5 +1,6 @@
 /* eslint-disable react/require-default-props */
 import propTypes from "prop-types";
+import { useState } from 'react';
 import { l } from "../../../lang/Lang";
 import {
   getRecordtypeLabel,
@@ -10,6 +11,8 @@ import {
 import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
 import config from "../../../config";
 import BookmarkedRecordButton from '../../../components/BookmarkedRecordButton';
+
+const RECORD_TYPE_HELP_ID = 'record-type-help';
 
 const renderMetadataItem = (label, value) => (
   <div key={label} className="mr-2.5 inline">
@@ -51,6 +54,7 @@ const renderPageCount = (pages) => (
 );
 
 export default function RecordViewHeader({ data, subrecordsCount }) {
+  const [showRecordTypeHelp, setShowRecordTypeHelp] = useState(false);
   const {
     recordtype,
     materialtype,
@@ -63,10 +67,8 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
   const titleText = getTitleText(data);
   const recordTypeLabel = getRecordtypeLabel(recordtype);
 
-  const openSwitcherHelptext = () => {
-    if (window.eventBus) {
-      window.eventBus.dispatch("overlay.HelpText", { kind: "switcher" });
-    }
+  const toggleRecordTypeHelp = () => {
+    setShowRecordTypeHelp((visible) => !visible);
   };
 
   return (
@@ -81,9 +83,11 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
             <button
               type="button"
               className="relative -top-px mx-2 !mb-0 inline-block !h-[18px] !w-[18px] cursor-pointer !align-baseline !rounded-full !border !border-solid !border-white !bg-isof !p-0 !text-base !font-bold !leading-[18px] !text-white !ring-1 !ring-white appearance-none"
-              onClick={openSwitcherHelptext}
+              onClick={toggleRecordTypeHelp}
               title="Om accessioner och uppteckningar"
               aria-label={l("Om accessioner och uppteckningar")}
+              aria-expanded={showRecordTypeHelp}
+              aria-controls={RECORD_TYPE_HELP_ID}
             >
               ?
             </button>
@@ -98,6 +102,21 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
               renderMetadataItem(l("Materialtyp"), materialtype)}
             {renderArchiveName(archive)}
           </dl>
+          <section
+            id={RECORD_TYPE_HELP_ID}
+            hidden={!showRecordTypeHelp}
+            aria-labelledby={`${RECORD_TYPE_HELP_ID}-heading`}
+            className="mt-4 rounded-lg border border-border bg-surface p-4 text-body"
+          >
+            <h2 id={`${RECORD_TYPE_HELP_ID}-heading`} className="mt-0 text-lg">
+              {config.siteOptions.helpTexts.switcher.title}
+            </h2>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: config.siteOptions.helpTexts.switcher.content,
+              }}
+            />
+          </section>
         </div>
       </div>
       <ContactButtonGroup className="!static mt-2 w-full flex-wrap justify-end gap-2">

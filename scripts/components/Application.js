@@ -24,10 +24,8 @@ import {
 import config from '../config';
 import { toastError } from '../utils/toast';
 import useTranscriptionAvailability from '../hooks/useTranscriptionAvailability';
+import { beginInputModalityTracking } from '../utils/inputModality';
 
-const ContributeInfoOverlay = lazy(() => import('./views/ContributeInfoOverlay'));
-const TranscriptionHelpOverlay = lazy(() => import('../features/TranscriptionPageByPageOverlay/ui/TranscriptionHelpOverlay'));
-const HelpTextOverlay = lazy(() => import('./views/HelpTextOverlay'));
 const ImageOverlay = lazy(() => import('../features/RecordTextPanel/ui/ImageOverlay'));
 
 function OverlayReady({
@@ -122,6 +120,7 @@ DeferredEventOverlay.propTypes = {
 };
 
 export default function Application() {
+  useEffect(beginInputModalityTracking, []);
   const navigate = useNavigate();
   const location = useLocation();
   const matches = useMatches();
@@ -293,15 +292,6 @@ export default function Application() {
         <GlobalAudioPlayer />
         <DeferredEventOverlay events={['overlay.viewimage']}>
           <ImageOverlay />
-        </DeferredEventOverlay>
-        <DeferredEventOverlay events={['overlay.contributeinfo']}>
-          <ContributeInfoOverlay />
-        </DeferredEventOverlay>
-        <DeferredEventOverlay events={['overlay.transcriptionhelp']}>
-          <TranscriptionHelpOverlay />
-        </DeferredEventOverlay>
-        <DeferredEventOverlay events={['overlay.HelpText']}>
-          <HelpTextOverlay />
         </DeferredEventOverlay>
       </div>
     </AudioProvider>
