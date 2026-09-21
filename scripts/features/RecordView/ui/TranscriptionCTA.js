@@ -15,10 +15,10 @@ const STRINGS = {
   readyPages: 'redo att skrivas av',
   readyPagesPlural: 'redo att skrivas av',
   lockedInfo:
-    'Alla sidor är upptagna just nu. Testa en slumpmässig uppteckning!',
+    'Alla sidor är upptagna just nu. Testa en slumpmässig accession!',
   tipStartFirstFree:
     'Tips: Tryck för att starta på den första otranskriberade sidan.',
-  recordLabel: 'Uppteckning',
+  recordLabel: 'Accession',
 };
 
 const statusStyles = (raw) => {

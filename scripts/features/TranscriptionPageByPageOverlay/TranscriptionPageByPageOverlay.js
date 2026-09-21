@@ -506,7 +506,7 @@ export default function TranscriptionPage() {
   const imageDescription = currentPage
     ? currentPage.text?.trim()
       || currentPage.comment?.trim()
-      || `${recordDetails.title || 'Uppteckning'}, ${l('sida')} ${
+      || `${recordDetails.title || 'Accession'}, ${l('sida')} ${
         currentPageIndex + 1
       }`
     : '';
@@ -539,7 +539,7 @@ export default function TranscriptionPage() {
         <TranscribeButton
           className="button button-primary"
           random
-          label="Skriv av annan slumpmässig uppteckning"
+          label="Skriv av annan slumpmässig accession"
           transcriptionstatus="readytotranscribe"
         />
       </div>
@@ -589,7 +589,7 @@ export default function TranscriptionPage() {
       )}
       {!pages.length && (
         <p role="status" className="rounded-lg border border-border bg-surface-muted p-4">
-          {l('Det finns inga bildsidor att skriva av i den här uppteckningen.')}
+          {l('Det finns inga bildsidor att skriva av i den här accessionen.')}
         </p>
       )}
 
@@ -663,8 +663,8 @@ export default function TranscriptionPage() {
         </div>
       )}
       <ContributeInfoSection
-        title={recordDetails.title || l('Uppteckning')}
-        type="Uppteckning"
+        title={recordDetails.title || l('Accession')}
+        type="Accession"
         id={recordDetails.id}
       />
     </div>

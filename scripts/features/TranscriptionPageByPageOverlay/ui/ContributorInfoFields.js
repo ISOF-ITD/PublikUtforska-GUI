@@ -26,7 +26,7 @@ export default function ContributorInfoFields({
       >
         <span>
           {l(
-            'Vill du att vi anger att det är du som har skrivit av uppteckningen? Ange i så fall ditt namn och din e-postadress nedan. E-postadressen publiceras inte.',
+            'Vill du att vi anger att det är du som har skrivit av accessionen? Ange i så fall ditt namn och din e-postadress nedan. E-postadressen publiceras inte.',
           )}
         </span>
         <span>

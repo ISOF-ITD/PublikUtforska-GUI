@@ -26,17 +26,6 @@ export default function MediaIcons({ media }) {
     );
   }
 
-  if (type === "image") {
-    return (
-      <FontAwesomeIcon
-        icon={faFileLines}
-        title="Uppteckning"
-        className="mx-1 text-link align-middle"
-        aria-hidden="true"
-      />
-    );
-  }
-
   if (type === "pdf") {
     return (
       <FontAwesomeIcon

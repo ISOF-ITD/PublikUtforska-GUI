@@ -130,7 +130,7 @@ export default {
 		'Finns inte': 'Finns inte',
 		'Post ': 'Post ',
 		' finns inte.': ' finns inte.',
-		'Den här uppteckningen är inte avskriven.': 'Den här uppteckningen är inte avskriven.',
+		'Den här accessionen är inte avskriven.': 'Den här accessionen är inte avskriven.',
 		'Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!': 'Vill du vara med och tillgängliggöra samlingarna för fler? Hjälp oss att skriva av berättelser!',
 		'Skriv av': 'Skriv av',
 		// Transcription status to user:

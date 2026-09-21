@@ -19,7 +19,7 @@ export default function RandomTranscriptionPrompt() {
         label={(
           <>
             <FontAwesomeIcon icon={faPen} aria-hidden="true" />
-            {l('Skriv av slumpmässigt vald uppteckning')}
+            {l('Skriv av slumpmässigt vald accession')}
             {config.specialEventTranscriptionCategoryLabel && (
               <span className="text-sm">
                 {config.specialEventTranscriptionCategoryLabel}
@@ -28,7 +28,7 @@ export default function RandomTranscriptionPrompt() {
           </>
         )}
         random
-        ariaLabel={l('Skriv av slumpmässigt vald uppteckning')}
+        ariaLabel={l('Skriv av slumpmässigt vald accession')}
         variant="listLike"
       />
     </section>
