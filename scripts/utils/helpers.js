@@ -673,10 +673,10 @@ export function getTitleText(
   return baseTitle || l("(Utan titel)");
 }
 
-export function getRecordtypeLabel(recordType) {
-    if (recordType === 'one_accession_row') {
-      return l('Accession');
-    } else {
-      return null
-    }
-}
+// export function getRecordtypeLabel(recordType) {
+//     if (recordType === 'one_accession_row') {
+//       return l('Accession');
+//     } else {
+//       return null
+//     }
+// }

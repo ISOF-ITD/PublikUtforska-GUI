@@ -7,7 +7,7 @@ import RecordViewHeader from '../RecordView/ui/RecordViewHeader';
 
 function CorrectionView() {
   // RecordView puts these on the outlet context in its “onlyTranscribe” branch
-  const { data, subrecordsCount } = useOutletContext();
+  const { data } = useOutletContext();
 
   /* ---- head ---- */
   useEffect(() => {
@@ -22,7 +22,7 @@ function CorrectionView() {
 
   return (
     <article>
-      <RecordViewHeader data={data} subrecordsCount={subrecordsCount} />
+      <RecordViewHeader data={data} />
 
       <div className="container-body">
         {/* Pass the record data explicitly so the editor never depends on Outlet */}

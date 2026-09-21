@@ -3,7 +3,7 @@ import propTypes from "prop-types";
 import { useState } from 'react';
 import { l } from "../../../lang/Lang";
 import {
-  getRecordtypeLabel,
+  // getRecordtypeLabel,
   getPages,
   getTitleText,
   getArchiveName,
@@ -26,14 +26,14 @@ const renderArchiveName = (archive) => {
   return renderMetadataItem(l("Arkiv"), getArchiveName(archive.archive_org));
 };
 
-const renderSubrecordCount = (recordtype, subrecordsCount) => (
-  recordtype === "one_accession_row" && (subrecordsCount?.value ?? subrecordsCount)
-    ? renderMetadataItem(
-        l("Antal uppteckningar"),
-        subrecordsCount?.value ?? subrecordsCount,
-      )
-    : null
-);
+// const renderSubrecordCount = (recordtype, subrecordsCount) => (
+//   recordtype === "one_accession_row" && (subrecordsCount?.value ?? subrecordsCount)
+//     ? renderMetadataItem(
+//         l("Antal uppteckningar"),
+//         subrecordsCount?.value ?? subrecordsCount,
+//       )
+//     : null
+// );
 
 const renderAccessionsNumber = (archive) => (
   archive?.archive_id_display_search?.length
@@ -53,7 +53,7 @@ const renderPageCount = (pages) => (
   pages ? renderMetadataItem(l("Sidnummer"), pages) : null
 );
 
-export default function RecordViewHeader({ data, subrecordsCount }) {
+export default function RecordViewHeader({ data }) {
   const [showRecordTypeHelp, setShowRecordTypeHelp] = useState(false);
   const {
     recordtype,
@@ -65,7 +65,7 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
     config.siteOptions?.recordView?.hideMaterialType !== true;
   const pages = getPages(data);
   const titleText = getTitleText(data);
-  const recordTypeLabel = getRecordtypeLabel(recordtype);
+  // const recordTypeLabel = getRecordtypeLabel(recordtype);
 
   const toggleRecordTypeHelp = () => {
     setShowRecordTypeHelp((visible) => !visible);
@@ -76,9 +76,9 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
       <div className="row">
         <div className="eleven columns">
           <h1>
-            {titleText && titleText !== "[]" ? titleText : l("(Utan titel)")}
+            {titleText && titleText !== '[]' ? titleText : l('(Utan titel)')}
           </h1>
-          <p className="mr-2.5">
+          {/* <p className="mr-2.5">
             {recordTypeLabel}
             <button
               type="button"
@@ -91,15 +91,15 @@ export default function RecordViewHeader({ data, subrecordsCount }) {
             >
               ?
             </button>
-          </p>
+          </p> */}
           <dl className="m-0">
             {renderAccessionsNumber(archive)}
             {renderYear(year)}
-            {renderSubrecordCount(recordtype, subrecordsCount)}
+            {/* {renderSubrecordCount(recordtype, subrecordsCount)} */}
             {renderPageCount(pages)}
-            {shouldShowMaterialType &&
-              materialtype &&
-              renderMetadataItem(l("Materialtyp"), materialtype)}
+            {shouldShowMaterialType
+              && materialtype
+              && renderMetadataItem(l("Materialtyp"), materialtype)}
             {renderArchiveName(archive)}
           </dl>
           <section
@@ -140,5 +140,5 @@ RecordViewHeader.propTypes = {
     id: propTypes.string.isRequired,
     year: propTypes.string,
   }).isRequired,
-  subrecordsCount: propTypes.object,
+  // subrecordsCount: propTypes.object,
 };

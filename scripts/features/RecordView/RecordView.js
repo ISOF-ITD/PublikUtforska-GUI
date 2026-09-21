@@ -116,9 +116,8 @@ function ResolvedRecord({
   location,
   mediaImageClickHandler,
 }) {
-  const [highlightData, raw, sub] = value || [];
+  const [highlightData, raw] = value || [];
   const data = raw?._source;
-  const subrecordsCount = sub?.data;
   const recordHighlightHit = highlightData?.data?.[0] ?? {};
   const recordHighlights = recordHighlightHit.highlight ?? {};
   const descriptionHighlights = (
@@ -140,14 +139,13 @@ function ResolvedRecord({
   if (!data) return <div>Posten finns inte.</div>;
 
   if (activeRecordTask) {
-    return <Outlet context={{ data, subrecordsCount }} />;
+    return <Outlet context={{ data }} />;
   }
 
   return (
     <article>
       <RecordViewHeader
         data={data}
-        subrecordsCount={subrecordsCount}
         location={location}
       />
       <div>
