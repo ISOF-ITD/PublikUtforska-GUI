@@ -1,11 +1,10 @@
 import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faFileLines,
-  faVolumeHigh,
   faFilePdf,
 } from '@fortawesome/free-solid-svg-icons';
 import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
+import AudioWaveIcon from './AudioWaveIcon';
 
 /**
  * Renders a single media icon with priority:
@@ -15,18 +14,13 @@ export default function MediaIcons({ media }) {
   const type = pickPrimaryMediaType(media);
   if (!type) return null;
 
-  if (type === "audio") {
+  if (type === 'audio') {
     return (
-      <FontAwesomeIcon
-        icon={faVolumeHigh}
-        title="Inspelning"
-        className="mx-1 text-link align-middle"
-        aria-hidden="true"
-      />
+      <AudioWaveIcon className="mx-1 inline-block h-4 w-6 text-link align-middle" />
     );
   }
 
-  if (type === "pdf") {
+  if (type === 'pdf') {
     return (
       <FontAwesomeIcon
         icon={faFilePdf}

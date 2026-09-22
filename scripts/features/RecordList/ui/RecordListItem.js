@@ -246,7 +246,7 @@ export default function RecordListItem(props) {
                     className="text-[11px]"
                     aria-hidden="true"
                   />
-                  <span>{l('Avskrift')}</span>
+                  <span>{l('Automatisk ljudavskrift')}</span>
                 </span>
               )}
             </span>
