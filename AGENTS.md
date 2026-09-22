@@ -19,6 +19,7 @@
 - Run npm run build only when the change affects build configuration, dependencies, bundling, deployment, routing, or sufficiently broad imports/exports, or when a production build is specifically needed to verify the change.
 - Do not repeat expensive validation commands when the relevant code has not changed since the previous successful validation.
 - If validation cannot be run, say what was not verified.
+- For new or changed functionality, including accessibility changes, add or update relevant Jest tests to cover the affected behavior and help prevent regressions.
 
 ## React
 
