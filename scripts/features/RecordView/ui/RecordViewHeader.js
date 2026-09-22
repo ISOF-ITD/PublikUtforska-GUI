@@ -6,7 +6,7 @@ import {
   // getRecordtypeLabel,
   getPages,
   getTitleText,
-  getArchiveName,
+  // getArchiveName,
 } from "../../../utils/helpers";
 import ContactButtonGroup from '../../../components/views/ContactButtonGroup';
 import config from "../../../config";
@@ -21,10 +21,10 @@ const renderMetadataItem = (label, value) => (
   </div>
 );
 
-const renderArchiveName = (archive) => {
-  if (!archive?.archive_org) return null;
-  return renderMetadataItem(l("Arkiv"), getArchiveName(archive.archive_org));
-};
+// const renderArchiveName = (archive) => {
+//   if (!archive?.archive_org) return null;
+//   return renderMetadataItem(l("Arkiv"), getArchiveName(archive.archive_org));
+// };
 
 // const renderSubrecordCount = (recordtype, subrecordsCount) => (
 //   recordtype === "one_accession_row" && (subrecordsCount?.value ?? subrecordsCount)
@@ -100,7 +100,7 @@ export default function RecordViewHeader({ data }) {
             {shouldShowMaterialType
               && materialtype
               && renderMetadataItem(l("Materialtyp"), materialtype)}
-            {renderArchiveName(archive)}
+            {/* {renderArchiveName(archive)} */}
           </dl>
           <section
             id={RECORD_TYPE_HELP_ID}
