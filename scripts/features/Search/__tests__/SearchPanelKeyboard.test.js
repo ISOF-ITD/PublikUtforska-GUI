@@ -60,3 +60,28 @@ test('sökförslagens stängknapp nås med Tab och fungerar med Enter och blanks
   expect(screen.queryByRole('button', { name: 'Stäng förslag' })).not.toBeInTheDocument();
   expect(input).toHaveFocus();
 });
+
+test('sökförslagen stängs när Tab eller Shift+Tab lämnar panelen', async () => {
+  const user = userEvent.setup();
+  renderSearchPanel();
+  const input = screen.getByRole('combobox', { name: 'Sök i arkivmaterial' });
+  const searchButton = screen.getByRole('button', { name: 'Sök' });
+
+  await user.click(input);
+  let closeButton = await screen.findByRole('button', { name: 'Stäng förslag' });
+  await user.tab();
+  expect(closeButton).toHaveFocus();
+  await user.tab();
+
+  expect(screen.queryByRole('button', { name: 'Stäng förslag' })).not.toBeInTheDocument();
+  expect(searchButton).toHaveFocus();
+
+  await user.click(input);
+  closeButton = await screen.findByRole('button', { name: 'Stäng förslag' });
+  await user.tab();
+  expect(closeButton).toHaveFocus();
+  await user.tab({ shift: true });
+
+  expect(screen.queryByRole('button', { name: 'Stäng förslag' })).not.toBeInTheDocument();
+  expect(input).toHaveFocus();
+});

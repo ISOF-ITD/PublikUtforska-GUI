@@ -174,6 +174,13 @@ export default function SearchPanel({
     }
   }, []);
 
+  const closeSuggestionsOnFocusLeave = useCallback((nextTarget) => {
+    if (nextTarget === inputRef.current) {
+      skipSuggestionOpenOnFocusRef.current = true;
+    }
+    setSuggestionsVisible(false);
+  }, []);
+
   // suggestions model
   const { visibleSuggestionGroups, flatSuggestions, hasSuggestions } =
     useSearchSuggestions({
@@ -447,6 +454,7 @@ export default function SearchPanel({
                   activeIdx={activeIdx}
                   groups={visibleSuggestionGroups}
                   onClose={closeSuggestions}
+                  onFocusLeave={closeSuggestionsOnFocusLeave}
                 />
               )}
 

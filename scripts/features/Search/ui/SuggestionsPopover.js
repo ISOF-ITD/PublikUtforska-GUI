@@ -13,6 +13,7 @@ const SuggestionsPopover = forwardRef(
     groups,
     activeIdx,
     onClose,
+    onFocusLeave,
     containerId = 'search-suggestions-container',
     listId = 'search-suggestions',
     optionIdPrefix = 'suggestion',
@@ -25,6 +26,14 @@ const SuggestionsPopover = forwardRef(
         ref={ref}
         id={containerId}
         className="absolute left-0 right-0 top-full mt-2 w-full rounded-lg border border-border bg-surface shadow-lg z-[2100] pointer-events-auto overflow-hidden"
+        onBlur={({
+          currentTarget,
+          relatedTarget,
+        }) => {
+          if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+            onFocusLeave(relatedTarget);
+          }
+        }}
       >
         <button
           type="button"
@@ -130,6 +139,7 @@ SuggestionsPopover.displayName = "SearchSuggestions";
 SuggestionsPopover.propTypes = {
   search: PropTypes.string,
   onClose: PropTypes.func.isRequired,
+  onFocusLeave: PropTypes.func.isRequired,
   groups: PropTypes.arrayOf(
     PropTypes.shape({
       title: PropTypes.string.isRequired,
