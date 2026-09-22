@@ -3,12 +3,13 @@ import {
 } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
+import { faSort } from '@fortawesome/free-solid-svg-icons';
 import { l } from "../../lang/Lang";
 import Pagination from "./ui/Pagination";
 import RecordCards from "./ui/RecordCards";
 import RecordTable from "./ui/RecordTable";
-import RecordViewToggle from "./ui/RecordViewToggle";
-import RecordSortMenu from './ui/RecordSortMenu';
+import RecordListMenu from './ui/RecordListMenu';
+import { SORT_OPTIONS, VIEW_OPTIONS } from './ui/recordListMenuOptions';
 import {
   createDetailLocation,
   createResultSearch,
@@ -149,6 +150,7 @@ export default function RecordList(props) {
 
   /* ------- desktop view mode (table|cards) ------- */
   const [view, setView] = useState(() => getInitialView(location.search));
+  const [viewAnnouncement, setViewAnnouncement] = useState('');
   const [sortAnnouncement, setSortAnnouncement] = useState('');
   const [selectedRecordId, setSelectedRecordId] = useState(null);
   const isRecordViewOpen = /\/records\/[^/]+(?:\/|$)/.test(location.pathname);
@@ -189,6 +191,13 @@ export default function RecordList(props) {
     window.dispatchEvent(new CustomEvent(VIEW_CHANGE_EVENT, { detail: next }));
   };
 
+  const handleViewMenuSelect = (option) => {
+    handleViewChange(option.value);
+    setViewAnnouncement(
+      `${l('Visningsläge ändrat till')} ${l(option.label)}.`,
+    );
+  };
+
   /* ------- UI helpers ------- */
   const shouldRenderColumn = useCallback(
     (name) => (columns ? columns.includes(name) : true),
@@ -215,6 +224,15 @@ export default function RecordList(props) {
     setSorting({ field, order: nextOrder });
     setSortAnnouncement(`${l('Sortering ändrad till')} ${l(label)}.`);
   };
+
+  const currentViewOption = VIEW_OPTIONS.find((option) => option.value === view)
+    || VIEW_OPTIONS[0];
+  const visibleSortOptions = relevanceSortingAvailable
+    ? SORT_OPTIONS
+    : SORT_OPTIONS.filter((option) => option.field !== '_score');
+  const currentSortOption = visibleSortOptions.find(
+    (option) => option.field === sort && option.order === order,
+  ) || visibleSortOptions[0];
 
   const markRecordAsActive = useCallback(
     (recordId) => {
@@ -396,13 +414,35 @@ export default function RecordList(props) {
             <span className="min-w-0 flex-1" aria-hidden="true" />
             <div className="flex flex-wrap items-center justify-start gap-3">
               {showWideViewToggle && (
-                <RecordViewToggle value={view} onChange={handleViewChange} />
+                <>
+                  <RecordListMenu
+                    buttonIcon={currentViewOption.icon}
+                    buttonLabel={`${l('Visa som')}: ${l(currentViewOption.label)}`}
+                    className="relative hidden md:block"
+                    onSelect={handleViewMenuSelect}
+                    options={VIEW_OPTIONS.map((option) => ({
+                      ...option,
+                      displayLabel: l(option.label),
+                      key: option.value,
+                      selected: option.value === view,
+                    }))}
+                  />
+                  <p className="sr-only" aria-live="polite" aria-atomic="true">
+                    {viewAnnouncement}
+                  </p>
+                </>
               )}
-              <RecordSortMenu
-                sort={sort}
-                order={order}
-                onChange={handleSort}
-                showRelevance={relevanceSortingAvailable}
+              <RecordListMenu
+                buttonIcon={faSort}
+                buttonLabel={`${l('Sortera')}: ${l(currentSortOption.label)}`}
+                className="relative"
+                onSelect={handleSort}
+                options={visibleSortOptions.map((option) => ({
+                  ...option,
+                  displayLabel: l(option.label),
+                  key: `${option.field}-${option.order}`,
+                  selected: option.field === sort && option.order === order,
+                }))}
               />
               <p className="sr-only" aria-live="polite" aria-atomic="true">
                 {sortAnnouncement}
