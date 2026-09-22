@@ -162,17 +162,6 @@ export default function RecordListItem(props) {
     return `/records/${encodeURIComponent(id)}?${query.toString()}`;
   };
 
-  const onRowKeyDown = (e) => {
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    e.preventDefault();
-    const row = e.currentTarget;
-    const target =
-      e.key === "ArrowDown"
-        ? row.nextElementSibling
-        : row.previousElementSibling;
-    if (target && target.focus) target.focus();
-  };
-
   const handleRecordLinkClick = () => {
     onRecordActivate?.(id);
   };
@@ -180,8 +169,6 @@ export default function RecordListItem(props) {
   /* ---------- render ---------- */
   return (
     <tr
-      tabIndex={0}
-      onKeyDown={onRowKeyDown}
       className={`border-b border-border last:border-0 even:bg-surface odd:bg-surface-muted ${
         displayTextSummary ? 'bg-surface-muted' : ''
       } ${
