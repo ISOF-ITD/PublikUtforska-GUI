@@ -1,6 +1,5 @@
 /* global expect, jest, test */
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, within } from '@testing-library/react';
 import RecordViewHeader from '../RecordViewHeader';
 
 jest.mock('../../../../components/views/ContactButtonGroup', () => function ContactButtonGroup() {
@@ -12,54 +11,52 @@ jest.mock('../../../../components/BookmarkedRecordButton', () => function Bookma
 });
 
 jest.mock('../../../../utils/helpers', () => ({
-  getArchiveName: () => '',
   getPages: () => '',
-  // getRecordtypeLabel: () => 'Accession',
   getTitleText: (data) => data.title,
 }));
 
-// När användaren öppnar informationen om accessioner och uppteckningar
-// ska den visas direkt på sidan som en utfällbar sektion, inte som en dialogruta.
-test('visar begreppshjälpen inline som en tangentbordsstyrd disclosure', async () => {
-  // Skapa en simulerad användare
-  const user = userEvent.setup();
+jest.mock('../../../../lang/Lang', () => ({ l: (text) => text }));
+jest.mock('../../../../config', () => ({
+  siteOptions: {
+    recordView: { hideMaterialType: false },
+    helpTexts: { switcher: { title: 'Accessioner och uppteckningar', content: '<p>Begreppshjälp</p>' } },
+  },
+}));
+
+test('visar postens titel och metadata med tillgänglig struktur', () => {
   render(
-    // Rendera komponenten med testdata
     <RecordViewHeader
       data={{
+        id: '04940_180267',
         title: 'Testpost',
         recordtype: 'one_accession_row',
-        archive: { archive_id: 'A1' },
+        materialtype: 'Handskrift',
+        year: '1901',
+        archive: {
+          archive_id: 'A1',
+          archive_id_row: 'A1',
+          archive_org: 'ISOF',
+          archive_id_display_search: ['04940'],
+        },
       }}
-      // subrecordsCount={0}
     />,
   );
 
-  // Testet kräver att det faktiskt finns ett element som har rollen button
-  // och har det tillgängliga namnet "Om accessioner och uppteckningar"
-  const toggle = screen.getByRole('button', {
+  const header = within(screen.getByRole('banner'));
+  expect(header.getByRole('heading', { level: 1, name: 'Testpost' })).toBeVisible();
+  expect(header.getAllByRole('term').map((element) => element.textContent)).toEqual([
+    'Accessionsnummer', 'År', 'Materialtyp',
+  ]);
+  expect(header.getAllByRole('definition').map((element) => element.textContent)).toEqual([
+    ': 04940', ': 1901', ': Handskrift',
+  ]);
+
+  // Hjälpknappen har tagits bort ur posthuvudet. Den kvarvarande dolda texten
+  // ska inte exponeras som en tillgänglig region eller dialog.
+  expect(header.queryByRole('button', {
     name: 'Om accessioner och uppteckningar',
-  });
-
-  // hitta hjälpinnehållet
-  const region = document.getElementById('record-type-help');
-
-  // Knappen måste signalera till hjälpmedel att sektionen är stängd
-  expect(toggle).toHaveAttribute('aria-expanded', 'false');
-
-  // Hjälptexten ska inte vara synlig
-  expect(region).not.toBeVisible();
-
-  // Det ska inte finnas någon dialog
-  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-
-  // simulera ett användarklick på knappen
-  await user.click(toggle);
-
-  // Efter klicket ska knappen signalera att sektionen är öppen
-  expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  // Hjälptexten ska nu vara synlig
-  expect(region).toBeVisible();
-  // Det ska fortfarande inte finnas någon dialog
+  })).not.toBeInTheDocument();
+  expect(header.queryByRole('region', { name: 'Accessioner och uppteckningar' })).not.toBeInTheDocument();
+  expect(document.getElementById('record-type-help')).not.toBeVisible();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 });
