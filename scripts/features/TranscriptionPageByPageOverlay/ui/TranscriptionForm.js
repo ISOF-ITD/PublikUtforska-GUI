@@ -13,6 +13,7 @@ import Uppteckningsblankett from './Uppteckningsblankett';
 import { l } from '../../../lang/Lang';
 import ContributorInfoFields from './ContributorInfoFields';
 import TranscriptionHelpButton from './TranscriptionHelpButton';
+import TranscriptionError from './TranscriptionError';
 
 const field = 'w-full rounded-lg border border-border bg-surface p-3 font-serif leading-relaxed text-body '
   + 'disabled:bg-disabled focus:outline-none focus-visible:ring-2 focus-visible:ring-focus '
@@ -20,6 +21,8 @@ const field = 'w-full rounded-lg border border-border bg-surface p-3 font-serif 
 
 export default function TranscriptionForm({
   sending,
+  sessionUnavailable = false,
+  error = null,
   currentPageIndex,
   pages,
   transcriptionText,
@@ -45,6 +48,7 @@ export default function TranscriptionForm({
   const [emailValid, setEmailValid] = useState(true);
   const emailId = useId();
   const commentId = useId();
+  const errorMessageId = useId();
 
   const validateEmail = useCallback(
     (email) => email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
@@ -282,12 +286,13 @@ export default function TranscriptionForm({
                   inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg
                   font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface
                   ${
-                    sending || disableInput || !formValid
+                    sending || sessionUnavailable || disableInput || !formValid
                       ? 'bg-disabled !cursor-not-allowed !text-muted'
                       : '!bg-primary !text-white hover:!bg-primary-hover'
                   }
                 `}
-                disabled={disableInput || sending || !formValid}
+                disabled={disableInput || sending || sessionUnavailable || !formValid}
+                aria-describedby={[error ? errorMessageId : '', sessionUnavailable ? 'transcription-session-status' : ''].filter(Boolean).join(' ') || undefined}
                 title={
                   !formValid
                     ? l(
@@ -310,12 +315,15 @@ export default function TranscriptionForm({
           )}
         </fieldset>
       )}
+      <TranscriptionError error={error} messageId={errorMessageId} />
     </div>
   );
 }
 
 TranscriptionForm.propTypes = {
   sending: PropTypes.bool.isRequired,
+  sessionUnavailable: PropTypes.bool,
+  error: TranscriptionError.propTypes.error,
   currentPageIndex: PropTypes.number.isRequired,
   pages: PropTypes.arrayOf(
     PropTypes.shape({

@@ -16,6 +16,9 @@ import TranscribeButton from './ui/TranscribeButton';
 import TranscriptionHelpButton from './ui/TranscriptionHelpButton';
 import TranscriptionInstructions from './ui/TranscriptionInstructions';
 import DiscardChangesDialog from './ui/DiscardChangesDialog';
+import TranscriptionError from './ui/TranscriptionError';
+import TranscriptionDraftNotice from './ui/TranscriptionDraftNotice';
+import useTranscriptionDrafts, { sameDraft } from './hooks/useTranscriptionDrafts';
 import useTranscriptionApi from './hooks/useTranscriptionApi';
 import useTranscriptionForm, {
   getPersistedContributorFields,
@@ -41,6 +44,7 @@ export default function TranscriptionPage() {
   const [showInstructions, setShowInstructions] = useState(false);
   const [sessionStarting, setSessionStarting] = useState(false);
   const [sessionStartError, setSessionStartError] = useState(false);
+  const [saveNotice, setSaveNotice] = useState('');
 
   const thumbnailContainerRef = useRef(null);
   const prevPageIndexRef = useRef(0);
@@ -49,6 +53,12 @@ export default function TranscriptionPage() {
   const initialMediaRef = useRef({ recordId: null, value: null });
   const instructionsHeadingRef = useRef(null);
   const instructionsTriggerRef = useRef(null);
+  const initializedRecordRef = useRef(null);
+  const retryRef = useRef(null);
+  const liveRef = useRef(null);
+  liveRef.current = {
+    recordId: data?.id, pages, currentPageIndex, session: null,
+  };
 
   if (data?.id && initialMediaRef.current.recordId !== data.id) {
     initialMediaRef.current = {
@@ -58,8 +68,11 @@ export default function TranscriptionPage() {
   }
 
   const {
-    session, sending, start, cancel, send,
+    session, sending, error, start, cancel, send, waitForCancellation,
   } = useTranscriptionApi();
+  liveRef.current.session = session;
+  const drafts = useTranscriptionDrafts(recordDetails?.id, pages, setPages);
+  const flushDrafts = drafts.flush;
   const {
     fields,
     handleInputChange,
@@ -202,11 +215,14 @@ export default function TranscriptionPage() {
 
   const navigatePages = useCallback((index) => {
     saveCurrentPageDraft();
+    flushDrafts();
     setCurrentPageIndex(index);
-  }, [saveCurrentPageDraft]);
+  }, [saveCurrentPageDraft, flushDrafts]);
 
   useEffect(() => {
-    if (!data?.id) return undefined;
+    if (!data?.id || initializedRecordRef.current === data.id) return;
+    flushDrafts();
+    initializedRecordRef.current = data.id;
 
     const initialPages = (data.media || [])
       .filter(
@@ -267,6 +283,7 @@ export default function TranscriptionPage() {
       placeString: getPlaceString(data.places || []),
     });
     setShowDiscardDialog(false);
+    setSaveNotice('');
     setFields({
       ...INITIAL_FIELDS,
       ...getPersistedContributorFields(),
@@ -276,7 +293,10 @@ export default function TranscriptionPage() {
     setCurrentPageIndex(startIndex);
     requestAnimationFrame(() => scrollToActiveThumbnail(startIndex));
     document.title = `${l('Skriv av')} ${getTitleText(data)} – ${config.siteTitle}`;
+  }, [data, flushDrafts, scrollToActiveThumbnail, setFields]);
 
+  useEffect(() => {
+    if (!data?.id) return undefined;
     let active = true;
     sessionCancelledRef.current = false;
     setSessionStarting(true);
@@ -291,7 +311,7 @@ export default function TranscriptionPage() {
       active = false;
       if (!sessionCancelledRef.current) cancelRef.current?.(data.id);
     };
-  }, [data, scrollToActiveThumbnail, setFields, start]);
+  }, [data?.id, start]);
 
   useEffect(() => {
     cancelRef.current = cancel;
@@ -300,7 +320,8 @@ export default function TranscriptionPage() {
   useEffect(() => {
     if (!data?.id) return undefined;
 
-    const handlePageHide = () => {
+    const handlePageHide = (event) => {
+      if (event.persisted) return;
       if (sessionCancelledRef.current) return;
       sessionCancelledRef.current = true;
       cancelRef.current?.(data.id);
@@ -335,14 +356,32 @@ export default function TranscriptionPage() {
   }, [blocker]);
 
   const retrySession = useCallback(async () => {
-    if (!recordDetails?.id) return;
+    if (!recordDetails?.id || retryRef.current) return;
+    const recordId = recordDetails.id;
+    const attempt = {};
+    retryRef.current = attempt;
     sessionCancelledRef.current = false;
     setSessionStarting(true);
     setSessionStartError(false);
-    const started = await start(recordDetails.id);
-    setSessionStartError(!started);
-    setSessionStarting(false);
-  }, [recordDetails, start]);
+    await waitForCancellation();
+    const started = liveRef.current.recordId === recordId && await start(recordId);
+    if (liveRef.current.recordId === recordId) {
+      setSessionStartError(!started);
+      setSessionStarting(false);
+    }
+    if (retryRef.current === attempt) retryRef.current = null;
+  }, [recordDetails, start, waitForCancellation]);
+
+  useEffect(() => {
+    const show = async (event) => {
+      if (!event.persisted) return;
+      const recordId = data?.id;
+      await waitForCancellation();
+      if (recordId === liveRef.current.recordId && !liveRef.current.session) retrySession();
+    };
+    window.addEventListener('pageshow', show);
+    return () => window.removeEventListener('pageshow', show);
+  }, [data?.id, retrySession, waitForCancellation]);
 
   useEffect(() => {
     if (!pages.length) return;
@@ -429,6 +468,7 @@ export default function TranscriptionPage() {
   });
 
   const sendButtonClickHandler = async (e) => {
+    setSaveNotice('');
     const words = (fields.messageInput || '').trim().split(/\s+/).filter(Boolean);
 
     if (words.length < 2) {
@@ -439,10 +479,14 @@ export default function TranscriptionPage() {
     }
 
     saveCurrentPageDraft();
+    flushDrafts();
     if (!pages.length) return;
 
     const goToNext = e.currentTarget.dataset.gotonext === 'true';
     const payload = buildPayload();
+    const sentRecordId = recordDetails.id;
+    const sentIndex = currentPageIndex;
+    const snapshot = { ...pages[sentIndex] };
 
     if (!fields.informantNameInput?.trim()) {
       delete payload.informantName;
@@ -452,7 +496,12 @@ export default function TranscriptionPage() {
     }
 
     const ok = await send(payload);
-    if (!ok) return;
+    if (!ok || liveRef.current.recordId !== sentRecordId) return;
+    const unchanged = sameDraft(liveRef.current.pages[sentIndex], snapshot);
+    drafts.saved(snapshot.source, snapshot);
+    if (!unchanged) {
+      setSaveNotice(l('Den inskickade avskriften har sparats. Dina senare ändringar finns kvar som utkast och har inte skickats in.'));
+    }
 
     toastOk(l(`Sida ${currentPageIndex + 1} sparad – tack!`), {
       duration: 8000,
@@ -460,8 +509,9 @@ export default function TranscriptionPage() {
 
     setPages((prev) => {
       const next = [...prev];
-      next[currentPageIndex] = {
-        ...next[currentPageIndex],
+      if (!sameDraft(next[sentIndex], snapshot)) return prev;
+      next[sentIndex] = {
+        ...next[sentIndex],
         isSent: true,
         unsavedChanges: false,
         transcriptionstatus: 'transcribed',
@@ -479,7 +529,9 @@ export default function TranscriptionPage() {
       return next;
     });
 
-    if (goToNext) goToNextTranscribePage();
+    if (goToNext && unchanged && liveRef.current.currentPageIndex === sentIndex) {
+      goToNextTranscribePage();
+    }
     window.eventBus?.dispatch?.('overlay.transcribe.sent');
   };
 
@@ -569,24 +621,40 @@ export default function TranscriptionPage() {
         </section>
       )}
 
-      {sessionStarting && (
-        <p role="status" className="mb-4 text-muted">
-          {l('Startar transkriberingssession…')}
-        </p>
-      )}
+      <p id="transcription-session-status" role="status" aria-atomic="true" className="mb-4 text-muted">
+        {sessionStarting ? l('Startar transkriberingssession…') : !session && l('Sessionen saknas. Du kan fortsätta skriva, men behöver återansluta innan du skickar avskriften.')}
+      </p>
+      <TranscriptionError
+        error={error?.operation === 'start' ? error : null}
+        messageId="transcription-start-error"
+      />
       {sessionStartError && (
-        <div role="alert" className="mb-6 rounded-lg border border-border bg-surface-muted p-4">
-          <p>{l('Det gick inte att starta transkriberingssessionen.')}</p>
+        <div className="mb-6">
           <button
             type="button"
             className="button button-primary mt-3"
             onClick={retrySession}
             disabled={sessionStarting}
+            aria-describedby={error?.operation === 'start' ? 'transcription-start-error' : undefined}
           >
-            {l('Försök igen')}
+            {l('Försök återansluta')}
           </button>
         </div>
       )}
+      <TranscriptionDraftNotice
+        candidates={drafts.candidates}
+        storageError={drafts.storageError}
+        restored={drafts.restored}
+        onRestore={(key) => {
+          drafts.restore(key);
+          document.getElementById('transcription_text_always')?.focus();
+        }}
+        onDismiss={() => {
+          drafts.dismiss();
+          document.getElementById('transcription_text_always')?.focus();
+        }}
+      />
+      <p role="status" aria-atomic="true" className="text-body">{saveNotice}</p>
       {!pages.length && (
         <p role="status" className="rounded-lg border border-border bg-surface-muted p-4">
           {l('Det finns inga bildsidor att skriva av i den här accessionen.')}
@@ -597,7 +665,9 @@ export default function TranscriptionPage() {
         <div className="row">
           <div className="four columns">
             <TranscriptionForm
-              sending={sending || sessionStarting || sessionStartError}
+              sending={sending}
+              sessionUnavailable={!session || sessionStarting || sessionStartError}
+              error={error?.operation === 'save' ? error : null}
               currentPageIndex={currentPageIndex}
               pages={pages}
               titleInput={fields.titleInput}

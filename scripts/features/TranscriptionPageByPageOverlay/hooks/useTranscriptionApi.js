@@ -1,84 +1,204 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import config from "../../../config";
+import {
+  useState, useRef, useCallback, useEffect,
+} from 'react';
+import config from '../../../config';
+
+const fd = (data) => {
+  const form = new FormData();
+  form.append('json', JSON.stringify(data));
+  return form;
+};
 
 /** All network traffic for transcribing lives here. */
 export default function useTranscriptionApi() {
   const [session, setSession] = useState(null);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState(null);
   const abort = useRef(null);
+  const sessionRef = useRef(null);
+  const startingRef = useRef(null);
+  const cancellingRef = useRef(Promise.resolve());
+  const generation = useRef(0);
+  const sendingRef = useRef(false);
 
-  /* small helper */
-  const fd = (data) => {
-    const f = new FormData();
-    f.append("json", JSON.stringify(data));
-    return f;
-  };
+  const request = useCallback(async (operation, payload, signal, current = () => true) => {
+    setError(null);
+    const context = {
+      operation,
+      recordId: payload.recordid,
+      page: payload.page,
+      pageNumber: payload.pagenumber,
+      timestamp: new Date().toISOString(),
+      hasSession: !!payload.transcribesession,
+    };
 
-  /* ───── start ───── */
-  const start = useCallback(async (recordId) => {
-    if (!recordId) return false;
-    abort.current?.abort(); // cancel earlier request
-    abort.current = new AbortController();
+    if (operation === 'save' && !payload.transcribesession) {
+      setError({ ...context, code: 'SESSION_MISSING' });
+      return null;
+    }
+
     try {
-      const res = await fetch(`${config.restApiUrl}transcribestart/`, {
-        method: "POST",
-        body: fd({ recordid: recordId }),
-        signal: abort.current.signal,
-      });
-      const json = await res.json();
-      if (json.success === "true" || json.success === true) {
-        setSession(json.data?.transcribesession || null);
-        return true;
+      const response = await fetch(
+        `${config.restApiUrl}${operation === 'start' ? 'transcribestart' : 'transcribe'}/`,
+        { method: 'POST', body: fd(payload), signal },
+      );
+      if (!current()) return null;
+      let json;
+      try {
+        json = await response.json();
+      } catch {
+        if (signal?.aborted || !current()) return null;
+        setError({
+          ...context,
+          code: response.ok ? 'INVALID_RESPONSE' : 'HTTP_ERROR',
+          httpStatus: response.status,
+        });
+        return null;
       }
-      console.error(json.message || "transcribestart failed");
-      return false;
+      if (!current()) return null;
+
+      const serverMessage = typeof json?.message === 'string' ? json.message : '';
+      if (!response.ok) {
+        setError({
+          ...context, code: 'HTTP_ERROR', httpStatus: response.status, serverMessage,
+        });
+        return null;
+      }
+      if (json?.success !== 'true' && json?.success !== true) {
+        setError({
+          ...context,
+          code: json?.success === 'false' || json?.success === false ? 'API_REJECTED' : 'INVALID_RESPONSE',
+          httpStatus: response.status,
+          serverMessage,
+        });
+        return null;
+      }
+      if (operation === 'start' && (
+        typeof json.data?.transcribesession !== 'string' || !json.data.transcribesession
+      )) {
+        setError({ ...context, code: 'INVALID_RESPONSE', httpStatus: response.status });
+        return null;
+      }
+      return json;
     } catch (err) {
-      if (err.name !== "AbortError") console.error(err);
-      return false;
+      if (current() && (err.name !== 'AbortError' || operation === 'save')) {
+        setError({ ...context, code: navigator.onLine === false ? 'OFFLINE' : 'NETWORK_ERROR' });
+      }
+      return null;
     }
   }, []);
 
+  /* ───── start ───── */
+  const start = useCallback((recordId) => {
+    if (!recordId) return Promise.resolve(false);
+    if (startingRef.current?.recordId === recordId) return startingRef.current.promise;
+    if (sessionRef.current?.recordId === recordId) return Promise.resolve(true);
+    // A cancelled start must finish so its returned token can be released first.
+    if (startingRef.current) abort.current?.abort();
+    const previousCancellation = cancellingRef.current;
+    const controller = new AbortController();
+    abort.current = controller;
+    const pending = {
+      recordId, waiting: true, promise: null, controller,
+    };
+    pending.promise = (async () => {
+      await previousCancellation;
+      pending.waiting = false;
+      if (controller.signal.aborted) return false;
+      generation.current += 1;
+      const version = generation.current;
+      const json = await request(
+        'start',
+        { recordid: recordId },
+        controller.signal,
+        () => version === generation.current && !controller.signal.aborted,
+      );
+      if (!json || version !== generation.current) return false;
+      const token = json.data.transcribesession;
+      sessionRef.current = { recordId, token };
+      setSession(token);
+      return true;
+    })().finally(() => {
+      if (startingRef.current === pending) startingRef.current = null;
+    });
+    startingRef.current = pending;
+    return pending.promise;
+  }, [request]);
+
   /* ───── cancel ──── */
   const cancel = useCallback(
-    async (recordId) => {
-      if (!recordId || !session) return;
-      try {
-        await fetch(`${config.restApiUrl}transcribecancel/`, {
-          method: "POST",
-          body: fd({ recordid: recordId, transcribesession: session }),
-          keepalive: true,
-        });
-      } catch (err) {
-        console.error("transcribecancel error:", err);
+    (recordId) => {
+      const activeSession = sessionRef.current?.recordId === recordId ? sessionRef.current : null;
+      const pendingStart = startingRef.current;
+      const waitForStart = pendingStart?.recordId === recordId && !pendingStart.waiting
+        ? pendingStart.promise : null;
+      if (waitForStart) startingRef.current = null;
+      if (pendingStart?.recordId === recordId && pendingStart.waiting) {
+        pendingStart.controller.abort();
+        startingRef.current = null;
       }
-      setSession(null);
+      if (activeSession) {
+        sessionRef.current = null;
+        setSession(null);
+      }
+      const previousCancellation = cancellingRef.current;
+      const pending = (async () => {
+        await previousCancellation;
+        await waitForStart;
+        const target = activeSession
+          || (sessionRef.current?.recordId === recordId ? sessionRef.current : null);
+        if (!target) return;
+        if (sessionRef.current === target) {
+          sessionRef.current = null;
+          setSession(null);
+        }
+        try {
+          await fetch(`${config.restApiUrl}transcribecancel/`, {
+            method: 'POST',
+            body: fd({ recordid: recordId, transcribesession: target.token }),
+            keepalive: true,
+          });
+        } catch {
+          // The server may retain its lock; the next start reports that failure.
+        }
+      })();
+      cancellingRef.current = pending;
+      return pending;
     },
-    [session]
+    [],
   );
+
+  const waitForCancellation = useCallback(() => cancellingRef.current, []);
 
   /* ───── send ───── */
   const send = useCallback(
     async (payload /* plain object – we wrap it in FormData */) => {
-      if (sending) return false; // double-click guard
+      if (sendingRef.current) return false;
+      sendingRef.current = true;
       setSending(true);
-      const ok = await fetch(`${config.restApiUrl}transcribe/`, {
-        method: "POST",
-        body: fd({ transcribesession: session, ...payload }),
-      })
-        .then((r) => r.json())
-        .then((j) => j.success === "true" || j.success === true)
-        .catch((err) => {
-          console.error("transcribe error:", err);
-          return false;
-        })
-        .finally(() => setSending(false));
-      return ok;
+      try {
+        const token = sessionRef.current?.recordId === payload.recordid
+          ? sessionRef.current.token : null;
+        const version = generation.current;
+        const json = await request(
+          'save',
+          { ...payload, transcribesession: token },
+          undefined,
+          () => version === generation.current,
+        );
+        return !!json;
+      } finally {
+        setSending(false);
+        sendingRef.current = false;
+      }
     },
-    [session, sending]
+    [request],
   );
 
   /* abort unfinished request on unmount */
   useEffect(() => () => abort.current?.abort(), []);
 
-  return { session, sending, start, cancel, send };
+  return {
+    session, sending, error, start, cancel, send, waitForCancellation,
+  };
 }
