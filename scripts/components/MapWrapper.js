@@ -4,6 +4,8 @@ import {
   lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { faCompress, faExpand } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchControls from './SearchControls';
 import MapLoadingPlaceholder from './MapLoadingPlaceholder';
 import RecordListLoadingPlaceholder from './RecordListLoadingPlaceholder';
@@ -72,7 +74,7 @@ function MapWrapper({
   const hasSubmittedSearch = hasRouteSearchContext
     || locationParams.has('showmap')
     || locationParams.has('record_ids');
-  const narrowResultView = locationParams.has('showmap') ? 'map' : 'list';
+  const resultView = locationParams.has('showmap') ? 'map' : 'list';
   const searchTerm = routeSearchParams.search?.trim();
   const placeTerm = routeSearchParams.place?.trim();
   const searchLabel = l(
@@ -183,12 +185,13 @@ function MapWrapper({
   const mapSummaryText = mapResultCount > 0
     ? `Kartan visar ${mapResultCount} platser i nuvarande urval.`
     : 'Kartan visar inga platser i nuvarande urval.';
-  const showWideMap = active && isWideResultsViewport;
-  const listIsVisible = active
-    && (isWideResultsViewport || narrowResultView === 'list');
+  const isSplitResultsLayout = isWideResultsViewport && resultView === 'list';
+  const isMapExpanded = isWideResultsViewport && resultView === 'map';
+  const listIsVisible = active && resultView === 'list';
   const mapIsVisible = active
-    && (showWideMap || narrowResultView === 'map');
-  const showContainedNarrowMap = mapIsVisible && !isWideResultsViewport;
+    && (isSplitResultsLayout || resultView === 'map');
+  const showContainedMap = mapIsVisible && !isSplitResultsLayout;
+  const mapSizeButtonLabel = l(isMapExpanded ? 'Förminska karta' : 'Förstora karta');
 
   useEffect(() => {
     if (!mapIsVisible || shouldLoadMap) return undefined;
@@ -213,10 +216,10 @@ function MapWrapper({
   const filterAnnouncement = routeSearchParams.transcribe
     ? `${l('Filtret Kan skrivas av är aktivt.')} `
     : '';
-  let viewAnnouncement = isWideResultsViewport
+  let viewAnnouncement = isSplitResultsLayout
     ? `${filterAnnouncement}${l('Visar sökträffar som lista med karta.')}`
     : `${filterAnnouncement}${l(
-      narrowResultView === 'list'
+      resultView === 'list'
         ? 'Visar sökträffar som lista.'
         : 'Visar sökträffar på karta.',
     )}`;
@@ -241,24 +244,24 @@ function MapWrapper({
       id="results-viewport"
       className={classNames(
         'relative w-screen bg-isof print:hidden',
-        isWideResultsViewport && 'grid h-screen overflow-hidden',
-        !isWideResultsViewport && (
-          showContainedNarrowMap
+        isSplitResultsLayout && 'grid h-screen overflow-hidden',
+        !isSplitResultsLayout && (
+          showContainedMap
             ? 'flex h-screen flex-col overflow-hidden'
             : 'h-screen overflow-x-hidden overflow-y-auto'
         ),
       )}
       style={{
         '--desktop-map-pane-width': 'clamp(340px, 28vw, 480px)',
-        height: showContainedNarrowMap ? '100dvh' : undefined,
-        gridTemplateColumns: isWideResultsViewport
+        height: showContainedMap ? '100dvh' : undefined,
+        gridTemplateColumns: isSplitResultsLayout
           ? 'minmax(0, 1fr) var(--desktop-map-pane-width)'
           : undefined,
       }}
       role="region"
       aria-label={l('Sökresultat')}
       aria-busy={uiLoading || undefined}
-      data-record-list-scroll={!isWideResultsViewport && listIsVisible ? 'true' : undefined}
+      data-record-list-scroll={!isSplitResultsLayout && listIsVisible ? 'true' : undefined}
       tabIndex={-1}
     >
       <span className="sr-only" aria-live="polite" aria-atomic="true">
@@ -271,12 +274,13 @@ function MapWrapper({
       <div
         className={classNames(
           'min-w-0',
-          isWideResultsViewport ? 'h-screen overflow-x-hidden overflow-y-auto' : '',
-          showContainedNarrowMap
-            ? 'min-h-0 shrink overflow-x-hidden overflow-y-auto overscroll-contain focus-within:overflow-visible'
+          isSplitResultsLayout ? 'h-screen overflow-x-hidden overflow-y-auto' : '',
+          showContainedMap
+            ? 'min-h-0 shrink overflow-x-hidden overflow-y-auto overscroll-contain'
             : '',
+          showContainedMap && !isWideResultsViewport && 'focus-within:overflow-visible',
         )}
-        data-record-list-scroll={isWideResultsViewport && listIsVisible ? 'true' : undefined}
+        data-record-list-scroll={isSplitResultsLayout && listIsVisible ? 'true' : undefined}
       >
         <SearchControls
           recordsData={recordsData}
@@ -284,7 +288,7 @@ function MapWrapper({
           pictureRecordsData={pictureRecordsData}
           loading={uiLoading}
           hasSubmittedSearch={hasSubmittedSearch}
-          activeResultView={narrowResultView}
+          activeResultView={resultView}
           onResultViewChange={changeResultView}
           showResultViewControl={!isWideResultsViewport}
         />
@@ -321,15 +325,28 @@ function MapWrapper({
         tabIndex={-1}
         className={classNames(
           'relative w-full overflow-hidden bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-[-2px]',
-          isWideResultsViewport
+          isSplitResultsLayout
             ? 'results-map-panel--split h-screen border-l border-border'
             : '',
-          showContainedNarrowMap
+          showContainedMap
             ? 'min-h-[clamp(16rem,40dvh,28rem)] flex-1'
-            : !isWideResultsViewport && 'min-h-screen h-screen',
+            : !isSplitResultsLayout && 'min-h-screen h-screen',
         )}
       >
         <span className="sr-only">{mapSummaryText}</span>
+        {isWideResultsViewport && (
+          <button
+            type="button"
+            onClick={() => changeResultView(isMapExpanded ? 'list' : 'map')}
+            aria-expanded={isMapExpanded}
+            aria-controls="map-result-panel"
+            title={mapSizeButtonLabel}
+            className="absolute left-3 top-3 z-[1101] !m-0 inline-flex !h-auto min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-surface px-3 py-2 !text-sm font-semibold !text-body shadow-md hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+          >
+            <FontAwesomeIcon icon={isMapExpanded ? faCompress : faExpand} aria-hidden="true" />
+            {mapSizeButtonLabel}
+          </button>
+        )}
         {mapUiLoading && (
           <MapLoadingPlaceholder overlay announce={false} />
         )}
@@ -340,7 +357,7 @@ function MapWrapper({
               mapData={visibleMapData}
               isMobileViewport={isMobileMapViewport}
               active={mapIsVisible}
-              layout={isWideResultsViewport ? 'desktop-split' : 'full'}
+              layout={isSplitResultsLayout ? 'desktop-split' : 'full'}
             />
           </Suspense>
         ) : (
