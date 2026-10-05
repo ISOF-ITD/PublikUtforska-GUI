@@ -666,8 +666,7 @@ export function getTitleText(
 
   if (transcriptionStatusElement === "readytotranscribe") {
     // Use baseTitle if we have one; otherwise just the status text
-    const statusLabel = l("Inte avskriven");
-    return baseTitle ? `${baseTitle} (${statusLabel})` : statusLabel;
+    return baseTitle ? `${baseTitle}` : l('Inte avskriven');
   }
   // Default: just show the best title we can construct
   return baseTitle || l("(Utan titel)");
