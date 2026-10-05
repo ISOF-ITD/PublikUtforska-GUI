@@ -110,6 +110,56 @@ test('IntroOverlay-headern markerar kontroller vid tangentbordsnavigering', asyn
   expect(document.body).toHaveClass('tab-navigation');
 });
 
+test.each(['click', '{Enter}', ' '])('Gå vidare stänger välkomstsidan med %s', async (activation) => {
+  const user = userEvent.setup();
+  const onClose = jest.fn();
+  render(
+    <MemoryRouter>
+      <IntroOverlay show onClose={onClose} />
+    </MemoryRouter>,
+  );
+  await waitFor(() => expect(document.querySelector('.intro')).toHaveFocus());
+  const continueButton = screen.getByRole('button', { name: 'Gå vidare' });
+
+  if (activation === 'click') {
+    await user.click(continueButton);
+  } else {
+    continueButton.focus();
+    await user.keyboard(activation);
+  }
+
+  expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test('iframe-knappen stänger välkomstsidan, sparar visat läge och återställer fokus', async () => {
+  localStorage.removeItem('folke:introSeen:v1');
+  render(
+    <MemoryRouter initialEntries={['/?category=visa']}>
+      <input id="searchInput" aria-label="Sök i tjänsten" />
+      <SearchControls loading={false} />
+    </MemoryRouter>,
+  );
+  const overlay = document.querySelector('.intro-overlay');
+  const iframe = screen.getByTitle('Introduktion och hjälp');
+  expect(overlay).toHaveClass('visible');
+  await waitFor(() => expect(document.querySelector('.intro')).toHaveFocus());
+
+  fireEvent(window, new MessageEvent('message', {
+    source: window,
+    data: { type: 'navigateAway' },
+  }));
+  expect(overlay).toHaveClass('visible');
+  expect(localStorage.getItem('folke:introSeen:v1')).toBeNull();
+
+  fireEvent(window, new MessageEvent('message', {
+    source: iframe.contentWindow,
+    data: { type: 'navigateAway' },
+  }));
+  await waitFor(() => expect(overlay).not.toHaveClass('visible'));
+  expect(localStorage.getItem('folke:introSeen:v1')).toBe('1');
+  expect(screen.getByRole('textbox', { name: 'Sök i tjänsten' })).toHaveFocus();
+});
+
 test('fokusklassen har transparent normalläge och vit tangentbordskant', () => {
   const styles = fs.readFileSync(
     path.resolve(process.cwd(), 'less/style-basic.less'),

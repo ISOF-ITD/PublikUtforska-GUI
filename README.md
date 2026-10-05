@@ -156,6 +156,11 @@ från samma hooks som huvudsöket. SiteVision får opaka val-id:n och kan därf�
 inte själv konstruera en filterroute. Overlayen stängs och markeras samtidigt
 som visad.
 
+På alla skärmstorlekar finns även knappen **Utforska arkivet** direkt under
+sökformuläret. Den skickar `navigateAway` och stänger välkomstsidan utan att
+starta en sökning eller ändra aktuella filter. Knappen **Gå vidare**
+i Folkes sidhuvud gör samma sak och finns även på hjälpens undersidor.
+
 ### Kontroller av avsändaren
 
 Folke tar bara emot meddelanden från den iframe som `IntroOverlay` själv har
@@ -169,7 +174,7 @@ adressen saknas.
 Version 2 är bakåtkompatibel och ska publiceras i denna ordning:
 
 1. Publicera `docs/sitevision/folke-search-hero.js` som
-   `folke-search-hero.js` i SiteVision.
+   `folke-search-hero.js` i SiteVisions *Filarkiv*.
 2. Kontrollera att den nya SiteVision-koden faller tillbaka till fritextsökning
    när den gamla Folke-versionen svarar med version 1.
 3. Publicera Folke-versionen med protokollversion 2.

@@ -206,9 +206,12 @@
     style.textContent = `
       #${HERO_ID}, #${HERO_ID} * { box-sizing: border-box; }
       #${HERO_ID} {
+        --folke-action-bg: #005462;
+        --folke-action-hover-bg: #1c3f49;
+        --folke-action-text: #fff;
+        --folke-action-focus: #005462;
         margin: 0 0 2rem;
         padding: clamp(1.75rem, 5vw, 3rem) 1rem;
-        border-bottom: 1px solid #d1d5db;
         background: #fff;
         color: #111827;
         text-align: center;
@@ -272,11 +275,26 @@
         overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
       }
       #${HERO_ID} .folke-search__icon { width: 1rem; height: 1rem; fill: currentColor; }
+      #${HERO_ID} .folke-search__browse {
+        min-height: 48px;
+        margin-top: 1.5rem;
+        background: var(--folke-action-bg); color: var(--folke-action-text);
+      }
+      #${HERO_ID} .folke-search__browse:hover:not(:disabled) {
+        background: var(--folke-action-hover-bg);
+      }
+      #${HERO_ID} .folke-search__browse:focus-visible {
+        outline-color: var(--folke-action-focus);
+      }
       @media (max-width: 639px) {
         #${HERO_ID} .folke-search__form { grid-template-columns: 1fr; }
+        #${HERO_ID} .folke-search__browse { width: 100%; }
       }
       @media (prefers-color-scheme: dark) {
         #${HERO_ID} {
+          --folke-action-bg: #006f7c;
+          --folke-action-hover-bg: #005462;
+          --folke-action-focus: #8bf5e7;
           color-scheme: dark; border-bottom-color: #37535b;
           background: #111b20; color: #e7f2f0;
         }
@@ -351,6 +369,13 @@
           <span id="folke-search-status" class="folke-search__assistive"
             role="status" aria-live="polite"></span>
         </form>
+        <button class="folke-search__button folke-search__browse" type="button">
+          Utforska arkivet
+          <svg class="folke-search__icon" viewBox="0 0 20 20"
+            aria-hidden="true" focusable="false">
+            <path d="m7 3 7 7-7 7-1.4-1.4L11.2 10 5.6 4.4Z"></path>
+          </svg>
+        </button>
       </div>
     `;
     main.insertBefore(hero, main.firstChild);
@@ -360,6 +385,11 @@
     button = hero.querySelector('.folke-search__button');
     listbox = hero.querySelector('.folke-search__suggestions');
     status = hero.querySelector('#folke-search-status');
+
+    hero.querySelector('.folke-search__browse').addEventListener('click', function () {
+      closeSuggestions();
+      postToParent({ type: 'navigateAway' });
+    });
 
     if (suggestionsSupported) {
       hero.querySelector('#folke-search-help').textContent =
