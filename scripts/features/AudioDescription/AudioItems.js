@@ -3,6 +3,7 @@ import {
   useEffect,
   useCallback,
   useMemo,
+  useId,
 } from 'react';
 import PropTypes from "prop-types";
 import ConfirmationModal from "./ConfirmationModal";
@@ -13,6 +14,7 @@ import { getAudioTitle } from "../../utils/helpers";
 import { l } from "../../lang/Lang";
 
 function AudioItems({ data, highlightData = null }) {
+  const headingId = useId();
   // Initialize localData state with the prop data
   const [localData, setLocalData] = useState(data);
 
@@ -454,8 +456,11 @@ function AudioItems({ data, highlightData = null }) {
     return Object.values(bySrc);
   }, [media]);
 
+  if (!audioDataItems.length) return null;
+
   return (
-    <div className="mx-auto border-none">
+    <section aria-labelledby={headingId} className="mx-auto border-none">
+      <h2 id={headingId} className="text-xl font-bold">{l('Inspelningar')}</h2>
       <div className="overflow-x-auto mb-4 rounded">
         <table className="w-full table-auto border-collapse lg:text-sm text-xs" aria-label={l("Inspelningar")}>
           {// Hide header but keep for screen readers 
@@ -468,7 +473,7 @@ function AudioItems({ data, highlightData = null }) {
             </tr>
           </thead>
           <tbody>
-            {audioDataItems.map((item) => {
+            {audioDataItems.map((item, index) => {
               const audioTitle = getAudioTitle(
                 item.title,
                 contents,
@@ -484,7 +489,7 @@ function AudioItems({ data, highlightData = null }) {
                 <AudioItemRow
                   key={item.source}
                   item={item}
-                  audioTitle={audioTitle}
+                  audioTitle={audioTitle?.trim() || `${l('Inspelning')} ${index + 1}`}
                   recordId={id}
                   openItems={openItems}
                   onToggle={handleToggle}
@@ -520,7 +525,7 @@ function AudioItems({ data, highlightData = null }) {
         confirmLabel="Ja, stäng utan att spara"
         variant="default"
       />
-    </div>
+    </section>
   );
 }
 

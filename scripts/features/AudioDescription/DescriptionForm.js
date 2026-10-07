@@ -3,6 +3,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useId,
 } from 'react';
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -75,6 +76,7 @@ function DescriptionForm({
   setHasUnsavedChanges,
   savedUserInfo,
 }) {
+  const headingId = useId();
   const [showTermNode, setShowTermNode] = useState(false);
   const dataForSource = formData[source] || {};
   // Create a unique prefix for form field IDs based on the source
@@ -192,12 +194,27 @@ function DescriptionForm({
   );
 
   return (
-    <div className="border border-border p-4 mb-4 bg-surface text-body text-sm relative">
-      <p className="text-lg font-semibold pb-4 text-link">
-        Din kunskap kan hjälpa andra -
-        {' '}
+    <form
+      aria-labelledby={headingId}
+      noValidate
+      className="border border-border p-4 mb-4 bg-surface text-body text-sm relative"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!isValid) return;
+        onSave({
+          source,
+          start: dataForSource.start,
+          text: dataForSource.descriptionText,
+          terms: dataForSource.selectedTags || [],
+          email: dataForSource.email || '',
+          name: dataForSource.name || '',
+          rememberMe: dataForSource.rememberMe || false,
+        });
+      }}
+    >
+      <h4 id={headingId} className="text-lg font-semibold pb-4 text-body">
         {editingDesc ? 'Redigera beskrivning' : 'Lägg till en beskrivning'}
-      </p>
+      </h4>
 
       <ExplanationSection />
 
@@ -252,18 +269,9 @@ function DescriptionForm({
         isValid={isValid}
         isEditing={Boolean(editingDesc)}
         onCancel={onCancel}
-        onSave={() => onSave({
-          source,
-          start: dataForSource.start,
-          text: dataForSource.descriptionText,
-          terms: dataForSource.selectedTags || [],
-          email: dataForSource.email || '',
-          name: dataForSource.name || '',
-          rememberMe: dataForSource.rememberMe || false,
-        })}
         onDelete={onDelete}
       />
-    </div>
+    </form>
   );
 }
 
@@ -301,7 +309,7 @@ function TermSection({
   fieldIds,
 }) {
   return (
-  <FormSection title="Ämnesord *">
+  <FormSection title="Ämnesord *" labelFor={fieldIds.term}>
     <InfoMessage>
       Steg 3 av 3. Välj eller skriv minst ett ämnesord som bäst beskriver
       innehållet. Du kan välja flera ord.
@@ -316,7 +324,12 @@ function TermSection({
         placeholder="Skriv t.ex. 'Musik' eller 'Mat'"
         value={data.typedTag || ""}
         onChange={(e) => onChange("typedTag", e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onAddTag()}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            onAddTag();
+          }
+        }}
       />
       <TermSuggestions
         typedTag={data.typedTag}
@@ -354,6 +367,16 @@ function TermSection({
   </FormSection>
   );
 }
+
+TermSection.propTypes = {
+  data: PropTypes.object.isRequired,
+  showTermNode: PropTypes.bool.isRequired,
+  onToggleTerm: PropTypes.func.isRequired,
+  onAddTag: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onToggleTree: PropTypes.func.isRequired,
+  fieldIds: PropTypes.shape({ term: PropTypes.string.isRequired }).isRequired,
+};
 
 function TermSuggestions({ typedTag, onSelect, onChange, inputId }) {
   if (!typedTag) return null;
@@ -490,7 +513,7 @@ function UserInfoSection({ data, onChange, fieldIds }) {
   );
 }
 
-function FormActions({ isValid, isEditing, onCancel, onSave, onDelete }) {
+function FormActions({ isValid, isEditing, onCancel, onDelete }) {
   return (
   <div className="flex items-center justify-end gap-4 mt-4">
     {isEditing && (
@@ -510,13 +533,12 @@ function FormActions({ isValid, isEditing, onCancel, onSave, onDelete }) {
       Avbryt
     </button>
     <button
-      type="button"
+      type="submit"
       className={`px-4 py-2 rounded text-white ${
         isValid
           ? "bg-primary hover:bg-primary-hover hover:cursor-pointer"
           : "bg-disabled hover:cursor-not-allowed"
       }`}
-      onClick={onSave}
       disabled={!isValid}
     >
       {isEditing ? "Spara ändringar" : "Spara"}

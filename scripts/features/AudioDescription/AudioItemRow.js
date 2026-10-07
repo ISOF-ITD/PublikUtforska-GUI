@@ -1,4 +1,6 @@
-import { useState, useMemo, useRef } from 'react';
+import {
+  useState, useMemo, useRef, useId
+} from 'react';
 import PropTypes from "prop-types";
 import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -47,6 +49,7 @@ function AudioItemRow({
   highlightData,
 }) {
   const location = useLocation();
+  const descriptionsId = useId();
   const rowToggleRef = useRef(null);
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
@@ -164,7 +167,7 @@ function AudioItemRow({
           />
         </td>
         <td className="py-2 px-4">
-          {audioTitle}
+          <h3 className="!m-0 inline text-sm font-semibold">{audioTitle}</h3>
           {item.source.match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0] && (
             <span className="ml-2 text-[11px] rounded bg-surface-hover px-1 py-[1px] text-muted">
               {item.source
@@ -225,14 +228,15 @@ function AudioItemRow({
             </div>
             ) : null}
         </td>
-        <td className="py-2 px-4 flex gap-2 items-center justify-end">
-          {canContribute && config.activateAudioDescription && (
+        <td className="py-2 px-4">
+          <div className="flex flex-wrap gap-2 items-center justify-end">
+            {canContribute && config.activateAudioDescription && (
             <button
               ref={rowToggleRef}
               type="button"
               className="text-link hover:text-link-hover transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
               aria-expanded={openItems[item.source] ? "true" : "false"}
-              aria-controls={`descriptions-${item.source}`}
+              aria-controls={descriptionsId}
               onClick={() => onToggle(item.source)}
             >
               {openItems[item.source] ? (
@@ -251,17 +255,17 @@ function AudioItemRow({
                 </span>
               )}
             </button>
-          )}
-          <a
-            href={`${config.audioUrl}${item.source}`}
-            download
-            title="Ladda ner ljudfilen"
-            className="text-link hover:text-link-hover no-underline hover:cursor-pointer whitespace-nowrap"
-          >
-            <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
-            <FontAwesomeIcon icon={faDownload} />
-          </a>
-          {
+            )}
+            <a
+              href={`${config.audioUrl}${item.source}`}
+              download
+              title="Ladda ner ljudfilen"
+              className="text-link hover:text-link-hover no-underline hover:cursor-pointer whitespace-nowrap"
+            >
+              <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
+              <FontAwesomeIcon icon={faDownload} />
+            </a>
+            {
             // Read-only mode: "canContribute" is not nessesary
             hasUtterances && (
               <Link
@@ -274,16 +278,13 @@ function AudioItemRow({
               </Link>
             )
           }
+          </div>
         </td>
       </tr>
 
       {/* If open, show descriptions + add-content button */}
-      {openItems[item.source] && (
-        <tr
-          id={`descriptions-${item.source}`}
-          aria-hidden={!openItems[item.source]}
-          className="w-full bg-surface text-body"
-        >
+      <tr id={descriptionsId} hidden={!openItems[item.source]}>
+        {openItems[item.source] && (
           <td colSpan={3} className="py-4 px-4 w-full border-isof">
             {/* List existing descriptions. Pass a callback to start editing */}
             <DescriptionList
@@ -382,8 +383,8 @@ function AudioItemRow({
               </>
             )}
           </td>
-        </tr>
-      )}
+        )}
+      </tr>
       {showDeleteConfirmation && (
         <ConfirmationModal
           isOpen={showDeleteConfirmation}
@@ -395,7 +396,7 @@ function AudioItemRow({
             setEditDesc(null);
             // Optionally scroll back up to the list
             const listElement = document.getElementById(
-              `descriptions-${item.source}`
+              descriptionsId,
             );
             if (listElement) {
               listElement.scrollIntoView({ behavior: "smooth" });
