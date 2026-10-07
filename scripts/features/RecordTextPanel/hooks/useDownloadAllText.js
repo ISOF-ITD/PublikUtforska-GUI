@@ -32,7 +32,7 @@ export function useDownloadAllText({
       lines.push("");
 
       // Persons line(s)
-      const persons = getPersonsForPage ? getPersonsForPage(idx) : [];
+      const persons = getPersonsForPage ? getPersonsForPage(page.pageNumber - 1) : [];
 
       if (persons.length) {
         const personsLabel = l("Personer");

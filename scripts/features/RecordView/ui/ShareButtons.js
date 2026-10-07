@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -15,6 +15,7 @@ export default function ShareButtons({
   path = "",
   text,
   title = "",
+  copyLabel,
   hideLink = false,
   onCopied,
 }) {
@@ -112,6 +113,8 @@ export default function ShareButtons({
             readOnly
             rows={Math.min(4, Math.max(1, Math.ceil(copyTarget.length / 80)))}
             value={copyTarget}
+            aria-labelledby={title ? titleId : undefined}
+            aria-label={title ? undefined : 'Text att kopiera'}
             onFocus={selectRenderedText}
             onClick={selectRenderedText}
             onKeyDown={onFieldKeyDown}
@@ -149,7 +152,7 @@ export default function ShareButtons({
                   : 'border-border text-subtle cursor-not-allowed'
               }`}
             aria-label={
-              hasTarget ? "Kopiera till urklipp" : "Inget att kopiera"
+              hasTarget ? copyLabel || `Kopiera ${title.toLowerCase().replace(/^kopiera\s+/, '') || 'text'} till urklipp` : 'Inget att kopiera'
             }
             aria-describedby={helpId}
             title={hasTarget ? "Kopiera till urklipp" : "Inget att kopiera"}
@@ -174,6 +177,7 @@ ShareButtons.propTypes = {
   path: PropTypes.string,
   text: PropTypes.string,
   title: PropTypes.string,
+  copyLabel: PropTypes.string,
   hideLink: PropTypes.bool,
   onCopied: PropTypes.func,
 };

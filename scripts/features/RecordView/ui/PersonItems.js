@@ -1,16 +1,16 @@
 /* eslint-disable react/require-default-props */
 import PropTypes from 'prop-types';
+import { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { l } from '../../../lang/Lang';
 import config from '../../../config';
 import { createDetailLocation } from '../../../utils/routeHelper';
+import groupPersons from './groupPersons';
 
-function renderPersonItem(person, location, index) {
-  const rowKey = `${person.id || 'person'}-${person.relation || 'relation'}-${index}`;
-
+function renderPersonItem(person, location) {
   return (
     <tr
-      key={rowKey}
+      key={person.groupKey}
       className="border-b border-border last:border-b-0 odd:bg-surface-muted even:bg-surface text-body"
     >
       <td
@@ -20,14 +20,14 @@ function renderPersonItem(person, location, index) {
         {/* If no person link should be shown for an informant */}
         {!config.siteOptions.disablePersonLinks
           && config.siteOptions.disableInformantLinks
-          && ['i', 'informant'].includes(person.relation)
+          && person.isInformant
           && person.name}
 
         {/* If link should be shown (normal case) */}
         {!config.siteOptions.disablePersonLinks
           && !(
             config.siteOptions.disableInformantLinks
-            && ['i', 'informant'].includes(person.relation)
+            && person.isInformant
           ) && (
             <Link
               to={createDetailLocation({
@@ -66,32 +66,23 @@ function renderPersonItem(person, location, index) {
       </td>
 
       <td data-title="Roll" className="py-3 px-2 md:py-2 md:px-4">
-        {['c', 'collector'].includes(person.relation) && l('Insamlare')}
-        {['i', 'informant'].includes(person.relation) && l('Informant')}
-        {person.relation === 'excerpter' && l('Excerpist')}
-        {person.relation === 'author' && l('Författare')}
-        {person.relation === 'recorder' && l('Inspelad av')}
-        {person.relation === 'photographer' && l('Fotograf')}
-        {person.relation === 'interviewer' && l('Intervjuare')}
-        {person.relation === 'mentioned' && l('Omnämnd')}
-        {person.relation === 'artist' && l('Konstnär')}
-        {person.relation === 'illustrator' && l('Illustratör')}
-        {person.relation === 'sender' && l('Avsändare')}
-        {person.relation === 'receiver' && l('Mottagare')}
+        {person.roles.join(', ')}
       </td>
     </tr>
   );
 }
 
-function PersonItems({ data, location }) {
+function PersonItems({ data, location, headingId }) {
+  const generatedHeadingId = useId();
+  const titleId = headingId || generatedHeadingId;
   const { persons } = data;
   if (!persons || persons.length === 0) return null;
 
   return (
-    <div className="w-full mb-4">
-      <h3 className="text-xl font-bold">{l('Personer')}</h3>
+    <section aria-labelledby={titleId} className="w-full mb-4">
+      <h2 id={titleId} tabIndex={-1} className="text-xl font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus">{l('Personer')}</h2>
       <div className="overflow-x-auto rounded border border-border bg-surface text-body">
-        <table className="w-full text-left border-collapse table-auto">
+        <table aria-labelledby={titleId} className="w-full text-left border-collapse table-auto">
           <thead className="sr-only md:table-header-group">
             <tr>
               <th scope="col" className="py-2 px-4 font-semibold">{l('Namn')}</th>
@@ -101,17 +92,18 @@ function PersonItems({ data, location }) {
             </tr>
           </thead>
           <tbody>
-            {persons.map((person, index) => renderPersonItem(person, location, index))}
+            {groupPersons(persons).map((person) => renderPersonItem(person, location))}
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   );
 }
 
 export default PersonItems;
 
 PersonItems.propTypes = {
+  headingId: PropTypes.string,
   data: PropTypes.object.isRequired,
   location: PropTypes.shape({
     search: PropTypes.string.isRequired,

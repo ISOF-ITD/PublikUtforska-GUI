@@ -8,6 +8,7 @@ import {
 import sanitizeHtml from 'sanitize-html';
 import ListPlayButton from "../../AudioDescription/ListPlayButton";
 import useLegacyContents from "../hooks/useLegacyContents";
+import highlightCompleteHtml from '../utils/highlightCompleteHtml';
 
 /** Renderers */
 const renderHeaderBand = () => (
@@ -53,21 +54,15 @@ const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
   return (
     <div className="overflow-x-auto rounded-md border border-border bg-surface text-body">
       <table className="w-full table-auto border-collapse text-xs mb-0">
+        <caption className="text-left bg-surface-hover px-4 py-3 font-semibold text-body">Innehållsbeskrivningar</caption>
         <thead>
-          <tr>
-            <th colSpan={3} className="p-0 text-left" scope="colgroup">
-              {renderHeaderBand()}
-            </th>
-          </tr>
-          <tr className="border-b border-border flex">
+          <tr className="border-b border-border">
             <th scope="col" className="py-3 px-4 w-12">
               Starttid
             </th>
             <th scope="col" className="py-3 px-4">
               Beskrivning
             </th>
-            {/* spacer th for alignment parity with editable list */}
-            <th scope="col" className="py-3 px-4 text-right w-10" />
           </tr>
         </thead>
         <tbody>
@@ -80,7 +75,7 @@ const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
             return (
               <tr
                 key={`${row.tag || "_"}-${row.start}-${index}`}
-                className="odd:bg-surface even:bg-surface-muted border-b last:border-b-0 border-border flex w-full"
+                className="odd:bg-surface even:bg-surface-muted border-b last:border-b-0 border-border"
               >
                 <td className="py-3 px-4 w-12">
                   <div className="flex items-center">
@@ -113,7 +108,6 @@ const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
                     )}
                   </span>
                 </td>
-                <td className="py-3 px-4 text-right" />
               </tr>
             );
           })}
@@ -137,7 +131,7 @@ const renderCompact = ({
     <div className="rounded-md border border-border bg-surface text-body">
       {renderHeaderBand()}
       <div className="p-3">
-        <div className="flex flex-wrap gap-2">
+        <ul className="!m-0 !p-0 !list-none flex flex-wrap gap-2">
           {rows.map((row, i) => {
             const isHighlighted = Array.isArray(highlightData)
               ? highlightData.some((hit) => hit?._source?.start === row.start)
@@ -145,7 +139,7 @@ const renderCompact = ({
             const rowMedia = row.media || defaultAudio;
 
             return (
-              <div
+              <li
                 key={`${row.tag || "_"}-${row.start}-${i}`}
                 className={`group inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs ${
                   isHighlighted
@@ -170,10 +164,10 @@ const renderCompact = ({
                 <span className="text-body whitespace-nowrap">
                   {row.text || '—'}
                 </span>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
     </div>
   );
@@ -181,14 +175,15 @@ const renderCompact = ({
 
 // Fallback renderer: the original preformatted text
 const renderPlain = (contents, highlightHtml) => {
-  const cleanHighlightHtml = highlightHtml
-    ? toSafeHighlightHtml(highlightHtml)
+  const fullHtml = String(contents).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const cleanHighlightHtml = highlightHtml?.length
+    ? toSafeHighlightHtml(highlightCompleteHtml(fullHtml, highlightHtml))
     : '';
 
   if (cleanHighlightHtml) {
     return (
       <div
-        className="mt-2 whitespace-pre-line text-sm leading-relaxed"
+        className="whitespace-pre-line text-sm leading-relaxed"
         dangerouslySetInnerHTML={{
           __html: cleanHighlightHtml,
         }}
@@ -197,7 +192,7 @@ const renderPlain = (contents, highlightHtml) => {
   }
 
   return (
-    <div className="mt-2 whitespace-pre-line text-sm leading-relaxed">
+    <div className="whitespace-pre-line text-sm leading-relaxed">
       {contents}
     </div>
   );
@@ -228,7 +223,7 @@ export default function ContentsElement({
 
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
-  const hasHighlight = Boolean(highlightHtml)
+  const hasHighlight = Boolean(highlightHtml?.length)
     || (Array.isArray(highlightData) && highlightData.length > 0);
 
   const { hasStructured, rows, isCompact, rowCount, defaultAudio, audioTitle } =
@@ -259,25 +254,27 @@ export default function ContentsElement({
   if (!contents) return null;
 
   return (
-    <section className="mb-4">
-      <button
-        type="button"
-        title={expanded ? "Dölj" : "Visa"}
-        aria-expanded={expanded}
-        aria-controls={contentId}
-        className="flex items-center gap-2 rounded-sm px-1 py-0.5 underline hover:no-underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
-        <span>
-          <b>Beskrivning av innehållet</b>{" "}
-          <span className="text-subtle">({rowCount})</span>
-        </span>
-      </button>
+    <div className="min-w-0">
+      <dt id={`${contentId}-label`} className="!m-0 text-sm font-semibold text-muted">
+        <button
+          type="button"
+          title={expanded ? "Dölj" : "Visa"}
+          aria-expanded={expanded}
+          aria-controls={contentId}
+          className="!m-0 !flex !h-auto min-h-11 w-full items-center justify-start gap-3 !rounded-none !border-0 !bg-transparent !p-0 !text-left !text-sm !font-semibold !text-muted !leading-normal ![font-family:inherit] !whitespace-normal !normal-case !tracking-normal hover:!text-link hover:underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          <span className="min-w-0 break-words">
+            Beskrivning av innehållet{" "}
+            <span className="text-subtle">({rowCount})</span>
+          </span>
+          <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} aria-hidden="true" focusable="false" className="w-3 shrink-0" />
+        </button>
+      </dt>
 
-      <div
+      <dd
         id={contentId}
-        className={`mt-2 p-4 shadow-lg rounded-md ${expanded ? "" : "hidden"}`}
+        className="m-0 pt-2 pb-2 min-[650px]:ml-[10.5rem]"
         hidden={!expanded}
         aria-hidden={!expanded}
       >
@@ -298,8 +295,8 @@ export default function ContentsElement({
                 audioTitle,
               })
           : renderPlain(contents, highlightHtml)}
-      </div>
-    </section>
+      </dd>
+    </div>
   );
 }
 
@@ -322,5 +319,5 @@ ContentsElement.propTypes = {
     ),
   }).isRequired,
   highlightData: PropTypes.array,
-  highlightHtml: PropTypes.string,
+  highlightHtml: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
 };

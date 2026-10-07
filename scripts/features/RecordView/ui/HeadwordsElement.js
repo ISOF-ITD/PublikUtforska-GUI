@@ -11,6 +11,7 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import sanitizeHtml from "sanitize-html";
+import highlightCompleteHtml from '../utils/highlightCompleteHtml';
 
 // Helpers
 
@@ -61,14 +62,13 @@ function toSafeHtml(headwords, archiveOrg) {
 export default function HeadwordsElement({ data, highlightHtml = '' }) {
   const archiveOrg = data?.archive?.archive_org;
   const safeHeadwords = data?.headwords ?? "";
-  const displayHeadwords = highlightHtml || safeHeadwords;
-  const hasHighlight = Boolean(highlightHtml);
+  const hasHighlight = Boolean(highlightHtml?.length);
   const [expanded, setExpanded] = useState(false);
   const contentId = useId();
 
   const cleanHTML = useMemo(
-    () => toSafeHtml(displayHeadwords, archiveOrg),
-    [displayHeadwords, archiveOrg]
+    () => highlightCompleteHtml(toSafeHtml(safeHeadwords, archiveOrg), highlightHtml),
+    [safeHeadwords, archiveOrg, highlightHtml],
   );
   const headwordBadge = useMemo(() => {
     const linkCount = (safeHeadwords.match(/\[\[(.+?)\]\]/g) || []).length;
@@ -98,37 +98,39 @@ export default function HeadwordsElement({ data, highlightHtml = '' }) {
   if (!safeHeadwords) return null;
 
   return (
-    <section className="mb-4">
-      <button
-        type="button"
-        title={expanded ? "Dölj" : "Visa"}
-        aria-expanded={expanded}
-        aria-controls={contentId}
-        className="flex items-center gap-2 rounded-sm px-1 py-0.5 underline hover:no-underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2"
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} />
-        <span>
-          <b>Uppgifter från äldre innehållsregister</b>{" "}
-          <span className="text-subtle">({headwordBadge})</span>
-        </span>
-      </button>
+    <div className="min-w-0">
+      <dt id={`${contentId}-label`} className="!m-0 text-sm font-semibold text-muted">
+        <button
+          type="button"
+          title={expanded ? "Dölj" : "Visa"}
+          aria-expanded={expanded}
+          aria-controls={contentId}
+          className="!m-0 !flex !h-auto min-h-11 w-full items-center justify-start gap-3 !rounded-none !border-0 !bg-transparent !p-0 !text-left !text-sm !font-semibold !text-muted !leading-normal ![font-family:inherit] !whitespace-normal !normal-case !tracking-normal hover:!text-link hover:underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          <span className="min-w-0 break-words">
+            Uppgifter från äldre innehållsregister{" "}
+            <span className="text-subtle">({headwordBadge})</span>
+          </span>
+          <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronRight} aria-hidden="true" focusable="false" className="w-3 shrink-0" />
+        </button>
+      </dt>
 
-      <div
+      <dd
         id={contentId}
-        className={`mt-2 p-4 shadow-lg rounded-md ${expanded ? "" : "hidden"}`}
+        className="m-0 pt-2 pb-2 min-[650px]:ml-[10.5rem]"
         hidden={!expanded}
         aria-hidden={!expanded}
       >
-        <div className="rounded-md border border-border bg-surface text-body">
-          <div className="p-3 text-sm leading-relaxed">
+        <div className="text-body">
+          <div className="text-sm leading-relaxed">
             <div
               dangerouslySetInnerHTML={{ __html: cleanHTML }}
             />
           </div>
         </div>
-      </div>
-    </section>
+      </dd>
+    </div>
   );
 }
 
@@ -141,5 +143,5 @@ HeadwordsElement.propTypes = {
       archive_org: PropTypes.string,
     }),
   }).isRequired,
-  highlightHtml: PropTypes.string,
+  highlightHtml: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
 };

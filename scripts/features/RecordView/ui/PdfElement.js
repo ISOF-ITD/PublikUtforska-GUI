@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import {
+  useState, useEffect, useId, useMemo,
+} from 'react';
 import PropTypes from 'prop-types';
 import PdfViewer from '../../../components/PdfViewer';
 import config from '../../../config';
@@ -34,6 +36,7 @@ export function useMediaQuery(query) {
 }
 
 export default function PdfElement({ data }) {
+  const headingId = useId();
   const { media = [] } = data ?? {};
   const { hasImageFiles, pdfObjects } = useMemo(() => {
     const mediaList = Array.isArray(media) ? media : [];
@@ -48,15 +51,20 @@ export default function PdfElement({ data }) {
   const joinUrl = (base, path) => `${base ?? ''}${path ?? ''}`.replace(/([^:]\/)\/+/g, '$1');
   const buildPdfUrl = (src) => joinUrl(config.pdfUrl ?? config.imageUrl ?? '', src ?? '');
 
-  if (!isAtLeastMediumScreen || hasImageFiles) return null;
+  if (!isAtLeastMediumScreen || hasImageFiles || !pdfObjects.length) return null;
 
-  return pdfObjects.map((pdfObject) => (
-    <PdfViewer
-      height="80vh"
-      url={buildPdfUrl(pdfObject.source)}
-      key={`pdf-viewer-${pdfObject.source}`}
-    />
-  ));
+  return (
+    <section aria-labelledby={headingId}>
+      <h2 id={headingId} className="text-xl font-bold">Dokument (PDF)</h2>
+      {pdfObjects.map((pdfObject) => (
+        <PdfViewer
+          height="80vh"
+          url={buildPdfUrl(pdfObject.source)}
+          key={`pdf-viewer-${pdfObject.source}`}
+        />
+      ))}
+    </section>
+  );
 }
 
 PdfElement.propTypes = {

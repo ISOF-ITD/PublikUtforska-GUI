@@ -18,7 +18,7 @@ export function StatusIndicator({
   const s = SIZE[size] || SIZE.sm;
 
   return (
-    <div
+    <span
       className={classNames(
         positionClass,
         s.dot,
@@ -28,11 +28,10 @@ export function StatusIndicator({
         className
       )}
       title={status.label}
-      aria-label={status.label}
     >
       {status.icon && <FontAwesomeIcon className={s.icon} icon={status.icon} />}
       <span className="sr-only">{status.label}</span>
-    </div>
+    </span>
   );
 }
 

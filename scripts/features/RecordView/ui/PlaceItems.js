@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { useId } from 'react';
 import SimpleMap from '../../../components/views/SimpleMap';
 import { l } from '../../../lang/Lang';
 import { createDetailLocation } from '../../../utils/routeHelper';
 
-function PlaceItems({ data, location }) {
+function PlaceItems({ data, location, headingId }) {
+  const generatedHeadingId = useId();
+  const titleId = headingId || generatedHeadingId;
   const { places = [] } = data;
 
   if (!places.length) return null;
@@ -46,11 +49,11 @@ function PlaceItems({ data, location }) {
   };
 
   return (
-    <div className="w-full mb-6 md:flex md:gap-4">
+    <section aria-labelledby={titleId} className="w-full mb-6 md:flex md:gap-4">
       <div className="md:w-1/2">
-        <h3 className="text-xl font-bold mb-4">{l('Platser')}</h3>
+        <h2 id={titleId} tabIndex={-1} className="text-xl font-bold mb-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus">{l('Orter')}</h2>
         <div className="overflow-x-auto rounded border border-border bg-surface text-body">
-          <table className="w-full text-left border-collapse">
+          <table aria-labelledby={titleId} className="w-full text-left border-collapse">
             <thead className="md:table-header-group">
               <tr>
                 <th scope="col" className="sr-only py-2 px-4 font-semibold">{l('Namn')}</th>
@@ -63,11 +66,12 @@ function PlaceItems({ data, location }) {
       <div className="md:w-1/2 mt-4 md:mt-0">
         {renderMap()}
       </div>
-    </div>
+    </section>
   );
 }
 
 PlaceItems.propTypes = {
+  headingId: PropTypes.string,
   data: PropTypes.shape({
     places: PropTypes.arrayOf(
       PropTypes.shape({

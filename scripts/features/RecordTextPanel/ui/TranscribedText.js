@@ -1,27 +1,16 @@
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
-export default function TranscribedText({
-  html,
-  expanded,
-  onToggle,
-  contentId,
-}) {
+export default function TranscribedText({ html, contentId }) {
   return (
-    <div className="relative">
-      <div
-        id={contentId}
-        aria-expanded={expanded}
-        className={`text-pretty prose text-sm prose-sm max-w-none text-body whitespace-pre-wrap break-words ${
-          expanded ? '' : 'overflow-hidden'
-        }`}
-        dangerouslySetInnerHTML={{ __html: html || "&nbsp;" }}
-      />
-    </div>
+    <div
+      id={contentId}
+      className="text-pretty prose prose-sm max-w-none break-words whitespace-pre-wrap text-sm text-body"
+      dangerouslySetInnerHTML={{ __html: html || '' }}
+    />
   );
 }
+
 TranscribedText.propTypes = {
   html: PropTypes.string,
-  expanded: PropTypes.bool,
-  onToggle: PropTypes.func.isRequired,
   contentId: PropTypes.string.isRequired,
 };

@@ -54,7 +54,7 @@ function RecordViewFooter({ data }) {
   const isIsofArchive = archiveBrand === 'isof';
 
   return (
-    <div className="flex flex-row items-center max-sm:flex-col">
+    <footer className="!visible !pointer-events-auto flex flex-row items-center max-sm:flex-col">
       <Disclaimer showMeankieliDisclaimer={hasMeankieliLanguage} />
       <div
         className="flex items-center gap-4 max-sm:flex-col max-sm:mb-20"
@@ -108,7 +108,7 @@ function RecordViewFooter({ data }) {
           />
         </a>
       </div>
-    </div>
+    </footer>
   );
 }
 

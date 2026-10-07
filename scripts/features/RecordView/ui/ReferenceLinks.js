@@ -12,7 +12,8 @@ export default function ReferenceLinks({ data }) {
   return (
     <div className="contents">
       <ShareButtons
-        title={l("Kopiera länk")}
+        title={l('Länk till accessionen')}
+        copyLabel={l('Kopiera länk till urklipp')}
         text={recordUrl}
         breakAll={true}
       />

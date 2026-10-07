@@ -1,7 +1,10 @@
 /* global beforeEach, expect, test */
-import { render, screen, waitFor } from '@testing-library/react';
+import {
+  render, screen, waitFor, within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ImageOverlay from '../../features/RecordTextPanel/ui/ImageOverlay';
+import RecordTextPanel from '../../features/RecordTextPanel/RecordTextPanel';
 
 function createEventBus() {
   const listeners = new Map();
@@ -23,6 +26,43 @@ function createEventBus() {
 
 beforeEach(() => {
   window.eventBus = createEventBus();
+});
+
+test.each(['bildlistan', 'miniatyröversikten'])('bildvisaren återställer fokus till öppnaren i %s', async (source) => {
+  const user = userEvent.setup();
+  render(
+    <>
+      <RecordTextPanel
+        data={{
+          id: 'focus-record',
+          title: 'Fokustest',
+          transcriptionstatus: 'published',
+          media: [
+            { id: 'image-a', source: 'bild-a.jpg', type: 'image' },
+            { id: 'image-b', source: 'bild-b.jpg', type: 'image' },
+          ],
+        }}
+        mediaImageClickHandler={(item, mediaList, currentIndex) => window.eventBus.dispatch('overlay.viewimage', {
+          imageUrl: item.source, type: item.type, mediaList, currentIndex,
+        })}
+      />
+      <ImageOverlay />
+    </>,
+  );
+  let reader = within(screen.getByRole('region', { name: 'Originalbilder' }));
+  if (source === 'miniatyröversikten') {
+    const overview = reader.getByRole('button', { name: 'Visa sidöversikt (2)' });
+    await user.click(overview);
+    reader = within(document.getElementById(overview.getAttribute('aria-controls')));
+  }
+  const opener = reader.getByRole('button', { name: 'Öppna större bild av sida 2' });
+  opener.focus();
+  await user.keyboard('{Enter}');
+  expect(await screen.findByRole('dialog', { name: 'Bildvisning: 2 / 2' })).toBeVisible();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Stäng bildvisning' })).toHaveFocus());
+  await user.keyboard('{Escape}');
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(opener).toHaveFocus();
 });
 
 test('bildvisarens stängknapp fungerar med tangentbord och återställer öppnaren', async () => {

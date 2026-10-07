@@ -6,7 +6,7 @@ import sanitizeHtml from "../../../utils/sanitizeHtml";
 
 function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
   const hasContributor = !!transcribedby;
-  const hasComments = !!comment;
+  const hasComments = !!comment && comment.trim() !== "" && comment.trim() !== "None"
 
   if (!hasContributor && !hasComments) return null;
 
@@ -18,54 +18,54 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
 
   return (
     <div className="bg-surface-muted rounded-lg p-4 mt-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <dl className="m-0 grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Transcribed By Section */}
         {hasContributor && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-link">
-              <FontAwesomeIcon icon={faUserPen} className="h-4 w-4" />
-              <h3 className="font-semibold text-base m-0">
-                {l("Bidrag av")}
-              </h3>
-            </div>
-            <div className="ml-6 space-y-1">
+            <dt className="flex items-center gap-2 font-semibold text-base text-body">
+              <FontAwesomeIcon icon={faUserPen} className="h-4 w-4" aria-hidden="true" />
+              {l('Bidrag av')}
+            </dt>
+            <dd className="m-0 ml-6 space-y-1">
               <p className="m-0 text-body">{transcribedby}</p>
-              {transcriptiondate && (
-                <p className="m-0 text-sm text-muted">
-                  {new Date(transcriptiondate).toLocaleDateString("sv-SE")}
-                </p>
-              )}
-            </div>
+            </dd>
+          </div>
+        )}
+        {hasContributor && transcriptiondate && (
+          <div className="space-y-2">
+            <dt className="font-semibold text-base text-body">{l('Datum')}</dt>
+            <dd className="m-0 text-sm text-muted">
+              {new Date(transcriptiondate).toLocaleDateString('sv-SE')}
+            </dd>
           </div>
         )}
 
         {/* Comments Section */}
         {hasComments && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-link">
-              <FontAwesomeIcon icon={faCommentDots} className="h-4 w-4" />
-              <h3 className="font-semibold text-base m-0">
-                {l("Kommentarer")}
-              </h3>
-            </div>
-
-            {commentItems.length > 0 ? (
-              <ul className="ml-6 list-disc text-sm text-body space-y-1">
-                {commentItems.map((item, i) => (
-                  <li
-                    key={i}
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(item) }}
-                  />
-                ))}
-              </ul>
-            ) : (
-              <span className="ml-6 m-0 text-body">
-                {l("Inga kommentarer.")}
-              </span>
-            )}
+            <dt className="flex items-center gap-2 font-semibold text-base text-body">
+              <FontAwesomeIcon icon={faCommentDots} className="h-4 w-4" aria-hidden="true" />
+              {l('Kommentarer')}
+            </dt>
+            <dd className="m-0">
+              {commentItems.length > 0 ? (
+                <ul className="ml-6 list-disc text-sm text-body space-y-1">
+                  {commentItems.map((item, i) => (
+                    <li
+                      key={i}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(item) }}
+                    />
+                  ))}
+                </ul>
+              ) : (
+                <span className="ml-6 m-0 text-body">
+                  {l('Inga kommentarer.')}
+                </span>
+              )}
+            </dd>
           </div>
         )}
-      </div>
+      </dl>
     </div>
   );
 }
@@ -88,15 +88,30 @@ export function PageContributor({ transcribedby, transcriptiondate, comment }) {
     : null;
 
   return (
-    <div className="mt-2 border-t border-border pt-2 text-xs text-muted space-y-1">
+    <dl className="m-0 mt-2 border-t border-border pt-2 text-xs text-muted space-y-1">
       {transcribedby && (
-        <span className="m-0 flex items-center gap-1 select-none pointer-events-none">
-          <FontAwesomeIcon icon={faUserPen} />
-          <span className="font-medium">Bidrag av:</span> {transcribedby}
-          {dateStr ? ` • ${dateStr}` : null}
-        </span>
+        <div className="flex flex-wrap items-baseline gap-x-1">
+          <dt className="font-medium">
+            <FontAwesomeIcon icon={faUserPen} aria-hidden="true" />
+            {' '}
+            {l('Bidrag av')}
+          </dt>
+          <dd className="m-0">{transcribedby}</dd>
+        </div>
       )}
-    </div>
+      {transcribedby && dateStr && (
+        <div className="flex flex-wrap items-baseline gap-x-1">
+          <dt className="font-medium">{l('Datum')}</dt>
+          <dd className="m-0">{dateStr}</dd>
+        </div>
+      )}
+      {comment && (
+        <div>
+          <dt className="font-medium">{l('Kommentarer')}</dt>
+          <dd className="m-0" dangerouslySetInnerHTML={{ __html: sanitizeHtml(comment) }} />
+        </div>
+      )}
+    </dl>
   );
 }
 

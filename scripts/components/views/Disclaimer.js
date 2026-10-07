@@ -1,22 +1,20 @@
 import PropTypes from 'prop-types';
+import { useId } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 export default function Disclaimer({ showMeankieliDisclaimer = false }) {
+  const headingId = useId();
   return (
     <aside
-      role="note"
-      aria-label="Information till läsaren"
+      aria-labelledby={headingId}
       className=""
     >
       <div className="rounded-md px-4 py-3">
+        <h2 id={headingId} className="text-xl font-bold text-body">Information till läsaren</h2>
         {showMeankieliDisclaimer && (
           <div className="border-0 border-l-4 border-l-lighter-isof border-solid pl-3 mb-3">
             <p className="text-sm leading-6 text-darker-isof italic">
-              <strong className="not-italic font-semibold">
-                Information till läsaren:
-              </strong>
-              {' '}
               När insamlingarna gjordes hade meänkieli ännu inte fått status som
               ett eget minoritetsspråk, det skedde genom ett riksdagsbeslut år
               2000. Därför benämns det som idag kallas för meänkieli ofta som
@@ -26,10 +24,6 @@ export default function Disclaimer({ showMeankieliDisclaimer = false }) {
         )}
         <div className="border-0 border-l-4 border-l-lighter-isof border-solid pl-3 mb-3">
           <p className="text-sm leading-6 text-darker-isof italic">
-            <strong className="not-italic font-semibold">
-              Information till läsaren:
-            </strong>
-            {' '}
             Denna arkivhandling kan innehålla fördomar och språkbruk från en
             annan tid. Delar av Isofs äldre arkivmaterial kan vara svårt att
             närma sig och använda då det återspeglar det vi idag upplever som

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import PropTypes from "prop-types";
 import config from "../../../config";
 import { l } from "../../../lang/Lang";
@@ -19,6 +19,7 @@ function normalizeSimilarRecord(hit) {
 }
 
 function SimilarRecords({ data }) {
+  const headingId = useId();
   // Normalize id to a stable string so the effect doesn't refire due to type flips.
   const idString = data?.id != null ? String(data.id) : null;
 
@@ -148,11 +149,11 @@ function SimilarRecords({ data }) {
   const normalizedRecords = similarRecords.map(normalizeSimilarRecord);
 
   return (
-    <section className="mt-8" aria-busy="false">
+    <section className="mt-8" aria-labelledby={headingId}>
       <div className="mb-4 flex flex-col items-start justify-between gap-4">
-        <h3 className="flex items-center gap-2 text-xl font-semibold text-body m-0">
+        <h2 id={headingId} className="flex items-center gap-2 text-xl font-semibold text-body m-0">
           {l('Liknande accessioner')}
-        </h3>
+        </h2>
 
         <details className="group max-w-[42rem]">
           <summary
@@ -187,7 +188,7 @@ function SimilarRecords({ data }) {
         records={normalizedRecords}
         params={{}}
         layout="desktop-grid"
-        headingLevel="h4"
+        headingLevel="h3"
       />
     </section>
   );

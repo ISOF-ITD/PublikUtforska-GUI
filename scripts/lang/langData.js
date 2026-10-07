@@ -88,7 +88,7 @@ export default {
 		'Födelseår': 'Fødselsår',
 		'Födelseort': 'Fødested',
 		'Roll': 'Rolle',
-		'Platser': 'Steder',
+		'Orter': 'Steder',
 		'Arkiv': 'Arkiv',
 		'Acc. nr': 'Acc.nr',
 		'Sidnummer': 'Sidenr.',

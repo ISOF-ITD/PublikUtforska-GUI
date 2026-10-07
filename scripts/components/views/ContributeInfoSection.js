@@ -9,12 +9,15 @@ export default function ContributeInfoSection({
   title,
   type,
   id = undefined,
+  headingLevel = 'h3',
 }) {
   const headingId = useId();
   const formId = useId();
   const formHeadingId = useId();
   const buttonRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
+  const Heading = headingLevel;
+  const FormHeading = headingLevel === 'h2' ? 'h3' : 'h4';
 
   const closeForm = () => {
     setExpanded(false);
@@ -28,9 +31,9 @@ export default function ContributeInfoSection({
       className="my-8 border-t border-border pt-5 text-body print:hidden"
       aria-labelledby={headingId}
     >
-      <h3 id={headingId} className="text-xl font-bold mb-4">
+      <Heading id={headingId} className="text-xl font-bold mb-4">
         {l('Hjälp oss att förbättra informationen')}
-      </h3>
+      </Heading>
       <ContributeInfoButton
         expanded={expanded}
         controls={formId}
@@ -38,19 +41,20 @@ export default function ContributeInfoSection({
         buttonRef={buttonRef}
         variant="inline"
       />
-      {expanded && (
-        <div
-          id={formId}
-          role="region"
-          aria-labelledby={formHeadingId}
-          className="mt-4 max-w-[46rem] rounded-md border border-border bg-surface p-4 shadow-sm"
-        >
-          <h4 id={formHeadingId} className="mb-3 text-lg font-bold text-body">
-            {l('Vet du mer?')}
-          </h4>
-          <ContributeInfoForm title={title} type={type} id={id} onClose={closeForm} />
-        </div>
-      )}
+      <div id={formId} hidden={!expanded}>
+        {expanded && (
+          <div
+            role="region"
+            aria-labelledby={formHeadingId}
+            className="mt-4 max-w-[46rem] rounded-md border border-border bg-surface p-4 shadow-sm"
+          >
+            <FormHeading id={formHeadingId} className="mb-3 text-lg font-bold text-body">
+              {l('Vet du mer?')}
+            </FormHeading>
+            <ContributeInfoForm title={title} type={type} id={id} onClose={closeForm} />
+          </div>
+        )}
+      </div>
     </section>
   );
 }
@@ -59,4 +63,5 @@ ContributeInfoSection.propTypes = {
   title: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
   id: PropTypes.string,
+  headingLevel: PropTypes.oneOf(['h2', 'h3']),
 };

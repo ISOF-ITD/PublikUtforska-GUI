@@ -4,6 +4,7 @@ import { getTitleText } from '../../utils/helpers';
 import config from '../../config';
 import CorrectionEditor from './CorrectionEditor';
 import RecordViewHeader from '../RecordView/ui/RecordViewHeader';
+import RecordViewMetadata from '../RecordView/ui/RecordViewMetadata';
 
 function CorrectionView() {
   // RecordView puts these on the outlet context in its “onlyTranscribe” branch
@@ -23,6 +24,9 @@ function CorrectionView() {
   return (
     <article>
       <RecordViewHeader data={data} />
+      <div className="mb-6 empty:hidden">
+        <RecordViewMetadata data={data} />
+      </div>
 
       <div className="container-body">
         {/* Pass the record data explicitly so the editor never depends on Outlet */}

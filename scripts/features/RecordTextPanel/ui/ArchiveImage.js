@@ -26,6 +26,8 @@ function ArchiveImage({
   imgClassName = "",
   showCaption = true,
   imgProps = {},
+  buttonLabel,
+  current = false,
 }) {
   const containerRef = useRef(null);
   const imageRef = useRef(null);
@@ -143,7 +145,8 @@ function ArchiveImage({
       <button
         type="button"
         className={containerClasses}
-        aria-label={mediaItem.title || 'Visa bild'}
+        aria-label={buttonLabel || mediaItem.title || 'Visa bild'}
+        aria-current={current ? 'page' : undefined}
         onClick={handleClick}
         onMouseMove={isThumb ? undefined : handleMouseMove}
         onMouseLeave={isThumb ? undefined : handleMouseLeave}
@@ -158,12 +161,12 @@ function ArchiveImage({
         />
 
         {/* Status indicator container */}
-        <div className="absolute inset-0">
+        <span className="absolute inset-0">
           {renderIndicator && renderIndicator(mediaItem)}
-        </div>
+        </span>
 
         {renderMagnifyingGlass && !isThumb && (
-          <div
+          <span
             ref={glassRef}
             aria-hidden="true"
             className="absolute hidden rounded-3xl border-2 border-solid border-white border-offset-2 border-offset-black/30 shadow-xl w-52 h-52 pointer-events-none"
@@ -207,6 +210,8 @@ ArchiveImage.propTypes = {
   imgClassName: PropTypes.string,
   showCaption: PropTypes.bool,
   imgProps: PropTypes.object,
+  buttonLabel: PropTypes.string,
+  current: PropTypes.bool,
 };
 
 export default ArchiveImage;

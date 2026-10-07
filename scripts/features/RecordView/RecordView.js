@@ -1,5 +1,8 @@
 /* eslint-disable react/require-default-props */
-import { Suspense, useCallback, useEffect } from 'react';
+import {
+  Suspense, useCallback, useEffect, useId
+} from 'react';
+import PropTypes from 'prop-types';
 import {
   Await,
   useLoaderData,
@@ -14,10 +17,10 @@ import HeadwordsElement from "./ui/HeadwordsElement";
 import License from "./ui/License";
 import PdfElement from "./ui/PdfElement";
 import PersonItems from "./ui/PersonItems";
-import PlaceItems from "./ui/PlaceItems";
 import RecordViewFooter from "./ui/RecordViewFooter";
 import RecordViewHeader from "./ui/RecordViewHeader";
-import RecordViewThumbnails from "./ui/RecordViewThumbnails";
+import RecordViewMetadata from './ui/RecordViewMetadata';
+import RecordViewActions from './ui/RecordViewActions';
 import ReferenceLinks from "./ui/ReferenceLinks";
 import RecordTextPanel from "../RecordTextPanel/RecordTextPanel";
 import TranscriptionCTA from "./ui/TranscriptionCTA";
@@ -44,7 +47,7 @@ function RecordView() {
         });
       }
     },
-    []
+    [],
   );
 
   return (
@@ -118,6 +121,11 @@ function ResolvedRecord({
 }) {
   const [highlightData, raw] = value || [];
   const data = raw?._source;
+  const titleId = useId();
+  const metadataHeadingId = useId();
+  const personsHeadingId = useId();
+  const reuseHeadingId = useId();
+  const licenseHeadingId = useId();
   const recordHighlightHit = highlightData?.data?.[0] ?? {};
   const recordHighlights = recordHighlightHit.highlight ?? {};
   const descriptionHighlights = (
@@ -143,48 +151,62 @@ function ResolvedRecord({
   }
 
   return (
-    <article>
+    <article aria-labelledby={titleId}>
       <RecordViewHeader
         data={data}
-        location={location}
+        headingId={titleId}
       />
       <div>
-        <div role="group" aria-label="Snabböversikt" className="space-y-0">
-          <RecordViewThumbnails
-            data={data}
-            mediaImageClickHandler={mediaImageClickHandler}
-          />
-          <ContentsElement
-            data={data}
-            highlightData={descriptionHighlights}
-            highlightHtml={recordHighlights.contents?.[0]}
-          />
-          <HeadwordsElement
-            data={data}
-            highlightHtml={recordHighlights.headwords?.[0]}
-          />
+        <div className="record-view-layout">
+          <div className="record-view-details min-w-0">
+            <section aria-labelledby={metadataHeadingId} className="mb-6">
+              <h2 id={metadataHeadingId} className="text-xl font-bold">Metadata</h2>
+              <RecordViewMetadata data={data} search={location.search}>
+                {Boolean(data.contents) && (
+                  <ContentsElement
+                    data={data}
+                    highlightData={descriptionHighlights}
+                    highlightHtml={recordHighlights.contents}
+                  />
+                )}
+                {Boolean(data.headwords) && (
+                  <HeadwordsElement
+                    data={data}
+                    highlightHtml={recordHighlights.headwords}
+                  />
+                )}
+              </RecordViewMetadata>
+            </section>
+            <RecordViewActions data={data} />
+            <TranscriptionCTA data={data} />
+          </div>
+          <div className="record-view-media min-w-0 space-y-6 empty:hidden">
+            <AudioItems data={data} highlightData={highlightData} />
+            <RecordTextPanel
+              data={data}
+              highlightData={highlightData}
+              mediaImageClickHandler={mediaImageClickHandler}
+            />
+            <PdfElement data={data} />
+          </div>
         </div>
+        <PersonItems data={data} location={location} headingId={personsHeadingId} />
 
-        <TranscriptionCTA data={data} />
-        <AudioItems data={data} highlightData={highlightData} />
-        <RecordTextPanel
-          data={data}
-          highlightData={highlightData}
-          mediaImageClickHandler={mediaImageClickHandler}
-        />
-        <PdfElement data={data} />
-
-        <div className="my-6 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-          <ReferenceLinks data={data} />
-          <License data={data} />
-        </div>
-        <PersonItems data={data} location={location} />
-        <PlaceItems data={data} location={location} />
+        <section aria-labelledby={reuseHeadingId} className="my-6">
+          <h2 id={reuseHeadingId} className="text-xl font-bold">Dela och använda materialet</h2>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+            <ReferenceLinks data={data} />
+            <section aria-labelledby={licenseHeadingId}>
+              <h3 id={licenseHeadingId} className="text-base font-semibold">Licens</h3>
+              <License data={data} />
+            </section>
+          </div>
+        </section>
         <ContributeInfoSection
           title={getTitleText(data, 0, 0)}
           type="Uppteckning"
-          country={data.country}
           id={data.id}
+          headingLevel="h2"
         />
         <hr />
         <SimilarRecords data={data} />
@@ -195,5 +217,12 @@ function ResolvedRecord({
     </article>
   );
 }
+
+ResolvedRecord.propTypes = {
+  value: PropTypes.array,
+  matches: PropTypes.array.isRequired,
+  location: PropTypes.object.isRequired,
+  mediaImageClickHandler: PropTypes.func.isRequired,
+};
 
 export default RecordView;

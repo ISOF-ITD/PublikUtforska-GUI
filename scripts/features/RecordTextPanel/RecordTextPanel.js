@@ -1,554 +1,155 @@
-import PropTypes from "prop-types";
-import { memo, useState, useMemo, useCallback, useId } from "react";
-import config from "../../config";
-import { l } from "../../lang/Lang";
-import sanitizeHtml from "../../utils/sanitizeHtml";
-import TranscribeButton from "../TranscriptionPageByPageOverlay/ui/TranscribeButton";
-import { computeStatus } from "./utils/computeStatus.js";
-import ContributorInfo, { PageContributor } from "./ui/ContributorInfo";
-import TranscribedText from "./ui/TranscribedText";
-import { StatusIndicator } from "./ui/TranscriptionStatusIndicator";
-import HighlightSwitcher from "./ui/HighlightSwitcher";
-import RecordSegment from "./ui/RecordSegment";
-import buildSegments from "../../utils/buildSegments.js";
-import { useRecordHighlights } from "./hooks/useRecordHighlights";
-import { useDownloadAllText } from "./hooks/useDownloadAllText";
+import PropTypes from 'prop-types';
+import { useCallback, useId, useMemo } from 'react';
+import config from '../../config';
+import { l } from '../../lang/Lang';
+import sanitizeHtml from '../../utils/sanitizeHtml';
+import { isImageMedia } from '../../utils/mediaTypes';
+import buildSegments from '../../utils/buildSegments';
 import useTranscriptionAvailability from '../../hooks/useTranscriptionAvailability';
-import {
-  faCompress,
-  faDownload,
-  faExpand,
-  faFilePdf,
-  faHighlighter,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { isPdfMedia } from '../../utils/mediaTypes';
+import TranscribeButton from '../TranscriptionPageByPageOverlay/ui/TranscribeButton';
+import RecordViewThumbnails from '../RecordView/ui/RecordViewThumbnails';
+import { computeStatus } from './utils/computeStatus';
+import ContributorInfo, { PageContributor } from './ui/ContributorInfo';
+import TranscribedText from './ui/TranscribedText';
+import { StatusIndicator } from './ui/TranscriptionStatusIndicator';
+import HighlightSwitcher from './ui/HighlightSwitcher';
+import RecordSegment from './ui/RecordSegment';
+import MediaCard from './ui/MediaCard';
+import { useRecordHighlights } from './hooks/useRecordHighlights';
 
-/**
- * RecordTextPanel component
- * Shows text for all media items in a record, grouped into expandable segments.
- */
-export default function RecordTextPanel({
-  data,
-  highlightData = null,
-  mediaImageClickHandler,
-}) {
+function RecordReader({ data, highlightData, mediaImageClickHandler }) {
   const {
-    id: recordId,
-    title,
-    archive,
-    places,
-    text,
-    transcribedby,
-    transcriptiontype,
-    transcriptionstatus,
-    media = [],
-    segments: rawSegments = [],
+    id: recordId, text, transcribedby, transcriptionstatus,
+    media = [], segments: rawSegments = [], persons,
   } = data;
-
-  const { imageUrl } = config;
-  const isTranscriptionAvailable = useTranscriptionAvailability();
-  const pdfObjects = useMemo(() => media.filter(isPdfMedia), [media]);
-  const buildPdfUrl = (source) => (
-    `${config.pdfUrl || config.imageUrl || ''}${source || ''}`
-      .replace(/([^:]\/)\/+/g, '$1')
-  );
-
-  // local state
-  const [expandedTextByIndex, setExpandedTextByIndex] = useState({});
-  // keep track of which segments are open
-  const [openSegments, setOpenSegments] = useState({});
-  const toggleExpanded = useCallback(
-    (i) => setExpandedTextByIndex((prev) => ({ ...prev, [i]: !prev[i] })),
-    []
-  );
-
-  // a11y ids
+  const headingId = useId();
   const switchId = useId();
-  const headingId = `text-${recordId}`;
-
-  // All image media (absolute order)
-  const mediaImagesAbsolute = useMemo(
-    () => media.filter((m) => m?.type === 'image'),
+  const isTranscriptionAvailable = useTranscriptionAvailability();
+  const imageEntries = useMemo(
+    () => media.map((item, mediaIndex) => ({ item, mediaIndex }))
+      .filter(({ item }) => isImageMedia(item)),
     [media],
   );
-
-  // handlers for media open
-  const handleMediaClick = useCallback(
-    (mediaItem, index) => mediaImageClickHandler(mediaItem, mediaImagesAbsolute, index),
-    [mediaImageClickHandler, mediaImagesAbsolute],
-  );
-  const handleKeyDown = useCallback(
-    (e, mediaItem, index) => {
-      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
-        e.preventDefault();
-        mediaImageClickHandler(mediaItem, mediaImagesAbsolute, index);
-      }
-    },
-    // NOTE: mediaImagesAbsolute is defined below; we re-bind safely after memo.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mediaImageClickHandler]
-  );
-
-  // status indicator overlay
-  const renderIndicator = useCallback(
-    (mediaItem) => {
-      // 1. prefer the page status
-      const tx =
-        mediaItem?.transcriptionstatus ||
-        // 2. otherwise fall back to record-level
-        transcriptionstatus ||
-        null;
-
-      if (!tx) return null;
-
-      const status = computeStatus({ transcriptionstatus: tx });
-      if (!status) return null;
-
-      return <StatusIndicator status={status} size="md" />;
-    },
-    [transcriptionstatus]
-  );
-
-  // Always page-by-page after all records are one_accession_row (one_record is removed).
-  // When we are sure isPageByPage is not needed it could be removed entirely.
-  const isPageByPage = true;
-
+  const images = useMemo(() => imageEntries.map(({ item }) => item), [imageEntries]);
   const {
-    highlight,
-    setHighlight,
-    highlightedMediaTexts,
-    hasHighlights,
-    totalHits,
-    textParts,
-  } = useRecordHighlights({ highlightData, text, isPageByPage });
-
-  // Calculate the offset of the first media that is of type image
-  // to adjust for skipped PDF media items when building text sides.
-  // This works because PDFs are always before images in the media array
-  const firstImageOffset = useMemo(
-    () => media.findIndex((item) => item?.type === "image"),
-    [media],
-  );
-
-  // -------------- Segment grouping --------------
-  /**
-   * Build segments from data.segments (with start_media_id) or fallback to a single segment.
-   * Each segment spans from its start index up to (but not including) the next segment's start.
-   */
-  const segments = useMemo(
-    () =>
-      buildSegments({
-        mediaImages: mediaImagesAbsolute,
-        rawSegments,
-        transcriptionstatus,
-        persons: data.persons,
-      }),
-    [mediaImagesAbsolute, rawSegments, transcriptionstatus, data.persons]
-  );
-
-  const highlightedSegmentKeys = useMemo(() => {
-    const keys = new Set();
-
-    segments.forEach((seg, segmentIndex) => {
-      const containsHighlight = seg.items.some((_, itemIndex) => {
-        const mediaIndex = seg.startIndex + itemIndex + firstImageOffset;
-        return Boolean(highlightedMediaTexts[String(mediaIndex)]);
-      });
-
-      if (containsHighlight) {
-        keys.add(seg.id || `seg-${segmentIndex}`);
-      }
-    });
-
-    return keys;
-  }, [firstImageOffset, highlightedMediaTexts, segments]);
-
-  // --- Segment open/close controls (for “Öppna alla / Stäng alla”) ---
-  const handleToggleSegment = useCallback((segKey) => {
-    setOpenSegments((prev) => ({
-      ...prev,
-      [segKey]: !prev[segKey],
-    }));
-  }, []);
-
-  const handleOpenAllSegments = useCallback(() => {
-    setOpenSegments(() => {
-      const next = {};
-      segments.forEach((seg, index) => {
-        const key = seg.id || `seg-${index}`;
-        next[key] = true;
-      });
-      return next;
-    });
-  }, [segments]);
-
-  const handleCloseAllSegments = useCallback(() => {
-    setOpenSegments(() => {
-      const next = {};
-      segments.forEach((seg, index) => {
-        const key = seg.id || `seg-${index}`;
-        next[key] = false;
-      });
-      return next;
-    });
-  }, [segments]);
-
-  // Map page index -> persons[] (derived from segments)
-  const getPersonsForPage = useCallback(
-    (pageIndex) => {
-      const seg = segments.find((seg) => {
-        const start = seg.startIndex;
-        const end = start + seg.items.length;
-        return pageIndex >= start && pageIndex < end;
-      });
-
-      return seg?.persons || [];
-    },
-    [segments]
-  );
-
-  // --- Flat list of all text pages we can export ---
-  const { textPages, handleDownloadAllText } = useDownloadAllText({
-    isPageByPage,
-    mediaImages: mediaImagesAbsolute,
-    textParts,
-    title,
-    recordId,
-    getPersonsForPage,
-  });
-
-  const allOpen =
-    segments.length > 0 &&
-    segments.every((seg, index) => {
-      const key = seg.id || `seg-${index}`;
-      return openSegments[key] === true;
-    });
-
-  const allClosed =
-    segments.length > 0 &&
-    segments.every((seg, index) => {
-      const key = seg.id || `seg-${index}`;
-      return openSegments[key] === false;
-    });
-
-  // -------------- Side (text) builder, now works with absolute index --------------
-  const buildTextSide = useCallback(
-    (mediaItem, absoluteIndex) => {
-      const adjustedAbsoluteIndex = absoluteIndex + firstImageOffset;
-      const pageTranscriptionstatus = mediaItem?.transcriptionstatus || transcriptionstatus;
-
-      // If page has text and isn't awaiting transcription, show HTML (with optional highlight)
-      if (
-        mediaItem.text &&
-        pageTranscriptionstatus !== "readytotranscribe"
-      ) {
-        const key = String(adjustedAbsoluteIndex);
-        const html =
-          highlight && highlightedMediaTexts[key]
-            ? highlightedMediaTexts[key]
-            : mediaItem.text;
-
-        return (
-          <div className="space-y-2">
-            <TranscribedText
-              html={sanitizeHtml(html)}
-              expanded={!!expandedTextByIndex[adjustedAbsoluteIndex]}
-              onToggle={() => toggleExpanded(adjustedAbsoluteIndex)}
-              contentId={`page-by-page-text-${recordId}-${adjustedAbsoluteIndex}`}
-            />
-            {/* compact contributor under the text */}
-            <PageContributor
-              transcribedby={mediaItem.transcribedby || transcribedby}
-              transcriptiondate={
-                mediaItem.transcriptiondate || data.transcriptiondate
-              }
-              comment={mediaItem.comment}
-            />
-          </div>
-        );
-      }
-
-      if (
-        // If the record has status accession, show a message that text cannot be transcribed
-        transcriptionstatus === 'accession'
-      ) {
-        return (
-          <p className="text-gray-700">
-            {l(
-              "Texten kan inte skrivas av."
-            )}
-          </p>
-        );
-      }
-
-      // NOTE: Maybe use TranscriptionCTA here instead of duplicating logic? It would require lifting the "which page to open" state up to the panel, but it would ensure consistency and reduce code duplication.
-      let transcribeMessage = l("Den här sidan kan skrivas av.")
-      if (!['readytotranscribe'].includes(transcriptionstatus)) {
-        transcribeMessage = l("Texten är ännu inte färdig – transkribering eller granskning pågår.");
-      }
-
-      // If page is ready to be transcribed and transcription is available, show CTA
-      if (
-        pageTranscriptionstatus === 'readytotranscribe'
-        && isTranscriptionAvailable
-      ) {
-        return (
-          <div className="flex flex-col items-center justify-between gap-2 p-2 rounded-lg bg-surface-muted">
-            <span className="text-body">
-              {transcribeMessage}
-            </span>
-            <TranscribeButton
-              transcriptionstatus={transcriptionstatus}
-              className="button button-primary"
-              label={l("Skriv av")}
-              recordId={recordId}
-              random={false}
-              initialPageIndex={absoluteIndex}
-              initialPageSource={mediaItem.source}
-            />
-          </div>
-        );
-      }
-
-      // On mobile (<768px), hide the transcribe button area entirely for writable pages.
-      if (
-        pageTranscriptionstatus === 'readytotranscribe'
-        && !isTranscriptionAvailable
-      ) {
-        return null;
-      }
-
-      if (
-        // If the record has status accession, show a message that text cannot be transcribed
-        transcriptionstatus === 'accession'
-      ) {
-        return (
-          <p className="text-body">
-            {l(
-              "Texten kan inte skrivas av."
-            )}
-          </p>
-        );
-      }
-      
-      // Otherwise, it's being processed
+    highlight, setHighlight, highlightedMediaTexts, hasHighlights,
+  } = useRecordHighlights({ highlightData, text, isPageByPage: true });
+  const segments = useMemo(() => buildSegments({
+    mediaImages: images, rawSegments, transcriptionstatus, persons,
+  }), [images, rawSegments, transcriptionstatus, persons]);
+  const hasRealSegments = segments.some((segment) => !segment.autoGenerated);
+  const hasTranscribedText = images.some((item) => (
+    item.text?.trim() && (item.transcriptionstatus || transcriptionstatus) !== 'readytotranscribe'
+  ));
+  const handleMediaClick = useCallback((item, index) => {
+    mediaImageClickHandler(item, images, index);
+  }, [images, mediaImageClickHandler]);
+  const renderIndicator = useCallback((item) => (
+    <StatusIndicator
+      status={computeStatus({
+        transcriptionstatus: item.transcriptionstatus || transcriptionstatus,
+      })}
+      size="md"
+    />
+  ), [transcriptionstatus]);
+  const buildTextSide = (item, pageIndex) => {
+    const { mediaIndex } = imageEntries[pageIndex];
+    const pageStatus = item.transcriptionstatus || transcriptionstatus;
+    if (item.text && pageStatus !== 'readytotranscribe') {
+      const html = highlight && highlightedMediaTexts[String(mediaIndex)]
+        ? highlightedMediaTexts[String(mediaIndex)] : item.text;
       return (
-        <p className="text-body">
-          {l(
-            "Texten är ännu inte färdig – transkribering eller granskning pågår."
-          )}
-        </p>
+        <div className="space-y-2">
+          <TranscribedText
+            html={sanitizeHtml(html)}
+            contentId={`${headingId}-text-${mediaIndex}`}
+          />
+          <PageContributor
+            transcribedby={item.transcribedby || transcribedby}
+            transcriptiondate={item.transcriptiondate || data.transcriptiondate}
+            comment={item.comment}
+          />
+        </div>
       );
-    },
-    [
-      archive?.archive_id,
-      expandedTextByIndex,
-      highlightedMediaTexts,
-      highlight,
-      mediaImagesAbsolute,
-      places,
-      recordId,
-      title,
-      transcriptionstatus,
-      transcriptiontype,
-      isTranscriptionAvailable,
-      toggleExpanded,
-      transcribedby,
-      data.transcriptiondate,
-    ]
-  );
-
-  // ---------- Render ----------
-  if (isPageByPage) {
+    }
+    if (transcriptionstatus === 'accession') {
+      return <p className="text-body">{l('Texten kan inte skrivas av.')}</p>;
+    }
+    if (pageStatus === 'readytotranscribe') {
+      if (!isTranscriptionAvailable) return null;
+      return (
+        <div className="flex flex-col items-center gap-2 rounded-lg bg-surface-muted p-2">
+          <p className="text-body">{l('Den här sidan kan skrivas av.')}</p>
+          <TranscribeButton
+            transcriptionstatus={transcriptionstatus}
+            className="button button-primary"
+            label={l('Skriv av')}
+            recordId={recordId}
+            random={false}
+            initialPageIndex={pageIndex}
+            initialPageSource={item.source}
+          />
+        </div>
+      );
+    }
     return (
-      <section aria-labelledby={headingId} className="space-y-3">
-        {/* Header */}
-        <div className="mb-1 px-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {/* {segments.length > 0 && <h2 id={headingId}>{l("Text och bild")}</h2>} */}
-
-            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-              {/* Segment controls */}
-              {/* {segments?.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1">
-                  <button
-                    type="button"
-                    className="button button-secondary text-sm"
-                    onClick={handleOpenAllSegments}
-                    disabled={allOpen}
-                  >
-                    <FontAwesomeIcon
-                      icon={faExpand}
-                      className="mr-1"
-                      aria-hidden="true"
-                    />
-                    {l("Öppna alla")}
-                  </button>
-
-                  <button
-                    type="button"
-                    className="button button-ghost text-sm"
-                    onClick={handleCloseAllSegments}
-                    disabled={allClosed}
-                  >
-                    <FontAwesomeIcon
-                      icon={faCompress}
-                      className="mr-1"
-                      aria-hidden="true"
-                    />
-                    {l("Stäng alla")}
-                  </button>
-                </div>
-              )} */}
-
-              {/* Highlight switch */}
-              {hasHighlights && (
-                <HighlightSwitcher
-                  id={switchId}
-                  highlight={highlight}
-                  setHighlight={setHighlight}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Segments */}
-        <div className="space-y-3">
-          {segments.map((seg, i) => {
-            const segKey = seg.id || `seg-${i}`;
-            const isOpen = Object.prototype.hasOwnProperty.call(
-              openSegments,
-              segKey,
-            )
-              // If the segment key is explicitly set in openSegments, use that value
-              // Otherwise, if there are no highlighted segments, default to open;
-              // if there are highlighted segments, default to closed unless
-              // this segment is highlighted
-              ? openSegments[segKey]
-              : highlightedSegmentKeys.size === 0
-                || highlightedSegmentKeys.has(segKey);
-
-            return (
-              <RecordSegment
-                key={segKey}
-                title={seg.title}
-                mediaItems={seg.items}
-                startIndex={seg.startIndex}
-                imageUrl={imageUrl}
-                renderIndicator={renderIndicator}
-                onMediaClick={handleMediaClick}
-                buildTextSide={buildTextSide}
-                defaultOpen={i === 0}
-                segmentStatus={
-                  seg.segmentTranscriptionstatus
-                    ? computeStatus({
-                        transcriptionstatus: seg.segmentTranscriptionstatus,
-                      })
-                    : null
-                }
-                persons={seg.persons}
-                isOpen={isOpen}
-                onToggle={() => handleToggleSegment(segKey)}
-              />
-            );
-          })}
-        </div>
-
-        {(textPages.length > 0 || pdfObjects.length > 0) && (
-          <div className="flex flex-wrap items-center gap-2 px-4">
-            {textPages.length > 0 && (
-              <button
-                type="button"
-                className="button button-secondary inline-flex items-center justify-center text-sm"
-                onClick={handleDownloadAllText}
-              >
-                <FontAwesomeIcon
-                  icon={faDownload}
-                  className="mr-1"
-                  aria-hidden="true"
-                />
-                {l('Ladda ner text (.txt)')}
-              </button>
-            )}
-
-            {pdfObjects.map((pdfObject) => (
-              <a
-                key={pdfObject.source}
-                className="button button-secondary inline-flex items-center justify-center text-sm"
-                href={buildPdfUrl(pdfObject.source)}
-                download
-              >
-                <FontAwesomeIcon
-                  icon={faFilePdf}
-                  className="mr-1"
-                  aria-hidden="true"
-                />
-                {pdfObjects.length === 1
-                  ? l('Ladda ner PDF')
-                  : `${l('Ladda ner PDF')}: ${
-                    pdfObject.title || pdfObject.source.split('/').pop()
-                  }`}
-              </a>
-            ))}
-          </div>
-        )}
-
-        {/* Contributor info (keep at the end) */}
-        <ContributorInfo
-          transcribedby={transcribedby}
-          comment={data.comment}
-          transcriptiondate={data.transcriptiondate}
-        />
-      </section>
+      <p className="text-body">
+        {l('Texten är ännu inte färdig – transkribering eller granskning pågår.')}
+      </p>
     );
-  }
+  };
+  if (!images.length) return null;
 
-  // Non-"page-by-page" fallback (still grouped by segments and using split text by absolute index)
   return (
     <section aria-labelledby={headingId} className="space-y-3">
-      <div className="flex items-center justify-between mb-1 px-4">
-        {/* {segments.length > 0 && (
-          <h2 id={headingId} className="mr-4">
-            {l("Text och bild")}
-          </h2>
-        )} */}
-
-        {hasHighlights && (
-          <HighlightSwitcher
-            id={switchId}
-            highlight={highlight}
-            setHighlight={setHighlight}
-            count={totalHits}
-            ariaLabel={l("Markera träffar")}
-          />
-        )}
+      <div>
+        <h2
+          id={headingId}
+          className="text-xl font-bold"
+        >
+          {l(hasTranscribedText ? 'Original och avskrift' : 'Originalbilder')}
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          {hasHighlights && (
+            <HighlightSwitcher id={switchId} highlight={highlight} setHighlight={setHighlight} />
+          )}
+        </div>
       </div>
-
+      <RecordViewThumbnails
+        images={images}
+        onMediaClick={handleMediaClick}
+        renderIndicator={renderIndicator}
+      />
       <div className="space-y-3">
-        {segments.map((seg, i) => (
+        {hasRealSegments ? segments.map((segment) => (
           <RecordSegment
-            key={seg.id || `seg-${i}`}
-            title={seg.title}
-            mediaItems={seg.items}
-            startIndex={seg.startIndex}
-            imageUrl={imageUrl}
+            key={segment.id}
+            title={segment.title}
+            mediaItems={segment.items}
+            startIndex={segment.startIndex}
+            imageUrl={config.imageUrl}
             renderIndicator={renderIndicator}
             onMediaClick={handleMediaClick}
-            onKeyDown={(e, item, absIndex) => handleKeyDown(e, item, absIndex)}
-            buildTextSide={(mediaItem, absoluteIndex) => (
-              <TranscribedText
-                html={sanitizeHtml(textParts?.[absoluteIndex] || "")}
-                onToggle={() => toggleExpanded(absoluteIndex)}
-                contentId={`non-page-by-page-text-${recordId}-${absoluteIndex}`}
-              />
-            )}
-            defaultOpen={i === 0}
+            buildTextSide={buildTextSide}
+            defaultOpen
+            segmentStatus={computeStatus({
+              transcriptionstatus: segment.segmentTranscriptionstatus,
+            })}
+            persons={segment.persons}
+          />
+        )) : images.map((item, index) => (
+          <MediaCard
+            key={item.id || item.source}
+            mediaItem={item}
+            index={index}
+            imageUrl={config.imageUrl}
+            renderIndicator={renderIndicator}
+            onMediaClick={handleMediaClick}
+            right={buildTextSide(item, index)}
+            headingLevel="h3"
           />
         ))}
       </div>
-
       <ContributorInfo
         transcribedby={transcribedby}
         comment={data.comment}
@@ -558,8 +159,21 @@ export default function RecordTextPanel({
   );
 }
 
-RecordTextPanel.propTypes = {
+const readerPropTypes = {
   data: PropTypes.object.isRequired,
   highlightData: PropTypes.object,
   mediaImageClickHandler: PropTypes.func.isRequired,
 };
+RecordReader.propTypes = readerPropTypes;
+
+export default function RecordTextPanel({ data, highlightData, mediaImageClickHandler }) {
+  return (
+    <RecordReader
+      key={data.id}
+      data={data}
+      highlightData={highlightData}
+      mediaImageClickHandler={mediaImageClickHandler}
+    />
+  );
+}
+RecordTextPanel.propTypes = readerPropTypes;

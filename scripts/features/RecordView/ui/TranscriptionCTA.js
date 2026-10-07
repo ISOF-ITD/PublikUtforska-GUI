@@ -16,8 +16,8 @@ const STRINGS = {
   readyPagesPlural: 'redo att skrivas av',
   lockedInfo:
     'Alla sidor är upptagna just nu. Testa en slumpmässig accession!',
-  tipStartFirstFree:
-    'Tips: Tryck för att starta på den första otranskriberade sidan.',
+  // tipStartFirstFree:
+    // 'Tips: Tryck för att starta på den första otranskriberade sidan.',
   recordLabel: 'Accession',
 };
 
@@ -63,7 +63,6 @@ export default function TranscriptionCTA({ data }) {
     transcriptiontype = null,
     transcriptionstatus,
     media = [],
-    title = '',
     id,
     archive,
     places = [],
@@ -123,23 +122,23 @@ export default function TranscriptionCTA({ data }) {
   const statusLine = `${transcribedCount}/${totalPages} ${l(
     STRINGS.pages,
   )} - ${pagesLeft} ${l(STRINGS.pagesLeft)}`;
-  const readyPagesLabel = readyCount === 1
-    ? l(STRINGS.readyPages)
-    : l(STRINGS.readyPagesPlural);
-  const nextReadyText = readyCount > 0 ? `${readyCount} ${readyPagesLabel}` : null;
+  // const readyPagesLabel = readyCount === 1
+  //   ? l(STRINGS.readyPages)
+  //   : l(STRINGS.readyPagesPlural);
+  // const nextReadyText = readyCount > 0 ? `${readyCount} ${readyPagesLabel}` : null;
 
   return (
     <section
-      className="rounded-2xl !border !border-border bg-surface/80 text-body p-4 mb-2 shadow"
+      className="my-6 text-base leading-relaxed text-body"
       aria-labelledby={`tp-${id}`}
       aria-describedby={statusId}
       data-testid="transcription-prompt"
     >
-      <h2 id={`tp-${id}`} className="sr-only">
-        {`${l(STRINGS.recordLabel)}: ${title || id}`}
+      <h2 id={`tp-${id}`} className="text-xl font-bold">
+        {l('Hjälp till att skriva av')}
       </h2>
 
-      <div className="mt-1 flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span
           className={`inline-flex items-center rounded-full px-2 py-1 text-sm font-medium ring-1 ring-inset whitespace-nowrap ${pill.cls}`}
           aria-label={l(pill.label)}
@@ -193,9 +192,9 @@ export default function TranscriptionCTA({ data }) {
             )}
           </div>
 
-          {nextReadyText && (
+          {/* {nextReadyText && (
             <span className="text-muted">{l(STRINGS.tipStartFirstFree)}</span>
-          )}
+          )} */}
         </div>
       )}
     </section>

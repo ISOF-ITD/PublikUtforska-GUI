@@ -1,109 +1,54 @@
-import PropTypes from "prop-types";
-import { memo, useId, useState, useCallback } from "react";
-import MediaCard from "./MediaCard";
-import { l } from "../../../lang/Lang";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { StatusIndicator } from "./TranscriptionStatusIndicator";
-import SegmentPersons from "./SegmentPersons";
-import { getSegmentTitle } from "../../../utils/helpers";
+import PropTypes from 'prop-types';
+import { useId, useState } from 'react';
+import MediaCard from './MediaCard';
+import { l } from '../../../lang/Lang';
+import { StatusIndicator } from './TranscriptionStatusIndicator';
+import SegmentPersons from './SegmentPersons';
 
-function RecordSegment({
-  title,
-  mediaItems,
-  startIndex,
-  imageUrl,
-  renderIndicator,
-  onMediaClick,
-  buildTextSide,
-  defaultOpen = false,
-  segmentStatus,
-  persons = [],
-  isOpen,
-  onToggle,
+export default function RecordSegment({
+  title, mediaItems, startIndex, imageUrl, renderIndicator, onMediaClick,
+  buildTextSide, defaultOpen = false, segmentStatus, persons = [],
 }) {
-  const segId = useId();
-
-  // Uncontrolled fallback
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const controlled = typeof isOpen === "boolean";
-  const open = controlled ? isOpen : internalOpen;
-
-  const toggle = useCallback(() => {
-    if (controlled) {
-      onToggle?.();
-    } else {
-      setInternalOpen((o) => !o);
-    }
-  }, [controlled, onToggle]);
-
+  const id = useId();
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="bg-surface shadow-sm border border-border overflow-hidden relative !border-solid rounded">
-      <button
-        type="button"
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left !m-0"
-        aria-expanded={open}
-        aria-controls={`seg-panel-${segId}`}
-        onClick={toggle}
-      >
-        {/* LEFT SIDE: indicator + title + persons */}
-        <span className="flex items-center gap-2 flex-1 min-w-0">
-          {segmentStatus && (
-            <StatusIndicator
-              status={segmentStatus}
-              size="sm"
-              positionClass=""
-              className="shrink-0"
-            />
-          )}
-
-          <span className="font-medium truncate max-w-full">
-            {getSegmentTitle(mediaItems) || l("Segment")}
+    <section aria-labelledby={`${id}-heading`} className="relative overflow-hidden rounded border !border-solid border-border bg-surface shadow-sm">
+      <h3 id={`${id}-heading`} className="!m-0 text-lg font-semibold">
+        <button
+          type="button"
+          className="!m-0 flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+          aria-expanded={open}
+          aria-controls={`${id}-panel`}
+          onClick={() => setOpen((previous) => !previous)}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <StatusIndicator status={segmentStatus} positionClass="" className="shrink-0" />
+            <span>{title || l('Alla sidor')}</span>
           </span>
-
-          {persons.length > 0 && (
-            <div className="px-4 pb-0 max-sm:hidden">
-              <SegmentPersons persons={persons} maxVisible={2} />
-            </div>
-          )}
-        </span>
-
-        {/* RIGHT SIDE: "Visa/Dölj" + chevron */}
-        <span className="flex items-center gap-2 shrink-0">
-          <span className="text-subtle shrink-0">
-            {open ? (
-              <span>
-                {l("Dölj")}{" "}
-                <FontAwesomeIcon className="text-lg" icon={faChevronUp} />
-              </span>
-            ) : (
-              <span>
-                {l("Visa")}{" "}
-                <FontAwesomeIcon className="text-lg" icon={faChevronDown} />
-              </span>
-            )}
-          </span>
-        </span>
-      </button>
-
-      {open && (
-        <div id={`seg-panel-${segId}`} className="lg:p-2 p-4 space-y-3">
-          {mediaItems.map((mediaItem, i) => {
-            const absoluteIndex = startIndex + i;
-            return (
+          <span className="shrink-0 text-sm text-subtle">{open ? l('Dölj') : l('Visa')}</span>
+        </button>
+      </h3>
+      {persons.length > 0 && (
+        <div className="px-4 pb-2"><SegmentPersons persons={persons} maxVisible={2} /></div>
+      )}
+      <div id={`${id}-panel`} hidden={!open}>
+        {open && (
+          <div className="space-y-3 p-4 lg:p-2">
+            {mediaItems.map((item, index) => (
               <MediaCard
-                key={`${mediaItem.source ?? "img"}-${absoluteIndex}`}
-                mediaItem={mediaItem}
-                index={absoluteIndex}
+                key={item.id || item.source}
+                mediaItem={item}
+                index={startIndex + index}
                 imageUrl={imageUrl}
                 renderIndicator={renderIndicator}
                 onMediaClick={onMediaClick}
-                right={buildTextSide(mediaItem, absoluteIndex)}
+                right={buildTextSide(item, startIndex + index)}
+                headingLevel="h4"
               />
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
@@ -117,15 +62,6 @@ RecordSegment.propTypes = {
   onMediaClick: PropTypes.func.isRequired,
   buildTextSide: PropTypes.func.isRequired,
   defaultOpen: PropTypes.bool,
-  segmentStatus: PropTypes.shape({
-    key: PropTypes.string,
-    label: PropTypes.string.isRequired,
-    color: PropTypes.string.isRequired,
-    icon: PropTypes.any,
-  }),
+  segmentStatus: PropTypes.object,
   persons: PropTypes.array,
-  isOpen: PropTypes.bool,
-  onToggle: PropTypes.func,
 };
-
-export default RecordSegment;
