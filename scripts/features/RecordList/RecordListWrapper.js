@@ -36,7 +36,7 @@ export default function RecordListWrapper({
 
   return (
     <div className="min-h-full bg-surface text-body">
-      <header className={isEmbeddedResults
+      <div className={isEmbeddedResults
         ? 'border-b border-border bg-surface px-4 py-3 text-body min-[1440px]:px-8'
         : 'bg-primary px-4 pb-6 pt-8 text-[var(--color-text-inverted)] lg:px-8'}
       >
@@ -52,7 +52,7 @@ export default function RecordListWrapper({
               : resultHeading}
           </Heading>
         </div>
-      </header>
+      </div>
 
       <div className="mx-auto box-border w-full max-w-screen-2xl px-4 pb-28 pt-2 min-[1440px]:px-8 min-[1440px]:pb-24">
         <div ref={containerRef}>

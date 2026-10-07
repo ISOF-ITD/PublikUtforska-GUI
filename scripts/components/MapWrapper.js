@@ -258,8 +258,6 @@ function MapWrapper({
           ? 'minmax(0, 1fr) var(--desktop-map-pane-width)'
           : undefined,
       }}
-      role="region"
-      aria-label={l('Sökresultat')}
       aria-busy={uiLoading || undefined}
       data-record-list-scroll={!isSplitResultsLayout && listIsVisible ? 'true' : undefined}
       tabIndex={-1}
@@ -283,6 +281,7 @@ function MapWrapper({
         data-record-list-scroll={isSplitResultsLayout && listIsVisible ? 'true' : undefined}
       >
         <SearchControls
+          active={active}
           recordsData={recordsData}
           audioRecordsData={audioRecordsData}
           pictureRecordsData={pictureRecordsData}
@@ -293,7 +292,7 @@ function MapWrapper({
           showResultViewControl={!isWideResultsViewport}
         />
 
-        <section
+        <main
           id="record-list-panel"
           className="min-h-screen overflow-x-hidden bg-surface text-body"
           hidden={!listIsVisible}
@@ -310,7 +309,7 @@ function MapWrapper({
               loading={uiLoading}
             />
           </Suspense>
-        </section>
+        </main>
       </div>
 
       <div
@@ -319,7 +318,7 @@ function MapWrapper({
         hidden={!mapIsVisible}
         inert={!mapIsVisible || undefined}
         aria-hidden={!mapIsVisible || undefined}
-        role="region"
+        role={active && resultView === 'map' ? 'main' : 'region'}
         aria-label={l('Sökträffar på karta')}
         aria-busy={mapUiLoading || undefined}
         tabIndex={-1}

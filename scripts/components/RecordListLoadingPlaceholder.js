@@ -22,11 +22,11 @@ export default function RecordListLoadingPlaceholder({
     >
       <div aria-hidden="true">
         {!embedded && (
-          <header className="bg-primary px-4 pb-6 pt-[9rem] md:px-8 md:py-8">
+          <div className="bg-primary px-4 pb-6 pt-[9rem] md:px-8 md:py-8">
             <div className="mx-auto w-full max-w-screen-2xl">
               <div className="h-8 w-2/3 rounded bg-surface/70 motion-safe:animate-pulse" />
             </div>
-          </header>
+          </div>
         )}
 
         <div className={embedded

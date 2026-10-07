@@ -14,9 +14,9 @@ export default function StatisticsPage() {
 
   return (
     <article className="py-8 text-body">
-      <header className="mb-6 border-b border-border pb-4">
+      <div className="mb-6 border-b border-border pb-4">
         <h1 className="!m-0 text-body">{l('Statistik')}</h1>
-      </header>
+      </div>
       <StatisticsContainer />
     </article>
   );

@@ -178,7 +178,7 @@ export default memo(function UtteranceRow({
       )}`}
     >
       {/* first row – status · play/pause · timestamp */}
-      <header className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <span className="flex items-center gap-3">
           <StatusDot status={utterance.status} />
           <button type="button"
@@ -205,7 +205,7 @@ export default memo(function UtteranceRow({
         >
           {formatTimestamp(utterance.start)}
         </time>
-      </header>
+      </div>
 
       {/* transcript text / textarea */}
       {isEditing ? (

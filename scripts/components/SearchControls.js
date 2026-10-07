@@ -57,6 +57,7 @@ function Warning() {
 }
 
 export default function SearchControls({
+  active = true,
   recordsData = { data: [], metadata: {} },
   audioRecordsData = { data: [], metadata: {} },
   pictureRecordsData = { data: [], metadata: {} },
@@ -150,6 +151,7 @@ export default function SearchControls({
     ? lastGoodRef.current
     : { recordsData, audioRecordsData, pictureRecordsData };
   const panelLoading = loading && !justSwitched;
+  const HeaderElement = active ? 'header' : 'div';
   const searchControlsPanelStyle = {
     backgroundImage: `var(--image-header-back-tint), url(${headerBack})`,
     backgroundPosition: 'center top',
@@ -181,14 +183,13 @@ export default function SearchControls({
 
   return (
     <>
-      <section
+      <div
         id="searchcontrols-panel"
-        aria-label={l('Sök och filter')}
         className="relative z-[1201] max-w-full overflow-visible bg-isof print:hidden"
         style={searchControlsPanelStyle}
       >
         <Warning />
-        <header className="max-w-full border-b border-white/20">
+        <HeaderElement className="max-w-full border-b border-white/20">
           <div className="flex min-h-[4rem] max-w-full items-center justify-between gap-2 px-3 py-2 min-[1440px]:px-5">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <h1 className="!m-0">
@@ -270,9 +271,12 @@ export default function SearchControls({
               )}
             </div>
           </div>
-        </header>
+        </HeaderElement>
 
-        <div className="box-border w-full max-w-[900px] px-2 pb-2 min-[1440px]:px-5 min-[1440px]:pb-5">
+        <section
+          aria-label={l('Sök och filter')}
+          className="box-border w-full max-w-[900px] px-2 pb-2 min-[1440px]:px-5 min-[1440px]:pb-5"
+        >
           <h2 className="sr-only">{l('Sök och filtrera')}</h2>
           <SearchPanel
             recordsData={stable.recordsData}
@@ -287,8 +291,8 @@ export default function SearchControls({
             showSupplementaryContent={!hasSubmittedSearch || isTranscribeFilter}
           />
 
-        </div>
-      </section>
+        </section>
+      </div>
 
       {activateIntroOverlay && (
         <IntroOverlay
@@ -302,6 +306,7 @@ export default function SearchControls({
 }
 
 SearchControls.propTypes = {
+  active: PropTypes.bool,
   recordsData: PropTypes.object,
   audioRecordsData: PropTypes.object,
   pictureRecordsData: PropTypes.object,

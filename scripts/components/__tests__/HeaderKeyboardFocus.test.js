@@ -8,10 +8,19 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import SearchControls from '../SearchControls';
 import RoutePageShell from '../RoutePageShell';
+import MapWrapper from '../MapWrapper';
 import IntroOverlay from '../views/IntroOverlay';
 
 jest.mock('../../features/Search/SearchPanel', () => function SearchPanel() {
   return null;
+});
+
+jest.mock('../../features/RecordList/RecordListWrapper', () => function RecordList() {
+  return <h2 id="record-list-heading">Sökträffar</h2>;
+});
+
+jest.mock('../views/MapView', () => function MapView() {
+  return <p>Kartinnehåll</p>;
 });
 
 jest.mock('../../hooks/useBookmarkedRecords', () => ({
@@ -31,6 +40,11 @@ jest.mock('../../features/Search/hooks/useSearchSuggestions', () => () => ({
 
 beforeEach(() => {
   global.fetch = jest.fn(() => new Promise(() => {}));
+  window.matchMedia = jest.fn(() => ({
+    matches: false,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  }));
   localStorage.setItem('folke:introSeen:v1', '1');
   Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
     configurable: true,
@@ -87,6 +101,40 @@ test('post- och avskriftsheaderns länkar använder samma fokusmarkering', () =>
     }),
     screen.getByRole('link', { name: 'Till sökresultaten' }),
   ].forEach((control) => expect(control).toHaveClass('header-keyboard-focus'));
+});
+
+test('sidhuvudet ligger före main och den dolda sökvyn tillför inget extra header', async () => {
+  const { container } = render(
+    <MemoryRouter initialEntries={['/records/record-a']}>
+      <div hidden>
+        <SearchControls active={false} loading={false} />
+      </div>
+      <RoutePageShell><p>Accessionens innehåll</p></RoutePageShell>
+    </MemoryRouter>,
+  );
+  const main = screen.getByRole('main');
+  const header = screen.getByRole('banner');
+  expect(container.querySelectorAll('header')).toHaveLength(1);
+  expect(container.querySelectorAll('main')).toHaveLength(1);
+  expect(header.closest('main')).toBeNull();
+  expect(header.nextElementSibling).toBe(main);
+  expect(main).toHaveAttribute('id', 'route-page-content');
+  expect(main).toHaveTextContent('Accessionens innehåll');
+  await waitFor(() => expect(main).toHaveFocus());
+  expect(HTMLElement.prototype.scrollTo).toHaveBeenCalledWith({ top: 0 });
+});
+
+test.each(['/search', '/search?showmap=1'])('sökvyn %s har ett sidhuvud utanför huvudinnehållet', async (entry) => {
+  const { container } = render(
+    <MemoryRouter initialEntries={[entry]}>
+      <MapWrapper active loading={false} mapMarkerClick={jest.fn()} />
+    </MemoryRouter>,
+  );
+  await screen.findByRole('main');
+  expect(screen.getAllByRole('banner')).toHaveLength(1);
+  expect(container.querySelectorAll('header')).toHaveLength(1);
+  expect(screen.getByRole('banner').closest('main,[role="main"]')).toBeNull();
+  expect(screen.getAllByRole('main')).toHaveLength(1);
 });
 
 test('IntroOverlay-headern markerar kontroller vid tangentbordsnavigering', async () => {

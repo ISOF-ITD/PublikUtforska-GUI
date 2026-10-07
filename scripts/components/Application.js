@@ -259,35 +259,36 @@ export default function Application() {
     return () => window.cancelAnimationFrame(animationFrameId);
   }, [hasRoutePage]);
 
+  const resultsContentTarget = new URLSearchParams(location.search).has('showmap')
+    ? '#map-result-panel' : '#record-list-panel';
+
   return (
     <AudioProvider>
       <div className="app">
         <a
-          href={hasRoutePage ? '#route-page-content' : '#results-viewport'}
+          href={hasRoutePage ? '#route-page-content' : resultsContentTarget}
           className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-[4000] bg-surface text-link underline px-3 py-2 rounded"
         >
           Hoppa till innehåll
         </a>
-        <main id="main" tabIndex={-1}>
-          <div
-            hidden={hasRoutePage}
-            inert={hasRoutePage || undefined}
-            aria-hidden={hasRoutePage || undefined}
-            onFocusCapture={rememberResultFocus}
-            onPointerDownCapture={rememberResultFocus}
-          >
-            <MapWrapper
-              active={!hasRoutePage}
-              mapMarkerClick={mapMarkerClick}
-              mapData={mapData}
-              recordsData={recordsData}
-              audioRecordsData={audioRecordsData}
-              pictureRecordsData={pictureRecordsData}
-              loading={loading}
-            />
-          </div>
-          <Outlet />
-        </main>
+        <div
+          hidden={hasRoutePage}
+          inert={hasRoutePage || undefined}
+          aria-hidden={hasRoutePage || undefined}
+          onFocusCapture={rememberResultFocus}
+          onPointerDownCapture={rememberResultFocus}
+        >
+          <MapWrapper
+            active={!hasRoutePage}
+            mapMarkerClick={mapMarkerClick}
+            mapData={mapData}
+            recordsData={recordsData}
+            audioRecordsData={audioRecordsData}
+            pictureRecordsData={pictureRecordsData}
+            loading={loading}
+          />
+        </div>
+        <Outlet />
 
         <GlobalAudioPlayer />
         <DeferredEventOverlay events={['overlay.viewimage']}>

@@ -14,23 +14,22 @@ import { createResultLocation } from '../utils/routeHelper';
 export default function RoutePageShell({ children }) {
   const location = useLocation();
   const pageRef = useRef(null);
+  const contentRef = useRef(null);
   const resultLocation = createResultLocation(location.search);
 
   useEffect(() => {
     const animationFrameId = window.requestAnimationFrame(() => {
       pageRef.current?.scrollTo({ top: 0 });
-      pageRef.current?.focus();
+      contentRef.current?.focus({ preventScroll: true });
     });
 
     return () => window.cancelAnimationFrame(animationFrameId);
   }, [location.pathname]);
 
   return (
-    <section
+    <div
       ref={pageRef}
-      id="route-page-content"
       className="route-page fixed inset-0 z-[1600] overflow-y-auto overflow-x-hidden bg-surface pb-24 text-body print:static print:overflow-visible"
-      tabIndex={-1}
     >
       <header
         className="z-[1700] bg-primary text-[var(--color-text-inverted)]"
@@ -77,10 +76,15 @@ export default function RoutePageShell({ children }) {
           </Link>
         </div>
       </header>
-      <div className="route-page-content mx-auto min-h-[calc(100vh-4rem)] w-full px-5 pb-8">
+      <main
+        ref={contentRef}
+        id="route-page-content"
+        tabIndex={-1}
+        className="route-page-content mx-auto min-h-[calc(100vh-4rem)] w-full px-5 pb-8"
+      >
         {children}
-      </div>
-    </section>
+      </main>
+    </div>
   );
 }
 

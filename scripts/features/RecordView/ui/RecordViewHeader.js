@@ -72,7 +72,7 @@ export default function RecordViewHeader({ data }) {
   };
 
   return (
-    <header className="container-header">
+    <div className="container-header">
       <div className="row">
         <div className="eleven columns">
           <h1>
@@ -122,7 +122,7 @@ export default function RecordViewHeader({ data }) {
       <ContactButtonGroup className="!static mt-2 w-full flex-wrap justify-end gap-2">
         <BookmarkedRecordButton record={data} variant="contact" />
       </ContactButtonGroup>
-    </header>
+    </div>
   );
 }
 

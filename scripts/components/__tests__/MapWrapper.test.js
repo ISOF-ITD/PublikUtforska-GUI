@@ -132,6 +132,29 @@ function currentLocation() {
   return new URL(screen.getByTestId('location').textContent, 'http://localhost');
 }
 
+test.each([
+  ['/search?q=visa', 'record-list-panel'],
+  ['/search?q=visa&showmap=1', 'map-result-panel'],
+])('resultatläget %s har ett main utan sökheadern', (entry, panelId) => {
+  renderResults(entry);
+  expect(screen.getAllByRole('main')).toHaveLength(1);
+  const main = screen.getByRole('main');
+  expect(main).toHaveAttribute('id', panelId);
+  expect(main).not.toContainElement(screen.getByRole('region', { name: 'Sök och filter' }));
+  expect(SearchControls.mock.calls.at(-1)[0]).toMatchObject({ active: true });
+});
+
+test('den inaktiva sökvyn döljer main och inaktiverar sökheadern', () => {
+  const { container } = render(
+    <MemoryRouter initialEntries={['/records/record-a']}>
+      <MapWrapper active={false} mapMarkerClick={mapMarkerClick} loading={false} />
+    </MemoryRouter>,
+  );
+  expect(container.querySelector('main')).not.toBeVisible();
+  expect(screen.queryByRole('main')).not.toBeInTheDocument();
+  expect(SearchControls.mock.calls.at(-1)[0]).toMatchObject({ active: false });
+});
+
 beforeEach(() => {
   mediaQueries.clear();
   window.matchMedia = jest.fn((key) => {
@@ -160,8 +183,8 @@ test('förstorar och förminskar desktopkartan med bevarad adress, zoom och knap
   const mapInstance = await screen.findByTestId('map-instance');
   const button = screen.getByRole('button', { name: 'Förstora karta' });
   const mapPanel = screen.getByRole('region', { name: 'Sökträffar på karta' });
-  const listPanel = screen.getByRole('region', { name: 'Sökträffar' });
-  const results = screen.getByRole('region', { name: 'Sökresultat' });
+  const listPanel = screen.getByRole('main', { name: 'Sökträffar' });
+  const results = document.getElementById('results-viewport');
   const zoom = screen.getByRole('slider', { name: 'Kartans zoom' });
 
   expect(mapPanel).toContainElement(button);
@@ -239,7 +262,7 @@ test('öppnar direktlänk i stort kartläge och behåller läget vid sökning oc
   await screen.findByTestId('map-instance');
 
   expect(screen.getByRole('button', { name: 'Förminska karta' })).toHaveAttribute('aria-expanded', 'true');
-  expect(screen.queryByRole('region', { name: 'Sökträffar' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('main', { name: 'Sökträffar' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Sök', exact: true }));
   await user.click(screen.getByRole('button', { name: 'Filtrera' }));
 
@@ -270,7 +293,7 @@ test('behåller kartläget över desktopgränsen och mobilens befintliga vyväxl
 
   resizeViewport(800);
   await user.click(screen.getByRole('button', { name: 'Lista', exact: true }));
-  expect(screen.getByRole('region', { name: 'Sökträffar' })).toBeVisible();
+  expect(screen.getByRole('main', { name: 'Sökträffar' })).toBeVisible();
   expect(screen.queryByRole('region', { name: 'Sökträffar på karta' })).not.toBeInTheDocument();
   resizeViewport(1440);
   expect(screen.getByRole('button', { name: 'Förstora karta' })).toBeVisible();

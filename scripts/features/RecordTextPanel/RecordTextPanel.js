@@ -364,7 +364,7 @@ export default function RecordTextPanel({
     return (
       <section aria-labelledby={headingId} className="space-y-3">
         {/* Header */}
-        <header className="mb-1 px-4">
+        <div className="mb-1 px-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             {/* {segments.length > 0 && <h2 id={headingId}>{l("Text och bild")}</h2>} */}
 
@@ -412,7 +412,7 @@ export default function RecordTextPanel({
               )}
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Segments */}
         <div className="space-y-3">
@@ -508,7 +508,7 @@ export default function RecordTextPanel({
   // Non-"page-by-page" fallback (still grouped by segments and using split text by absolute index)
   return (
     <section aria-labelledby={headingId} className="space-y-3">
-      <header className="flex items-center justify-between mb-1 px-4">
+      <div className="flex items-center justify-between mb-1 px-4">
         {/* {segments.length > 0 && (
           <h2 id={headingId} className="mr-4">
             {l("Text och bild")}
@@ -524,7 +524,7 @@ export default function RecordTextPanel({
             ariaLabel={l("Markera träffar")}
           />
         )}
-      </header>
+      </div>
 
       <div className="space-y-3">
         {segments.map((seg, i) => (

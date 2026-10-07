@@ -21,7 +21,7 @@ function OverlayHeader({
   } ${l('av')} ${progressTotal}`;
 
   return (
-    <header className="container-header mb-6">
+    <div className="container-header mb-6">
       <h1 className="mb-2 !text-[var(--color-text-inverted)]">
         {heading}
         {archiveLabel && (
@@ -58,7 +58,7 @@ function OverlayHeader({
           </span>
         </div>
       )}
-    </header>
+    </div>
   );
 }
 

@@ -36,7 +36,7 @@ export default function EditorHeader({
     searchState;
 
   return (
-    <header
+    <div
       className="bg-white p-4 sm:p-6 mb-6 shadow rounded-lg sticky top-0 z-30
                  backdrop-blur supports-backdrop-blur:bg-white/90
                  flex flex-col gap-6 divide-y divide-gray-200"
@@ -227,7 +227,7 @@ export default function EditorHeader({
 
         <TextActions {...{ visibleUtterances, audioTitle }} />
       </section>
-    </header>
+    </div>
   );
 }
 
