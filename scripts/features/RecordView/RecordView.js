@@ -30,6 +30,7 @@ import config from "../../config";
 import AudioItems from "../AudioDescription/AudioItems";
 import RouteViewLoadingPlaceholder from "../../components/RouteViewLoadingPlaceholder";
 import ContributeInfoSection from '../../components/views/ContributeInfoSection';
+import { isImageMedia, isPdfMedia } from '../../utils/mediaTypes';
 
 function RecordView() {
   const { results: resultsPromise } = useLoaderData();
@@ -150,15 +151,25 @@ function ResolvedRecord({
     return <Outlet context={{ data }} />;
   }
 
+  const hasReadingMedia = (data.media || []).some((item) => (
+    isImageMedia(item) || isPdfMedia(item) || item.type === 'audio'
+  ));
+
   return (
     <article aria-labelledby={titleId}>
       <RecordViewHeader
         data={data}
         headingId={titleId}
       />
-      <div>
-        <div className="record-view-layout">
-          <div className="record-view-details min-w-0">
+      <div className={hasReadingMedia ? 'mx-auto w-full max-w-[1760px]' : undefined}>
+        <div className={hasReadingMedia
+          ? 'record-view-layout grid grid-cols-1 items-start min-[1440px]:grid-cols-[400px,minmax(0,1fr)] min-[1440px]:gap-x-8 print:!grid-cols-1'
+          : 'record-view-layout'}
+        >
+          <div className={hasReadingMedia
+            ? 'record-view-details min-w-0 min-[1440px]:[&_dl>div]:grid-cols-1 min-[1440px]:[&_dd]:ml-0 min-[1440px]:[&_[role=progressbar]]:w-full'
+            : 'record-view-details min-w-0'}
+          >
             <section aria-labelledby={metadataHeadingId} className="mb-6">
               <h2 id={metadataHeadingId} className="text-xl font-bold">Metadata</h2>
               <RecordViewMetadata data={data} search={location.search}>
@@ -180,7 +191,7 @@ function ResolvedRecord({
             <RecordViewActions data={data} />
             <TranscriptionCTA data={data} />
           </div>
-          <div className="record-view-media min-w-0 space-y-6 empty:hidden">
+          <div className="record-view-media min-w-0 space-y-6 empty:hidden [&_.prose]:max-w-[65ch]">
             <AudioItems data={data} highlightData={highlightData} />
             <RecordTextPanel
               data={data}

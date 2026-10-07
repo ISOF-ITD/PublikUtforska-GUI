@@ -4,7 +4,7 @@ import { l } from '../../lang/Lang';
 import contactButtonClassName from './contactButtonClassName';
 
 const inlineButtonClassName = [
-  'm-0 inline-flex min-h-11 items-center rounded-md border border-border',
+  'm-0 inline-flex !h-auto min-h-11 max-w-full items-center rounded-md border border-border !whitespace-normal text-left',
   'bg-surface px-4 py-2 font-semibold text-body shadow-sm',
   'hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2',
   'focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
