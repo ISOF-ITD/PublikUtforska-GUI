@@ -33,6 +33,13 @@ module.exports = {
         disabled: tokenColor('--color-disabled-bg-rgb'),
         accent: tokenColor('--color-accent-rgb'),
         danger: tokenColor('--color-danger-rgb'),
+        'player-bg': tokenColor('--color-player-bg-rgb'),
+        'player-text': tokenColor('--color-player-text-rgb'),
+        'player-muted': tokenColor('--color-player-muted-rgb'),
+        'player-control': tokenColor('--color-player-control-rgb'),
+        'player-control-hover': tokenColor('--color-player-control-hover-rgb'),
+        'player-accent': tokenColor('--color-player-accent-rgb'),
+        'player-focus': tokenColor('--color-player-focus-rgb'),
 
         // Legacy Isof utility names now resolve through the shared tokens.
         'lighter-isof': tokenColor('--color-accent-rgb'),

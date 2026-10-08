@@ -89,6 +89,15 @@
   --color-search-filter-checkbox: #ffffff;
   --color-search-filter-checkbox-checked-bg: #ffffff;
   --color-search-filter-checkbox-check: #005462;
+
+  /* The audio player keeps its Isof palette in both system themes. */
+  --color-player-bg-rgb: 28 63 73;
+  --color-player-text-rgb: 255 255 255;
+  --color-player-muted-rgb: 196 214 211;
+  --color-player-control-rgb: 0 84 98;
+  --color-player-control-hover-rgb: 50 116 127;
+  --color-player-accent-rgb: 63 214 149;
+  --color-player-focus-rgb: 139 245 231;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -207,6 +216,10 @@ a:not([class]):hover {
 
 *:focus-visible {
   outline-color: var(--color-focus) !important;
+}
+
+.audio-player :focus-visible {
+  outline-color: rgb(var(--color-player-focus-rgb)) !important;
 }
 
 mark,
