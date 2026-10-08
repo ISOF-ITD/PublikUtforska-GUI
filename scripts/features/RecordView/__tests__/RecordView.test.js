@@ -74,7 +74,8 @@ async function renderRecord(data, search = '', highlightData = null) {
   }], { initialEntries: [`/records/record-a${search}`] });
   const result = render(<RouterProvider router={router} />);
   await screen.findByRole('article', { name: 'Testuppteckning' });
-  await waitFor(() => expect(screen.getByRole('main')).toHaveFocus());
+  await waitFor(() => expect(Element.prototype.scrollTo).toHaveBeenCalledWith({ top: 0 }));
+  expect(screen.getByRole('main')).not.toHaveFocus();
   return { ...result, playAudio };
 }
 

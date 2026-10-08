@@ -124,6 +124,9 @@ export default function Application() {
   const navigate = useNavigate();
   const location = useLocation();
   const matches = useMatches();
+  // initialLocationRef is used to determine if the location has changed since the initial render,
+  // which is used to determine if we should focus on the results panel when navigating back to it.
+  const initialLocationRef = useRef(location);
   const { results, audioResults, pictureResults } = useLoaderData();
   const [mapData, setMapData] = useState(null);
   const [recordsData, setRecordsData] = useState({ data: [], metadata: {} });
@@ -267,6 +270,16 @@ export default function Application() {
       <div className="app">
         <a
           href={hasRoutePage ? '#route-page-content' : resultsContentTarget}
+
+          // onClick handler is used to focus the record title when navigating
+          // to a record page via a link, instead of scrolling to the top of the page.
+          onClick={(event) => {
+            const title = document.querySelector('#route-page-content [data-record-title]');
+            if (!hasRoutePage || !title) return;
+            event.preventDefault();
+            title.focus({ preventScroll: true });
+            title.scrollIntoView({ block: 'start' });
+          }}
           className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-[4000] bg-surface text-link underline px-3 py-2 rounded"
         >
           Hoppa till innehåll
@@ -288,7 +301,8 @@ export default function Application() {
             loading={loading}
           />
         </div>
-        <Outlet />
+        {/* Context makes focus management available to child components */}
+        <Outlet context={{ focusOnNavigation: location !== initialLocationRef.current }} />
 
         <GlobalAudioPlayer />
         <DeferredEventOverlay events={['overlay.viewimage']}>

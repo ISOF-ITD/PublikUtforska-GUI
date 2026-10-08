@@ -46,6 +46,11 @@ export default function GlobalAudioPlayer() {
   return (
     <div
       {...swipeHandlers}
+      // inert means that the element and its children are not interactive,
+      // but still visible. We use this to prevent interaction with the player when it's hidden.
+      inert={!visible || undefined}
+      // aria-hidden is used to hide the player from screen readers when it's hidden.
+      aria-hidden={!visible || undefined}
       className={classNames(
         'fixed inset-x-0 bottom-0 z-[2000] bg-surface text-body shadow-lg/10 print:hidden',
         'border-t border-border rounded-t-2xl',

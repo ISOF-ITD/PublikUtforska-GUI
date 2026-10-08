@@ -14,7 +14,16 @@ export default function RecordViewHeader({ data, headingId }) {
     <div className="container-header">
       <div className="row">
         <div className="eleven columns">
-          <h1 id={headingId || generatedHeadingId} className="break-words max-[650px]:!text-xl max-[650px]:!leading-snug">
+          <h1
+            id={headingId || generatedHeadingId}
+            data-record-title
+            // tabIndex={-1} is used to make the heading focusable, so that it can be focused when navigating to the record view via a link.
+            tabIndex={-1}
+            // scroll-mt-4 is used to offset the scroll position when navigating
+            // to this heading via an anchor link, so that the heading is not hidden
+            // behind the fixed header.
+            className="scroll-mt-4 break-words max-[650px]:!text-xl max-[650px]:!leading-snug"
+          >
             {titleText && titleText !== '[]' ? titleText : l('(Utan titel)')}
           </h1>
         </div>

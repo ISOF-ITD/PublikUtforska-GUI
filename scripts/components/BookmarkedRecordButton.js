@@ -7,8 +7,8 @@ import { l } from '../lang/Lang';
 import useBookmarkedRecords from '../hooks/useBookmarkedRecords';
 
 const compactContactButtonClassName = [
-  'feedback-button relative z-[1] inline-flex !h-auto self-start items-center gap-2',
-  'm-0 whitespace-nowrap rounded-full !border-0 bg-isof !px-3 !py-2',
+  'feedback-button header-keyboard-focus relative z-[1] inline-flex !h-auto self-start items-center gap-2',
+  'm-0 whitespace-nowrap rounded-full bg-isof !px-3 !py-2',
   'appearance-none !leading-[inherit] text-white shadow-[0_1px_2px_rgba(0,0,0,0.61)]',
   'transition hover:bg-white/55 focus-visible:outline focus-visible:outline-2',
   'focus-visible:outline-offset-2 focus-visible:outline-white',

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import {
   useEffect, useRef,
 } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useOutletContext } from 'react-router-dom';
 import FolkeLogo from '../../img/folke-white.svg';
 import headerBack from '../../img/header-back.gif';
 import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
@@ -13,6 +13,7 @@ import { createResultLocation } from '../utils/routeHelper';
 
 export default function RoutePageShell({ children }) {
   const location = useLocation();
+  const { focusOnNavigation = false } = useOutletContext() || {};
   const pageRef = useRef(null);
   const contentRef = useRef(null);
   const resultLocation = createResultLocation(location.search);
@@ -20,15 +21,33 @@ export default function RoutePageShell({ children }) {
   useEffect(() => {
     const animationFrameId = window.requestAnimationFrame(() => {
       pageRef.current?.scrollTo({ top: 0 });
-      contentRef.current?.focus({ preventScroll: true });
+      if (focusOnNavigation) {
+        contentRef.current?.focus({ preventScroll: true });
+      }
     });
 
     return () => window.cancelAnimationFrame(animationFrameId);
-  }, [location.pathname]);
+  }, [location.pathname, focusOnNavigation]);
+
+  useEffect(() => {
+    const scrollFromDocument = (event) => {
+      if (
+        event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+        || (event.target !== document.body && event.target !== document.documentElement)
+        || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')
+      ) return;
+
+      event.preventDefault();
+      pageRef.current?.scrollBy({ top: event.key === 'ArrowDown' ? 40 : -40 });
+    };
+    document.addEventListener('keydown', scrollFromDocument);
+    return () => document.removeEventListener('keydown', scrollFromDocument);
+  }, []);
 
   return (
     <div
       ref={pageRef}
+      tabIndex={-1}
       className="route-page fixed inset-0 z-[1600] overflow-y-auto overflow-x-hidden bg-surface pb-24 text-body print:static print:overflow-visible"
     >
       <header

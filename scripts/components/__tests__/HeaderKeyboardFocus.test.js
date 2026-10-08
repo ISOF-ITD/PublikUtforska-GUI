@@ -120,8 +120,8 @@ test('sidhuvudet ligger före main och den dolda sökvyn tillför inget extra he
   expect(header.nextElementSibling).toBe(main);
   expect(main).toHaveAttribute('id', 'route-page-content');
   expect(main).toHaveTextContent('Accessionens innehåll');
-  await waitFor(() => expect(main).toHaveFocus());
-  expect(HTMLElement.prototype.scrollTo).toHaveBeenCalledWith({ top: 0 });
+  await waitFor(() => expect(HTMLElement.prototype.scrollTo).toHaveBeenCalledWith({ top: 0 }));
+  expect(main).not.toHaveFocus();
 });
 
 test.each(['/search', '/search?showmap=1'])('sökvyn %s har ett sidhuvud utanför huvudinnehållet', async (entry) => {
