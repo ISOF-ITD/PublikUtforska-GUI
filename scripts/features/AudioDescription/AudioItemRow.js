@@ -20,11 +20,13 @@ import ConfirmationModal from "./ConfirmationModal";
 import useAudioDuration from "./hooks/useAudioDuration";
 import { secondsToMMSS } from "../../utils/timeHelper";
 import { createRecordTaskLocation } from '../../utils/routeHelper';
+import { transcriptFragment } from './transcriptUtils';
 
 function AudioItemRow({
   item,
   audioTitle,
   recordId,
+  selectedTranscriptId = null,
   openItems,
   onToggle,
   showAddForm,
@@ -49,6 +51,7 @@ function AudioItemRow({
   highlightData,
 }) {
   const location = useLocation();
+  const isSelectedTranscript = String(selectedTranscriptId) === String(item.id);
   const descriptionsId = useId();
   const rowToggleRef = useRef(null);
   // If user is editing an existing description:
@@ -158,126 +161,137 @@ function AudioItemRow({
   return (
     <>
       {/* Main row for the audio item */}
-      <tr className="odd:bg-surface-muted even:bg-surface border-b last:border-b-0 border-border text-body">
-        <td className="py-2 px-4">
+      <tr className={`border-b last:border-b-0 border-border text-body ${isSelectedTranscript ? 'bg-primary/10' : 'odd:bg-surface-muted even:bg-surface'}`}>
+        <td className="!w-12 !px-3 py-2 align-top sm:align-middle">
           <ListPlayButton
             media={item}
             recordId={recordId}
             recordTitle={audioTitle}
           />
         </td>
-        <td className="py-2 px-4">
-          <h3 className="!m-0 inline text-sm font-semibold">{audioTitle}</h3>
-          {item.source.match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0] && (
-            <span className="ml-2 text-[11px] rounded bg-surface-hover px-1 py-[1px] text-muted">
-              {item.source
-                .match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0]
-                ?.toUpperCase()}
-            </span>
-          )}
-          {<TimeChip seconds={durationSec} />}
-          {Array.isArray(highlightData) &&
-          highlightData.some(
-            (h) => h._source
-              && hasStartValue(h._source.start)
-              && h.highlight
-              && h.highlight['media.description.text'],
-          ) ? (
-            <div>
-              {highlightData
-                .filter((h) => h._source && hasStartValue(h._source.start))
-                .map((h) => (
-                  <div
-                    key={`desc-${h.id}-${h._source.start}`}
-                    className="italic"
-                    dangerouslySetInnerHTML={{
-                      __html: `Innehållsbeskrivning: ${h._source.start} ${h.highlight["media.description.text"][0]}`,
-                    }}
-                  />
-                ))}
-            </div>
-          ) : null}
-          {Array.isArray(highlightData) &&
-          highlightData.some(
-            (h) => h._source
-              && hasStartValue(h._source.start)
-              && h.highlight
-              && h.highlight['media.utterances.utterances.text'],
-          ) ? (
-            <div className="mt-2">
-              {highlightData
-                .filter((h) => h._source && hasStartValue(h._source.start))
-                .map((h) => (
-                  <div
-                    key={`utterance-${h.id}-${h._source.start}`}
-                  >
-                    <span className="font-mono ml-2 text-xs text-muted">
-                      Automatisk ljudavskrift
-                      {' ('}
-                      {secondsToMMSS(h._source.start)}
-                      {'): '}
-                    </span>
-                    <span
-                      className="italic"
-                      dangerouslySetInnerHTML={{
-                        __html: h.highlight['media.utterances.utterances.text'][0],
-                      }}
-                    />
-                  </div>
-                ))}
-            </div>
-            ) : null}
-        </td>
-        <td className="py-2 px-4">
-          <div className="flex flex-wrap gap-2 items-center justify-end">
-            {canContribute && config.activateAudioDescription && (
-            <button
-              ref={rowToggleRef}
-              type="button"
-              className="text-link hover:text-link-hover transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
-              aria-expanded={openItems[item.source] ? "true" : "false"}
-              aria-controls={descriptionsId}
-              onClick={() => onToggle(item.source)}
-            >
-              {openItems[item.source] ? (
-                <span className="whitespace-nowrap">
-                  <span className="px-1">Stäng</span>{" "}
-                  <FontAwesomeIcon icon={faCaretUp} />
-                </span>
-              ) : (
-                <span className="whitespace-nowrap">
-                  <span className="px-1">
-                    {descriptionsCount > 0
-                      ? `Visa Innehåll (${descriptionsCount})`
-                      : "Lägg till beskrivning"}
-                  </span>
-                  <FontAwesomeIcon icon={faCaretDown} />
+        <td className="py-2 !px-3">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div className="min-w-0 flex-1 break-words">
+              <h3 className="!m-0 inline text-sm font-semibold">{audioTitle}</h3>
+              {item.source.match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0] && (
+                <span className="ml-2 text-[11px] rounded bg-surface-hover px-1 py-[1px] text-muted">
+                  {item.source
+                    .match(/([A-Za-z]+)_?(\d+[A-Za-z]\d?)/i)?.[0]
+                    ?.toUpperCase()}
                 </span>
               )}
-            </button>
-            )}
-            <a
-              href={`${config.audioUrl}${item.source}`}
-              download
-              title="Ladda ner ljudfilen"
-              className="text-link hover:text-link-hover no-underline hover:cursor-pointer whitespace-nowrap"
-            >
-              <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
-              <FontAwesomeIcon icon={faDownload} />
-            </a>
-            {
-            // Read-only mode: "canContribute" is not nessesary
-            hasUtterances && (
-              <Link
-                to={correctionLocation}
+              {<TimeChip seconds={durationSec} />}
+              {Array.isArray(highlightData) &&
+              highlightData.some(
+                (h) => h._source
+                  && hasStartValue(h._source.start)
+                  && h.highlight
+                  && h.highlight['media.description.text'],
+              ) ? (
+                <div>
+                  {highlightData
+                    .filter((h) => h._source && hasStartValue(h._source.start))
+                    .map((h) => (
+                      <div
+                        key={`desc-${h.id}-${h._source.start}`}
+                        className="italic"
+                        dangerouslySetInnerHTML={{
+                          __html: `Innehållsbeskrivning: ${h._source.start} ${h.highlight["media.description.text"][0]}`,
+                        }}
+                      />
+                    ))}
+                </div>
+                ) : null}
+              {Array.isArray(highlightData) &&
+              highlightData.some(
+                (h) => h._source
+                  && hasStartValue(h._source.start)
+                  && h.highlight
+                  && h.highlight['media.utterances.utterances.text'],
+              ) ? (
+                <div className="mt-2">
+                  {highlightData
+                    .filter((h) => h._source && hasStartValue(h._source.start))
+                    .map((h) => (
+                      <div
+                        key={`utterance-${h.id}-${h._source.start}`}
+                      >
+                        <span className="font-mono ml-2 text-xs text-muted">
+                          Automatisk ljudavskrift
+                          {' ('}
+                          {secondsToMMSS(h._source.start)}
+                          {'): '}
+                        </span>
+                        <span
+                          className="italic"
+                          dangerouslySetInnerHTML={{
+                            __html: h.highlight['media.utterances.utterances.text'][0],
+                          }}
+                        />
+                      </div>
+                    ))}
+                </div>
+                ) : null}
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2 items-center sm:justify-end">
+              {canContribute && config.activateAudioDescription && (
+              <button
+                ref={rowToggleRef}
+                type="button"
                 className="text-link hover:text-link-hover transition-colors duration-200 flex hover:cursor-pointer px-2 py-2"
+                aria-expanded={openItems[item.source] ? "true" : "false"}
+                aria-controls={descriptionsId}
+                onClick={() => onToggle(item.source)}
               >
-                <span className="px-1 underline underline-offset-2">
-                  Avskrift
-                </span>
-              </Link>
-            )
-          }
+                {openItems[item.source] ? (
+                  <span className="whitespace-nowrap">
+                    <span className="px-1">Stäng</span>{" "}
+                    <FontAwesomeIcon icon={faCaretUp} />
+                  </span>
+                ) : (
+                  <span className="whitespace-nowrap">
+                    <span className="px-1">
+                      {descriptionsCount > 0
+                        ? `Visa Innehåll (${descriptionsCount})`
+                        : "Lägg till beskrivning"}
+                    </span>
+                    <FontAwesomeIcon icon={faCaretDown} />
+                  </span>
+                )}
+              </button>
+              )}
+              <a
+                href={`${config.audioUrl}${item.source}`}
+                download
+                title="Ladda ner ljudfilen"
+                className="text-link hover:text-link-hover no-underline hover:cursor-pointer whitespace-nowrap"
+              >
+                <span className="px-1 underline underline-offset-2">Ladda ner</span>{" "}
+                <FontAwesomeIcon icon={faDownload} />
+              </a>
+              {
+              // Read-only mode: "canContribute" is not nessesary
+              hasUtterances && (
+                <Link
+                  to={{ pathname: `/records/${encodeURIComponent(recordId)}`, search: location.search, hash: `#${transcriptFragment(item.id)}` }}
+                  state={{ focusTranscript: true }}
+                  replace={false}
+                  preventScrollReset
+                  aria-label={`${isSelectedTranscript ? 'Vald avskrift' : 'Visa avskrift'}: ${audioTitle}`}
+                  aria-current={isSelectedTranscript ? 'location' : undefined}
+                  className="text-link hover:text-link-hover transition-colors duration-200 flex items-center gap-1 whitespace-nowrap hover:cursor-pointer px-2 py-2"
+                >
+                  <span className="px-1 underline underline-offset-2">
+                    {isSelectedTranscript ? 'Vald avskrift' : 'Visa avskrift'}
+                  </span>
+                  <FontAwesomeIcon icon={faCaretDown} aria-hidden="true" />
+                </Link>
+              )
+            }
+              {hasUtterances && config.activateAudioCorrection && (
+                <Link to={correctionLocation} className="text-link px-2 py-2 underline">Rätta avskrift</Link>
+              )}
+            </div>
           </div>
         </td>
       </tr>
@@ -285,7 +299,7 @@ function AudioItemRow({
       {/* If open, show descriptions + add-content button */}
       <tr id={descriptionsId} hidden={!openItems[item.source]}>
         {openItems[item.source] && (
-          <td colSpan={3} className="py-4 px-4 w-full border-isof">
+          <td colSpan={2} className="py-4 px-4 w-full border-isof">
             {/* List existing descriptions. Pass a callback to start editing */}
             <DescriptionList
               item={item}
@@ -420,6 +434,7 @@ function AudioItemRow({
 AudioItemRow.propTypes = {
   item: PropTypes.object.isRequired,
   audioTitle: PropTypes.string.isRequired,
+  selectedTranscriptId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   recordId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,
   openItems: PropTypes.object.isRequired,

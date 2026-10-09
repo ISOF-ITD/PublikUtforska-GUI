@@ -92,6 +92,13 @@ beforeEach(() => {
 });
 afterEach(() => jest.restoreAllMocks());
 
+test('ogiltig ljudreferens ger meddelande även när accessionen saknar ljudfiler', async () => {
+  const { playAudio } = await renderRecord(record(), '?k=start#avskrift-999');
+  expect(screen.getByText(/Inspelningen i länken finns inte/)).toBeVisible();
+  expect(screen.getByRole('article', { name: 'Testuppteckning' })).toBeVisible();
+  expect(playAudio).not.toHaveBeenCalled();
+});
+
 test.each([
   'Beskrivning av innehållet (1)', 'Uppgifter från äldre innehållsregister (1)',
 ])('innehållspanelen %s öppnas med tangentbord och behåller fokus på kontrollen', async (name) => {
@@ -541,6 +548,41 @@ test('inspelningar utan titel får numrerade rubriker', async () => {
   ['Inspelning 1', 'Inspelning 2'].forEach((name) => {
     expect(screen.getByRole('heading', { level: 3, name })).toBeVisible();
   });
+});
+
+test('vald avskrift markeras i listan och läsaren har en fokuserbar väg tillbaka utan ljudstart', async () => {
+  const user = userEvent.setup();
+  const { playAudio } = await renderRecord(record([
+    {
+      id: 'a1',
+      type: 'audio',
+      source: 'a.mp3',
+      title: 'Inspelning A',
+      utterances: [{ start: 0, end: 10, text: 'Avskrift A.' }],
+    },
+    {
+      id: 'a2',
+      type: 'audio',
+      source: 'b.mp3',
+      title: 'Inspelning B',
+      utterances: [{ start: 0, end: 10, text: 'Avskrift B.' }],
+    },
+  ]), '?k=start');
+  expect(screen.getByRole('link', { name: 'Vald avskrift: Inspelning A' }))
+    .toHaveAttribute('aria-current', 'location');
+  const secondLink = screen.getByRole('link', { name: 'Visa avskrift: Inspelning B' });
+  expect(secondLink).toHaveAttribute('href', '/records/record-a?k=start#avskrift-a2');
+  await user.click(secondLink);
+  expect(screen.getByRole('heading', { name: 'Avskrift: Inspelning B' })).toHaveFocus();
+  expect(screen.getByRole('link', { name: 'Vald avskrift: Inspelning B' }))
+    .toHaveAttribute('aria-current', 'location');
+  expect(screen.getByRole('link', { name: 'Visa avskrift: Inspelning A' }))
+    .not.toHaveAttribute('aria-current');
+  await user.click(screen.getByRole('button', { name: 'Till inspelningarna' }));
+  expect(screen.getByRole('heading', { name: 'Inspelningar' })).toHaveFocus();
+  expect(screen.getByRole('link', { name: 'Vald avskrift: Inspelning B' }))
+    .toHaveAttribute('href', '/records/record-a?k=start#avskrift-a2');
+  expect(playAudio).not.toHaveBeenCalled();
 });
 
 test('utfällda ljudbeskrivningar och redigeringsformulär har H4 under inspelningens H3', async () => {

@@ -4,10 +4,14 @@ import {
   useCallback,
   useMemo,
   useId,
+  useRef,
 } from 'react';
+import { useLocation } from 'react-router-dom';
 import PropTypes from "prop-types";
 import ConfirmationModal from "./ConfirmationModal";
 import AudioItemRow from "./AudioItemRow";
+import AudioTranscript from './AudioTranscript';
+import { selectedTranscript } from './transcriptUtils';
 import "./DescriptionForm";
 import config from "../../config";
 import { getAudioTitle } from "../../utils/helpers";
@@ -15,6 +19,12 @@ import { l } from "../../lang/Lang";
 
 function AudioItems({ data, highlightData = null }) {
   const headingId = useId();
+  const recordingsHeadingRef = useRef(null);
+  const location = useLocation();
+  const returnToRecordings = useCallback(() => {
+    recordingsHeadingRef.current?.scrollIntoView({ block: 'start' });
+    recordingsHeadingRef.current?.focus({ preventScroll: true });
+  }, []);
   // Initialize localData state with the prop data
   const [localData, setLocalData] = useState(data);
 
@@ -455,12 +465,18 @@ function AudioItems({ data, highlightData = null }) {
     });
     return Object.values(bySrc);
   }, [media]);
+  const selectedAudio = selectedTranscript(localData, audioDataItems, location.hash);
 
-  if (!audioDataItems.length) return null;
+  if (!audioDataItems.length) {
+    return <AudioTranscript record={localData} audioItems={audioDataItems} />;
+  }
 
   return (
     <section aria-labelledby={headingId} className="mx-auto border-none">
-      <h2 id={headingId} className="text-xl font-bold">{l('Inspelningar')}</h2>
+      <h2 ref={recordingsHeadingRef} tabIndex={-1} id={headingId} className="text-xl font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus">{l('Inspelningar')}</h2>
+      {selectedAudio && (
+        <p className="text-sm text-muted">Avskriften visas i läspanelen direkt under listan.</p>
+      )}
       <div className="overflow-x-auto mb-4 rounded">
         <table className="w-full table-auto border-collapse lg:text-sm text-xs" aria-label={l("Inspelningar")}>
           {// Hide header but keep for screen readers 
@@ -469,7 +485,6 @@ function AudioItems({ data, highlightData = null }) {
             <tr>
               <th scope="col">Spela upp</th>
               <th scope="col">Titel</th>
-              <th scope="col">Övrig information</th>
             </tr>
           </thead>
           <tbody>
@@ -491,6 +506,7 @@ function AudioItems({ data, highlightData = null }) {
                   item={item}
                   audioTitle={audioTitle?.trim() || `${l('Inspelning')} ${index + 1}`}
                   recordId={id}
+                  selectedTranscriptId={selectedAudio?.id ?? null}
                   openItems={openItems}
                   onToggle={handleToggle}
                   showAddForm={showAddForm}
@@ -517,6 +533,11 @@ function AudioItems({ data, highlightData = null }) {
           </tbody>
         </table>
       </div>
+      <AudioTranscript
+        record={localData}
+        audioItems={audioDataItems}
+        onReturnToRecordings={returnToRecordings}
+      />
       <ConfirmationModal
         isOpen={showConfirmationModal}
         onConfirm={handleConfirmClose}

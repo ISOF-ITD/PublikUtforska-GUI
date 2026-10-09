@@ -28,7 +28,7 @@ function ListPlayButton({
     currentAudio &&
     currentAudio.record.id === recordId &&
     currentAudio.audio.source === media.source &&
-    currentAudio.time === startTime;
+    (!isSubList || currentAudio.time === startTime);
 
   const playButtonClickHandler = () => {
     if (isCurrentRecordActive()) {

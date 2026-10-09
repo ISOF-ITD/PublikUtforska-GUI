@@ -16,18 +16,20 @@ export default function RoutePageShell({ children }) {
   const { focusOnNavigation = false } = useOutletContext() || {};
   const pageRef = useRef(null);
   const contentRef = useRef(null);
+  const focusOnNavigationRef = useRef(focusOnNavigation);
+  focusOnNavigationRef.current = focusOnNavigation;
   const resultLocation = createResultLocation(location.search);
 
   useEffect(() => {
     const animationFrameId = window.requestAnimationFrame(() => {
       pageRef.current?.scrollTo({ top: 0 });
-      if (focusOnNavigation) {
+      if (focusOnNavigationRef.current) {
         contentRef.current?.focus({ preventScroll: true });
       }
     });
 
     return () => window.cancelAnimationFrame(animationFrameId);
-  }, [location.pathname, focusOnNavigation]);
+  }, [location.pathname]);
 
   useEffect(() => {
     const scrollFromDocument = (event) => {

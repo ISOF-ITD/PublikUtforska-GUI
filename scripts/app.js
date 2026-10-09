@@ -22,6 +22,7 @@ import {
   parseResultSearch,
 } from './utils/routeHelper';
 import canonicalizeLegacyLocation from './utils/legacyRouteHelper';
+import { audioTranscriptLoader } from './features/AudioDescription/transcriptUtils';
 import { buildResultApiParams } from './utils/resultFilterHelper';
 
 import '../less/style-basic.less';
@@ -175,6 +176,7 @@ function createPageRoutes() {
         {
           path: 'audio/:audioId/transcribe/*?',
           id: 'record-correction',
+          loader: audioTranscriptLoader,
           handle: { surface: 'page', task: 'correction' },
           element: (
             <Suspense fallback={<RouteViewLoadingPlaceholder kind="correction" />}>
