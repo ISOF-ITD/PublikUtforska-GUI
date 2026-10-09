@@ -19,7 +19,6 @@ import config from "../../config";
 import ConfirmationModal from "./ConfirmationModal";
 import useAudioDuration from "./hooks/useAudioDuration";
 import { secondsToMMSS } from "../../utils/timeHelper";
-import { createRecordTaskLocation } from '../../utils/routeHelper';
 import { transcriptFragment } from './transcriptUtils';
 
 function AudioItemRow({
@@ -56,11 +55,6 @@ function AudioItemRow({
   const rowToggleRef = useRef(null);
   // If user is editing an existing description:
   const [editDesc, setEditDesc] = useState(null);
-  const correctionLocation = createRecordTaskLocation({
-    recordId,
-    taskPath: `audio/${item.id}/transcribe`,
-    search: location.search,
-  });
 
   const durationSec = useAudioDuration(`${config.audioUrl}${item.source}`);
 
@@ -288,9 +282,6 @@ function AudioItemRow({
                 </Link>
               )
             }
-              {hasUtterances && config.activateAudioCorrection && (
-                <Link to={correctionLocation} className="text-link px-2 py-2 underline">Rätta avskrift</Link>
-              )}
             </div>
           </div>
         </td>

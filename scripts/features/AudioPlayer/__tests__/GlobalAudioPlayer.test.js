@@ -21,7 +21,6 @@ function playerContext(visible) {
     setVisible: jest.fn(),
     setCurrentAudio: jest.fn(),
     currentAudio: null,
-    activeSegmentId: null,
     playerLabelText: 'Inspelning',
   };
 }
@@ -146,7 +145,6 @@ test('inspelningar med transkriptionssegment har en ren tidslinje med tangentbor
   const context = {
     ...playerContext(true),
     currentAudio: { audio: { utterances: [{ id: 'first', start: 15 }, { id: 'second', start: 30 }] } },
-    activeSegmentId: 'second',
   };
   const { rerender } = render(player(context));
   await user.tab(); // Backward

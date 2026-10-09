@@ -69,6 +69,8 @@ export function TranscriptReader({
   const [searchIndex, setSearchIndex] = useState(-1);
   const [message, setMessage] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [previewStart, setPreviewStart] = useState(0);
+  const [focusedSegment, setFocusedSegment] = useState(null);
   const segmentRefs = useRef(new Map());
   const inputId = useId();
   const selectedIsPlaying = playing && String(currentAudio?.record?.id) === String(record.id)
@@ -88,10 +90,16 @@ export function TranscriptReader({
   const filtered = onlyMatches && terms.length > 0;
   const visibleSegments = filtered ? matches : segments;
   const showAll = expanded || filtered;
+  const activeIndex = segments.findIndex((segment) => segment.id === active);
 
   useEffect(() => {
-    if (follow && active) segmentRefs.current.get(active)?.scrollIntoView({ block: 'nearest' });
-  }, [follow, active]);
+    if (!follow || !active) return;
+    if (!showAll && (activeIndex < previewStart || activeIndex >= previewStart + previewLength)) {
+      setPreviewStart(Math.max(0, Math.min(activeIndex - 1, segments.length - previewLength)));
+      return;
+    }
+    segmentRefs.current.get(active)?.scrollIntoView({ block: 'nearest' });
+  }, [follow, active, activeIndex, showAll, previewStart, segments.length]);
 
   const navigateMatch = (direction) => {
     let next = (searchIndex + direction + matches.length) % matches.length;
@@ -105,8 +113,8 @@ export function TranscriptReader({
 
   const collapse = () => {
     setExpanded(false);
-    setFollow(false);
     setOnlyMatches(false);
+    if (!follow) setPreviewStart(0);
     headingRef.current?.scrollIntoView({ block: 'start' });
     headingRef.current?.focus({ preventScroll: true });
   };
@@ -188,10 +196,7 @@ export function TranscriptReader({
                   id={`${inputId}-follow`}
                   type="checkbox"
                   checked={follow}
-                  onChange={(event) => {
-                    setFollow(event.target.checked);
-                    if (event.target.checked) setExpanded(true);
-                  }}
+                  onChange={(event) => setFollow(event.target.checked)}
                 />
                 Följ uppspelningen
               </label>
@@ -216,39 +221,50 @@ export function TranscriptReader({
           </details>
           <p role="status" className="!m-0 px-4 text-sm">{message}</p>
           <div id={`${inputId}-text`} className="max-w-prose px-2 py-2 sm:px-4">
-            {visibleSegments.map((segment, index) => (
-              <div
-                key={segment.id}
-                hidden={!showAll && index >= previewLength}
-                ref={(element) => {
-                  if (element) segmentRefs.current.set(segment.id, element);
-                  else segmentRefs.current.delete(segment.id);
-                }}
-                className={`items-start gap-3 rounded border-0 border-l-2 border-solid px-2 py-1 ${!showAll && index >= previewLength ? 'hidden' : 'flex'} ${active === segment.id ? 'border-primary bg-surface-muted' : 'border-transparent'} ${searchSegment === segment.id ? 'outline outline-2 outline-focus' : ''}`}
-              >
-                <button
-                  type="button"
-                  className="!m-0 !h-auto min-h-8 shrink-0 rounded border-none bg-transparent px-1 py-1 text-sm font-medium leading-snug tabular-nums text-link underline underline-offset-4 hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                  aria-label={`Spela från ${transcriptTimestamp(segment.start)}`}
-                  aria-current={active === segment.id ? 'true' : undefined}
-                  onClick={() => playAudio({
-                    record: { id: record.id, title }, audio, time: segment.start,
-                  })}
+            {visibleSegments.map((segment, index) => {
+              const hidden = !showAll
+                && (index < previewStart || index >= previewStart + previewLength)
+                && focusedSegment !== segment.id;
+              return (
+                <div
+                  key={segment.id}
+                  hidden={hidden}
+                  onFocusCapture={() => setFocusedSegment(segment.id)}
+                  onBlurCapture={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) setFocusedSegment(null);
+                  }}
+                  ref={(element) => {
+                    if (element) segmentRefs.current.set(segment.id, element);
+                    else segmentRefs.current.delete(segment.id);
+                  }}
+                  className={`items-start gap-3 rounded border-0 border-l-2 border-solid px-2 py-1 ${hidden ? 'hidden' : 'flex'} ${active === segment.id ? 'border-primary bg-surface-muted' : 'border-transparent'} ${searchSegment === segment.id ? 'outline outline-2 outline-focus' : ''}`}
                 >
-                  {transcriptTimestamp(segment.start)}
-                </button>
-                <p className="!m-0 min-w-0 flex-1 whitespace-pre-wrap break-words py-1 leading-relaxed">
-                  <HighlightedText
-                    text={segment.text}
-                    query={query}
-                    allowItalics={record.id === 'bd10106_253556'}
-                  />
-                </p>
-              </div>
-            ))}
+                  <button
+                    type="button"
+                    className="!m-0 !h-auto min-h-8 shrink-0 rounded border-none bg-transparent px-1 py-1 text-sm font-medium leading-snug tabular-nums text-link underline underline-offset-4 hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    aria-label={`Spela från ${transcriptTimestamp(segment.start)}`}
+                    aria-current={active === segment.id ? 'true' : undefined}
+                    onClick={() => playAudio({
+                      record: { id: record.id, title }, audio, time: segment.start,
+                    })}
+                  >
+                    {transcriptTimestamp(segment.start)}
+                  </button>
+                  <p className="!m-0 min-w-0 flex-1 whitespace-pre-wrap break-words py-1 leading-relaxed">
+                    <HighlightedText
+                      text={segment.text}
+                      query={query}
+                      allowItalics={record.id === 'bd10106_253556'}
+                    />
+                  </p>
+                </div>
+              );
+            })}
           </div>
           {hasMore && !showAll && (
-            <p className="!m-0 rounded-b-lg bg-surface-muted px-4 py-3 text-sm text-muted">Det här är början av avskriften. Välj ”Visa hela avskriften” för att läsa vidare.</p>
+            <p className="!m-0 rounded-b-lg bg-surface-muted px-4 py-3 text-sm text-muted">
+              {`Visar stycke ${previewStart + 1}–${Math.min(previewStart + previewLength, segments.length)} av ${segments.length}. Välj ”Visa hela avskriften” för att läsa vidare.`}
+            </p>
           )}
           {hasMore && showAll && (
             <div className="border-0 border-t border-solid border-border p-4">

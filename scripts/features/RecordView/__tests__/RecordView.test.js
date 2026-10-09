@@ -571,6 +571,7 @@ test('vald avskrift markeras i listan och läsaren har en fokuserbar väg tillba
   expect(screen.getByRole('link', { name: 'Vald avskrift: Inspelning A' }))
     .toHaveAttribute('aria-current', 'location');
   const secondLink = screen.getByRole('link', { name: 'Visa avskrift: Inspelning B' });
+  expect(screen.queryByRole('link', { name: 'Rätta avskrift' })).not.toBeInTheDocument();
   expect(secondLink).toHaveAttribute('href', '/records/record-a?k=start#avskrift-a2');
   await user.click(secondLink);
   expect(screen.getByRole('heading', { name: 'Avskrift: Inspelning B' })).toHaveFocus();

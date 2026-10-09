@@ -39,7 +39,6 @@
     "react-hot-toast": "^2.5.2",
     "react-input-mask": "^2.0.4",
     "react-router-dom": "^7.18.4",
-    "react-window": "^1.8.11",
     "route-parser": "0.0.5",
     "sanitize-html": "^2.13.1",
     "terser-webpack-plugin": "5.4.0",

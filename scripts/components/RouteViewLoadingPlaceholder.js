@@ -62,6 +62,6 @@ export default function RouteViewLoadingPlaceholder({ kind = 'record', inline = 
 }
 
 RouteViewLoadingPlaceholder.propTypes = {
-  kind: PropTypes.oneOf(['place', 'record', 'person', 'correction']),
+  kind: PropTypes.oneOf(['place', 'record', 'person']),
   inline: PropTypes.bool,
 };

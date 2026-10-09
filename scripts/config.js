@@ -87,9 +87,6 @@ export default {
   // activate text transcription
   activateTranscription: true,
 
-  // activate audio correction
-  activateAudioCorrection: false,
-
   // activate audio description
   activateAudioDescription: false,
 

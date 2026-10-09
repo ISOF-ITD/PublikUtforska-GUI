@@ -1,5 +1,4 @@
 import { replace } from 'react-router-dom';
-import config from '../../config';
 
 export const transcriptFragment = (id) => `avskrift-${encodeURIComponent(String(id))}`;
 
@@ -48,7 +47,6 @@ export function transcriptExport(segments, format) {
 }
 
 export function audioTranscriptLoader({ params, request }) {
-  if (config.activateAudioCorrection) return null;
   const url = new URL(request.url);
   return replace(`/records/${encodeURIComponent(params.recordId)}${url.search}#${transcriptFragment(params.audioId)}`);
 }

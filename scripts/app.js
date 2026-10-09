@@ -31,7 +31,6 @@ import '../tw.css';
 const PlaceView = lazy(() => import('./components/views/PlaceView'));
 const PersonView = lazy(() => import('./components/views/PersonView'));
 const RecordView = lazy(() => import('./features/RecordView/RecordView'));
-const CorrectionView = lazy(() => import('./features/ASRCorrection/CorrectionView'));
 const TranscriptionPage = lazy(
   () => import('./features/TranscriptionPageByPageOverlay/TranscriptionPageByPageOverlay'),
 );
@@ -171,18 +170,12 @@ function createPageRoutes() {
           </Suspense>
         </RoutePageShell>
       ),
-      // This was added to point to the exact audio file, not used for text transcriptions yet
       children: [
         {
           path: 'audio/:audioId/transcribe/*?',
-          id: 'record-correction',
+          id: 'record-audio-transcript-redirect',
           loader: audioTranscriptLoader,
-          handle: { surface: 'page', task: 'correction' },
-          element: (
-            <Suspense fallback={<RouteViewLoadingPlaceholder kind="correction" />}>
-              <CorrectionView />
-            </Suspense>
-          ),
+          element: <RouteViewLoadingPlaceholder kind="record" />,
         },
         {
           path: 'transcribe/*?',
