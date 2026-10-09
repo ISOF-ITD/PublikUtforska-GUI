@@ -26,8 +26,6 @@ export default function GlobalAudioPlayer() {
     durationTime,
     setVisible,
     setCurrentAudio,
-    currentAudio,
-    activeSegmentId,
     playerLabelText,
     visible,
   } = useContext(AudioContext);
@@ -196,8 +194,6 @@ export default function GlobalAudioPlayer() {
               setCurrentTime(ms);
               audioRef.current.currentTime = ms / 1000;
             }}
-            markers={currentAudio?.audio?.utterances ?? []}
-            activeId={activeSegmentId}
           />
         </div>
 

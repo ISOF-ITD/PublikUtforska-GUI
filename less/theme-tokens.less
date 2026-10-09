@@ -218,8 +218,12 @@ a:not([class]):hover {
   outline-color: var(--color-focus) !important;
 }
 
-.audio-player :focus-visible {
-  outline-color: rgb(var(--color-player-focus-rgb)) !important;
+body .audio-player button:focus-visible,
+body .audio-player input:focus-visible,
+body .audio-player select:focus-visible {
+  // Keep native keyboard focus visible after activation despite global focus resets.
+  outline: 2px solid rgb(var(--color-player-focus-rgb)) !important;
+  outline-offset: 2px !important;
 }
 
 mark,

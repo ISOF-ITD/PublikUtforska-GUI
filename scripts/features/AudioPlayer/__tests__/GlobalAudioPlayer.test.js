@@ -141,7 +141,7 @@ test('spolknapparnas synliga 15 behåller tydliga namn och fungerar med tangentb
   expect(context.audioRef.current.currentTime).toBe(30);
 });
 
-test('segmentknappar går att aktivera med Enter och mellanslag och döljs med spelaren', async () => {
+test('inspelningar med transkriptionssegment har en ren tidslinje med tangentbordsåtkomst', async () => {
   const user = userEvent.setup();
   const context = {
     ...playerContext(true),
@@ -153,24 +153,21 @@ test('segmentknappar går att aktivera med Enter och mellanslag och döljs med s
   await user.tab(); // Play
   await user.tab(); // Forward
   await user.tab(); // Speed
-  await user.tab(); // First segment
-  const first = screen.getByRole('button', { name: 'Hoppa till 00:15' });
-  expect(first.tagName).toBe('BUTTON');
-  expect(first).toHaveFocus();
-  await user.keyboard('{Enter}');
-  expect(context.setCurrentTime).toHaveBeenLastCalledWith(15000);
-  expect(context.audioRef.current.currentTime).toBe(15);
-
-  await user.tab();
-  expect(screen.getByRole('button', { name: 'Hoppa till 00:30' })).toHaveFocus();
-  expect(screen.getByRole('button', { name: 'Hoppa till 00:30' })).toHaveAttribute('aria-current', 'true');
-  await user.keyboard(' ');
+  await user.tab(); // Timeline
+  const slider = screen.getByRole('slider', { name: 'Välj starttid' });
+  expect(slider).toHaveFocus();
+  expect(within(slider.parentElement).queryByRole('button')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Hoppa till/ })).not.toBeInTheDocument();
+  fireEvent.change(slider, { target: { value: '30000' } });
   expect(context.setCurrentTime).toHaveBeenLastCalledWith(30000);
   expect(context.audioRef.current.currentTime).toBe(30);
-  expect(context.setCurrentTime).toHaveBeenCalledTimes(2);
+  expect(context.setCurrentTime).toHaveBeenCalledTimes(1);
+
+  await user.tab();
+  expect(screen.getByRole('button', { name: 'Stäng' })).toHaveFocus();
 
   rerender(player({ ...context, visible: false }));
-  expect(screen.queryByRole('button', { name: /Hoppa till/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole('slider')).not.toBeInTheDocument();
 });
 
 test('mobilspelaren kan fällas ihop och öppnas med tangentbord utan att avbryta ljudet', async () => {
@@ -240,7 +237,12 @@ test('hastighet och fullständiga kontroller bevaras vid minimering och byte av 
   expect(screen.getByRole('combobox')).toHaveValue('1.4');
   expect(context.audioRef.current.playbackRate).toBe(1.4);
 
+  await user.click(screen.getByRole('button', { name: 'Minimera ljudspelaren' }));
+  window.innerWidth = 1280;
+  fireEvent(window, new Event('resize'));
   await user.click(screen.getByRole('button', { name: 'Stäng' }));
+  window.innerWidth = 430;
+  fireEvent(window, new Event('resize'));
   expect(screen.getByRole('button', { name: 'Minimera ljudspelaren' })).toHaveAttribute('aria-expanded', 'true');
 });
 

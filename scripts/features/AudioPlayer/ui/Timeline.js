@@ -1,7 +1,6 @@
 import {
-  useEffect, useMemo, useRef, useState,
+  useEffect, useRef, useState,
 } from 'react';
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import msToTime from '../msToTime';
 
@@ -9,30 +8,7 @@ export default function Timeline({
   current,
   duration,
   onSeek,
-  markers = [],
-  activeId = null,
 }) {
-  /* ─── semantic tick-marks for utterances ─── */
-  const ticks = useMemo(() => {
-    if (!duration || !markers?.length) return null;
-    return markers.map((m) => (
-      <button
-        type="button"
-        aria-label={`Hoppa till ${msToTime(m.start * 1000)}`}
-        aria-current={m.id === activeId ? 'true' : undefined}
-        onClick={() => onSeek(m.start * 1000)} // jump to marker
-        key={m.id}
-        className={classNames(
-          'absolute bottom-0 z-10 m-0 w-3 [transform:translateX(-50%)] h-3 p-0 border border-solid border-player-bg',
-          'hover:bg-player-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-player-focus',
-          'focus-visible:ring-offset-2 focus-visible:ring-offset-player-bg',
-          m.id === activeId ? 'bg-player-accent rounded-full' : 'bg-player-muted rounded-sm',
-        )}
-        style={{ left: `${((m.start * 1000) / duration) * 100}%` }}
-      />
-    ));
-  }, [markers, duration, activeId, onSeek]);
-
   /* when user grabs the thumb */
   const [isSeeking, setIsSeeking] = useState(false);
   const [scrub, setScrub] = useState(current);
@@ -46,10 +22,10 @@ export default function Timeline({
   const move = (e) => {
     if (!rail.current) return;
     const { left, width } = rail.current.getBoundingClientRect();
+    if (!width) return;
     const x = e.clientX - left;
     const p = Math.min(Math.max(x / width, 0), 1);
-    const t = duration * p;
-    setHoverMs(t);
+    setHoverMs(duration * p);
   };
 
   const commit = (val) => {
@@ -66,15 +42,12 @@ export default function Timeline({
         onPointerLeave={() => setHoverMs(null)}
         className="relative h-2.5 rounded-full bg-player-text"
       >
-        {/* segment boundaries */}
-        {ticks}
-
         {/* bubble */}
-        {hoverMs != null && (
+        {hoverMs != null && !isSeeking && (
           <span
             aria-hidden="true"
-            style={{ left: `${(hoverMs / duration) * 100}%` }}
-            className="pointer-events-none absolute -top-5 px-1.5 [transform:translateX(-50%)] rounded bg-player-text text-sm text-player-bg font-mono"
+            style={{ left: `clamp(1.5rem, ${(hoverMs / duration) * 100}%, calc(100% - 1.5rem))` }}
+            className="pointer-events-none absolute -top-5 z-30 px-1.5 [transform:translateX(-50%)] rounded bg-player-text text-sm text-player-bg font-mono"
           >
             {msToTime(hoverMs)}
           </span>
@@ -87,8 +60,12 @@ export default function Timeline({
           max={duration}
           step={100}
           value={isSeeking ? scrub : current}
-          onPointerDown={() => setIsSeeking(true)}
+          onPointerDown={(e) => {
+            setIsSeeking(true);
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+          }}
           onPointerUp={(e) => commit(+e.target.value)}
+          onPointerCancel={() => setIsSeeking(false)}
           onChange={(e) => {
             const value = +e.target.value;
             setScrub(value);
@@ -127,9 +104,4 @@ Timeline.propTypes = {
   current: PropTypes.number.isRequired,
   duration: PropTypes.number.isRequired,
   onSeek: PropTypes.func.isRequired,
-  markers: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    start: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  })),
-  activeId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
