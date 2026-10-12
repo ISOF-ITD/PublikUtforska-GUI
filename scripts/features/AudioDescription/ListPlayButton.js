@@ -66,7 +66,6 @@ function ListPlayButton({
       type="button"
       onClick={playButtonClickHandler}
       aria-label={controlLabel}
-      aria-pressed={isActiveAndPlaying}
       className="hover:cursor-pointer"
     >
       <FontAwesomeIcon icon={iconToShow} className={sizeClasses} />

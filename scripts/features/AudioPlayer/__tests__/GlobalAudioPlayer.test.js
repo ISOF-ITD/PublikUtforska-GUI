@@ -50,8 +50,15 @@ test('dold spelare är inaktiv och dess kontroller exponeras inte för skärmlä
   expect(screen.queryByRole('button')).not.toBeInTheDocument();
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Ljudspelare' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Ljudspelare' })).not.toBeInTheDocument();
 
   rerender(player({ ...context, visible: true }));
+  const region = screen.getByRole('region', { name: 'Ljudspelare' });
+  const heading = within(region).getByRole('heading', { level: 2, name: 'Ljudspelare' });
+  expect(region.tagName).toBe('SECTION');
+  expect(region).toHaveAttribute('aria-labelledby', heading.id);
+  expect(heading).toHaveClass('sr-only');
   expect(container.firstChild).not.toHaveAttribute('inert');
   expect(screen.getByRole('button', { name: 'Spela' })).toBeInTheDocument();
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
@@ -61,6 +68,40 @@ test('dold spelare är inaktiv och dess kontroller exponeras inte för skärmlä
   rerender(player(context));
   expect(container.firstChild).toHaveAttribute('inert');
   expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Ljudspelare' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Ljudspelare' })).not.toBeInTheDocument();
+});
+
+test.each([320, 430, 768, 1280])('spelaren vid %i px visar tiden en gång under tidslinjen med giltig semantik', (width) => {
+  window.innerWidth = width;
+  const context = { ...playerContext(true), currentTime: 15999, durationTime: 261999 };
+  const { container, rerender } = render(player(context));
+  const [elapsed, total] = container.querySelectorAll('time');
+  expect(container.querySelectorAll('time')).toHaveLength(2);
+  expect(screen.getAllByText('Uppspelad tid:')).toHaveLength(1);
+  expect(screen.getAllByText('Total tid:')).toHaveLength(1);
+  const timeline = screen.getByRole('slider').parentElement.parentElement;
+  expect(timeline).toContainElement(elapsed);
+  expect(timeline).toContainElement(total);
+  expect(screen.getAllByText('00:15')).toHaveLength(1);
+  expect(screen.getAllByText('04:21')).toHaveLength(1);
+  expect(elapsed).toHaveAttribute('datetime', 'PT15S');
+  expect(elapsed).toHaveTextContent('00:15');
+  expect(total).toHaveAttribute('datetime', 'PT261S');
+  expect(total).toHaveTextContent('04:21');
+  expect(elapsed).not.toHaveAttribute('aria-label');
+  expect(total).not.toHaveAttribute('aria-label');
+  expect(elapsed).not.toHaveAttribute('tabindex');
+  expect(total).not.toHaveAttribute('tabindex');
+  expect(elapsed.closest('[aria-live]')).toBeNull();
+  expect(elapsed.previousElementSibling).toHaveTextContent('Uppspelad tid:');
+  expect(total.previousElementSibling).toHaveTextContent('Total tid:');
+
+  rerender(player({ ...context, currentTime: 0, durationTime: 0 }));
+  expect(container.querySelectorAll('time')).toHaveLength(1);
+  expect(container.querySelector('time')).toHaveAttribute('datetime', 'PT0S');
+  expect(screen.getByText('Okänd längd')).toBeInTheDocument();
+  expect(screen.getByRole('slider')).toHaveAttribute('aria-valuetext', '0 sekunder av okänd längd');
 });
 
 test('synlig spelare går att använda med tangentbord', async () => {
@@ -77,18 +118,18 @@ test('synlig spelare går att använda med tangentbord', async () => {
   expect(context.closeAudio).toHaveBeenCalledTimes(1);
 });
 
-test('spela och pausa behåller namn och tillstånd efter omrendering', async () => {
+test('spela och pausa använder handlingsnamn utan toggle-semantik efter omrendering', async () => {
   const user = userEvent.setup();
   const context = playerContext(true);
   const { rerender } = render(player(context));
   const play = screen.getByRole('button', { name: 'Spela' });
-  expect(play).toHaveAttribute('aria-pressed', 'false');
+  expect(play).not.toHaveAttribute('aria-pressed');
   await user.click(play);
   expect(context.togglePlay).toHaveBeenCalledTimes(1);
 
   rerender(player({ ...context, playing: true }));
   const pause = screen.getByRole('button', { name: 'Pausa' });
-  expect(pause).toHaveAttribute('aria-pressed', 'true');
+  expect(pause).not.toHaveAttribute('aria-pressed');
   await user.click(pause);
   expect(context.togglePlay).toHaveBeenCalledTimes(2);
 });
@@ -286,6 +327,9 @@ test('mobilspelaren kan fällas ihop och öppnas med tangentbord utan att avbryt
   expect(controls).toHaveAttribute('inert');
   expect(controls).not.toBeVisible();
   expect(screen.getAllByRole('button')).toHaveLength(2);
+  expect(screen.getByRole('region', { name: 'Ljudspelare' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 2, name: 'Ljudspelare' })).toBeInTheDocument();
+  container.querySelectorAll('time').forEach((time) => expect(time).not.toBeVisible());
   expect(screen.queryByRole('slider')).not.toBeInTheDocument();
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   expect(context.audioRef.current.pause).not.toHaveBeenCalled();
@@ -297,10 +341,11 @@ test('mobilspelaren kan fällas ihop och öppnas med tangentbord utan att avbryt
   await user.tab();
   const pause = screen.getByRole('button', { name: 'Pausa' });
   expect(pause).toHaveFocus();
-  expect(pause).toHaveAttribute('aria-pressed', 'true');
+  expect(pause).not.toHaveAttribute('aria-pressed');
   await user.keyboard(' ');
   expect(context.togglePlay).toHaveBeenCalledTimes(1);
   rerender(player({ ...context, playing: false }));
+  expect(screen.getByRole('button', { name: 'Spela' })).not.toHaveAttribute('aria-pressed');
   await user.click(screen.getByRole('button', { name: 'Spela' }));
   expect(context.togglePlay).toHaveBeenCalledTimes(2);
   await user.tab({ shift: true });

@@ -10,7 +10,6 @@ import { AudioContext } from '../../contexts/AudioContext';
 import PlayerButtons from './ui/PlayerButtons';
 import PlayerSettings from './ui/PlayerSettings';
 import Timeline from './ui/Timeline';
-import msToTime from './msToTime';
 
 import useViewportWidth from './hooks/useViewportWidth';
 import useMarquee from './hooks/useMarquee';
@@ -45,6 +44,7 @@ export default function GlobalAudioPlayer() {
   const [minimized, setMinimized] = useState(false);
   const isCompact = minimized && vw < 640;
   const controlsId = useId();
+  const headingId = useId();
   const gesture = useRef(null);
   const suppressClick = useRef(false);
   const [labelRef, textRef] = useMarquee([playerLabelText, vw, isCompact]);
@@ -88,7 +88,8 @@ export default function GlobalAudioPlayer() {
   };
   /* ——  render  —— */
   return (
-    <div
+    <section
+      aria-labelledby={headingId}
       onTouchStart={swipeHandlers.onTouchStart}
       onTouchEnd={swipeHandlers.onTouchEnd}
       onTouchCancel={swipeHandlers.onTouchCancel}
@@ -107,6 +108,7 @@ export default function GlobalAudioPlayer() {
           : 'translate-y-full opacity-0 pointer-events-none',
       )}
     >
+      <h2 id={headingId} className="sr-only">Ljudspelare</h2>
       {vw < 640 && (
         <div className={isCompact ? 'flex items-center gap-3 py-2' : ''}>
           <button
@@ -138,7 +140,6 @@ export default function GlobalAudioPlayer() {
             <button
               type="button"
               aria-label={playing ? 'Pausa' : 'Spela'}
-              aria-pressed={playing}
               onClick={togglePlay}
               className="m-0 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-0 bg-player-accent text-player-bg hover:bg-player-text cursor-pointer
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-player-focus focus-visible:ring-offset-2 focus-visible:ring-offset-player-bg [&>svg]:h-5 [&>svg]:w-5"
@@ -155,7 +156,7 @@ export default function GlobalAudioPlayer() {
         inert={isCompact || undefined}
         aria-hidden={isCompact || undefined}
         className={classNames(
-          'mx-auto w-full max-w-[1200px] pb-3 pt-3 sm:pt-14 md:pt-3 gap-x-4 gap-y-2 md:grid-cols-[auto_64px_1fr_auto] items-center',
+          'mx-auto w-full max-w-[1200px] pb-3 pt-3 sm:pt-14 md:pt-3 gap-x-4 gap-y-2 md:grid-cols-[auto_1fr_auto] items-center',
           isCompact ? 'hidden' : 'flex flex-col md:grid',
         )}
       >
@@ -170,27 +171,8 @@ export default function GlobalAudioPlayer() {
           playNext={playNext}
         />
 
-        {/* elapsed time (desktop only) */}
-        <div className="hidden md:flex flex-col items-end w-16 leading-tight md:col-start-2 md:row-start-1">
-          <time
-            aria-label="Tid"
-            dateTime={(currentTime / 1000).toFixed(0)}
-            className="font-mono tabular-nums text-lg tracking-tight"
-          >
-            {msToTime(currentTime)}
-          </time>
-
-          <time
-            aria-label="Total tid"
-            dateTime={(durationTime / 1000).toFixed(0)}
-            className="font-mono tabular-nums text-xs text-player-muted tracking-tight"
-          >
-            {durationTime ? msToTime(durationTime) : '--:--'}
-          </time>
-        </div>
-
         {/* label + timeline */}
-        <div className="w-full min-w-0 flex flex-col gap-2 md:col-start-3 md:row-start-1">
+        <div className="w-full min-w-0 flex flex-col gap-2 md:col-start-2 md:row-start-1">
           <div className="flex min-w-0 items-center gap-2 text-sm leading-tight">
             {counter}
             <div
@@ -209,7 +191,7 @@ export default function GlobalAudioPlayer() {
 
           <Timeline
             current={currentTime}
-            duration={durationTime || 1}
+            duration={durationTime}
             onSeek={(ms) => {
               setCurrentTime(ms);
               audioRef.current.currentTime = ms / 1000;
@@ -217,7 +199,7 @@ export default function GlobalAudioPlayer() {
           />
         </div>
 
-        <div className="absolute top-1 right-3 flex items-center gap-1 md:static md:ml-auto md:col-start-4 md:row-start-1">
+        <div className="absolute top-1 right-3 flex items-center gap-1 md:static md:ml-auto md:col-start-3 md:row-start-1">
           {visible && !isCompact && (
             <PlayerSettings
               key={currentAudio?.record?.id || 'no-record'}
@@ -242,6 +224,6 @@ export default function GlobalAudioPlayer() {
       <p role="status" aria-live="polite" aria-atomic="true" className={playbackError ? 'mx-auto mb-3 max-w-[1200px] text-sm text-player-text' : 'sr-only'}>
         {playbackError || playbackStatus}
       </p>
-    </div>
+    </section>
   );
 }

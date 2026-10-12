@@ -71,7 +71,6 @@ export default function PlayerButtons({
       <button
         type="button"
         aria-label={playing ? 'Pausa' : 'Spela'}
-        aria-pressed={playing}
         onClick={togglePlay}
         className={`${BTN} border border-solid shadow-sm hover:shadow-md bg-player-accent text-player-bg border-player-accent hover:bg-player-text hover:border-player-text`}
       >

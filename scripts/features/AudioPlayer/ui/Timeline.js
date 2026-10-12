@@ -2,7 +2,7 @@ import {
   useEffect, useRef, useState,
 } from 'react';
 import PropTypes from 'prop-types';
-import msToTime from '../msToTime';
+import msToTime, { msToTimeText } from '../msToTime';
 
 export default function Timeline({
   current,
@@ -20,7 +20,7 @@ export default function Timeline({
   const rail = useRef(null);
   const [hoverMs, setHoverMs] = useState(null);
   const move = (e) => {
-    if (!rail.current) return;
+    if (!rail.current || !duration) return;
     const { left, width } = rail.current.getBoundingClientRect();
     if (!width) return;
     const x = e.clientX - left;
@@ -32,6 +32,7 @@ export default function Timeline({
     onSeek(val);
     setIsSeeking(false);
   };
+  const displayedTime = isSeeking ? scrub : current;
 
   return (
     <div className="relative w-full select-none touch-none">
@@ -43,7 +44,7 @@ export default function Timeline({
         className="relative h-2.5 rounded-full bg-player-text"
       >
         {/* bubble */}
-        {hoverMs != null && !isSeeking && (
+        {hoverMs != null && duration > 0 && !isSeeking && (
           <span
             aria-hidden="true"
             style={{ left: `clamp(1.5rem, ${(hoverMs / duration) * 100}%, calc(100% - 1.5rem))` }}
@@ -57,9 +58,9 @@ export default function Timeline({
         <input
           type="range"
           min={0}
-          max={duration}
+          max={duration || 1}
           step={100}
-          value={isSeeking ? scrub : current}
+          value={displayedTime}
           onPointerDown={(e) => {
             setIsSeeking(true);
             e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -86,15 +87,31 @@ export default function Timeline({
                      [&::-moz-range-thumb]:box-border [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6
                      min-[430px]:[&::-moz-range-thumb]:w-4 min-[430px]:[&::-moz-range-thumb]:h-4"
           aria-label="Välj starttid"
+          aria-valuetext={`${msToTimeText(displayedTime)} av ${duration ? msToTimeText(duration) : 'okänd längd'}`}
         />
       </div>
 
-      <div className="mt-1 pr-2 flex justify-end gap-1 font-mono text-sm text-player-muted">
+      <div className="mt-1 pr-2 flex justify-end gap-1 font-mono tabular-nums text-sm text-player-muted">
         <span className="text-player-text">
-          {msToTime(isSeeking ? scrub : current)}
+          <span className="sr-only">Uppspelad tid: </span>
+          <time dateTime={`PT${Math.floor(displayedTime / 1000)}S`}>
+            {msToTime(displayedTime)}
+          </time>
         </span>
-        <span>/</span>
-        <span>{msToTime(duration)}</span>
+        <span aria-hidden="true">/</span>
+        <span>
+          <span className="sr-only">Total tid: </span>
+          {duration ? (
+            <time dateTime={`PT${Math.floor(duration / 1000)}S`}>
+              {msToTime(duration)}
+            </time>
+          ) : (
+            <>
+              <span className="sr-only">Okänd längd</span>
+              <span aria-hidden="true">--:--</span>
+            </>
+          )}
+        </span>
       </div>
     </div>
   );

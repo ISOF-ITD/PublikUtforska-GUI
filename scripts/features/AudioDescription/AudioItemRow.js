@@ -86,7 +86,11 @@ function AudioItemRow({
         aria-label={`Ljudlängd ${label.replace(/:/g, " : ")}`}
         className={`font-mono ml-2 text-xs text-muted ${className}`}
       >
-        ({label})
+        (
+          <time dateTime={`PT${hrs}H${mins}M${secs}S`}>
+            {label}
+          </time>
+        )
       </span>
     );
   }

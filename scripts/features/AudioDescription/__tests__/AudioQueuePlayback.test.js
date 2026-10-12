@@ -135,12 +135,19 @@ function finishAudio() {
 test('tidsstämpel ger hela kön; listknappen pausar och pausat filbyte byter avskrift utan sidreset', async () => {
   const { user, router } = await setup();
   expect(player.play).not.toHaveBeenCalled();
+  screen.getAllByRole('button', { name: 'Spela upp', exact: true }).forEach((button) => {
+    expect(button).not.toHaveAttribute('aria-pressed');
+  });
   await user.click(screen.getByRole('button', { name: 'Spela från 00:10' }));
   expect(player.currentTime).toBe(10);
   expect(screen.getByText('1/3')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Pausa uppspelning' })).not.toHaveAttribute('aria-pressed');
   await user.click(screen.getByRole('button', { name: 'Pausa uppspelning' }));
   expect(player.currentTime).toBe(10);
   expect(player.play).toHaveBeenCalledTimes(1);
+  screen.getAllByRole('button', { name: 'Spela upp', exact: true }).forEach((button) => {
+    expect(button).not.toHaveAttribute('aria-pressed');
+  });
   Element.prototype.scrollIntoView.mockClear();
   const next = screen.getByRole('button', { name: 'Nästa inspelning: Andra filen' });
   await user.click(next);
