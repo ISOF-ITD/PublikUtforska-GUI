@@ -25,6 +25,7 @@ function AudioItemRow({
   item,
   audioTitle,
   recordId,
+  recordData = null,
   selectedTranscriptId = null,
   openItems,
   onToggle,
@@ -160,6 +161,7 @@ function AudioItemRow({
           <ListPlayButton
             media={item}
             recordId={recordId}
+            recordData={recordData}
             recordTitle={audioTitle}
           />
         </td>
@@ -295,6 +297,7 @@ function AudioItemRow({
             <DescriptionList
               item={item}
               recordId={recordId}
+              recordData={recordData}
               audioTitle={audioTitle}
               onEditDesc={onEditDesc}
               highlightData={highlightData}
@@ -425,6 +428,7 @@ function AudioItemRow({
 AudioItemRow.propTypes = {
   item: PropTypes.object.isRequired,
   audioTitle: PropTypes.string.isRequired,
+  recordData: PropTypes.object,
   selectedTranscriptId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   recordId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     .isRequired,

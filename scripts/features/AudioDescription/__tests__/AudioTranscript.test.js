@@ -138,12 +138,12 @@ beforeEach(() => {
   Element.prototype.scrollTo = jest.fn();
 });
 
-test('visar första avskriften, alla stycken, med följning av och utan ljudstart', async () => {
+test('visar första avskriften, alla stycken, med följning på och utan ljudstart', async () => {
   await setup();
   expect(screen.getByRole('heading', { name: 'Avskrift: Första filen' })).toBeVisible();
   expect(screen.getAllByRole('button', { name: /Spela från/ })).toHaveLength(3);
   expect(screen.getByText('Sedan kom regnet.').closest('p')).not.toHaveAttribute('role');
-  expect(screen.getByRole('checkbox', { name: 'Följ uppspelningen' })).not.toBeChecked();
+  expect(screen.getByRole('checkbox', { name: 'Följ uppspelningen' })).toBeChecked();
   expect(playSpy).not.toHaveBeenCalled();
 });
 
@@ -167,11 +167,15 @@ test('manuella val fokuserar rubriken, historik återställer valet utan ljud el
   expect(screen.getByRole('heading', { name: 'Avskrift: Andra filen' })).toHaveFocus();
   expect(Element.prototype.scrollTo).not.toHaveBeenCalled();
   await user.click(screen.getByRole('link', { name: 'Läs Första filen' }));
+  const readLink = screen.getByRole('link', { name: 'Läs Första filen' });
+  readLink.focus();
   await act(async () => router.navigate(-1));
   expect(screen.getByRole('heading', { name: 'Avskrift: Andra filen' })).toBeVisible();
   expect(screen.getByRole('heading', { name: 'Avskrift: Andra filen' })).not.toHaveFocus();
+  expect(readLink).toHaveFocus();
   await act(async () => router.navigate(1));
   expect(screen.getByRole('heading', { name: 'Avskrift: Första filen' })).toBeVisible();
+  expect(readLink).toHaveFocus();
   expect(playSpy).not.toHaveBeenCalled();
   expect(pauseSpy).not.toHaveBeenCalled();
 });
@@ -226,11 +230,18 @@ test('sökning markerar hela texten, frivilligt filter, navigation och kopiering
   expect(navigator.clipboard.writeText).toHaveBeenCalledWith(transcriptExport(normalizeTranscript(first), 'txt'));
 });
 
-test('följning rullar aktivt stycke först efter användarens val och behåller fokus', async () => {
+test('följning är på från början, kan stängas av och återaktiveras utan fokusflytt', async () => {
   const { user } = await setup();
   await user.click(screen.getByRole('button', { name: 'Spela från 00:10' }));
+  expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+  expect(screen.getByRole('button', { name: 'Spela från 00:10' })).toHaveFocus();
+  const follow = screen.getByRole('checkbox', { name: 'Följ uppspelningen' });
+  await user.click(follow);
+  expect(follow).not.toBeChecked();
+  Element.prototype.scrollIntoView.mockClear();
+  await user.click(screen.getByRole('button', { name: 'Spela från 00:20' }));
   expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-  await user.click(screen.getByRole('checkbox', { name: 'Följ uppspelningen' }));
+  await user.click(follow);
   expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
   expect(screen.getByRole('checkbox', { name: 'Följ uppspelningen' })).toHaveFocus();
 });
@@ -292,23 +303,22 @@ test('sökning hittar text utanför förhandsvisningen och träffnavigering visa
   expect(playSpy).not.toHaveBeenCalled();
 });
 
-test('följning visar aktuella stycken i den mindre vyn och behåller fokus utan att öppna hela texten', async () => {
-  const user = userEvent.setup();
+test('följning visar aktuella stycken direkt i den mindre vyn utan att öppna hela texten', () => {
   const context = {
     playing: true, currentAudio: { record, audio: longAudio }, currentTime: 70000,
   };
   const { rerender } = renderLongReader(context);
-  expect(screen.getByText('Stycke 8.')).not.toBeVisible();
   const follow = screen.getByRole('checkbox', { name: 'Följ uppspelningen' });
-  await user.click(follow);
+  expect(follow).toBeChecked();
   expect(screen.getByText('Stycke 8.')).toBeVisible();
   expect(screen.getByText('Stycke 1.')).not.toBeVisible();
   expect(screen.getAllByRole('button', { name: /Spela från/ })).toHaveLength(4);
   expect(screen.getByRole('button', { name: 'Visa hela avskriften' })).toHaveAttribute('aria-expanded', 'false');
   expect(screen.getByText(/Visar stycke 5–8 av 8/)).toBeVisible();
   expect(screen.getByRole('button', { name: 'Spela från 01:10' })).toHaveAttribute('aria-current', 'true');
-  expect(follow).toHaveFocus();
+  expect(follow).not.toHaveFocus();
   expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+  follow.focus();
 
   rerender(longReader({ ...context, currentTime: 10000 }));
   expect(screen.getByText('Stycke 2.')).toBeVisible();
@@ -324,11 +334,13 @@ test('följning visar aktuella stycken i den mindre vyn och behåller fokus utan
   expect(playSpy).not.toHaveBeenCalled();
 });
 
-test('följning kan slås på före uppspelning och fortsätter efter hopfällning utan att ändra ljudet', async () => {
+test('förvald följning startar inte ljud och fortsätter efter hopfällning', async () => {
   const user = userEvent.setup();
   const { rerender } = renderLongReader();
   const follow = screen.getByRole('checkbox', { name: 'Följ uppspelningen' });
-  await user.click(follow);
+  expect(follow).toBeChecked();
+  expect(playSpy).not.toHaveBeenCalled();
+  follow.focus();
   expect(screen.getByRole('button', { name: 'Visa hela avskriften' })).toHaveAttribute('aria-expanded', 'false');
   expect(screen.getAllByRole('button', { name: /Spela från/ })).toHaveLength(4);
   const context = {
@@ -370,7 +382,7 @@ test('följning döljer inte tidsstämpeln med tangentbordsfokus när den mindre
   const user = userEvent.setup();
   const context = { playing: true, currentAudio: { record, audio: longAudio }, currentTime: 0 };
   const { rerender } = renderLongReader(context);
-  await user.click(screen.getByRole('checkbox', { name: 'Följ uppspelningen' }));
+  expect(screen.getByRole('checkbox', { name: 'Följ uppspelningen' })).toBeChecked();
   const timestamp = screen.getByRole('button', { name: 'Spela från 00:00' });
   await user.click(timestamp);
   rerender(longReader({ ...context, currentTime: 70000 }));
@@ -398,12 +410,15 @@ test('val av en annan lång avskrift återställer förhandsvisningen utan ljuds
     ),
   }], { initialEntries: ['/records/record-a?k=start'] });
   render(<RouterProvider router={router} />);
+  const follow = screen.getByRole('checkbox', { name: 'Följ uppspelningen' });
+  await user.click(follow);
   await user.click(screen.getByRole('button', { name: 'Visa hela avskriften' }));
   expect(screen.getByText('Stycke 8.')).toBeVisible();
   await act(async () => router.navigate('?k=start#avskrift-3'));
   expect(screen.getByRole('heading', { name: 'Avskrift: Andra filen' })).toBeVisible();
   expect(screen.getByText('Stycke 8.')).not.toBeVisible();
   expect(screen.getByRole('button', { name: 'Visa hela avskriften' })).toHaveAttribute('aria-expanded', 'false');
+  expect(follow).not.toBeChecked();
   expect(playSpy).not.toHaveBeenCalled();
 });
 

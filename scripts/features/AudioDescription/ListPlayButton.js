@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -8,9 +8,11 @@ import {
   faPause,
 } from '@fortawesome/free-solid-svg-icons';
 import { AudioContext } from '../../contexts/AudioContext';
+import { buildAudioQueue } from '../AudioPlayer/audioQueue';
 
 function ListPlayButton({
   recordId,
+  recordData = null,
   media,
   recordTitle,
   startTime = 0,
@@ -22,6 +24,7 @@ function ListPlayButton({
     currentAudio,
     playing,
   } = useContext(AudioContext);
+  const queue = useMemo(() => buildAudioQueue(recordData), [recordData]);
 
   // Check if this audio item is the one currently playing
   const isCurrentRecordActive = () =>
@@ -41,6 +44,7 @@ function ListPlayButton({
         },
         audio: media,
         time: startTime,
+        queue,
       });
     }
   };
@@ -72,6 +76,7 @@ function ListPlayButton({
 
 ListPlayButton.propTypes = {
   recordId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  recordData: PropTypes.object,
   media: PropTypes.object.isRequired,
   recordTitle: PropTypes.string.isRequired,
   startTime: PropTypes.number,

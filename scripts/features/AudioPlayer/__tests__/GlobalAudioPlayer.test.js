@@ -15,6 +15,7 @@ function playerContext(visible) {
     audioRef: { current: { pause: jest.fn(), currentTime: 0, duration: 60 } },
     setPlaying: jest.fn(),
     togglePlay: jest.fn(),
+    closeAudio: jest.fn(),
     currentTime: 0,
     setCurrentTime: jest.fn(),
     durationTime: 60000,
@@ -22,6 +23,8 @@ function playerContext(visible) {
     setCurrentAudio: jest.fn(),
     currentAudio: null,
     playerLabelText: 'Inspelning',
+    playbackRate: 1,
+    setPlaybackRate: jest.fn(),
   };
 }
 
@@ -32,6 +35,12 @@ function player(value) {
 beforeEach(() => {
   window.eventBus = { dispatch: jest.fn() };
   window.innerWidth = 1024;
+  global.ResizeObserver = jest.fn(() => ({
+    observe: jest.fn(), unobserve: jest.fn(), disconnect: jest.fn(),
+  }));
+  global.IntersectionObserver = jest.fn(() => ({
+    observe: jest.fn(), unobserve: jest.fn(), disconnect: jest.fn(),
+  }));
 });
 
 test('dold spelare är inaktiv och dess kontroller exponeras inte för skärmläsare', () => {
@@ -45,7 +54,8 @@ test('dold spelare är inaktiv och dess kontroller exponeras inte för skärmlä
   rerender(player({ ...context, visible: true }));
   expect(container.firstChild).not.toHaveAttribute('inert');
   expect(screen.getByRole('button', { name: 'Spela' })).toBeInTheDocument();
-  expect(screen.getByRole('combobox', { name: 'Uppspelningshastighet' })).toBeInTheDocument();
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' })).toBeVisible();
   expect(screen.getByRole('slider', { name: 'Välj starttid' })).toBeInTheDocument();
 
   rerender(player(context));
@@ -64,12 +74,7 @@ test('synlig spelare går att använda med tangentbord', async () => {
   await user.keyboard('{Enter}');
   expect(context.togglePlay).toHaveBeenCalledTimes(1);
   await user.click(screen.getByRole('button', { name: 'Stäng' }));
-  expect(context.audioRef.current.pause).toHaveBeenCalledTimes(1);
-  expect(context.setVisible).toHaveBeenCalledWith(false);
-  expect(context.setPlaying).toHaveBeenCalledWith(false);
-  expect(context.setCurrentTime).toHaveBeenCalledWith(0);
-  expect(context.setCurrentAudio).toHaveBeenCalledWith(null);
-  expect(window.eventBus.dispatch).toHaveBeenCalledWith('audio.playerhidden');
+  expect(context.closeAudio).toHaveBeenCalledTimes(1);
 });
 
 test('spela och pausa behåller namn och tillstånd efter omrendering', async () => {
@@ -86,6 +91,99 @@ test('spela och pausa behåller namn och tillstånd efter omrendering', async ()
   expect(pause).toHaveAttribute('aria-pressed', 'true');
   await user.click(pause);
   expect(context.togglePlay).toHaveBeenCalledTimes(2);
+});
+
+const queueItems = [
+  { audio: { source: 'a.mp3' }, title: 'Första filen' },
+  { audio: { source: 'b.mp3' }, title: 'Andra filen' },
+];
+
+function seriesContext(currentIndex = 0) {
+  return {
+    ...playerContext(true),
+    queue: queueItems,
+    currentIndex,
+    playPrevious: jest.fn(),
+    playNext: jest.fn(),
+    setAutoAdvance: jest.fn(),
+  };
+}
+
+test('filknappar har målfilens titel och behåller fokus när sista filen väljs', async () => {
+  const user = userEvent.setup();
+  const context = seriesContext();
+  const { rerender } = render(player(context));
+  const previous = screen.getByRole('button', { name: 'Föregående inspelning' });
+  expect(previous).toHaveAttribute('aria-disabled', 'true');
+  await user.click(previous);
+  expect(context.playPrevious).not.toHaveBeenCalled();
+  const next = screen.getByRole('button', { name: 'Nästa inspelning: Andra filen' });
+  expect(next).toHaveAttribute('title', 'Nästa inspelning: Andra filen');
+  await user.click(next);
+  expect(context.playNext).toHaveBeenCalledTimes(1);
+  rerender(player({ ...context, currentIndex: 1 }));
+  expect(next).toHaveFocus();
+  expect(next).toHaveAttribute('aria-disabled', 'true');
+  await user.keyboard('{Enter}');
+  expect(context.playNext).toHaveBeenCalledTimes(1);
+  await user.click(screen.getByRole('button', { name: 'Föregående inspelning: Första filen' }));
+  expect(context.playPrevious).toHaveBeenCalledTimes(1);
+  expect(screen.getByText('2/2')).toBeVisible();
+  expect(screen.getByText('Inspelning 2 av 2')).toBeInTheDocument();
+});
+
+test('automatik är en inbyggd tangentbordsåtkomlig kryssruta och status annonserar inte tiden', async () => {
+  const user = userEvent.setup();
+  const context = { ...seriesContext(), playbackStatus: 'Inspelning 1 av 2: Första filen' };
+  const { rerender } = render(player(context));
+  await user.click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
+  const auto = screen.getByRole('checkbox', { name: 'Spela nästa automatiskt' });
+  expect(auto).not.toBeChecked();
+  await user.click(auto);
+  expect(context.setAutoAdvance).toHaveBeenCalledWith(true);
+  rerender(player({ ...context, autoAdvance: true, currentTime: 5000 }));
+  expect(auto).toBeChecked();
+  expect(screen.getByRole('status')).toHaveTextContent(context.playbackStatus);
+  await user.keyboard(' ');
+  expect(context.setAutoAdvance).toHaveBeenLastCalledWith(false);
+});
+
+test('serieinställningar är dolda i minimerat läge medan felmeddelanden är läsbara', async () => {
+  window.innerWidth = 430;
+  const user = userEvent.setup();
+  const context = seriesContext();
+  const { rerender } = render(player(context));
+  await user.click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
+  expect(screen.getByRole('dialog')).toBeVisible();
+  await user.click(screen.getByRole('button', { name: 'Minimera ljudspelaren' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Inställningar för ljudspelaren' })).not.toBeInTheDocument();
+  expect(screen.getAllByText('1/2').filter((element) => !element.closest('[hidden]'))).toHaveLength(1);
+  expect(screen.getByRole('button', { name: /Visa hela ljudspelaren/ })).toHaveAccessibleName('Visa hela ljudspelaren: Inspelning 1 av 2: Inspelning');
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Nästa inspelning/ })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Spela' })).toBeVisible();
+  rerender(player({ ...context, playbackError: 'Inspelningen kunde inte spelas upp.' }));
+  expect(screen.getByRole('status')).toHaveTextContent('Inspelningen kunde inte spelas upp.');
+  await user.click(screen.getByRole('button', { name: /Visa hela ljudspelaren:/ }));
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' })).toBeVisible();
+  expect(screen.getByRole('button', { name: /Nästa inspelning:/ })).toBeVisible();
+});
+
+test('en ensam fil saknar seriekontroller och dolda seriekontroller saknas i tillgänglighetsträdet', async () => {
+  const user = userEvent.setup();
+  const context = { ...seriesContext(), queue: [queueItems[0]] };
+  const { rerender } = render(player(context));
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Nästa inspelning/ })).not.toBeInTheDocument();
+  expect(screen.queryByText('1/1')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
+  expect(screen.getByRole('combobox')).toBeVisible();
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  rerender(player({ ...seriesContext(), visible: false }));
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button')).not.toBeInTheDocument();
 });
 
 test('spolknapparna flyttar tiden 15 sekunder och stannar vid inspelningens gränser', async () => {
@@ -111,11 +209,13 @@ test('spolknapparna flyttar tiden 15 sekunder och stannar vid inspelningens grä
 test('hastighetsväljaren ändrar uppspelning och visar valt alternativ', async () => {
   const user = userEvent.setup();
   const context = playerContext(true);
-  render(player(context));
+  const { rerender } = render(player(context));
+  await user.click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
   const selector = screen.getByRole('combobox', { name: 'Uppspelningshastighet' });
   expect(screen.getAllByRole('option')).toHaveLength(8);
   await user.selectOptions(selector, '1.4');
-  expect(context.audioRef.current.playbackRate).toBe(1.4);
+  expect(context.setPlaybackRate).toHaveBeenCalledWith(1.4);
+  rerender(player({ ...context, playbackRate: 1.4 }));
   expect(selector).toHaveValue('1.4');
 });
 
@@ -150,7 +250,6 @@ test('inspelningar med transkriptionssegment har en ren tidslinje med tangentbor
   await user.tab(); // Backward
   await user.tab(); // Play
   await user.tab(); // Forward
-  await user.tab(); // Speed
   await user.tab(); // Timeline
   const slider = screen.getByRole('slider', { name: 'Välj starttid' });
   expect(slider).toHaveFocus();
@@ -161,6 +260,8 @@ test('inspelningar med transkriptionssegment har en ren tidslinje med tangentbor
   expect(context.audioRef.current.currentTime).toBe(30);
   expect(context.setCurrentTime).toHaveBeenCalledTimes(1);
 
+  await user.tab();
+  expect(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' })).toHaveFocus();
   await user.tab();
   expect(screen.getByRole('button', { name: 'Stäng' })).toHaveFocus();
 
@@ -220,20 +321,23 @@ test('hastighet och fullständiga kontroller bevaras vid minimering och byte av 
   window.innerWidth = 430;
   const user = userEvent.setup();
   const context = playerContext(true);
-  render(player(context));
+  const { rerender } = render(player(context));
+  await user.click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
   await user.selectOptions(screen.getByRole('combobox'), '1.4');
+  rerender(player({ ...context, playbackRate: 1.4 }));
   await user.click(screen.getByRole('button', { name: 'Minimera ljudspelaren' }));
   window.innerWidth = 1280;
   fireEvent(window, new Event('resize'));
   expect(screen.queryByRole('button', { name: /Visa hela ljudspelaren/ })).not.toBeInTheDocument();
-  expect(screen.getByRole('combobox')).toHaveValue('1.4');
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   expect(screen.getByRole('slider')).toBeInTheDocument();
   window.innerWidth = 320;
   fireEvent(window, new Event('resize'));
   const title = screen.getByRole('button', { name: /Visa hela ljudspelaren/ });
   await user.click(title);
+  await user.click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
   expect(screen.getByRole('combobox')).toHaveValue('1.4');
-  expect(context.audioRef.current.playbackRate).toBe(1.4);
+  expect(context.setPlaybackRate).toHaveBeenCalledWith(1.4);
 
   await user.click(screen.getByRole('button', { name: 'Minimera ljudspelaren' }));
   window.innerWidth = 1280;
@@ -290,6 +394,90 @@ function swipe(target, from, to) {
   fireEvent.touchStart(target, { touches: [{ clientX: from[0], clientY: from[1] }] });
   fireEvent.touchEnd(target, { changedTouches: [{ clientX: to[0], clientY: to[1] }] });
 }
+
+test('svep över automatikens etikett spolar inte i ljudfilen', async () => {
+  window.innerWidth = 430;
+  const context = seriesContext();
+  context.audioRef.current.currentTime = 30;
+  render(player(context));
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
+  swipe(screen.getByRole('checkbox').closest('label'), [100, 100], [200, 105]);
+  expect(context.audioRef.current.currentTime).toBe(30);
+});
+
+test('inställningar öppnas med Enter och mellanslag, fokuserar hastighet och Escape återför fokus', async () => {
+  const user = userEvent.setup();
+  render(player(seriesContext()));
+  const gear = screen.getByRole('button', { name: 'Inställningar för ljudspelaren' });
+  expect(gear).toHaveAttribute('aria-expanded', 'false');
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  gear.focus();
+  await user.keyboard('{Enter}');
+  expect(screen.getByRole('combobox', { name: 'Uppspelningshastighet' })).toHaveFocus();
+  expect(screen.getByRole('dialog', { name: 'Ljudinställningar' })).toBeVisible();
+  expect(gear).toHaveAttribute('aria-expanded', 'true');
+  await user.keyboard('{Escape}');
+  expect(gear).toHaveFocus();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  await user.keyboard(' ');
+  expect(screen.getByRole('combobox')).toHaveFocus();
+});
+
+test('Tab lämnar panelen och klick utanför stänger utan att låsa sidans navigation', async () => {
+  const user = userEvent.setup();
+  render(
+    <>
+      <button type="button">På sidan</button>
+      {player(seriesContext())}
+    </>,
+  );
+  const gear = screen.getByRole('button', { name: 'Inställningar för ljudspelaren' });
+  await user.click(gear);
+  await user.tab();
+  expect(screen.getByRole('checkbox')).toHaveFocus();
+  await user.tab();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Stäng' })).toHaveFocus();
+  await user.click(gear);
+  await user.tab({ shift: true });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(gear).toHaveFocus();
+  await user.click(gear);
+  await user.click(screen.getByRole('button', { name: 'På sidan' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'På sidan' })).toHaveFocus();
+});
+
+test('panel och fokus bevaras inom serien medan accessionbyte och stängning stänger panelen', async () => {
+  const user = userEvent.setup();
+  const context = {
+    ...seriesContext(), currentAudio: { record: { id: 'first' }, audio: queueItems[0].audio },
+  };
+  const { rerender } = render(player(context));
+  const gear = screen.getByRole('button', { name: 'Inställningar för ljudspelaren' });
+  expect(gear).toHaveAccessibleDescription('Spela nästa automatiskt är av.');
+  await user.click(gear);
+  const auto = screen.getByRole('checkbox');
+  await user.click(auto);
+  rerender(player({
+    ...context,
+    autoAdvance: true,
+    currentIndex: 1,
+    currentAudio: { record: { id: 'first' }, audio: queueItems[1].audio },
+  }));
+  expect(auto).toHaveFocus();
+  expect(auto).toBeChecked();
+  expect(screen.getByRole('dialog')).toBeVisible();
+  expect(gear).toHaveAccessibleDescription('Spela nästa automatiskt är på.');
+  expect(gear.querySelector('.bg-player-accent')).toBeInTheDocument();
+  rerender(player({ ...context, currentAudio: { record: { id: 'second' } } }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' })).toHaveAccessibleDescription('Spela nästa automatiskt är av.');
+  await user.click(screen.getByRole('button', { name: 'Inställningar för ljudspelaren' }));
+  rerender(player({ ...context, visible: false }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+});
 
 test('svepspolning fungerar på bakgrunden men ignorerar vertikala svep och interaktiva kontroller', () => {
   window.innerWidth = 430;

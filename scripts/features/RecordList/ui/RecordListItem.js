@@ -206,6 +206,9 @@ export default function RecordListItem(props) {
                   disablePlayback
                   media={audioItem}
                   recordId={recordId}
+                  recordData={{
+                    id: recordId, media, contents, archive, year, persons,
+                  }}
                   recordTitle={title || l("(Utan titel)")}
                 />
               )}

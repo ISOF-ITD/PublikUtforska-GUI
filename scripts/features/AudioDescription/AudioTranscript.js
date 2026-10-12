@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { AudioContext } from '../../contexts/AudioContext';
+import { buildAudioQueue } from '../AudioPlayer/audioQueue';
 import { getAudioTitle } from '../../utils/helpers';
 import {
   normalizeTranscript, selectedTranscript, transcriptExport, transcriptFragment,
@@ -63,14 +64,19 @@ export function TranscriptReader({
     currentAudio, currentTime = 0, playing, playAudio,
   } = useContext(AudioContext);
   const segments = useMemo(() => normalizeTranscript(audio), [audio]);
+  const queue = useMemo(() => buildAudioQueue(record), [record]);
   const [query, setQuery] = useState('');
   const [onlyMatches, setOnlyMatches] = useState(false);
-  const [follow, setFollow] = useState(false);
+  const [follow, setFollow] = useState(true);
   const [searchIndex, setSearchIndex] = useState(-1);
   const [message, setMessage] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [previewStart, setPreviewStart] = useState(0);
   const [focusedSegment, setFocusedSegment] = useState(null);
+  const selection = `${audio.id}-${audio.source}`;
+  const previousSelection = useRef(selection);
+  const skipFollowSegment = useRef(null);
+  const fileChanged = previousSelection.current !== selection;
   const segmentRefs = useRef(new Map());
   const inputId = useId();
   const selectedIsPlaying = playing && String(currentAudio?.record?.id) === String(record.id)
@@ -93,13 +99,28 @@ export function TranscriptReader({
   const activeIndex = segments.findIndex((segment) => segment.id === active);
 
   useEffect(() => {
-    if (!follow || !active) return;
+    if (!fileChanged) return;
+    previousSelection.current = selection;
+    // Keep file changes from immediately moving the reader's scroll position.
+    skipFollowSegment.current = active;
+    setQuery('');
+    setOnlyMatches(false);
+    setSearchIndex(-1);
+    setMessage('');
+    setExpanded(false);
+    setPreviewStart(0);
+    setFocusedSegment(null);
+  }, [fileChanged, selection, active]);
+
+  useEffect(() => {
+    if (fileChanged || !follow || !active || active === skipFollowSegment.current) return;
+    skipFollowSegment.current = null;
     if (!showAll && (activeIndex < previewStart || activeIndex >= previewStart + previewLength)) {
       setPreviewStart(Math.max(0, Math.min(activeIndex - 1, segments.length - previewLength)));
       return;
     }
     segmentRefs.current.get(active)?.scrollIntoView({ block: 'nearest' });
-  }, [follow, active, activeIndex, showAll, previewStart, segments.length]);
+  }, [fileChanged, follow, active, activeIndex, showAll, previewStart, segments.length]);
 
   const navigateMatch = (direction) => {
     let next = (searchIndex + direction + matches.length) % matches.length;
@@ -196,7 +217,10 @@ export function TranscriptReader({
                   id={`${inputId}-follow`}
                   type="checkbox"
                   checked={follow}
-                  onChange={(event) => setFollow(event.target.checked)}
+                  onChange={(event) => {
+                    skipFollowSegment.current = null;
+                    setFollow(event.target.checked);
+                  }}
                 />
                 Följ uppspelningen
               </label>
@@ -245,7 +269,7 @@ export function TranscriptReader({
                     aria-label={`Spela från ${transcriptTimestamp(segment.start)}`}
                     aria-current={active === segment.id ? 'true' : undefined}
                     onClick={() => playAudio({
-                      record: { id: record.id, title }, audio, time: segment.start,
+                      record: { id: record.id, title }, audio, time: segment.start, queue,
                     })}
                   >
                     {transcriptTimestamp(segment.start)}
@@ -314,7 +338,10 @@ export default function AudioTranscript({ record, audioItems, onReturnToRecordin
   useEffect(() => {
     const previous = previousPlayback.current;
     previousPlayback.current = { currentAudio, playing };
-    if (!playing || (previous.currentAudio === currentAudio && previous.playing)) return;
+    const fileChanged = previous.currentAudio?.audio?.source !== currentAudio?.audio?.source
+      || previous.currentAudio?.record?.id !== currentAudio?.record?.id;
+    if (!fileChanged
+      && (!playing || (previous.currentAudio === currentAudio && previous.playing))) return;
     if (String(currentAudio?.record?.id) !== String(record.id)) return;
     const audio = audioItems.find((item) => item.source === currentAudio.audio.source);
     if (audio && selected?.id !== audio.id) {
@@ -347,7 +374,6 @@ export default function AudioTranscript({ record, audioItems, onReturnToRecordin
 
   return (
     <TranscriptReader
-      key={selected.id}
       record={record}
       audio={selected}
       title={title}

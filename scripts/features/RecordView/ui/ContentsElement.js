@@ -48,7 +48,7 @@ const toSafeHighlightHtml = (html) => sanitizeHtml(
   sanitizeHighlightConfig,
 );
 
-const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
+const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle, recordData }) => {
   if (!rows.length) return null;
 
   return (
@@ -83,6 +83,7 @@ const renderTable = ({ rows, highlightData, defaultAudio, id, audioTitle }) => {
                       <ListPlayButton
                         media={rowMedia}
                         recordId={id}
+                        recordData={recordData}
                         ariaLabel={`${audioTitle} – spela från ${row.start}`}
                         recordTitle={audioTitle}
                         startTime={row.seconds}
@@ -124,6 +125,7 @@ const renderCompact = ({
   defaultAudio,
   id,
   audioTitle,
+  recordData,
 }) => {
   if (!rows.length) return null;
 
@@ -152,6 +154,7 @@ const renderCompact = ({
                   <ListPlayButton
                     media={rowMedia}
                     recordId={id}
+                    recordData={recordData}
                     recordTitle={audioTitle}
                     startTime={row.seconds}
                     isSubList
@@ -286,13 +289,15 @@ export default function ContentsElement({
                 defaultAudio,
                 id,
                 audioTitle,
+                recordData: data,
               })
             : renderTable({
                 rows,
                 highlightData,
                 defaultAudio,
                 id,
-                audioTitle,
+              audioTitle,
+              recordData: data,
               })
           : renderPlain(contents, highlightHtml)}
       </dd>

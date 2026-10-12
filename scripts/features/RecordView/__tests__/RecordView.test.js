@@ -527,6 +527,7 @@ test('ljudposten behåller tabell och uppspelningsfunktion', async () => {
   await user.click(playButton);
   expect(playAudio).toHaveBeenCalledWith(expect.objectContaining({
     audio: expect.objectContaining({ source: 'a.mp3' }),
+    queue: [{ audio: expect.objectContaining({ source: 'a.mp3' }), title: 'Inspelning A' }],
   }));
   const viewport = jest.replaceProperty(window, 'innerWidth', 1920);
   [390, 1024, 1439, 1440, 1920].forEach((width) => {
@@ -548,6 +549,31 @@ test('inspelningar utan titel får numrerade rubriker', async () => {
   ['Inspelning 1', 'Inspelning 2'].forEach((name) => {
     expect(screen.getByRole('heading', { level: 3, name })).toBeVisible();
   });
+});
+
+test.each(['Hej', 'En längre berättelse om arbetet i skogen'])('innehållsbeskrivningen %s skickar samma ljudkö', async (description) => {
+  const user = userEvent.setup();
+  const { playAudio } = await renderRecord({
+    ...record([
+      {
+        id: 'a1', type: 'audio', source: 'a.mp3', title: 'Första filen',
+      },
+      {
+        id: 'a2', type: 'audio', source: 'b.mp3', title: 'Andra filen',
+      },
+    ]),
+    contents: `(00:10) ${description}`,
+  });
+  await user.click(screen.getByRole('button', { name: 'Beskrivning av innehållet (1)' }));
+  await user.click(within(screen.getByRole('region', { name: 'Metadata' }))
+    .getByRole('button', { name: 'Spela upp' }));
+  expect(playAudio).toHaveBeenLastCalledWith(expect.objectContaining({
+    time: 10,
+    queue: [
+      { audio: expect.objectContaining({ source: 'a.mp3' }), title: 'Första filen' },
+      { audio: expect.objectContaining({ source: 'b.mp3' }), title: 'Andra filen' },
+    ],
+  }));
 });
 
 test('vald avskrift markeras i listan och läsaren har en fokuserbar väg tillbaka utan ljudstart', async () => {
@@ -593,7 +619,7 @@ test('utfällda ljudbeskrivningar och redigeringsformulär har H4 under inspelni
     json: async () => ({ data: { transcribesession: 'session-a' }, hits: { hits: [] } }),
   }));
   const user = userEvent.setup();
-  await renderRecord({
+  const { playAudio } = await renderRecord({
     ...record([{
       id: 'a1',
       type: 'audio',
@@ -609,6 +635,11 @@ test('utfällda ljudbeskrivningar och redigeringsformulär har H4 under inspelni
   expect(screen.getByRole('heading', { level: 4, name: 'Innehållsbeskrivningar' })).toBeVisible();
   expect(screen.getByRole('table', { name: 'Innehållsbeskrivningar' })).toBeVisible();
   expect(toggle).toHaveFocus();
+  await user.click(within(screen.getByRole('table', { name: 'Innehållsbeskrivningar' }))
+    .getByRole('button', { name: 'Spela upp' }));
+  expect(playAudio).toHaveBeenLastCalledWith(expect.objectContaining({
+    queue: [{ audio: expect.objectContaining({ source: 'a.mp3' }), title: 'Inspelning A' }],
+  }));
   await user.click(screen.getByRole('button', { name: 'Ändra' }));
   expect(screen.getByRole('heading', { level: 4, name: 'Redigera beskrivning' })).toBeVisible();
   const form = screen.getByRole('form', { name: 'Redigera beskrivning' });

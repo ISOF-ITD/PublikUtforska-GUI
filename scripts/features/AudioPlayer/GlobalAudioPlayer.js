@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { AudioContext } from '../../contexts/AudioContext';
 import PlayerButtons from './ui/PlayerButtons';
+import PlayerSettings from './ui/PlayerSettings';
 import Timeline from './ui/Timeline';
 import msToTime from './msToTime';
 
@@ -19,15 +20,24 @@ export default function GlobalAudioPlayer() {
   const {
     playing,
     audioRef,
-    setPlaying,
     togglePlay,
     currentTime,
     setCurrentTime,
     durationTime,
-    setVisible,
-    setCurrentAudio,
     playerLabelText,
     visible,
+    closeAudio,
+    currentAudio,
+    queue = [],
+    currentIndex = -1,
+    playPrevious,
+    playNext,
+    autoAdvance = false,
+    setAutoAdvance,
+    playbackRate = 1,
+    setPlaybackRate,
+    playbackError = '',
+    playbackStatus = '',
   } = useContext(AudioContext);
 
   /* ——  viewport & marquee  —— */
@@ -38,6 +48,13 @@ export default function GlobalAudioPlayer() {
   const gesture = useRef(null);
   const suppressClick = useRef(false);
   const [labelRef, textRef] = useMarquee([playerLabelText, vw, isCompact]);
+  const seriesLabel = queue.length > 1 ? `Inspelning ${currentIndex + 1} av ${queue.length}` : '';
+  const counter = seriesLabel && (
+    <span className="shrink-0 text-sm tabular-nums text-player-muted">
+      <span aria-hidden="true">{`${currentIndex + 1}/${queue.length}`}</span>
+      <span className="sr-only">{seriesLabel}</span>
+    </span>
+  );
 
   const handlePointerDown = (event) => {
     if (event.button !== 0 || event.isPrimary === false) return;
@@ -67,12 +84,7 @@ export default function GlobalAudioPlayer() {
   const swipeHandlers = useSwipeSeek(audioRef);
   const handleClose = () => {
     setMinimized(false);
-    audioRef.current?.pause();
-    setPlaying(false);
-    setVisible(false);
-    setCurrentTime(0);
-    setCurrentAudio(null);
-    window.eventBus.dispatch('audio.playerhidden');
+    closeAudio();
   };
   /* ——  render  —— */
   return (
@@ -99,7 +111,7 @@ export default function GlobalAudioPlayer() {
         <div className={isCompact ? 'flex items-center gap-3 py-2' : ''}>
           <button
             type="button"
-            aria-label={isCompact ? `Visa hela ljudspelaren: ${playerLabelText}` : 'Minimera ljudspelaren'}
+            aria-label={isCompact ? `Visa hela ljudspelaren: ${seriesLabel ? `${seriesLabel}: ` : ''}${playerLabelText}` : 'Minimera ljudspelaren'}
             aria-expanded={!isCompact}
             aria-controls={controlsId}
             title={isCompact ? playerLabelText : 'Minimera ljudspelaren'}
@@ -111,12 +123,13 @@ export default function GlobalAudioPlayer() {
               'm-0 flex items-center justify-center border-0 rounded-lg bg-transparent text-player-text touch-none cursor-pointer',
               'hover:bg-player-control-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-player-focus',
               'focus-visible:ring-offset-2 focus-visible:ring-offset-player-bg',
-              isCompact ? 'min-w-0 flex-1 h-12 gap-3 px-2 text-sm leading-tight' : 'mx-auto h-8 w-20',
+              isCompact ? 'min-w-0 flex-1 h-12 gap-3 px-2 text-sm leading-tight' : 'mx-auto h-[48px] w-[80px]',
             )}
           >
             {isCompact ? (
               <>
                 <FontAwesomeIcon icon={faChevronUp} className="shrink-0" />
+                {counter}
                 <span className="min-w-0 flex-1 truncate text-left">{playerLabelText}</span>
               </>
             ) : <span className="h-1.5 w-10 rounded-full bg-player-muted" />}
@@ -142,8 +155,8 @@ export default function GlobalAudioPlayer() {
         inert={isCompact || undefined}
         aria-hidden={isCompact || undefined}
         className={classNames(
-          'mx-auto w-full max-w-[1200px] py-3 gap-x-4 gap-y-2 sm:grid-cols-[auto_64px_1fr_auto] sm:grid-rows-1 items-center',
-          isCompact ? 'hidden' : 'flex flex-col sm:grid',
+          'mx-auto w-full max-w-[1200px] pb-3 pt-3 sm:pt-14 md:pt-3 gap-x-4 gap-y-2 md:grid-cols-[auto_64px_1fr_auto] items-center',
+          isCompact ? 'hidden' : 'flex flex-col md:grid',
         )}
       >
         {/* transport */}
@@ -151,10 +164,14 @@ export default function GlobalAudioPlayer() {
           audioRef={audioRef}
           playing={playing}
           togglePlay={togglePlay}
+          queue={queue}
+          currentIndex={currentIndex}
+          playPrevious={playPrevious}
+          playNext={playNext}
         />
 
         {/* elapsed time (desktop only) */}
-        <div className="hidden sm:flex flex-col items-end w-16 leading-tight">
+        <div className="hidden md:flex flex-col items-end w-16 leading-tight md:col-start-2 md:row-start-1">
           <time
             aria-label="Tid"
             dateTime={(currentTime / 1000).toFixed(0)}
@@ -173,18 +190,21 @@ export default function GlobalAudioPlayer() {
         </div>
 
         {/* label + timeline */}
-        <div className="w-full min-w-0 flex flex-col gap-2">
-          <div
-            ref={labelRef}
-            className="relative overflow-hidden text-sm leading-tight"
-          >
-            <span
-              ref={textRef}
-              className="whitespace-nowrap inline-block will-change-transform"
-              title={playerLabelText}
+        <div className="w-full min-w-0 flex flex-col gap-2 md:col-start-3 md:row-start-1">
+          <div className="flex min-w-0 items-center gap-2 text-sm leading-tight">
+            {counter}
+            <div
+              ref={labelRef}
+              className="relative min-w-0 flex-1 overflow-hidden"
             >
-              {playerLabelText}
-            </span>
+              <span
+                ref={textRef}
+                className="whitespace-nowrap inline-block will-change-transform"
+                title={playerLabelText}
+              >
+                {playerLabelText}
+              </span>
+            </div>
           </div>
 
           <Timeline
@@ -197,22 +217,31 @@ export default function GlobalAudioPlayer() {
           />
         </div>
 
-        {/* close */}
-        <button
-          type="button"
-          onClick={handleClose}
-          aria-label="Stäng"
-          className={classNames(
-            'absolute top-1.5 right-3 sm:static sm:ml-auto',
-            'flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full',
-            'border border-solid border-player-muted bg-player-control text-player-text hover:bg-player-control-hover',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-player-focus',
-            'focus-visible:ring-offset-2 focus-visible:ring-offset-player-bg',
+        <div className="absolute top-1 right-3 flex items-center gap-1 md:static md:ml-auto md:col-start-4 md:row-start-1">
+          {visible && !isCompact && (
+            <PlayerSettings
+              key={currentAudio?.record?.id || 'no-record'}
+              playbackRate={playbackRate}
+              setPlaybackRate={setPlaybackRate}
+              hasSeries={queue.length > 1}
+              autoAdvance={autoAdvance}
+              setAutoAdvance={setAutoAdvance}
+            />
           )}
-        >
-          <FontAwesomeIcon icon={faClose} className="h-5 w-5 sm:h-4 sm:w-4" />
-        </button>
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="Stäng"
+            className="m-0 flex h-[44px] w-[44px] items-center justify-center rounded-full border border-solid border-player-muted bg-player-control text-player-text hover:bg-player-control-hover cursor-pointer
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-player-focus focus-visible:ring-offset-2 focus-visible:ring-offset-player-bg"
+          >
+            <FontAwesomeIcon icon={faClose} className="h-[20px] w-[20px]" />
+          </button>
+        </div>
       </div>
+      <p role="status" aria-live="polite" aria-atomic="true" className={playbackError ? 'mx-auto mb-3 max-w-[1200px] text-sm text-player-text' : 'sr-only'}>
+        {playbackError || playbackStatus}
+      </p>
     </div>
   );
 }

@@ -5,7 +5,9 @@ import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import InstructionBox from "./InstructionBox";
 import ListPlayButton from "./ListPlayButton";
 
-function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData }) {
+function DescriptionList({
+  item, recordId, recordData = null, audioTitle, onEditDesc, highlightData,
+}) {
   const headingId = useId();
   function parseTimeString(timeString = "00:00") {
     try {
@@ -74,6 +76,7 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
                     <ListPlayButton
                       media={item}
                       recordId={recordId}
+                      recordData={recordData}
                       recordTitle={audioTitle}
                       startTime={parseTimeString(desc.start)}
                       isSubList
@@ -115,5 +118,7 @@ function DescriptionList({ item, recordId, audioTitle, onEditDesc, highlightData
     </div>
   );
 }
+
+DescriptionList.propTypes = { recordData: PropTypes.object };
 
 export default DescriptionList;

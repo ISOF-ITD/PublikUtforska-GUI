@@ -6,7 +6,7 @@ export default function useSwipeSeek(audioRef) {
 
   const onTouchStart = (e) => {
     swipe.current = null;
-    if (e.touches.length !== 1 || e.target.closest('button, input, select, a')) return;
+    if (e.touches.length !== 1 || e.target.closest('button, input, select, a, label')) return;
     swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
   };
 

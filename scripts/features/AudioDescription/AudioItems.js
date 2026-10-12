@@ -12,6 +12,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import AudioItemRow from "./AudioItemRow";
 import AudioTranscript from './AudioTranscript';
 import { selectedTranscript } from './transcriptUtils';
+import { getAudioItems } from '../AudioPlayer/audioQueue';
 import "./DescriptionForm";
 import config from "../../config";
 import { getAudioTitle } from "../../utils/helpers";
@@ -37,7 +38,7 @@ function AudioItems({ data, highlightData = null }) {
     id,
     media,
     contents,
-    archive: { arhive_org: archiveOrg, archive },
+    archive: { archive_org: archiveOrg, archive },
     year,
     persons,
     transcriptionstatus,
@@ -83,14 +84,6 @@ function AudioItems({ data, highlightData = null }) {
   const isLocked = !transcribeSession
     && !localLockOverride
     && transcriptionstatus === "undertranscription";
-
-  const hasContent = (m) =>
-    // utterances wrapped in an object
-    (Array.isArray(m.utterances?.utterances) &&
-      m.utterances.utterances.length) ||
-    // old flat utterances array (in case both formats exist for a while)
-    (Array.isArray(m.utterances) && m.utterances.length) ||
-    (Array.isArray(m.description) && m.description.length);
 
   const canContribute =
     (data.transcriptionstatus === "readytotranscribe" ||
@@ -453,18 +446,7 @@ function AudioItems({ data, highlightData = null }) {
   };
 
   // Build the list that the table will render
-  const audioDataItems = useMemo(() => {
-    const bySrc = {};
-    media.forEach((m) => {
-      if (m.type !== "audio") return;
-
-      const key = m.source;
-      const content = hasContent(m);
-
-      if (!bySrc[key] || content) bySrc[key] = m;
-    });
-    return Object.values(bySrc);
-  }, [media]);
+  const audioDataItems = useMemo(() => getAudioItems(media), [media]);
   const selectedAudio = selectedTranscript(localData, audioDataItems, location.hash);
 
   if (!audioDataItems.length) {
@@ -506,6 +488,7 @@ function AudioItems({ data, highlightData = null }) {
                   item={item}
                   audioTitle={audioTitle?.trim() || `${l('Inspelning')} ${index + 1}`}
                   recordId={id}
+                  recordData={localData}
                   selectedTranscriptId={selectedAudio?.id ?? null}
                   openItems={openItems}
                   onToggle={handleToggle}
@@ -574,7 +557,7 @@ AudioItems.propTypes = {
     ).isRequired,
     contents: PropTypes.string,
     archive: PropTypes.shape({
-      arhive_org: PropTypes.string,
+      archive_org: PropTypes.string,
       archive: PropTypes.string,
     }),
     year: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

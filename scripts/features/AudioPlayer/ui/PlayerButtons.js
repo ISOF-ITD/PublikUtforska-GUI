@@ -3,15 +3,16 @@ import {
   faRotateLeft,
   faPlay,
   faPause,
+  faBackwardStep,
+  faForwardStep,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
 import { useCallback, useRef } from 'react';
-import SpeedSelector from './SpeedSelector';
 
 const JUMP_SEC = 15;
 
-const BTN = `relative flex items-center justify-center rounded-full
+const BTN = `relative m-0 flex shrink-0 items-center justify-center rounded-full
    active:scale-95 transition-all duration-150 ease-out
    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-player-focus
    focus-visible:ring-offset-2 focus-visible:ring-offset-player-bg
@@ -20,9 +21,16 @@ const BTN = `relative flex items-center justify-center rounded-full
 const SECONDARY = `flex-col gap-1 border-0 bg-transparent text-player-text hover:bg-player-control-hover
    [&>svg]:h-5 [&>svg]:w-5`;
 
-export default function PlayerButtons({ audioRef, playing, togglePlay }) {
+export default function PlayerButtons({
+  audioRef, playing, togglePlay, queue = [], currentIndex = -1, playPrevious, playNext,
+}) {
   const backwardBtn = useRef(null);
   const forwardBtn = useRef(null);
+  const previous = queue[currentIndex - 1];
+  const next = queue[currentIndex + 1];
+  const previousLabel = previous ? `Föregående inspelning: ${previous.title}` : 'Föregående inspelning';
+  const nextLabel = next ? `Nästa inspelning: ${next.title}` : 'Nästa inspelning';
+  const fileButton = `${BTN} ${SECONDARY} !h-11 !w-11 aria-disabled:opacity-50 aria-disabled:cursor-default aria-disabled:hover:bg-transparent`;
 
   const bump = (btn) => {
     if (!btn) return;
@@ -43,7 +51,12 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
   );
 
   return (
-    <div className="flex items-center gap-3 sm:gap-4">
+    <div className="flex max-w-full flex-wrap items-center justify-center gap-2 md:gap-3 md:col-start-1 md:row-start-1">
+      {queue.length > 1 && (
+        <button type="button" aria-label={previousLabel} title={previousLabel} aria-disabled={!previous} onClick={() => { if (previous) playPrevious(); }} className={fileButton}>
+          <FontAwesomeIcon icon={faBackwardStep} />
+        </button>
+      )}
       <button
         type="button"
         ref={backwardBtn}
@@ -76,10 +89,12 @@ export default function PlayerButtons({ audioRef, playing, togglePlay }) {
         <span aria-hidden="true" className="text-xs font-semibold leading-none tabular-nums">{JUMP_SEC}</span>
       </button>
 
-      {/* hide speed picker where width < 430 px */}
-      <div className="hidden pb-[15px] min-[430px]:block">
-        <SpeedSelector audioRef={audioRef} />
-      </div>
+      {queue.length > 1 && (
+        <button type="button" aria-label={nextLabel} title={nextLabel} aria-disabled={!next} onClick={() => { if (next) playNext(); }} className={fileButton}>
+          <FontAwesomeIcon icon={faForwardStep} />
+        </button>
+      )}
+
     </div>
   );
 }
@@ -88,4 +103,8 @@ PlayerButtons.propTypes = {
   audioRef: PropTypes.object.isRequired,
   playing: PropTypes.bool.isRequired,
   togglePlay: PropTypes.func.isRequired,
+  queue: PropTypes.arrayOf(PropTypes.shape({ title: PropTypes.string.isRequired })),
+  currentIndex: PropTypes.number,
+  playPrevious: PropTypes.func,
+  playNext: PropTypes.func,
 };
