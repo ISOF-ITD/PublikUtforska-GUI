@@ -50,6 +50,28 @@ const menuCases = [
     ),
     buttonName: 'Sortera: Relevans',
     firstItemName: /Relevans/,
+    secondItemName: 'Senast avskrivna',
+  },
+  {
+    name: 'sorteringsmenyn utan fritextsökning',
+    renderMenu: (onChange) => render(
+      <>
+        <RecordListMenu
+          buttonIcon={faSort}
+          buttonLabel="Sortera: Senast avskrivna"
+          className="relative"
+          onSelect={onChange}
+          options={SORT_OPTIONS.filter((option) => option.field !== '_score').map((option) => ({
+            ...option,
+            key: `${option.field}-${option.order}`,
+            selected: option.field === 'latest_transcription' && option.order === 'desc',
+          }))}
+        />
+        <button type="button">Efter menyn</button>
+      </>,
+    ),
+    buttonName: 'Sortera: Senast avskrivna',
+    firstItemName: 'Senast avskrivna',
     secondItemName: 'Accessionsnummer, stigande',
   },
 ];
@@ -137,4 +159,21 @@ describe.each(menuCases)('$name', ({
     expect(screen.getByRole('button', { name: 'Efter menyn' })).toHaveFocus();
     expect(button).toHaveAttribute('aria-expanded', 'false');
   });
+});
+
+test('väljer Senast avskrivna med tangentbord och skickar fallande avskriftsdatum', async () => {
+  const user = userEvent.setup();
+  const onChange = jest.fn();
+  menuCases[1].renderMenu(onChange);
+
+  await user.tab();
+  await user.keyboard('{Enter}{ArrowDown}{Enter}');
+
+  expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
+    field: 'latest_transcription',
+    order: 'desc',
+    label: 'Senast avskrivna',
+  }));
+  expect(screen.getByRole('button', { name: 'Sortera: Relevans' })).toHaveFocus();
+  expect(screen.queryByRole('menu')).not.toBeInTheDocument();
 });

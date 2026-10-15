@@ -9,9 +9,9 @@ const { hitsPerPage, maxTotal, filterParameterName, filterParameterValues } =
   config;
 const RECORDS_CACHE_TTL_MS = 5 * 60 * 1000;
 const RECORDS_CACHE_MAX_ENTRIES = 100;
-const ARCHIVE_SORTING = {
-  field: 'archive.archive_id_row.keyword',
-  order: 'asc',
+const LATEST_TRANSCRIBED_SORTING = {
+  field: 'latest_transcription',
+  order: 'desc',
 };
 const RELEVANCE_SORTING = {
   field: '_score',
@@ -87,7 +87,7 @@ export default function useRecords(params, interval) {
   );
   const defaultSorting = searchContext.relevanceSortingAvailable
     ? RELEVANCE_SORTING
-    : ARCHIVE_SORTING;
+    : LATEST_TRANSCRIBED_SORTING;
 
   /* ---------------- state ---------------- */
   const [records, setRecords] = useState([]);

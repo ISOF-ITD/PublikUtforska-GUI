@@ -20,6 +20,11 @@ export const SORT_OPTIONS = [
     label: 'Relevans',
   },
   {
+    field: 'latest_transcription',
+    order: 'desc',
+    label: 'Senast avskrivna',
+  },
+  {
     field: 'archive.archive_id_row.keyword',
     order: 'asc',
     label: 'Accessionsnummer, stigande',
