@@ -27,7 +27,7 @@ function ContributorInfo({ transcribedby, comment, transcriptiondate }) {
               {l('Bidrag av')}
             </dt>
             <dd className="m-0 ml-6 space-y-1">
-              <p className="m-0 text-body">{transcribedby}</p>
+              <p className="m-0 text-body">{transcribedby.replace('crowdsource-anonymous', l('Anonym bidragsgivare'))}</p>
             </dd>
           </div>
         )}
@@ -98,7 +98,7 @@ export function PageContributor({ transcribedby, transcriptiondate, comment }) {
             {' '}
             {l('Bidrag av')}
           </dt>
-          <dd className="m-0">{transcribedby}</dd>
+          <dd className="m-0">{transcribedby.replace('crowdsource-anonymous', l('Anonym bidragsgivare'))}</dd>
         </div>
       )}
       {transcribedby && dateStr && (

@@ -586,7 +586,7 @@ export default function RecordListItem(props) {
 
       {columns?.includes("transcribedby") && (
         <td data-title={`${l("Bidrag av")}:`} className="py-2">
-          {transcribedby && <span className="text-sm">{transcribedby}</span>}
+          {transcribedby && <span className="text-sm">{transcribedby.replace('crowdsource-anonymous', l('Anonym bidragsgivare'))}</span>}
         </td>
       )}
     </tr>
