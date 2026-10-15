@@ -1,5 +1,5 @@
 import {
-  useState, useMemo, useRef, useId
+  useState, useMemo, useRef, useId, useContext,
 } from 'react';
 import PropTypes from "prop-types";
 import { Link, useLocation } from 'react-router-dom';
@@ -20,6 +20,8 @@ import ConfirmationModal from "./ConfirmationModal";
 import useAudioDuration from "./hooks/useAudioDuration";
 import { secondsToMMSS } from "../../utils/timeHelper";
 import { transcriptFragment } from './transcriptUtils';
+import { AudioContext } from '../../contexts/AudioContext';
+import { buildAudioQueue } from '../AudioPlayer/audioQueue';
 
 function AudioItemRow({
   item,
@@ -51,6 +53,8 @@ function AudioItemRow({
   highlightData,
 }) {
   const location = useLocation();
+  const { playAudio } = useContext(AudioContext);
+  const queue = useMemo(() => buildAudioQueue(recordData), [recordData]);
   const isSelectedTranscript = String(selectedTranscriptId) === String(item.id);
   const descriptionsId = useId();
   const rowToggleRef = useRef(null);
@@ -107,6 +111,16 @@ function AudioItemRow({
 
   const descriptionsCount = item.description?.length || 0;
   const hasStartValue = (value) => value !== undefined && value !== null && value !== '';
+  const transcriptHits = (Array.isArray(highlightData) ? highlightData : []).filter(
+    ({ _source: source, highlight }) => (
+      hasStartValue(source?.start)
+      && ['number', 'string'].includes(typeof source.start)
+      && String(source.start).trim() !== ''
+      && Number.isFinite(Number(source.start))
+      && Number(source.start) >= 0
+      && highlight?.['media.utterances.utterances.text']?.length
+    ),
+  );
 
   /**
    * Called when user clicks "Ändra" on an existing description.
@@ -190,7 +204,8 @@ function AudioItemRow({
               ) ? (
                 <div>
                   {highlightData
-                    .filter((h) => h._source && hasStartValue(h._source.start))
+                    .filter((h) => h._source && hasStartValue(h._source.start)
+                      && h.highlight?.['media.description.text']?.length)
                     .map((h) => (
                       <div
                         key={`desc-${h.id}-${h._source.start}`}
@@ -202,36 +217,43 @@ function AudioItemRow({
                     ))}
                 </div>
                 ) : null}
-              {Array.isArray(highlightData) &&
-              highlightData.some(
-                (h) => h._source
-                  && hasStartValue(h._source.start)
-                  && h.highlight
-                  && h.highlight['media.utterances.utterances.text'],
-              ) ? (
+              {transcriptHits.length > 0 && (
                 <div className="mt-2">
-                  {highlightData
-                    .filter((h) => h._source && hasStartValue(h._source.start))
-                    .map((h) => (
+                  {transcriptHits
+                    .map(({ id, _source: source, highlight }) => (
                       <div
-                        key={`utterance-${h.id}-${h._source.start}`}
+                        key={`utterance-${id}-${source.start}`}
                       >
                         <span className="font-mono ml-2 text-xs text-muted">
                           Automatisk ljudavskrift
                           {' ('}
-                          {secondsToMMSS(h._source.start)}
+                          <button
+                            type="button"
+                            className="!m-0 !h-auto min-h-6 rounded !border-0 bg-transparent px-1 py-0 align-baseline font-mono text-xs normal-case leading-normal tracking-normal text-link underline underline-offset-2 hover:text-link-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                            aria-label={`Spela ${audioTitle} från ${secondsToMMSS(source.start)}`}
+                            onClick={() => playAudio({
+                              record: { id: recordId, title: audioTitle },
+                              audio: item,
+                              time: Number(source.start),
+                              queue,
+                            })}
+                          >
+                            <time dateTime={`PT${Number(source.start)}S`}>
+                              {secondsToMMSS(source.start)}
+                            </time>
+                          </button>
                           {'): '}
                         </span>
                         <span
                           className="italic"
                           dangerouslySetInnerHTML={{
-                            __html: h.highlight['media.utterances.utterances.text'][0],
+                            __html: highlight['media.utterances.utterances.text'][0],
                           }}
                         />
                       </div>
                     ))}
                 </div>
-                ) : null}
+              )}
             </div>
             <div className="flex shrink-0 flex-wrap gap-2 items-center sm:justify-end">
               {canContribute && config.activateAudioDescription && (
