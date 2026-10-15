@@ -276,7 +276,7 @@ function MapWrapper({
           showContainedMap
             ? 'min-h-0 shrink overflow-x-hidden overflow-y-auto overscroll-contain'
             : '',
-          showContainedMap && !isWideResultsViewport && 'focus-within:overflow-visible',
+          showContainedMap && 'focus-within:overflow-visible',
         )}
         data-record-list-scroll={isSplitResultsLayout && listIsVisible ? 'true' : undefined}
       >

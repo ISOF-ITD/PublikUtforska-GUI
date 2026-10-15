@@ -256,6 +256,16 @@ test('stöder Enter och blanksteg och låter Tab gå vidare till kartan efter f�
   expect(button).toHaveAccessibleName('Förstora karta');
 });
 
+test.each([1600, 1024, 390])('sökförslag kan visas utanför sökpanelen i kartläge vid %s px', (width) => {
+  renderResults('/search?showmap=1');
+  resizeViewport(width);
+  const searchPanel = screen.getByRole('region', { name: 'Sök och filter' });
+  // Suggestions extend below the header. Its scroll container must release
+  // clipping while the combobox or any suggestion inside it has focus.
+  expect(searchPanel.parentElement).toHaveClass('focus-within:overflow-visible');
+  expect(searchPanel).toBeVisible();
+});
+
 test('öppnar direktlänk i stort kartläge och behåller läget vid sökning och filtrering', async () => {
   const user = userEvent.setup();
   renderResults('/search?q=visa&person=acc4948&showmap=1&custom=bevara');
