@@ -114,6 +114,7 @@ test.each([false, true])('uses the themed EPSG:3006 tiles and preserves the map 
     return layers;
   };
   const [background] = backgrounds();
+  const backgroundTiles = () => [...background.getContainer().querySelectorAll('img.leaflet-tile')];
   const expectTheme = (dark) => {
     expect(backgrounds()).toEqual([background]);
     const tileUrl = background.getTileUrl({ x: 0, y: 0 });
@@ -123,6 +124,17 @@ test.each([false, true])('uses the themed EPSG:3006 tiles and preserves the map 
     } else {
       expect(tileUrl).toBe(`https://ull.isof.se/folkeservice/api/lm_proxy/${map.getZoom()}/0/0.png`);
     }
+    const tiles = backgroundTiles();
+    expect(tiles.length).toBeGreaterThan(0);
+    tiles.forEach((tile) => {
+      const url = new URL(tile.src);
+      if (dark) {
+        expect(url.searchParams.get('LAYER')).toBe('topowebb_nedtonad');
+      } else {
+        expect(url.pathname).toMatch(/\/lm_proxy\/\d+\/\d+\/\d+\.png$/);
+        expect(url.search).toBe('');
+      }
+    });
   };
   expect(window.matchMedia).toHaveBeenCalledWith('(prefers-color-scheme: dark)');
   expectTheme(initiallyDark);
@@ -138,9 +150,12 @@ test.each([false, true])('uses the themed EPSG:3006 tiles and preserves the map 
   const center = map.getCenter();
   const zoom = map.getZoom();
   const { crs } = map.options;
-  [!initiallyDark, initiallyDark].forEach((dark) => {
+  // A repeated notification must also replace tiles that may still be loading.
+  [!initiallyDark, initiallyDark, initiallyDark].forEach((dark) => {
+    const previousTiles = backgroundTiles();
     act(() => colorScheme.dispatchEvent(Object.assign(new Event('change'), { matches: dark })));
     expectTheme(dark);
+    previousTiles.forEach((tile) => expect(tile).not.toBeInTheDocument());
     expect(map.hasLayer(overlays[0])).toBe(true);
     expect(map.getCenter()).toEqual(center);
     expect(map.getZoom()).toBe(zoom);

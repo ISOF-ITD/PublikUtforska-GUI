@@ -128,9 +128,9 @@ const MapBase = forwardRef(function MapBase(props, ref) {
     const backgroundConfig = mapHelper.tileLayers[0];
     const backgroundLayer = layers[backgroundConfig.label];
     const colorSchemeQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
-    // Change only the tile source so theme changes preserve the view and overlays.
+    // Force a tile reload while preserving the map view and overlays.
     const handleColorSchemeChange = ({ matches = false } = {}) => {
-      backgroundLayer.setUrl(matches ? backgroundConfig.darkModeUrl : backgroundConfig.url);
+      backgroundLayer.setUrl(matches ? backgroundConfig.darkModeUrl : backgroundConfig.url, false);
     };
     handleColorSchemeChange(colorSchemeQuery);
     const visibleLayers = [backgroundLayer];
