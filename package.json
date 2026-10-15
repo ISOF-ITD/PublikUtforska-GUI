@@ -33,6 +33,8 @@
     "leaflet.locatecontrol": "^0.79.0",
     "leaflet.markercluster": "^1.4.1",
     "leaflet.vectorgrid": "^1.3.0",
+    "proj4": "^2.22.0",
+    "proj4leaflet": "^1.0.2",
     "prop-types": "^15.8.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",

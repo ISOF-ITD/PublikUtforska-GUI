@@ -214,13 +214,17 @@ I LESS/CSS används variablerna direkt:
 
 ## Kartan i dark mode
 
-I dark mode används ”Lantmäteriet topografisk karta nedtonad” som standardlager med en särkild dark mode css-filter:
+I dark mode hämtas Lantmäteriets topografiska karta nedtonad (`topowebb_nedtonad`)
+i EPSG:3006, via den befintliga autentiserade proxyn `lm_proxy` och WMTS GetTile
+med queryparametrar. I ljust läge används färgkartan. `MapBase` följer
+`prefers-color-scheme` och uppdaterar plattadressen på samma bakgrundslager;
+kartutsnitt, överlägg och punkter behålls. Befintligt CSS-filter används också:
 
 ```css
 // map.less
 @media (prefers-color-scheme: dark) {
   .leaflet-tile-pane {
-    filter: invert(1) hue-rotate(180deg) brightness(1.1) contrast(0.8);
+    filter: invert(1) hue-rotate(180deg) brightness(2) contrast(0.9);
   }
 }
 ```

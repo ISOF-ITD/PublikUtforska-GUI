@@ -3,7 +3,6 @@ import {
 } from 'react';
 import {
   circleMarker,
-  latLngBounds,
   layerGroup,
 } from 'leaflet';
 // import L, {
@@ -297,7 +296,6 @@ export default function MapView({
   zoomControlPosition = 'bottomright',
   zoom = undefined,
   center = undefined,
-  disableSwedenMap = false,
   mapData,
   isMobileViewport = false,
   active = true,
@@ -509,7 +507,7 @@ export default function MapView({
 
   const createSockenCircle = useCallback((obj) => {
     const count = getDocumentCount(obj);
-    const currentZoom = mapView.current?.map?.getZoom() ?? 0;
+    const currentZoom = (mapView.current?.map?.getZoom() ?? 0) + 4;
     const circleTooltip = `${getSockenName(obj)}: ${formatHitCount(count)}`;
 
     // Adjust circle radius based on document count and zoom level:
@@ -709,9 +707,9 @@ export default function MapView({
 
     map.whenReady(() => {
       map.invalidateSize({ animate: false });
-      map.fitBounds(
-        latLngBounds(pointsInSweden.map(({ location }) => location)),
-        { maxZoom: 7, padding: [24, 24] },
+      mapView.current?.fitLocations(
+        pointsInSweden.map(({ location }) => location),
+        { maxZoom: 3 },
       );
     });
   }, [active, points]);
@@ -967,11 +965,6 @@ export default function MapView({
     });
   }, [active, isMobileViewport, layout]);
 
-  const mapBaseLayerChangeHandler = useCallback(() => {
-    // If the base layer changes, re-render overlays (icons/zoom scaling/etc.)
-    updateMap({ force: true });
-  }, [updateMap]);
-
   const attributionControlPosition = isMobileViewport
     ? 'bottomleft'
     : 'bottomright';
@@ -1007,8 +1000,6 @@ export default function MapView({
         scrollWheelZoom
         zoom={zoom}
         center={center}
-        disableSwedenMap={disableSwedenMap}
-        onBaseLayerChange={mapBaseLayerChangeHandler}
       />
     </div>
   );
@@ -1022,7 +1013,6 @@ MapView.propTypes = {
   zoomControlPosition: PropTypes.string,
   zoom: PropTypes.number,
   center: PropTypes.arrayOf(PropTypes.number),
-  disableSwedenMap: PropTypes.bool,
   mapData: PropTypes.object,
   isMobileViewport: PropTypes.bool,
   active: PropTypes.bool,

@@ -1,6 +1,54 @@
-import L, { divIcon, tileLayer, bounds } from 'leaflet';
+import L, {
+  divIcon, tileLayer, bounds, latLng,
+} from 'leaflet';
+import 'proj4leaflet';
 import { icon as faIcon } from '@fortawesome/fontawesome-svg-core';
 import { faLocationDot, faCircle } from '@fortawesome/free-solid-svg-icons';
+
+// Lantmäteriet WMTS TileMatrixSet 3006 (coordinates here are easting, northing).
+export const SWEREF_RESOLUTIONS = [
+  4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5,
+];
+export const SWEREF_MIN_ZOOM = 0;
+export const SWEREF_MAX_ZOOM = SWEREF_RESOLUTIONS.length - 1;
+export const SWEDEN_PROJECTED_BOUNDS = bounds([250000, 6100000], [925000, 7700000]);
+
+// Leaflet fitBounds only projects two geographic corners. In a transverse
+// Mercator projection those need not enclose all the projected locations.
+export function fitProjectedBounds(map, projectedBounds, {
+  padding = [24, 24], maxZoom = map.getMaxZoom(),
+} = {}) {
+  const size = map.getSize();
+  const width = size.x - padding[0] * 2;
+  const height = size.y - padding[1] * 2;
+  if (width <= 0 || height <= 0 || !projectedBounds.isValid()) return false;
+
+  const extent = projectedBounds.getSize();
+  const resolution = Math.max(extent.x / width, extent.y / height);
+  const zoom = map.getScaleZoom(SWEREF_RESOLUTIONS[0] / resolution, 0);
+  const snap = L.Browser.any3d ? map.options.zoomSnap : 1;
+  const snappedZoom = snap ? Math.floor(zoom / snap) * snap : zoom;
+  const limitedZoom = Math.max(map.getMinZoom(), Math.min(
+    map.getMaxZoom(),
+    maxZoom,
+    snappedZoom,
+  ));
+  // A following layout resize must not cancel an in-flight fit animation.
+  map.setView(
+    map.options.crs.unproject(projectedBounds.getCenter()),
+    limitedZoom,
+    { animate: false },
+  );
+  return true;
+}
+
+export function fitLocations(map, locations, options) {
+  return fitProjectedBounds(
+    map,
+    bounds(locations.map((location) => map.options.crs.project(latLng(location)))),
+    options,
+  );
+}
 
 // helper to turn a FA definition into an HTML string sized & colored
 function faSvg(
@@ -56,49 +104,27 @@ export default {
   tileLayers: [
     {
       label: 'Lantmäteriet topografisk karta',
-      url: 'https://ull.isof.se/folkeservice/api/lm_epsg3857_proxy/{z}/{y}/{x}.png',
+      url: 'https://ull.isof.se/folkeservice/api/lm_proxy/{z}/{y}/{x}.png',
+      // The existing authenticated proxy also forwards standard WMTS KVP requests.
+      darkModeUrl: 'https://ull.isof.se/folkeservice/api/lm_proxy/'
+        + '?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=topowebb_nedtonad'
+        + '&STYLE=default&TILEMATRIXSET=3006&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}'
+        + '&FORMAT=image/png',
       options: {
         attribution:
           '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a>',
         crossOrigin: true,
-      },
-    },
-    {
-      label: 'Lantmäteriet topografisk karta nedtonad',
-      url: 'https://ull.isof.se/folkeservice/api/lm_nedtonad_epsg3857_proxy/{z}/{y}/{x}.png',
-      options: {
-        attribution:
-          '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a>',
-        crossOrigin: true,
-      },
-    },
-    {
-      label: 'Open Street Map Mapnik',
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      options: {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      },
-    },
-    {
-      label: 'ESRI World Imagery',
-      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      options: {
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-      },
-    },
-    {
-      label: 'ESRI Gray',
-      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      options: {
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+        tileSize: 256,
+        noWrap: true,
+        minZoom: SWEREF_MIN_ZOOM,
+        maxZoom: SWEREF_MAX_ZOOM,
       },
     },
   ],
 
   overlayTileLayers: [
-    // Historiska Ortofoto LM
+    // Historiskt ortofoto är tillfälligt avstängt: proxyn svarar HTTP 401.
+    /*
     {
       isWms: true,
       label: 'Lantmäteriet Ortofoto 1960',
@@ -108,14 +134,15 @@ export default {
       TILESORIGIN: '-2238400, 5287200',
       ISBASELAYER: true,
       hidden: true,
-      maxZoom: 17,
-      minZoom: 6,
+      maxZoom: SWEREF_MAX_ZOOM,
+      minZoom: 2,
       options: {
         attribution:
           '&copy; <a href="https://www.lantmateriet.se/sv/Kartor-och-geografisk-information/geodataprodukter/produktlista/historiska-ortofoton-visning/">Lantmäteriet</a> Ortofoto 1960',
         crossOrigin: true,
       },
     },
+    */
     // Ortofoto LM
     {
       isWms: true,
@@ -127,8 +154,8 @@ export default {
       TILESORIGIN: '-2238400, 5287200',
       ISBASELAYER: true,
       hidden: true,
-      maxZoom: 17,
-      minZoom: 6,
+      maxZoom: SWEREF_MAX_ZOOM,
+      minZoom: 2,
       options: {
         attribution:
           '&copy; <a href="https://www.lantmateriet.se/sv/Kartor-och-geografisk-information/geodataprodukter/produktlista/ortofoto-visning/">Lantmäteriet</a> Ortofoto',
@@ -145,8 +172,8 @@ export default {
       TILESORIGIN: '-2238400, 5287200',
       ISBASELAYER: false,
       hidden: false,
-      maxZoom: 17,
-      minZoom: 11,
+      maxZoom: SWEREF_MAX_ZOOM,
+      minZoom: 7,
       options: {
         attribution:
           '&copy; <a href="https://www.raa.se">Riksantikvarieämbetet</a> Sockenkarta',
@@ -163,8 +190,8 @@ export default {
       // TILESORIGIN: '-2238400, 5287200',
       ISBASELAYER: false,
       hidden: true,
-      maxZoom: 17,
-      minZoom: 3,
+      maxZoom: SWEREF_MAX_ZOOM,
+      minZoom: SWEREF_MIN_ZOOM,
       options: {
         attribution:
           '&copy;<a href="https://www.lansstyrelsen.se/">Länsstyrelsen</a> Generalstabskartan',
@@ -181,8 +208,8 @@ export default {
       // TILESORIGIN: '-2238400, 5287200',
       ISBASELAYER: false,
       hidden: true,
-      maxZoom: 17,
-      minZoom: 6,
+      maxZoom: SWEREF_MAX_ZOOM,
+      minZoom: 2,
       options: {
         attribution:
           '&copy;<a href="https://www.lansstyrelsen.se/">Länsstyrelsen</a> Häradsekonomiska kartan',
@@ -199,8 +226,8 @@ export default {
       // TILESORIGIN: '-2238400, 5287200',
       ISBASELAYER: false,
       hidden: true,
-      maxZoom: 17,
-      minZoom: 3,
+      maxZoom: SWEREF_MAX_ZOOM,
+      minZoom: SWEREF_MIN_ZOOM,
       options: {
         attribution:
           '&copy;<a href="https://www.lansstyrelsen.se/">Länsstyrelsen</a> Ekonomiska kartan',
@@ -239,8 +266,9 @@ export default {
         if (this.overlayTileLayers[i].isWms) {
           newLayer = tileLayer.wms(this.overlayTileLayers[i].url, {
             layers: this.overlayTileLayers[i].layers,
-            minZoom: this.overlayTileLayers[i].minZoom || 3,
+            minZoom: this.overlayTileLayers[i].minZoom ?? SWEREF_MIN_ZOOM,
             maxZoom: this.overlayTileLayers[i].maxZoom,
+            noWrap: true,
             format: 'image/png',
             transparent: true,
             hidden: this.overlayTileLayers[i].hidden,
@@ -266,11 +294,9 @@ export default {
       'EPSG:3006',
       '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
       {
-        resolutions: [
-          4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5,
-        ],
+        resolutions: SWEREF_RESOLUTIONS,
         origin: [-1200000.0, 8500000.0],
-        bounds: bounds([-1200000.0, 8500000.0], [4305696.0, 2994304.0]),
+        bounds: bounds([-1200000, 4305696], [2994304, 8500000]),
       },
     );
     return crs;

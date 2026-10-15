@@ -1,47 +1,55 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { map as createLeafletMap, latLngBounds, control, CRS } from "leaflet";
+import {
+  forwardRef, useCallback, useEffect, useImperativeHandle, useRef,
+} from 'react';
+import { map as createLeafletMap, latLngBounds, control } from "leaflet";
 import "leaflet.markercluster";
 import "leaflet.locatecontrol";
-import "../../lib/leaflet.active-layers";
 
-import mapHelper from "../../utils/mapHelper";
+import mapHelper, {
+  fitLocations, fitProjectedBounds, SWEDEN_PROJECTED_BOUNDS, SWEREF_MIN_ZOOM, SWEREF_MAX_ZOOM,
+} from '../../utils/mapHelper';
 
 export const SWEDEN_BOUNDS = latLngBounds(
   [55.34267812700013, 11.108164910000113],
-  [69.03635569300009, 24.163413534000114],
+  [69.1, 24.163413534000114],
 );
 const MapBase = forwardRef(function MapBase(props, ref) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
-  const layersControlRef = useRef(null);
-  const onBaseLayerChangeRef = useRef(props.onBaseLayerChange);
-  const initializedRef = useRef(false); // guard against React 18 StrictMode double effects in dev
-  const initialBoundsFitRef = useRef(false);
+  const initialBoundsFitRef = useRef(props.center != null || props.zoom != null);
+  const pendingLocationsFitRef = useRef(null);
 
-  const fitInitialBounds = () => {
+  const fitPendingLocations = useCallback(() => {
+    const map = mapRef.current;
+    const pending = pendingLocationsFitRef.current;
+    if (!map || !pending) return false;
+    map.invalidateSize({ animate: false });
+    if (!fitLocations(map, pending.locations, pending.options)) return false;
+    pendingLocationsFitRef.current = null;
+    initialBoundsFitRef.current = true;
+    return true;
+  }, []);
+
+  const fitInitialBounds = useCallback(() => {
     const map = mapRef.current;
     const container = containerRef.current;
     if (
       !map
       || !container
-      || initialBoundsFitRef.current
       || container.clientWidth === 0
       || container.clientHeight === 0
     ) {
       return false;
     }
 
+    if (pendingLocationsFitRef.current) return fitPendingLocations();
+    if (initialBoundsFitRef.current) return false;
+
     map.invalidateSize({ animate: false });
-    map.fitBounds(SWEDEN_BOUNDS, {
-      padding: [24, 24],
-    });
+    if (!fitProjectedBounds(map, SWEDEN_PROJECTED_BOUNDS)) return false;
     initialBoundsFitRef.current = true;
     return true;
-  };
-
-  useEffect(() => {
-    onBaseLayerChangeRef.current = props.onBaseLayerChange;
-  }, [props.onBaseLayerChange]);
+  }, [fitPendingLocations]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -52,6 +60,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       window.cancelAnimationFrame(animationFrameId);
       animationFrameId = window.requestAnimationFrame(() => {
         mapRef.current?.invalidateSize({ animate: false });
+        fitInitialBounds();
       });
     });
     observer.observe(container);
@@ -60,7 +69,7 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       window.cancelAnimationFrame(animationFrameId);
       observer.disconnect();
     };
-  }, []);
+  }, [fitInitialBounds]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -81,6 +90,10 @@ const MapBase = forwardRef(function MapBase(props, ref) {
         if (mapRef.current) mapRef.current.invalidateSize();
       },
       fitInitialBounds,
+      fitLocations: (locations, options) => {
+        pendingLocationsFitRef.current = { locations, options };
+        return fitPendingLocations();
+      },
       addMarker: (markerData) => {
         // Keep parity with the API used by SimpleMap
         if (!markerData || !mapRef.current) return;
@@ -100,34 +113,27 @@ const MapBase = forwardRef(function MapBase(props, ref) {
         mapRef.current.panTo(location, { animate: true });
       },
     }),
-    []
+    [fitInitialBounds, fitPendingLocations]
   );
 
   // Build once on mount
   useEffect(() => {
-    if (initializedRef.current) return; // StrictMode guard (dev only)
     if (!containerRef.current || typeof window === "undefined") return;
-    initializedRef.current = true;
 
     const layers = mapHelper.createLayers();
     const overlayLayers = props.ignoreOverlayLayers
       ? undefined
       : mapHelper.createOverlayLayers();
 
-    if (props.disableSwedenMap) {
-      delete layers[mapHelper.tileLayers[0].label];
-    }
-
-    // Add first baselayer to map
-    //const visibleLayers = [layers[Object.keys(layers)[0]]];
-    
-    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const defaultBase = colorSchemeQuery.matches
-      ? 'Lantmäteriet topografisk karta nedtonad'
-      : 'Lantmäteriet topografisk karta';
-    const visibleLayers = [
-      layers[defaultBase] ?? layers[Object.keys(layers)[0]],
-    ];
+    const backgroundConfig = mapHelper.tileLayers[0];
+    const backgroundLayer = layers[backgroundConfig.label];
+    const colorSchemeQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+    // Change only the tile source so theme changes preserve the view and overlays.
+    const handleColorSchemeChange = ({ matches = false } = {}) => {
+      backgroundLayer.setUrl(matches ? backgroundConfig.darkModeUrl : backgroundConfig.url);
+    };
+    handleColorSchemeChange(colorSchemeQuery);
+    const visibleLayers = [backgroundLayer];
 
     // Add first overlay layer if it’s explicitly not hidden
     if (overlayLayers) {
@@ -137,11 +143,22 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       }
     }
 
+    const clampZoom = (value, fallback) => {
+      const parsed = Number.parseInt(value, 10);
+      return Number.isNaN(parsed) ? fallback : Math.max(
+        SWEREF_MIN_ZOOM,
+        Math.min(SWEREF_MAX_ZOOM, parsed),
+      );
+    };
+    const minZoom = clampZoom(props.minZoom, SWEREF_MIN_ZOOM);
+    const maxZoom = Math.max(minZoom, clampZoom(props.maxZoom, SWEREF_MAX_ZOOM));
     const mapOptions = {
+      crs: mapHelper.getSweref99crs(),
       center: props.center || SWEDEN_BOUNDS.getCenter(),
-      zoom: parseInt(props.zoom, 10) || 5,
-      minZoom: parseInt(props.minZoom, 10) || 4,
-      maxZoom: parseInt(props.maxZoom, 10) || 18,
+      zoom: Math.max(minZoom, Math.min(maxZoom, clampZoom(props.zoom, 0))),
+      minZoom,
+      maxZoom,
+      zoomSnap: 0.25,
       layers: visibleLayers,
       scrollWheelZoom: false,
       zoomControl: false,
@@ -152,60 +169,16 @@ const MapBase = forwardRef(function MapBase(props, ref) {
       keyboard: !props.disableInteraction,
     };
 
-    if (
-      !props.disableSwedenMap &&
-      Object.keys(layers)[0].includes("(SWEREF99)")
-    ) {
-      mapOptions.crs = mapHelper.getSweref99crs();
-      mapOptions.zoom = 1;
-      mapOptions.minZoom = 1;
-    }
-
     const map = createLeafletMap(containerRef.current, mapOptions);
     mapRef.current = map;
+    colorSchemeQuery?.addEventListener('change', handleColorSchemeChange);
     if (map.attributionControl) {
       map.attributionControl.setPosition(
         props.attributionControlPosition || "bottomright"
       );
     }
 
-    // Force initial view so Leaflet flips _loaded = true
-    map.setView(
-      props.center || SWEDEN_BOUNDS.getCenter(),
-      parseInt(props.zoom, 10) || 5,
-      { animate: false }
-    );
-
-    const handleBaseLayerChange = (event) => {
-      // Keep exact behavior
-      if (
-        event.name.includes("(SWEREF99)") &&
-        map.options.crs.code !== "EPSG:3006"
-      ) {
-        const c = map.getCenter();
-        const z = map.getZoom();
-        map.options.crs = mapHelper.getSweref99crs();
-        map.options.minZoom = 1;
-        map.options.maxZoom = 13;
-        map.setView(c, z - 4, { animate: false });
-      }
-      if (
-        !event.name.includes("(SWEREF99)") &&
-        map.options.crs.code === "EPSG:3006"
-      ) {
-        const c = map.getCenter();
-        const z = map.getZoom();
-        map.options.crs = CRS.EPSG3857;
-        map.options.minZoom = 4;
-        map.options.maxZoom = 16;
-        map.setView(c, z + 4, { animate: false });
-      }
-      if (typeof onBaseLayerChangeRef.current === "function") {
-        onBaseLayerChangeRef.current(event);
-      }
-    };
     let removeLayerOverlayListeners = () => {};
-    let removeColorSchemeListener = () => {};
 
     map.whenReady(() => {
       fitInitialBounds();
@@ -227,15 +200,15 @@ const MapBase = forwardRef(function MapBase(props, ref) {
               showPopup: false,
               icon: "map-location-icon",
               position: props.zoomControlPosition || "topright",
-              locateOptions: { maxZoom: 9 },
+              locateOptions: { maxZoom: 5 },
               markerStyle: { weight: 2, fillColor: "#ffffff", fillOpacity: 1 },
               circleStyle: { weight: 1, color: "#a6192e" },
             })
             .addTo(map);
         }
 
-        layersControlRef.current = control
-          .activeLayers(layers, overlayLayers, {
+        control
+          .layers({}, overlayLayers, {
             position: props.layersControlPosition || "topright",
           })
           .addTo(map);
@@ -267,9 +240,6 @@ const MapBase = forwardRef(function MapBase(props, ref) {
           if (isLayerListOpen()) hideLayerList();
           else showLayerList();
         };
-        const onListMouseLeave = () => {
-          hideLayerList();
-        };
         const onPointerDownOutside = (event) => {
           if (!isLayerListOpen()) return;
           if (!(event.target instanceof Element)) return;
@@ -284,90 +254,30 @@ const MapBase = forwardRef(function MapBase(props, ref) {
         hideLayerList();
 
         toggleBtn.addEventListener("click", onToggleClick);
-        listEl.addEventListener("mouseleave", onListMouseLeave);
         document.addEventListener("pointerdown", onPointerDownOutside);
         document.addEventListener("keydown", onKeyDown);
 
         removeLayerOverlayListeners = () => {
           toggleBtn.removeEventListener("click", onToggleClick);
-          listEl.removeEventListener("mouseleave", onListMouseLeave);
           document.removeEventListener("pointerdown", onPointerDownOutside);
           document.removeEventListener("keydown", onKeyDown);
         };
-      }
-
-      map.on("baselayerchange", handleBaseLayerChange);
-
-      const handleColorSchemeChange = (event) => {
-        const nextLayerName = event.matches
-          ? 'Lantmäteriet topografisk karta nedtonad'
-          : 'Lantmäteriet topografisk karta';
-        const nextLayer = layers[nextLayerName];
-        if (!nextLayer || map.hasLayer(nextLayer)) return;
-
-        Object.values(layers).forEach((layer) => {
-          if (map.hasLayer(layer)) map.removeLayer(layer);
-        });
-        nextLayer.addTo(map);
-      };
-      colorSchemeQuery.addEventListener('change', handleColorSchemeChange);
-      removeColorSchemeListener = () => {
-        colorSchemeQuery.removeEventListener('change', handleColorSchemeChange);
-      };
-
-      if (typeof window !== "undefined" && window.eventBus) {
-        const handler = (event, data) => {
-          if (
-            !props.disableSwedenMap &&
-            data?.includeNordic &&
-            layersControlRef.current &&
-            layersControlRef.current
-              .getActiveBaseLayer?.()
-              .name?.indexOf("Lantmäteriet") > -1
-          ) {
-            const targetName = "Open Street Map Mapnik";
-            const entry = Object.values(
-              layersControlRef.current._layers || {}
-            ).find((l) => !l.overlay && l.name === targetName);
-            if (entry) {
-              entry.layer.addTo(map);
-              if (
-                typeof layersControlRef.current._onInputClick === "function"
-              ) {
-                layersControlRef.current._onInputClick();
-              }
-            }
-          }
-        };
-        window.eventBus.addEventListener("nordicLegendsUpdate", handler);
-        // Store so we can remove on cleanup
-        window.__mapbase_nordic_handler__ = handler;
       }
     });
 
     // Cleanup on unmount
     return () => {
       try {
+        colorSchemeQuery?.removeEventListener('change', handleColorSchemeChange);
         removeLayerOverlayListeners();
-        removeColorSchemeListener();
-        if (
-          typeof window !== 'undefined'
-          && window.eventBus
-          && window.__mapbase_nordic_handler__
-        ) {
-          window.eventBus.removeEventListener(
-            "nordicLegendsUpdate",
-            window.__mapbase_nordic_handler__
-          );
-          delete window.__mapbase_nordic_handler__;
-        }
         if (mapRef.current) {
           mapRef.current.off();
           mapRef.current.remove();
         }
       } finally {
         mapRef.current = null;
-        layersControlRef.current = null;
+        initialBoundsFitRef.current = props.center != null || props.zoom != null;
+        pendingLocationsFitRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

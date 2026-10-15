@@ -316,16 +316,34 @@ cd /var/www/react/PublikUtforska-GUI/
 ./deploy.sh
 ```
 
-## Change default background map
+## Kartprojektion och bakgrundskarta
 
-In `scripts/components/views/MapBase.js`, change `DEFAULT_BASE` to the name of the wanted map layer in `tileLayers` in `maphelper.js`.
+Folkes geografiska kartor använder EPSG:3006 (SWEREF 99 TM) via Proj4Leaflet.
+Arkivmaterialets koordinater förblir latitud/longitud i WGS84; Leaflet projicerar
+punkterna vid visning. Bildvisarens `CRS.Simple` påverkas inte.
 
-Example:
+Bakgrunden är Lantmäteriets topografiska färgkarta i ljust läge och dess nedtonade
+karta (`topowebb_nedtonad`) i mörkt läge. Ett enda bakgrundslager används och
+plattadressen uppdateras automatiskt när systemets färgtema ändras. Befintlig proxy
+`https://ull.isof.se/folkeservice/api/lm_proxy/{z}/{y}/{x}.png` sköter autentisering.
+Den nedtonade kartan hämtas genom samma proxys stöd för WMTS GetTile med
+queryparametrar, inklusive `LAYER=topowebb_nedtonad` och `TILEMATRIXSET=3006`.
+Backend behöver därför inte ändras eller driftsättas på nytt.
+Den använder WMTS TileMatrixSet `3006`, 256-pixelsplattor och nivåerna 0–13
+(4096–0,5 meter/pixel), med origin `[-1200000, 8500000]` i öst/nord-ordning.
+Konfiguration och projicerad inpassning finns i `scripts/utils/mapHelper.js`.
+Befintliga WMS-överlägg kan väljas i kartans överläggsmeny.
 
-```javascript
-// Prefer OSM as default while Lantmäteriet is down
-const DEFAULT_BASE = 'Open Street Map Mapnik';
-```
+Verifiera med `npm test -- --runInBand`, ESLint på ändrade JS-filer och, efter
+beroendeändringar, `npm run build`. Kontrollera startvyn och sökningar i Malmö,
+Stockholm, Haparanda och norra Norrland på mobil och dator i båda färgteman.
+Granska nätverksanrop till `lm_proxy`: matrisnivån ska vara 0–13 och svaren PNG.
+
+Vita områden måste skiljas från laddningsfel och områden utan kartinnehåll.
+Den gamla EPSG:3857-tjänstens aktuella metadata inkluderar även nivå 18.
+Historiskt ortofotos proxy gav HTTP 401 vid GetCapabilities-kontrollen.
+Överläggets konfiguration är därför tillfälligt utkommenterad tills det separata
+behörighetsproblemet har åtgärdats.
 
 ## robots.txt with Apache proxy
 
