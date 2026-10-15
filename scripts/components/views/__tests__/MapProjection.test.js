@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import MapBase, { SWEDEN_BOUNDS } from '../MapBase';
 import MapView from '../MapView';
 import SimpleMap from '../SimpleMap';
+import { isTabNavigationActive } from '../../../utils/focusHelper';
 
 jest.mock('../../../lib/leaflet-heat', () => ({}));
 
@@ -202,4 +203,220 @@ test('search circles preserve clicks, keyboard navigation and zoom-dependent app
   act(() => map.setZoom(4, { animate: false }));
   expect(circles()[0].getRadius()).toBeGreaterThan(initialRadius);
   expect(circles()[0].options.fillOpacity).toBe(0.9);
+});
+
+test('tabbing to the map describes Enter and supports entering and leaving circle navigation', async () => {
+  const user = userEvent.setup();
+  render(<MapView mapData={{ data: [{ id: 'stockholm', name: 'Stockholm', location: [59.3293, 18.0686] }] }} />);
+  const region = screen.getByRole('region', { name: 'Interaktiv sökkarta' });
+  expect(region).toHaveAccessibleDescription(
+    /^Tryck Enter för att aktivera navigering bland cirklarna\./,
+  );
+  expect(region).toHaveAttribute('aria-keyshortcuts', 'Enter');
+  expect(region).toHaveAccessibleDescription(/Plus och minus zoomar även när en cirkel har fokus/);
+  expect(region).toHaveAccessibleDescription(/Escape för att återgå till att flytta kartan/);
+  expect(region).not.toHaveAccessibleDescription(/panorera/);
+  expect(screen.getByText('Kartan har tangentbordsfokus.').closest('[aria-hidden]'))
+    .toHaveAttribute('aria-hidden', 'true');
+  expect(region.querySelector('[data-map-marker-kind]')).toHaveAttribute('tabindex', '-1');
+
+  await user.tab();
+  expect(region).toHaveFocus();
+  const map = mapSpy.mock.results[0].value;
+  const initialZoom = map.getZoom();
+  await user.keyboard('{Enter}');
+  expect(document.activeElement).toHaveAttribute('data-map-marker-kind', 'socken');
+  expect(document.activeElement).toHaveClass('focus-visible:stroke-focus', 'focus-visible:[outline-style:none]');
+  expect(screen.getByRole('status')).toHaveTextContent(/zooma med plus eller minus/);
+  expect(screen.getByText(/Byt cirkel med piltangenterna\. Enter visar träffarna\./))
+    .toHaveAttribute('aria-hidden', 'true');
+  await user.keyboard('{Escape}');
+  expect(region).toHaveFocus();
+  fireEvent.keyDown(region, { key: '+', keyCode: 187 });
+  expect(map.getZoom()).toBeGreaterThan(initialZoom);
+  await user.tab();
+  expect(region).not.toHaveFocus();
+  expect(document.activeElement).not.toHaveAttribute('data-map-marker-kind');
+});
+
+test('zoom keys preserve the selected circle and allow further navigation after redraws', async () => {
+  const user = userEvent.setup();
+  const onMarkerClick = jest.fn();
+  const data = [
+    { id: 'stockholm', name: 'Stockholm', location: [59.3293, 18.0686] },
+    { id: 'uppsala', name: 'Uppsala', location: [59.8586, 17.6389] },
+  ];
+  render(<MapView mapData={{ data }} onMarkerClick={onMarkerClick} />);
+  const map = mapSpy.mock.results[0].value;
+  const initialZoom = map.getZoom();
+  await user.tab();
+  await user.keyboard('{Enter}{ArrowRight}');
+  const originalCircle = document.activeElement;
+  expect(originalCircle).toHaveAttribute('data-map-marker-id', 'uppsala');
+  await user.keyboard('+');
+  expect(map.getZoom()).toBe(initialZoom + 1);
+  await waitFor(() => expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'uppsala'));
+  expect(originalCircle).not.toBeInTheDocument();
+  await user.keyboard('-');
+  expect(map.getZoom()).toBe(initialZoom);
+  await waitFor(() => expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'uppsala'));
+  await user.keyboard('{ArrowLeft}{Enter}');
+  expect(onMarkerClick).toHaveBeenCalledWith('stockholm');
+});
+
+test('repeated arrows do not cycle between Fryksände and Vitsand when focus shifts their measured bounds', () => {
+  const data = [
+    { id: 'fryksande', name: 'Fryksände', location: [60.14, 13.01] },
+    { id: 'vitsand', name: 'Vitsand', location: [60.28, 13.01] },
+    { id: 'lysvik', name: 'Lysvik', location: [60.02, 13.14] },
+  ];
+  render(<MapView mapData={{ data }} />);
+  const region = screen.getByRole('region', { name: 'Interaktiv sökkarta' });
+  const positions = new Map([
+    ['vitsand', { x: 200, y: 190 }],
+    ['fryksande', { x: 200, y: 200 }],
+    ['lysvik', { x: 240, y: 200 }],
+  ]);
+  Element.prototype.getBoundingClientRect.mockImplementation(function getBounds() {
+    const position = positions.get(this.dataset.mapMarkerId);
+    if (!position) {
+      return {
+        x: 0, y: 0, left: 0, top: 0, right: width, bottom: height, width, height,
+      };
+    }
+    // Simulate the subpixel shift that focus rendering can introduce in SVG bounds.
+    const x = position.x - (document.activeElement === this ? 0.25 : 0);
+    const { y } = position;
+    return {
+      x, y, left: x, top: y, right: x + 6, bottom: y + 6, width: 6, height: 6,
+    };
+  });
+  region.focus();
+  fireEvent.keyDown(region, { key: 'Enter' });
+  expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'vitsand');
+  fireEvent.keyDown(document.activeElement, { key: 'ArrowRight' });
+  expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'fryksande');
+  fireEvent.keyDown(document.activeElement, { key: 'ArrowRight' });
+  expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'lysvik');
+  fireEvent.keyDown(document.activeElement, { key: 'ArrowRight' });
+  expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'lysvik');
+  fireEvent.keyDown(document.activeElement, { key: 'ArrowLeft' });
+  expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'fryksande');
+  fireEvent.keyDown(document.activeElement, { key: 'ArrowLeft' });
+  expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'vitsand');
+  positions.set('lysvik', { x: 180, y: 200 });
+  act(() => mapSpy.mock.results[0].value.fire('moveend'));
+  fireEvent.keyDown(document.activeElement, { key: 'Home' });
+  expect(document.activeElement).toHaveAttribute('data-map-marker-id', 'lysvik');
+});
+
+test('circle zoom respects the zoom limits and leaves browser shortcuts alone', async () => {
+  render(<MapView mapData={{ data: [{ id: 'stockholm', name: 'Stockholm', location: [59.3293, 18.0686] }] }} />);
+  const map = mapSpy.mock.results[0].value;
+  const region = screen.getByRole('region', { name: 'Interaktiv sökkarta' });
+  act(() => map.setZoom(13, { animate: false }));
+  region.focus();
+  fireEvent.keyDown(region, { key: 'Enter' });
+  const circleAtMaximum = document.activeElement;
+  fireEvent.keyDown(circleAtMaximum, { key: '+' });
+  expect(map.getZoom()).toBe(13);
+  expect(circleAtMaximum).toHaveFocus();
+  fireEvent.keyDown(circleAtMaximum, { key: '-', ctrlKey: true });
+  expect(map.getZoom()).toBe(13);
+  act(() => map.setZoom(0, { animate: false }));
+  region.focus();
+  fireEvent.keyDown(region, { key: 'Enter' });
+  const circleAtMinimum = document.activeElement;
+  fireEvent.keyDown(circleAtMinimum, { key: '-' });
+  expect(map.getZoom()).toBe(0);
+  expect(circleAtMinimum).toHaveFocus();
+});
+
+test('finishing a circle zoom does not steal focus from another map control', async () => {
+  render(<MapView mapData={{ data: [{ id: 'stockholm', name: 'Stockholm', location: [59.3293, 18.0686] }] }} />);
+  const region = screen.getByRole('region', { name: 'Interaktiv sökkarta' });
+  region.focus();
+  fireEvent.keyDown(region, { key: 'Enter' });
+  fireEvent.keyDown(document.activeElement, { key: '+' });
+  const zoomControl = screen.getByRole('button', { name: 'Zoom in' });
+  zoomControl.focus();
+  await act(async () => {
+    await new Promise((resolve) => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(resolve);
+      });
+    });
+  });
+  expect(zoomControl).toHaveFocus();
+});
+
+test('map instructions use Tab navigation detection and hide again on pointer input', async () => {
+  const user = userEvent.setup();
+  jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
+  render(<MapView mapData={{ data: [{ id: 'stockholm', name: 'Stockholm', location: [59.3293, 18.0686] }] }} />);
+  const region = screen.getByRole('region', { name: 'Interaktiv sökkarta' });
+  const mapCue = screen.getByText('Kartan har tangentbordsfokus.').closest('[aria-hidden]');
+  const circleCue = screen.getByText(/Byt cirkel med piltangenterna\. Enter visar träffarna\./);
+  expect(mapCue).toHaveClass('[.tab-navigation_&]:peer-focus-visible:block');
+  expect(circleCue).toHaveClass('[.tab-navigation_&]:peer-has-[[data-map-marker-kind]:focus-visible]:block');
+  await user.click(region);
+  expect(isTabNavigationActive()).toBe(false);
+  await user.keyboard('{Shift>}{Tab}{/Shift}');
+  await user.tab();
+  expect(region).toHaveFocus();
+  expect(isTabNavigationActive()).toBe(true);
+  fireEvent.pointerDown(region);
+  expect(isTabNavigationActive()).toBe(false);
+});
+
+test.each([
+  ['normal', 403, 1037, 0],
+  ['enlarged', 1440, 0, 280],
+])('Enter focuses the first visible circle in the %s map, accounting for map offsets', async (layoutName, mapWidth, left, top) => {
+  width = mapWidth;
+  const data = [
+    { id: 'stockholm', name: 'Stockholm', location: [59.3293, 18.0686] },
+    { id: 'kiruna', name: 'Kiruna', location: [67.8558, 20.2253] },
+    { id: 'malmo', name: 'Malmö', location: [55.605, 13.004] },
+    { id: 'outside', name: 'Outside the map', location: [80, 0] },
+  ];
+  render(<MapView mapData={{ data }} />);
+  const map = mapSpy.mock.results[0].value;
+  const region = screen.getByRole('region', { name: 'Interaktiv sökkarta' });
+  const circleLocations = new Map();
+  map.eachLayer((layer) => {
+    if (layer instanceof L.CircleMarker) {
+      circleLocations.set(layer.getElement(), layer.getLatLng());
+    }
+  });
+  Element.prototype.getBoundingClientRect.mockImplementation(function getBounds() {
+    const location = circleLocations.get(this);
+    const position = location ? map.latLngToContainerPoint(location) : null;
+    const x = left + (position ? position.x - 3 : 0);
+    const y = top + (position ? position.y - 3 : 0);
+    const elementWidth = position ? 6 : width;
+    const elementHeight = position ? 6 : height;
+    return {
+      x,
+      y,
+      left: x,
+      top: y,
+      width: elementWidth,
+      height: elementHeight,
+      right: x + elementWidth,
+      bottom: y + elementHeight,
+    };
+  });
+  region.focus();
+  fireEvent.keyDown(region, { key: 'Enter' });
+  expect(document.activeElement).toHaveAccessibleName(/^Kiruna:/);
+  fireEvent.keyDown(document.activeElement, { key: 'ArrowRight' });
+  expect(document.activeElement).toHaveAccessibleName(/^Stockholm:/);
+});
+
+test('empty results describe the lack of circles instead of promising Enter navigation', () => {
+  render(<MapView mapData={{ data: [] }} />);
+  const region = screen.getByRole('region', { name: 'Interaktiv sökkarta' });
+  expect(region).toHaveAccessibleDescription(/^Inga cirklar finns i det här urvalet\./);
+  expect(region).not.toHaveAccessibleDescription(/Tryck Enter/);
 });

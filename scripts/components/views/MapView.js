@@ -521,6 +521,8 @@ export default function MapView({
     );
 
     const sockenCircle = circleMarker([obj.location[0], obj.location[1]], {
+      // Draw SVG focus on the circle itself instead of using a rectangular outline.
+      className: 'focus-visible:[outline-style:none] focus-visible:stroke-focus focus-visible:[stroke-width:5] focus-visible:[filter:drop-shadow(0_0_2px_var(--color-surface))]',
       color: 'white',
       fillColor: '#01666e',
 
@@ -537,6 +539,15 @@ export default function MapView({
       circleTooltip,
       { permanent: false, direction: 'top' },
     );
+
+    sockenCircle.on('add', () => {
+      const element = sockenCircle.getElement();
+      if (!element) return;
+      // Keep a stable identity when zooming replaces the circle's SVG element.
+      element.dataset.mapMarkerId = String(obj.id ?? obj.location.join(','));
+      element.dataset.mapMarkerLabel = circleTooltip;
+      prepareMarkerElement(element, document.activeElement);
+    });
 
     if (onMarkerClick) {
       sockenCircle.on('click', () => onMarkerClick(obj.id));
@@ -744,8 +755,11 @@ export default function MapView({
     let firstAnimationFrameId;
     let secondAnimationFrameId;
     let shouldRestorePendingFocus = false;
+    let markerNavigationOrder = [];
 
     const focusMarker = (targetMarker, markers) => {
+      // Keep the order stable when SVG focus styling changes measured marker bounds.
+      markerNavigationOrder = markers;
       markers.forEach((markerElement) => {
         markerElement.setAttribute(
           'tabindex',
@@ -764,8 +778,11 @@ export default function MapView({
 
       if (!restorePendingFocus || !pendingMarkerFocusRef.current) return;
 
-      const { latLng } = pendingMarkerFocusRef.current;
+      const { latLng, markerId } = pendingMarkerFocusRef.current;
       pendingMarkerFocusRef.current = null;
+      // Respect focus moved to another control while the zoom was finishing.
+      if (activeElement !== document.body && activeElement !== container
+        && !activeElement.matches(MARKER_NAVIGATION_SELECTOR)) return;
       if (!markers.length) {
         container.focus({ preventScroll: true });
         setKeyboardAnnouncement('Kartan har uppdaterats. Inga synliga markörer finns.');
@@ -774,7 +791,10 @@ export default function MapView({
 
       const containerBounds = container.getBoundingClientRect();
       const targetPoint = map.latLngToContainerPoint(latLng);
-      const nearestMarker = markers.reduce((nearest, markerElement) => {
+      const previousMarker = markerId && markers.find((markerElement) => (
+        markerElement.dataset.mapMarkerId === markerId
+      ));
+      const nearestMarker = previousMarker || markers.reduce((nearest, markerElement) => {
         const markerPosition = getElementCenter(markerElement, containerBounds);
         const distance = (markerPosition.x - targetPoint.x) ** 2
           + (markerPosition.y - targetPoint.y) ** 2;
@@ -812,7 +832,26 @@ export default function MapView({
     };
 
     const handleMarkerNavigation = (event, markerElement) => {
+      // Zoom around the focused circle and restore its focus after the redraw.
+      if (['+', '=', '-', '−'].includes(event.key)) {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const direction = event.key === '+' || event.key === '=' ? 1 : -1;
+        const targetZoom = Math.max(map.getMinZoom(), Math.min(
+          map.getMaxZoom(),
+          map.getZoom() + direction * map.options.zoomDelta,
+        ));
+        if (targetZoom === map.getZoom()) return;
+        const markerPosition = getElementCenter(markerElement, container.getBoundingClientRect());
+        const latLng = map.containerPointToLatLng([markerPosition.x, markerPosition.y]);
+        pendingMarkerFocusRef.current = { latLng, markerId: markerElement.dataset.mapMarkerId };
+        map.setZoomAround(latLng, targetZoom);
+        return;
+      }
+
       if (event.key === 'Tab') {
+        markerNavigationOrder = [];
         pendingMarkerFocusRef.current = null;
         markerElement.setAttribute('tabindex', '-1');
         return;
@@ -821,6 +860,7 @@ export default function MapView({
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
+        markerNavigationOrder = [];
         pendingMarkerFocusRef.current = null;
         markerElement.setAttribute('tabindex', '-1');
         container.focus({ preventScroll: true });
@@ -828,7 +868,9 @@ export default function MapView({
         return;
       }
 
-      const markers = getSortedMarkerElements(map);
+      const markers = markerNavigationOrder.includes(markerElement)
+        ? markerNavigationOrder.filter((marker) => marker.isConnected)
+        : getSortedMarkerElements(map);
       markers.forEach((visibleMarker) => prepareMarkerElement(
         visibleMarker,
         markerElement,
@@ -895,7 +937,7 @@ export default function MapView({
       }
       focusMarker(markers[0], markers);
       setKeyboardAnnouncement(
-        `Markörnavigering aktiverad. ${markers.length} synliga markörer.`,
+        `Du kan nu välja bland ${markers.length} synliga cirklar. Byt cirkel med piltangenterna och zooma med plus eller minus. Tryck Escape för att flytta kartan.`,
       );
     };
 
@@ -917,9 +959,11 @@ export default function MapView({
       }));
     };
 
-    const handleMapSettled = () => scheduleMarkerSynchronization({
-      restorePendingFocus: true,
-    });
+    const handleMapSettled = () => {
+      // Recalculate the order after moving, resizing or zooming the map.
+      markerNavigationOrder = [];
+      scheduleMarkerSynchronization({ restorePendingFocus: true });
+    };
     const observer = typeof MutationObserver === 'undefined'
       ? null
       : new MutationObserver(() => scheduleMarkerSynchronization());
@@ -974,11 +1018,22 @@ export default function MapView({
         {mapSummaryText}
       </p>
       <p id={mapKeyboardInstructionsId} className="sr-only">
-        Använd piltangenterna för att panorera kartan och plus eller minus för att
-        zooma. Tryck Enter för att gå till markörerna. Där går höger eller nedåt
-        till nästa markör och vänster eller uppåt till föregående, i ordning från
-        norr till söder och väster till öster. Tryck Enter eller blanksteg för att
-        välja, Escape för att återgå till kartan och Tab för att gå vidare.
+        {points.length
+          ? 'Tryck Enter för att aktivera navigering bland cirklarna. '
+          : 'Inga cirklar finns i det här urvalet. '}
+        Flytta kartan med piltangenterna och zooma med plus eller minus.
+        {points.length > 0 && (
+          <>
+            {' '}
+            I cirkelnavigeringen går höger eller nedåt till nästa cirkel och
+            vänster eller uppåt till föregående, i ordning från norr till söder
+            och väster till öster. Plus och minus zoomar även när en cirkel har
+            fokus. Tryck Enter eller blanksteg för att välja och Escape för att
+            återgå till att flytta kartan.
+          </>
+        )}
+        {' '}
+        Tab går vidare till nästa kontroll.
       </p>
       <p
         className="sr-only"
@@ -990,9 +1045,9 @@ export default function MapView({
       </p>
       <MapBase
         ref={mapView}
-        className="map-wrapper absolute inset-0 h-full w-full opacity-0 transition-opacity duration-300 ease-in-out [.app-initialized_&]:opacity-100"
+        className="map-wrapper peer absolute inset-0 h-full w-full opacity-0 transition-opacity duration-300 ease-in-out [.app-initialized_&]:opacity-100"
         ariaLabel="Interaktiv sökkarta"
-        ariaDescribedBy={`${mapSummaryId} ${mapKeyboardInstructionsId}`}
+        ariaDescribedBy={`${mapKeyboardInstructionsId} ${mapSummaryId}`}
         attributionControlPosition={attributionControlPosition}
         layersControlPosition={layersControlPosition}
         zoomControlPosition={zoomControlPosition}
@@ -1001,6 +1056,42 @@ export default function MapView({
         zoom={zoom}
         center={center}
       />
+      {/* The map describes these keys to screen readers; this duplicate is a visual focus cue. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-[1102] hidden border-4 border-solid border-focus outline outline-2 outline-surface outline-offset-[-6px] [.tab-navigation_&]:peer-focus-visible:block"
+      >
+        <p
+          className="mx-auto mt-3 w-fit max-w-[calc(100%_-_1.5rem)] rounded-lg border-2 border-solid border-focus bg-surface px-4 py-3 text-sm text-body shadow-lg sm:max-w-md"
+        >
+          <strong className="block">Kartan har tangentbordsfokus.</strong>
+          {points.length ? (
+            <>
+              Tryck
+              {' '}
+              <kbd className="rounded border border-solid border-border bg-surface-muted px-1 font-bold">
+                Enter
+              </kbd>
+              {' '}
+              för att aktivera navigering bland cirklarna.
+            </>
+          ) : 'Inga cirklar finns i det här urvalet.'}
+          <span className="mt-1 block">
+            Flytta kartan med piltangenterna och zooma med + eller −.
+            {points.length > 0 && ' Efter Enter: tryck Esc för att flytta kartan igen.'}
+            {' '}
+            Tab går vidare.
+          </span>
+        </p>
+      </div>
+      <p
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-8 left-3 right-16 z-[1102] hidden w-fit max-w-sm rounded-lg border-2 border-solid border-focus bg-surface px-3 py-2 text-sm text-body shadow-lg [.tab-navigation_&]:peer-has-[[data-map-marker-kind]:focus-visible]:block"
+      >
+        Byt cirkel med piltangenterna. Enter visar träffarna.
+        {' '}
+        Zooma med + eller −. Tryck Esc för att flytta kartan. Tab går vidare.
+      </p>
     </div>
   );
 }
