@@ -245,6 +245,48 @@ test('avskriftsbidrag och kommentarer är definitionslistor på sida och accessi
   expect(container.querySelector('dt h3')).toBeNull();
 });
 
+test.each([undefined, null, '', '  \n\t ', 'None', '  None  '])(
+  'döljer tom sidkommentar (%p) och bidragsblock när bidragsgivare saknas',
+  (comment) => {
+    const data = makeRecord(1);
+    data.media[0].comment = comment;
+    data.media[0].transcriptiondate = '2026-10-07';
+    const { container } = render(
+      <RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />,
+    );
+    expect(screen.queryByText('Kommentarer', { selector: 'dt' })).not.toBeInTheDocument();
+    expect(screen.queryByText('None')).not.toBeInTheDocument();
+    expect(container.querySelector('dl')).toBeNull();
+    expect(screen.getByText('Avskrift 1')).toBeVisible();
+  },
+);
+
+test.each([undefined, null, '', '  \n\t ', 'None', '  None  '])(
+  'döljer tom sidkommentar (%p) men behåller bidragsgivare och datum',
+  (comment) => {
+    const data = makeRecord(1);
+    data.media[0].comment = comment;
+    data.media[0].transcribedby = 'Anna';
+    data.media[0].transcriptiondate = '2026-10-07';
+    render(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />);
+    expect(screen.queryByText('Kommentarer', { selector: 'dt' })).not.toBeInTheDocument();
+    expect(screen.queryByText('None')).not.toBeInTheDocument();
+    expect(screen.getByText('Bidrag av', { selector: 'dt' })).toBeVisible();
+    expect(screen.getByText('Anna')).toBeVisible();
+    expect(screen.getByText('Datum', { selector: 'dt' })).toBeVisible();
+    expect(screen.getByText('2026-10-07')).toBeVisible();
+  },
+);
+
+test('visar riktig sidkommentar utan bidragsgivare även om texten innehåller None', () => {
+  const data = makeRecord(1);
+  data.media[0].comment = 'Ordet None förekommer i originalet.';
+  render(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />);
+  expect(screen.getByText('Kommentarer', { selector: 'dt' })).toBeVisible();
+  expect(screen.getByText('Ordet None förekommer i originalet.')).toBeVisible();
+  expect(screen.queryByText('Bidrag av', { selector: 'dt' })).not.toBeInTheDocument();
+});
+
 test('visningen behåller sidor före första segmentet och deras rubriknivåer', () => {
   const data = makeRecord(4);
   data.segments = [{ id: 'segment-a', start_media_id: 'image-2' }];

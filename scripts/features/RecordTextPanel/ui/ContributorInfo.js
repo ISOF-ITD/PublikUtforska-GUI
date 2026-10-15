@@ -81,7 +81,9 @@ export default ContributorInfo;
 // Current ContributorInfo is great for the whole record, but it’s visually heavy for “every page”. So it is a tiny variant.
 
 export function PageContributor({ transcribedby, transcriptiondate, comment }) {
-  if (!transcribedby && !comment) return null;
+  const hasComments = !!comment && comment.trim() !== '' && comment.trim() !== 'None';
+
+  if (!transcribedby && !hasComments) return null;
 
   const dateStr = transcriptiondate
     ? new Date(transcriptiondate).toLocaleDateString("sv-SE")
@@ -105,7 +107,7 @@ export function PageContributor({ transcribedby, transcriptiondate, comment }) {
           <dd className="m-0">{dateStr}</dd>
         </div>
       )}
-      {comment && (
+      {hasComments && (
         <div>
           <dt className="font-medium">{l('Kommentarer')}</dt>
           <dd className="m-0" dangerouslySetInnerHTML={{ __html: sanitizeHtml(comment) }} />
