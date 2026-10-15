@@ -17,7 +17,6 @@ import {
   createDetailLocation,
   createResultSearch,
 } from '../../../utils/routeHelper';
-import useSubrecords from '../hooks/useSubrecords';
 import countPageProgressFromMedia from '../utils/countPageProgressFromMedia';
 import AudioWaveIcon from './AudioWaveIcon';
 import RecordCardSnippet, {
@@ -84,17 +83,6 @@ export default function RecordCardItem({
   const personItems = Array.isArray(persons) ? persons : [];
   const placeItems = Array.isArray(places) ? places : [];
   const Heading = headingLevel;
-
-  const {
-    count = 0,
-    countDone = 0,
-    mediaCount = 0,
-    mediaCountDone = 0,
-  } = useSubrecords({
-    recordtype,
-    id,
-    ...source,
-  });
 
   const displayTitle = getTitle(title, contents, archive, highlight) || l('(Utan titel)');
   const titleHtml = toSemanticHighlightHtml(displayTitle);
@@ -172,24 +160,8 @@ export default function RecordCardItem({
   const summary = hasHighlightedSummary ? itemText : '';
   const snippet = selectBestCardSnippet({ summary, highlight, innerHits });
 
-  let total = 0;
-  let done = 0;
-  if (!isAudioRecording) {
-    total = transcriptiontype === 'sida' ? mediaCount : count;
-    done = transcriptiontype === 'sida' ? mediaCountDone : countDone;
-  }
-  const fromMedia = countPageProgressFromMedia(mediaItems);
-  const totalCount = Number(total);
-  const hasSubrecordTotal = Number.isFinite(totalCount) && totalCount > 0;
-  const pageTotal = hasSubrecordTotal ? totalCount : fromMedia.total;
+  const { total: pageTotal, done: pageDone } = countPageProgressFromMedia(mediaItems);
   const safePageTotal = Math.max(pageTotal, 1);
-  const doneCount = Number(done);
-  const pageDone = Math.min(
-    hasSubrecordTotal && Number.isFinite(doneCount) && doneCount >= 0
-      ? doneCount
-      : fromMedia.done,
-    safePageTotal,
-  );
   const showTranscriptionProgress = !isAudioRecording
     && transcriptionstatus !== 'readytocontribute'
     && pageTotal > 0;
