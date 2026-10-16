@@ -4,6 +4,7 @@ import RecordsApiClient from "../api/RecordsApiClient";
 import { fetchRecordMediaCount } from "../../../utils/helpers";
 import config from "../../../config";
 import buildSegments from "../../../utils/buildSegments";
+import { isImageMedia } from '../../../utils/mediaTypes';
 
 const EMPTY_ARRAY = [];
 
@@ -50,7 +51,7 @@ export default function useSubrecords({
       const mediaImages =
         transcriptiontype === "audio"
           ? media
-          : media.filter((m) => m?.type === "image");
+          : media.filter(isImageMedia);
 
       const base = mediaImages.length ? mediaImages : media;
 

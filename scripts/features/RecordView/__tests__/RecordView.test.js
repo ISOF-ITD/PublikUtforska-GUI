@@ -1,4 +1,5 @@
 /* global beforeEach, afterEach, expect, jest, test */
+import 'whatwg-fetch';
 import {
   act, render, screen, waitFor, within,
 } from '@testing-library/react';
@@ -60,12 +61,12 @@ function record(media = []) {
   };
 }
 
-async function renderRecord(data, search = '', highlightData = null) {
+async function renderRecord(data, search = '', highlightData = null, resultsPromise = null) {
   const playAudio = jest.fn();
   const router = createMemoryRouter([{
     path: '/records/:id',
     hydrateFallbackElement: <p>Laddar</p>,
-    loader: () => ({ results: [highlightData, { _source: data }] }),
+    loader: () => ({ results: resultsPromise || [highlightData, { _source: data }] }),
     element: (
       <AudioContext.Provider value={{ playAudio, togglePlay: jest.fn(), playing: false }}>
         <RoutePageShell><RecordView /></RoutePageShell>
@@ -76,7 +77,7 @@ async function renderRecord(data, search = '', highlightData = null) {
   await screen.findByRole('article', { name: 'Testuppteckning' });
   await waitFor(() => expect(Element.prototype.scrollTo).toHaveBeenCalledWith({ top: 0 }));
   expect(screen.getByRole('main')).not.toHaveFocus();
-  return { ...result, playAudio };
+  return { ...result, playAudio, router };
 }
 
 beforeEach(() => {
@@ -91,6 +92,94 @@ beforeEach(() => {
   global.fetch = jest.fn(async () => ({ ok: true, json: async () => ({ hits: { hits: [] } }) }));
 });
 afterEach(() => jest.restoreAllMocks());
+
+function imageRecord() {
+  return {
+    ...record([
+      { type: 'pdf', source: 'a.pdf' },
+      {
+        id: 'image-0', type: 'image', source: 'a.jpg', transcriptionstatus: 'published',
+      },
+      { type: 'audio', source: 'a.mp3' },
+      { id: 'image-1', source: 'b.PNG', transcriptionstatus: 'published' },
+      {
+        id: 'image-2', type: 'image/jpeg', source: 'c.jpg', transcriptionstatus: 'published',
+      },
+    ]),
+    segments: [
+      { id: 'segment-a', start_media_id: 'image-0' },
+      { id: 'segment-b', start_media_id: 'image-1' },
+    ],
+  };
+}
+
+test.each([0, 1, 2])('direktlänken media=%s fokuserar rätt bild efter sidramens återställning', async (index) => {
+  await renderRecord(imageRecord(), `?q=räv&media=${index}`);
+  const target = screen.getByRole('heading', { name: `Sida ${index + 1}`, level: 4 });
+  await waitFor(() => expect(target).toHaveFocus());
+  expect(target).toHaveAttribute('tabindex', '-1');
+  expect(Element.prototype.scrollIntoView).toHaveBeenLastCalledWith({
+    block: 'start', behavior: 'instant',
+  });
+  expect(Element.prototype.scrollTo.mock.invocationCallOrder[0])
+    .toBeLessThan(Element.prototype.scrollIntoView.mock.invocationCallOrder[0]);
+  expect(screen.getAllByRole('img').filter((image) => image.src.includes('/images/'))).toHaveLength(3);
+  const returnLink = screen.getByRole('link', { name: 'Till sökresultaten' });
+  const returnUrl = new URL(returnLink.href);
+  expect(returnUrl.searchParams.get('q')).toBe('räv');
+  expect(returnUrl.searchParams.has('media')).toBe(false);
+});
+
+test.each(['', '?media=', '?media=-1', '?media=1.5', '?media=abc', '?media=3', '?media=99999999999999999999'])(
+  'saknat eller ogiltigt sidmål %s behåller vanlig accessionvisning',
+  async (search) => {
+    jest.useFakeTimers();
+    try {
+      await renderRecord(imageRecord(), search);
+      await act(async () => jest.runOnlyPendingTimers());
+      expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+      expect(screen.getByRole('heading', { name: 'Sida 1', level: 4 })).toBeVisible();
+    } finally {
+      jest.useRealTimers();
+    }
+  },
+);
+
+test('sidmål fungerar vid byte, bakåt och framåt inom samma accession', async () => {
+  const user = userEvent.setup();
+  const { router } = await renderRecord(imageRecord(), '?media=0');
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Sida 1', level: 4 })).toHaveFocus());
+  const secondSegment = screen.getByRole('button', { name: /Sidor 2–3/ });
+  await user.click(secondSegment);
+  expect(secondSegment).toHaveAttribute('aria-expanded', 'false');
+  await act(async () => router.navigate('/records/record-a?media=1'));
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Sida 2', level: 4 })).toHaveFocus());
+  expect(secondSegment).toHaveAttribute('aria-expanded', 'true');
+  await user.click(secondSegment);
+  await act(async () => router.revalidate());
+  expect(secondSegment).toHaveAttribute('aria-expanded', 'false');
+  expect(secondSegment).toHaveFocus();
+  await act(async () => router.navigate(-1));
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Sida 1', level: 4 })).toHaveFocus());
+  await act(async () => router.navigate(1));
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Sida 2', level: 4 })).toHaveFocus());
+  expect(secondSegment).toHaveAttribute('aria-expanded', 'true');
+  await user.click(secondSegment);
+  await act(async () => router.navigate('/records/record-a?q=räv&media=1'));
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Sida 2', level: 4 })).toHaveFocus());
+  expect(secondSegment).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('direktlänken väntar på fördröjt innehåll innan den fokuserar målsidan', async () => {
+  let resolveResults;
+  const results = new Promise((resolve) => { resolveResults = resolve; });
+  const rendering = renderRecord(imageRecord(), '?media=2', null, results);
+  await waitFor(() => expect(Element.prototype.scrollTo).toHaveBeenCalled());
+  expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+  await act(async () => resolveResults([null, { _source: imageRecord() }]));
+  await rendering;
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Sida 3', level: 4 })).toHaveFocus());
+});
 
 test('ogiltig ljudreferens ger meddelande även när accessionen saknar ljudfiler', async () => {
   const { playAudio } = await renderRecord(record(), '?k=start#avskrift-999');

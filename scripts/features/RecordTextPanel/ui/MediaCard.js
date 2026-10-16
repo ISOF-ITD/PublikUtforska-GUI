@@ -13,11 +13,16 @@ const MediaCard = memo(function MediaCard({
   onMediaClick,
   right,
   headingLevel = 'h3',
+  headingRef,
 }) {
   const Heading = headingLevel;
   return (
     <Card> {/* <Card> får sin TranscribeButton från buildTextSide i RecordSegment som kommer från RecordTextPanel */}
-      <Heading className="!mt-0 mb-2 text-lg font-semibold">
+      <Heading
+        ref={headingRef}
+        tabIndex={headingRef ? -1 : undefined}
+        className="!mt-0 mb-2 scroll-mt-4 text-lg font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+      >
         {`${l('Sida')} ${index + 1}${mediaItem.title ? ` – ${mediaItem.title}` : ''}`}
       </Heading>
       <div className="md:grid items-start md:gap-6 md:[grid-template-columns:minmax(0,1.15fr)_minmax(0,1fr)]">
@@ -63,5 +68,6 @@ MediaCard.propTypes = {
   onMediaClick: PropTypes.func.isRequired,
   right: PropTypes.node,
   headingLevel: PropTypes.oneOf(['h3', 'h4']),
+  headingRef: PropTypes.shape({ current: PropTypes.object }),
 };
 export default MediaCard;

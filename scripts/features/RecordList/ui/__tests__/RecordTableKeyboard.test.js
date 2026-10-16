@@ -46,7 +46,7 @@ function createRecord(id, title, accession) {
 function renderTable(records = [
   createRecord('record-1', 'Första posten', 'ACC 1'),
   createRecord('record-2', 'Andra posten', 'ACC 2'),
-], audioContext = {}) {
+], audioContext = {}, params = {}) {
   const archiveIdClick = jest.fn();
   const onRecordActivate = jest.fn();
   const visibleColumns = ['title', 'archive_id'];
@@ -58,7 +58,7 @@ function renderTable(records = [
         <RecordTable
           records={records}
           uniqueId="keyboard-test"
-          params={{}}
+          params={params}
           shouldRenderColumn={(column) => visibleColumns.includes(column)}
           archiveIdClick={archiveIdClick}
           columns={visibleColumns}
@@ -146,4 +146,35 @@ test('uppspelning från sökresultat skickar accessionens hela ljudkö även uta
   } finally {
     config.siteOptions.recordList = previousOptions;
   }
+});
+
+test('segmentlänkar räknar samma bilder som läsvyn och behåller sökkontexten', async () => {
+  const user = userEvent.setup();
+  const result = createRecord('accession-1', 'Accessionen', 'ACC 1');
+  const { _source: data } = result;
+  data.recordtype = 'one_accession_row';
+  data.media = [
+    { type: 'pdf', source: 'a.pdf' },
+    { id: 'image-0', type: 'image', source: 'a.jpg' },
+    { id: 'image-1', source: 'b.PNG' },
+    { type: 'audio', source: 'a.mp3' },
+    { id: 'image-2', type: 'image/jpeg', source: 'c.jpg' },
+  ];
+  data.segments = [
+    { id: 'segment-a', start_media_id: 'image-0' },
+    { id: 'segment-b', start_media_id: 'image-2' },
+  ];
+  renderTable([result], {}, { search: 'räv', place: '123' });
+  await user.click(screen.getByRole('button', { name: /Visa.*\(2\)/ }));
+  const links = screen.getAllByRole('link').filter((link) => (
+    new URL(link.href).searchParams.has('media')
+  ));
+  expect(links).toHaveLength(2);
+  links.forEach((link, index) => {
+    const url = new URL(link.href);
+    expect(url.pathname).toBe('/records/accession-1');
+    expect(url.searchParams.get('media')).toBe(String(index * 2));
+    expect(url.searchParams.get('q')).toBe('räv');
+    expect(url.searchParams.get('place')).toBe('123');
+  });
 });

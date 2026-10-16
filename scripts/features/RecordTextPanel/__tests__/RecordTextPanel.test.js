@@ -1,5 +1,7 @@
 /* global beforeEach, afterEach, expect, jest, test */
-import { render, screen, within } from '@testing-library/react';
+import {
+  act, render, screen, waitFor, within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RecordTextPanel from '../RecordTextPanel';
 import RecordViewActions from '../../RecordView/ui/RecordViewActions';
@@ -38,6 +40,55 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = jest.fn();
 });
 afterEach(() => jest.restoreAllMocks());
+
+test('sidmål utan segment fokuseras en gång och vanliga omrenderingar behåller användarens fokus', async () => {
+  const data = makeRecord(3);
+  const { rerender } = render(
+    <RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} targetPageIndex={1} navigationKey="first" />,
+  );
+  const target = screen.getByRole('heading', { name: 'Sida 2', level: 3 });
+  await waitFor(() => expect(target).toHaveFocus());
+  const scheduleFrame = jest.spyOn(window, 'requestAnimationFrame');
+  const overview = screen.getByRole('button', { name: 'Visa sidöversikt (3)' });
+  overview.focus();
+  rerender(<RecordTextPanel data={{ ...data }} mediaImageClickHandler={jest.fn()} targetPageIndex={1} navigationKey="first" />);
+  expect(overview).toHaveFocus();
+  expect(scheduleFrame).not.toHaveBeenCalled();
+  expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(1);
+});
+
+test('nya sidmål och avmontering avregistrerar väntande animeringsramar', () => {
+  const frames = new Map();
+  let frameId = 0;
+  jest.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+    frameId += 1;
+    frames.set(frameId, callback);
+    return frameId;
+  });
+  jest.spyOn(window, 'cancelAnimationFrame').mockImplementation((id) => frames.delete(id));
+  const nextFrame = () => {
+    const callbacks = [...frames.values()];
+    frames.clear();
+    act(() => callbacks.forEach((callback) => callback()));
+  };
+  const data = makeRecord(3);
+  const { rerender, unmount } = render(
+    <RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} targetPageIndex={0} navigationKey="first" />,
+  );
+  nextFrame();
+  expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+  rerender(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} targetPageIndex={2} navigationKey="second" />);
+  nextFrame();
+  expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+  nextFrame();
+  expect(screen.getByRole('heading', { name: 'Sida 3', level: 3 })).toHaveFocus();
+  expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(1);
+  rerender(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} targetPageIndex={1} navigationKey="third" />);
+  unmount();
+  expect(frames.size).toBe(0);
+  nextFrame();
+  expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(1);
+});
 
 test('visar alla 63 bilder och avskrifter i ordning utan sidvalskontroller', () => {
   render(<RecordTextPanel data={makeRecord()} mediaImageClickHandler={jest.fn()} />);

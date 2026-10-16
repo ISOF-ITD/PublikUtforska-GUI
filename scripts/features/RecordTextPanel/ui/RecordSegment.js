@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import MediaCard from './MediaCard';
 import { l } from '../../../lang/Lang';
 import { StatusIndicator } from './TranscriptionStatusIndicator';
@@ -8,9 +8,15 @@ import SegmentPersons from './SegmentPersons';
 export default function RecordSegment({
   title, mediaItems, startIndex, imageUrl, renderIndicator, onMediaClick,
   buildTextSide, defaultOpen = false, segmentStatus, persons = [],
+  targetPageIndex, navigationKey, targetHeadingRef,
 }) {
   const id = useId();
   const [open, setOpen] = useState(defaultOpen);
+  const containsTarget = Number.isSafeInteger(targetPageIndex)
+    && targetPageIndex >= startIndex && targetPageIndex < startIndex + mediaItems.length;
+  useEffect(() => {
+    if (containsTarget) setOpen(true);
+  }, [containsTarget, targetPageIndex, navigationKey]);
   return (
     <section aria-labelledby={`${id}-heading`} className="relative overflow-hidden rounded border !border-solid border-border bg-surface shadow-sm">
       <h3 id={`${id}-heading`} className="!m-0 text-lg font-semibold">
@@ -44,6 +50,7 @@ export default function RecordSegment({
                 onMediaClick={onMediaClick}
                 right={buildTextSide(item, startIndex + index)}
                 headingLevel="h4"
+                headingRef={startIndex + index === targetPageIndex ? targetHeadingRef : undefined}
               />
             ))}
           </div>
@@ -64,4 +71,7 @@ RecordSegment.propTypes = {
   defaultOpen: PropTypes.bool,
   segmentStatus: PropTypes.object,
   persons: PropTypes.array,
+  targetPageIndex: PropTypes.number,
+  navigationKey: PropTypes.string,
+  targetHeadingRef: PropTypes.shape({ current: PropTypes.object }),
 };

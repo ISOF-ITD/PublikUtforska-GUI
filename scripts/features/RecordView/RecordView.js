@@ -154,6 +154,11 @@ function ResolvedRecord({
   const hasReadingMedia = (data.media || []).some((item) => (
     isImageMedia(item) || isPdfMedia(item) || item.type === 'audio'
   ));
+  const requestedMedia = new URLSearchParams(location.search).get('media');
+  const requestedPageIndex = /^\d+$/.test(requestedMedia || '') ? Number(requestedMedia) : null;
+  const imageCount = (data.media || []).filter(isImageMedia).length;
+  const targetPageIndex = Number.isSafeInteger(requestedPageIndex)
+    && requestedPageIndex < imageCount ? requestedPageIndex : null;
 
   return (
     <article aria-labelledby={titleId}>
@@ -197,6 +202,8 @@ function ResolvedRecord({
               data={data}
               highlightData={highlightData}
               mediaImageClickHandler={mediaImageClickHandler}
+              targetPageIndex={targetPageIndex}
+              navigationKey={location.key}
             />
             <PdfElement data={data} />
           </div>
