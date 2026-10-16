@@ -6,6 +6,18 @@ Public crowdsource interface based on map search.
 
 [Tema och dark mode](theme.md)
 
+## Licens
+
+Projektets egen programkod omfattas av
+[MIT-licensen](LICENSE).
+
+MIT-licensen omfattar inte tredjepartskod, typsnitt, ikoner, logotyper,
+andra bilder, karttjänster eller det arkivmaterial som visas genom tjänsten.
+
+Projektets egen tekniska dokumentation (`README.md`, `Accessibility.md`,
+`theme.md` och dokumentationstexter i `docs/`) omfattas av
+CC BY 4.0. Ange Institutet för språk och folkminnen (Isof).
+
 ## Quick start
 
 ```bash
