@@ -3,12 +3,14 @@ import {
   act, render, screen, waitFor, within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import config from '../../../config';
+import useTranscriptionAvailability from '../../../hooks/useTranscriptionAvailability';
 import RecordTextPanel from '../RecordTextPanel';
 import RecordViewActions from '../../RecordView/ui/RecordViewActions';
 
-jest.mock('../../../config', () => ({ imageUrl: 'https://example.test/images/' }));
+jest.mock('../../../config', () => ({ imageUrl: 'https://example.test/images/', activateTranscription: true }));
 jest.mock('../../../lang/Lang', () => ({ l: (value) => value }));
-jest.mock('../../../hooks/useTranscriptionAvailability', () => () => true);
+jest.mock('../../../hooks/useTranscriptionAvailability', () => jest.fn(() => true));
 jest.mock('../../TranscriptionPageByPageOverlay/ui/TranscribeButton', () => {
   const PropTypes = jest.requireActual('prop-types');
   function TranscribeButton({ initialPageIndex, initialPageSource }) {
@@ -37,6 +39,8 @@ function makeRecord(count = 63) {
 }
 
 beforeEach(() => {
+  config.activateTranscription = true;
+  useTranscriptionAvailability.mockReturnValue(true);
   Element.prototype.scrollIntoView = jest.fn();
 });
 afterEach(() => jest.restoreAllMocks());
@@ -189,6 +193,150 @@ test('alla segment är öppna och behåller personer och avskriftsstart för rä
   expect(screen.queryByRole('button', { name: 'Skriv av' })).not.toBeInTheDocument();
   await user.keyboard('{Enter}');
   expect(screen.getByRole('button', { name: 'Skriv av' })).toBeVisible();
+});
+
+test('en bildsida som inte kan skrivas av behåller avskriften och lämnar andra sidor öppna för avskrift', () => {
+  const data = makeRecord(2);
+  data.transcriptionstatus = 'readytotranscribe';
+  data.media[0].transcriptionstatus = 'needsimprovement';
+  data.media[1].transcriptionstatus = 'readytotranscribe';
+  render(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />);
+  expect(screen.queryByText('Den här sidan kan inte skrivas av just nu.')).not.toBeInTheDocument();
+  expect(screen.getByText('Avskrift 1')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Skriv av' })).toHaveAttribute('data-page', '1');
+  expect(screen.getByTitle('Kan inte skrivas av')).toBeInTheDocument();
+});
+
+test.each(['published', 'transcribed', 'needsimprovement'])(
+  'synlig avskrift med sidstatus %s visas utan spärrmeddelande även på en spärrad accession',
+  (transcriptionstatus) => {
+    const data = makeRecord(1);
+    data.transcriptionstatus = 'needsimprovement';
+    data.media[0].transcriptionstatus = transcriptionstatus;
+    data.media[0].transcribedby = 'Anna';
+    data.media[0].transcriptiondate = '2026-10-07';
+    data.media[0].comment = 'Kommentar till avskriften';
+    render(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />);
+    expect(screen.getByText('Avskrift 1')).toBeVisible();
+    expect(screen.getByText('Anna')).toBeVisible();
+    expect(screen.getByText('2026-10-07')).toBeVisible();
+    expect(screen.getByText('Kommentar till avskriften')).toBeVisible();
+    expect(screen.queryByText('Den här sidan kan inte skrivas av just nu.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Skriv av' })).not.toBeInTheDocument();
+    expect(screen.getByTitle('Kan inte skrivas av')).toBeInTheDocument();
+  },
+);
+
+test.each([
+  [false, true],
+  [true, false],
+  [false, false],
+])('spärrmeddelandet döljs när avskrivning inte erbjuds (aktiverad: %s, tillräcklig skärmbredd: %s)', (activated, available) => {
+  config.activateTranscription = activated;
+  useTranscriptionAvailability.mockReturnValue(available);
+  const data = makeRecord(1);
+  data.transcriptionstatus = 'needsimprovement';
+  data.media[0].transcriptionstatus = 'readytotranscribe';
+  render(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />);
+  expect(screen.queryByText('Den här sidan kan inte skrivas av just nu.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Skriv av' })).not.toBeInTheDocument();
+  expect(screen.queryByText('Avskrift 1')).not.toBeInTheDocument();
+});
+
+test.each(['readytotranscribe', 'needsimprovement'])(
+  'sidans egen needsimprovement-status ger inget knappmeddelande (accession: %s)',
+  (transcriptionstatus) => {
+    const data = makeRecord(1);
+    data.transcriptionstatus = transcriptionstatus;
+    data.media[0].transcriptionstatus = 'needsimprovement';
+    data.media[0].text = '';
+    render(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />);
+    expect(screen.queryByText('Den här sidan kan inte skrivas av just nu.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Skriv av' })).not.toBeInTheDocument();
+    expect(screen.getByTitle('Kan inte skrivas av')).toBeInTheDocument();
+  },
+);
+
+test('en tillåten redo-sida behåller avskrivningsknappen', () => {
+  const data = makeRecord(1);
+  data.transcriptionstatus = 'readytotranscribe';
+  data.media[0].transcriptionstatus = 'readytotranscribe';
+  render(<RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />);
+  expect(screen.getByRole('button', { name: 'Skriv av' })).toBeEnabled();
+  expect(screen.queryByText('Den här sidan kan inte skrivas av just nu.')).not.toBeInTheDocument();
+});
+
+test.each([false, true])('spärrad accession visar inte text eller bidragsuppgifter på redo-sidor (segment: %s)', async (withSegments) => {
+  const user = userEvent.setup();
+  const openImage = jest.fn();
+  const data = makeRecord(2);
+  data.transcriptionstatus = 'needsimprovement';
+  data.media = data.media.map((item) => ({
+    ...item,
+    transcriptionstatus: 'readytotranscribe',
+    transcribedby: 'Sidans bidragsgivare',
+    transcriptiondate: '2026-10-07',
+    comment: 'Sidans kommentar',
+  }));
+  if (withSegments) data.segments = [{ id: 'segment-a', start_media_id: 'image-0' }];
+  render(<RecordTextPanel data={data} mediaImageClickHandler={openImage} />);
+
+  expect(screen.getByRole('heading', { level: 2, name: 'Originalbilder' })).toBeVisible();
+  expect(screen.queryByText(/^Avskrift \d+$/)).not.toBeInTheDocument();
+  expect(screen.queryByText('Sidans bidragsgivare')).not.toBeInTheDocument();
+  expect(screen.queryByText('Sidans kommentar')).not.toBeInTheDocument();
+  expect(screen.queryByText('2026-10-07')).not.toBeInTheDocument();
+  expect(screen.getAllByText('Den här sidan kan inte skrivas av just nu.')).toHaveLength(2);
+  expect(screen.queryByRole('button', { name: 'Skriv av' })).not.toBeInTheDocument();
+  expect(screen.queryByText(/kan skrivas av/)).not.toBeInTheDocument();
+  if (withSegments) {
+    const segment = screen.getByRole('button', { name: /Sidor 1–2/ });
+    expect(within(segment).getByTitle('Kan inte skrivas av')).toBeVisible();
+  }
+
+  const overview = screen.getByRole('button', { name: 'Visa sidöversikt (2)' });
+  await user.click(overview);
+  const thumbnails = within(document.getElementById(overview.getAttribute('aria-controls')));
+  expect(thumbnails.getAllByTitle('Kan inte skrivas av')).toHaveLength(2);
+  await user.click(thumbnails.getByRole('button', { name: 'Öppna större bild av sida 1' }));
+  expect(openImage.mock.lastCall[0]).toBe(data.media[0]);
+  expect(openImage.mock.lastCall[1][0].transcriptionstatus).toBe('readytotranscribe');
+});
+
+test('spärrad accession med blandade sidor visar och exporterar bara den redan synliga texten', async () => {
+  const user = userEvent.setup();
+  const data = makeRecord(2);
+  data.transcriptionstatus = 'needsimprovement';
+  data.media[0].transcriptionstatus = 'readytotranscribe';
+  data.media[0].transcribedby = 'Dold bidragsgivare';
+  data.media[1].transcribedby = 'Synlig bidragsgivare';
+  let downloaded;
+  URL.createObjectURL = jest.fn((blob) => { downloaded = blob; return 'blob:export'; });
+  URL.revokeObjectURL = jest.fn();
+  jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+  render(
+    <>
+      <RecordViewActions data={data} />
+      <RecordTextPanel data={data} mediaImageClickHandler={jest.fn()} />
+    </>,
+  );
+
+  expect(screen.getByRole('heading', { level: 2, name: 'Original och avskrift' })).toBeVisible();
+  expect(screen.queryByText('Avskrift 1')).not.toBeInTheDocument();
+  expect(screen.queryByText('Dold bidragsgivare')).not.toBeInTheDocument();
+  expect(screen.getByText('Avskrift 2')).toBeVisible();
+  expect(screen.getByText('Synlig bidragsgivare')).toBeVisible();
+  expect(screen.getAllByText('Den här sidan kan inte skrivas av just nu.')).toHaveLength(1);
+  expect(screen.queryByRole('button', { name: 'Skriv av' })).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: 'Ladda ner text (.txt)' }));
+  const exportedText = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsText(downloaded);
+  });
+  expect(exportedText).toContain('Avskrift 2');
+  expect(exportedText).not.toContain('Avskrift 1');
 });
 
 test('postbyte återställer segment och miniatyröversikt', async () => {

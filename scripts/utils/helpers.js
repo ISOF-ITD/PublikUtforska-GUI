@@ -61,14 +61,15 @@ export function removeUnderscoresBeforeFirstNumber(input = ''){
   return input.replace(/^([^0-9]*)_+/g, '$1');
 }
 
-export function getSegmentTitle(mediaItems) {
+export function getSegmentTitle(mediaItems, transcriptionstatus) {
   /* Funktion för att skapa titel för segment
   Input: mediaItems (array av mediaItem objekt som hör till segmentet)
 
   Regler:
   1. Sida X eller Sidor X-Y (från pagenumber eller source) för första och sista mediaitem
   2. Titel från första mediaitem (om finns)
-  3. Om transcriptionstatus = readytotranscribe lägg till "kan skrivas av"
+  3. Om första sidan är readytotranscribe och accessionen inte är spärrad,
+     lägg till "kan skrivas av"
   */
   if (!mediaItems || mediaItems.length === 0) return '';
 
@@ -103,8 +104,9 @@ export function getSegmentTitle(mediaItems) {
   if (mediaItems[0].title && mediaItems[0].title.trim()) {
     title += (mediaItems[0].title ? ` ${mediaItems[0].title}` : '');
   }
-  if (mediaItems[0].transcriptionstatus && mediaItems[0].transcriptionstatus === 'readytotranscribe') {
-    title = title + ' kan skrivas av';
+  if (transcriptionstatus !== 'needsimprovement'
+    && mediaItems[0].transcriptionstatus === 'readytotranscribe') {
+    title += ' kan skrivas av';
   }
   return title;
 }

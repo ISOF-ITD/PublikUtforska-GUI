@@ -3,6 +3,8 @@ import {
   act, fireEvent, render, screen, waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import config from '../../../config';
 import TranscriptionPage from '../TranscriptionPageByPageOverlay';
 import { toastOk } from '../../../utils/toast';
 import { DRAFT_PREFIX } from '../hooks/useTranscriptionDrafts';
@@ -17,11 +19,14 @@ const mockRecord = {
 };
 let mockData = mockRecord;
 
-jest.mock('../../../config', () => ({ restApiUrl: '/api/', siteUrl: '', siteOptions: {} }));
+jest.mock('../../../config', () => ({
+  restApiUrl: '/api/', siteUrl: '', siteTitle: 'Folke', siteOptions: {},
+}));
 jest.mock('../../../lang/Lang', () => ({ l: (text) => text }));
-jest.mock('../../../utils/helpers', () => ({ getPlaceString: () => '', getTitleText: () => 'Test' }));
+jest.mock('../../../utils/helpers', () => ({ getPlaceString: () => '', getTitleText: (data) => data.title || 'Test' }));
 jest.mock('../../../utils/toast', () => ({ toastError: jest.fn(), toastOk: jest.fn() }));
 jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
   useBlocker: () => ({ state: 'unblocked' }),
   useLocation: () => ({ pathname: '/records/test/transcribe', search: '?media=page18.jpg' }),
   useNavigate: () => jest.fn(),
@@ -60,6 +65,43 @@ async function fillPage() {
   fireEvent.change(text, { target: { value: 'Min avskrivna text' } });
   return text;
 }
+
+test('blocks direct transcription links for records under review without starting a session', () => {
+  document.title = 'Skriv av föregående uppteckning';
+  mockData = { ...mockRecord, title: 'Spärrad uppteckning', transcriptionstatus: 'needsimprovement' };
+  render(<MemoryRouter><TranscriptionPage /></MemoryRouter>);
+  expect(screen.getByRole('heading', { level: 1, name: 'Spärrad uppteckning' })).toBeVisible();
+  expect(document.title).toBe('Spärrad uppteckning – Kan inte skrivas av – Folke');
+  expect(screen.getByText('Den här accessionen kan inte skrivas av just nu.')).toBeVisible();
+  expect(screen.getByRole('link', { name: 'Tillbaka till uppteckningen' }))
+    .toHaveAttribute('href', '/records/04940_180267?media=page18.jpg');
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Skicka/ })).not.toBeInTheDocument();
+  expect(global.fetch).not.toHaveBeenCalled();
+});
+
+test('updates the blocked page identity on record changes and restores the site title on unmount', () => {
+  mockData = { ...mockRecord, title: 'Första uppteckningen', transcriptionstatus: 'needsimprovement' };
+  const view = render(<MemoryRouter><TranscriptionPage /></MemoryRouter>);
+  mockData = { ...mockData, id: 'another-record', title: 'Andra uppteckningen' };
+  view.rerender(<MemoryRouter><TranscriptionPage /></MemoryRouter>);
+  expect(screen.getByRole('heading', { level: 1, name: 'Andra uppteckningen' })).toBeVisible();
+  expect(document.title).toBe('Andra uppteckningen – Kan inte skrivas av – Folke');
+  expect(global.fetch).not.toHaveBeenCalled();
+  view.unmount();
+  expect(document.title).toBe(config.siteTitle);
+});
+
+test('leaves normal transcription title and session setup working when a block is lifted', async () => {
+  mockData = { ...mockRecord, title: 'Spärrad uppteckning', transcriptionstatus: 'needsimprovement' };
+  const view = render(<MemoryRouter><TranscriptionPage /></MemoryRouter>);
+  mockData = { ...mockRecord, title: 'Tillåten uppteckning', transcriptionstatus: 'readytotranscribe' };
+  view.rerender(<MemoryRouter><TranscriptionPage /></MemoryRouter>);
+  await waitFor(() => expect(screen.queryByText('Startar transkriberingssession…')).not.toBeInTheDocument());
+  expect(document.title).toBe('Skriv av Tillåten uppteckning – Folke');
+  expect(screen.getByRole('textbox', { name: 'Text på sidan 18 (av 19)' })).toBeEnabled();
+  expect(global.fetch).toHaveBeenCalledTimes(1);
+});
 
 test('announces a persistent save error, preserves the draft and allows keyboard copying', async () => {
   const user = userEvent.setup();

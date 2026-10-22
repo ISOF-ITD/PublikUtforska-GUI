@@ -435,7 +435,7 @@ export default function RecordListItem(props) {
                             : hrefWithoutListContext;
 
                           const pageLabel = isNew
-                            ? getSegmentTitle(s.items) || l("Segment")
+                            ? getSegmentTitle(s.items, transcriptionstatus) || l("Segment")
                             : s?._source?.archive?.page
                             ? `${l("Sida")} ${s._source.archive.page}`
                             : null;

@@ -30,6 +30,7 @@ function RecordReader({
   const switchId = useId();
   const targetHeadingRef = useRef(null);
   const isTranscriptionAvailable = useTranscriptionAvailability();
+  const isTranscriptionBlocked = transcriptionstatus === 'needsimprovement';
   const imageEntries = useMemo(
     () => media.map((item, mediaIndex) => ({ item, mediaIndex }))
       .filter(({ item }) => isImageMedia(item)),
@@ -70,11 +71,12 @@ function RecordReader({
   const renderIndicator = useCallback((item) => (
     <StatusIndicator
       status={computeStatus({
-        transcriptionstatus: item.transcriptionstatus || transcriptionstatus,
+        transcriptionstatus: isTranscriptionBlocked
+          ? transcriptionstatus : item.transcriptionstatus || transcriptionstatus,
       })}
       size="md"
     />
-  ), [transcriptionstatus]);
+  ), [isTranscriptionBlocked, transcriptionstatus]);
   const buildTextSide = (item, pageIndex) => {
     const { mediaIndex } = imageEntries[pageIndex];
     const pageStatus = item.transcriptionstatus || transcriptionstatus;
@@ -99,7 +101,10 @@ function RecordReader({
       return <p className="text-body">{l('Texten kan inte skrivas av.')}</p>;
     }
     if (pageStatus === 'readytotranscribe') {
-      if (!isTranscriptionAvailable) return null;
+      if (!config.activateTranscription || !isTranscriptionAvailable) return null;
+      if (isTranscriptionBlocked) {
+        return <p className="text-body">{l('Den här sidan kan inte skrivas av just nu.')}</p>;
+      }
       return (
         <div className="flex flex-col items-center gap-2 rounded-lg bg-surface-muted p-2">
           <p className="text-body">{l('Den här sidan kan skrivas av.')}</p>
@@ -156,7 +161,8 @@ function RecordReader({
             buildTextSide={buildTextSide}
             defaultOpen
             segmentStatus={computeStatus({
-              transcriptionstatus: segment.segmentTranscriptionstatus,
+              transcriptionstatus: isTranscriptionBlocked
+                ? transcriptionstatus : segment.segmentTranscriptionstatus,
             })}
             persons={segment.persons}
             targetPageIndex={targetPageIndex}

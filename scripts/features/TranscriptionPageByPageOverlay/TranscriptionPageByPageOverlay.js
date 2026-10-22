@@ -2,7 +2,7 @@ import {
   useState, useEffect, useRef, useCallback,
 } from 'react';
 import {
-  useBlocker, useLocation, useNavigate, useOutletContext,
+  Link, useBlocker, useLocation, useNavigate, useOutletContext,
 } from 'react-router-dom';
 import config from '../../config';
 import { l } from '../../lang/Lang';
@@ -32,7 +32,33 @@ const TRANSCRIPTION_INSTRUCTIONS_ID = 'transcription-instructions';
 /*
 TranscriptionPageByPageOverlay feature is handling the transcribe page-by-page use case for users.
 */
-export default function TranscriptionPage() {
+export default function TranscriptionPageRoute() {
+  const { data } = useOutletContext() || {};
+  const location = useLocation();
+  const isBlocked = data?.transcriptionstatus === 'needsimprovement';
+  const recordTitle = isBlocked ? getTitleText(data) : '';
+
+  useEffect(() => {
+    if (!isBlocked) return undefined;
+    document.title = `${recordTitle} – ${l('Kan inte skrivas av')} – ${config.siteTitle}`;
+    return () => { document.title = config.siteTitle; };
+  }, [isBlocked, recordTitle]);
+
+  if (isBlocked) {
+    return (
+      <div className="space-y-3 text-body">
+        <h1 className="break-words">{recordTitle}</h1>
+        <p>{l('Den här accessionen kan inte skrivas av just nu.')}</p>
+        <Link to={{ pathname: `/records/${data.id}`, search: location.search }} className="text-link underline">
+          {l('Tillbaka till uppteckningen')}
+        </Link>
+      </div>
+    );
+  }
+  return <TranscriptionPage />;
+}
+
+function TranscriptionPage() {
   const { data } = useOutletContext() || {};
   const location = useLocation();
   const navigate = useNavigate();

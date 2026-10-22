@@ -51,9 +51,9 @@ export default function buildSegments({
         ? `${l("Sida")} ${start + 1}`
         : `${l("Sidor")} ${start + 1}–${end}`;
 
-    const allReadyToTranscribe =
-      items.length > 0 &&
-      items.every((m) => m?.transcriptionstatus === "readytotranscribe");
+    const allReadyToTranscribe = transcriptionstatus !== 'needsimprovement'
+      && items.length > 0
+      && items.every((m) => m?.transcriptionstatus === 'readytotranscribe');
 
     const customTitle = items[0]?.title;
     const autoTitle = `${l("Alla sidor")} (${items.length})`;

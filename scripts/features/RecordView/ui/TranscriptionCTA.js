@@ -38,10 +38,14 @@ const statusStyles = (raw) => {
       };
     case 'reviewing':
     case 'transcribed':
-    case 'needsimprovement':
     case 'approved':
       return {
         label: 'Under granskning',
+        cls: 'bg-[var(--color-info-bg)] text-[var(--color-info-text)] ring-border',
+      };
+    case 'needsimprovement':
+      return {
+        label: 'Kan inte skrivas av',
         cls: 'bg-[var(--color-info-bg)] text-[var(--color-info-text)] ring-border',
       };
     case 'published':
@@ -109,6 +113,7 @@ export default function TranscriptionCTA({ data }) {
     || !hasImagePages
     || readyCount === 0
     || transcriptionstatus === 'accession'
+    || transcriptionstatus === 'needsimprovement'
   ) {
     return null;
   }

@@ -9,6 +9,14 @@ import {
 export function computeStatus(obj = {}) {
   const { isSent, unsavedChanges, transcriptionstatus } = obj;
 
+  if (transcriptionstatus === 'needsimprovement') {
+    return {
+      key: 'needsimprovement',
+      label: 'Kan inte skrivas av',
+      color: 'bg-surface-muted !text-body',
+      icon: faLock,
+    };
+  }
   if (!isSent && unsavedChanges) {
     return {
       key: "unsaved",

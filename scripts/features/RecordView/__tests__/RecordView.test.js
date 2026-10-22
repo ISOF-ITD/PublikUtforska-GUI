@@ -328,6 +328,27 @@ test('avskriftsuppmaningen behåller status, lägesbeskrivning och startknapp', 
   expect(within(prompt).getByRole('button', { name: 'Skriv av sida för sida' })).toBeEnabled();
 });
 
+test('granskningsstatus på posten spärrar avskrift även när bildsidorna är redo', async () => {
+  useTranscriptionAvailability.mockReturnValue(true);
+  await renderRecord({
+    ...record([
+      {
+        id: 'i1', type: 'image', source: 'a.jpg', transcriptionstatus: 'readytotranscribe',
+      },
+      {
+        id: 'i2', type: 'image', source: 'b.jpg', transcriptionstatus: 'readytotranscribe',
+      },
+    ]),
+    transcriptionstatus: 'needsimprovement',
+    segments: [{ id: 'segment-a', start_media_id: 'i1' }],
+  });
+  expect(screen.getAllByText('Den här sidan kan inte skrivas av just nu.')).toHaveLength(2);
+  expect(screen.queryByRole('region', { name: 'Hjälp till att skriva av' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Skriv av/ })).not.toBeInTheDocument();
+  expect(screen.queryByText(/kan skrivas av/)).not.toBeInTheDocument();
+  expect(screen.getAllByTitle('Kan inte skrivas av')).toHaveLength(3);
+});
+
 test('PDF och textnedladdning ligger tillsammans före läsaren med dekorativa ikoner', async () => {
   const data = record([
     { type: 'pdf', source: 'a.pdf' },
