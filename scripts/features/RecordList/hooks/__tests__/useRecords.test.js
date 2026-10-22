@@ -45,6 +45,22 @@ test('behåller relevans som standard vid fritextsökning', () => {
   }));
 });
 
+test('needsimprovement ingår i vanlig sökning men utesluts när Kan skrivas av är valt', () => {
+  const { rerender } = renderHook((params) => useRecords(params), {
+    initialProps: { search: 'nattväktare' },
+  });
+  const requestedStatuses = () => fetchRecords.mock.lastCall[0].transcriptionstatus.split(',');
+
+  expect(requestedStatuses()).toContain('needsimprovement');
+
+  rerender({ search: 'nattväktare', transcribe: true });
+  expect(requestedStatuses()).not.toContain('needsimprovement');
+  expect(requestedStatuses()).toContain('readytotranscribe');
+
+  rerender({ search: 'nattväktare', transcribe: false });
+  expect(requestedStatuses()).toContain('needsimprovement');
+});
+
 test('återställer standard och första sidan när sökningen ändras eller rensas', () => {
   const { result, rerender } = renderHook((params) => useRecords(params), {
     initialProps: {},

@@ -4,6 +4,7 @@ export const MATERIAL_TRANSCRIPTION_STATUSES = [
   'readytotranscribe',
   'readytocontribute',
   'undertranscription',
+  'needsimprovement',
 ].join(',');
 
 export const TRANSCRIBABLE_TRANSCRIPTION_STATUSES = [
