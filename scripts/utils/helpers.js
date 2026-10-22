@@ -631,45 +631,13 @@ export function getTitleText(
   numberOfTranscribedSubrecordsMedia,
   maxLength = 300,
 ) {
-  const transcriptionStatusElement = data.transcriptionstatus;
-  // Let getTitle do the smart fallback work (title → contents → archive)
-  const baseTitle = getTitle(
+  return getTitle(
     data.title,
     data.contents,
-    data.archive, // pass archive too
-    null, // pass highlight too
+    data.archive,
+    null,
     maxLength,
-  );
-  if (
-    [
-      "undertranscription",
-      "transcribed",
-      "reviewing",
-      "needsimprovement",
-      "approved",
-    ].includes(transcriptionStatusElement)
-  ) {
-    return l("Titel granskas");
-  }
-
-  if (
-    transcriptionStatusElement === "readytotranscribe" &&
-    data.transcriptiontype === "sida" &&
-    Number(numberOfSubrecordsMedia) > 0
-  ) {
-    return `Sida ${getPages(data)} (${numberOfTranscribedSubrecordsMedia} ${l(
-      numberOfTranscribedSubrecordsMedia === 1
-        ? "sida avskriven"
-        : "sidor avskrivna"
-    )})`;
-  }
-
-  if (transcriptionStatusElement === "readytotranscribe") {
-    // Use baseTitle if we have one; otherwise just the status text
-    return baseTitle ? `${baseTitle}` : l('Inte avskriven');
-  }
-  // Default: just show the best title we can construct
-  return baseTitle || l("(Utan titel)");
+  ) || l('(Utan titel)');
 }
 
 // export function getRecordtypeLabel(recordType) {
