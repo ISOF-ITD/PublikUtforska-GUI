@@ -25,36 +25,8 @@ import {
   parseResultSearch,
 } from '../utils/routeHelper';
 import IntroOverlay from './views/IntroOverlay';
+import ServiceWarning from './ServiceWarning';
 import config from '../config';
-
-function getWarningUrl() {
-  const script = Array.from(document.scripts)
-    .find(({ src }) => src.includes('/bndl.') || src.includes('/releases/'));
-
-  if (!script) return '/varning.html';
-
-  return new URL('varning.html', script.src).href;
-}
-
-function Warning() {
-  const [html, setHtml] = useState('');
-
-  useEffect(() => {
-    fetch(getWarningUrl())
-      .then((response) => (response.ok ? response.text() : null))
-      .then(setHtml);
-  }, []);
-
-  return html ? (
-    <div
-      role="alert"
-      aria-label={l('Varning')}
-      className="m-3 rounded-md bg-accent p-4 text-body"
-      // eslint-disable-next-line react/no-danger
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  ) : null;
-}
 
 export default function SearchControls({
   active = true,
@@ -188,7 +160,7 @@ export default function SearchControls({
         className="relative z-[1201] max-w-full overflow-visible bg-isof print:hidden"
         style={searchControlsPanelStyle}
       >
-        <Warning />
+        <ServiceWarning />
         <HeaderElement className="max-w-full border-b border-white/20">
           <div className="flex min-h-[4rem] max-w-full items-center justify-between gap-2 px-3 py-2 min-[1440px]:px-5">
             <div className="flex min-w-0 flex-1 items-center gap-2">

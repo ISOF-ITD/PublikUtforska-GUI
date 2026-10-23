@@ -297,13 +297,19 @@ Check logs in the `logs` directory. Change the cron job with `crontab -e`.
 
 ## Warning message
 
-To show a custom warning message:
+[`varning.html`](varning.html) contains the current service warning. The message
+appears above the search controls, in the introduction and on material pages,
+independently of the API. Use plain text and simple HTML, such as `<strong>` and `<br>`.
 
-1. Create `varning.html` in the main folder on the server. You can copy one of the `varning.template*.html` files as start.
-2. Add the warning message HTML. Plain text and simple HTML tags like `<pre>` and `<strong>` can be used.
-3. Deploy again with `./deploy.sh`.
+- **Enable or update:** edit the project's `varning.html` and deploy with `./deploy.sh`.
+- **Disable:** empty the project's `varning.html` and deploy again. Keep the empty
+  file so the next deployment also clears the warning on the server.
+- **Update directly on the server without rebuilding:** edit or empty `www/varning.html`.
+  Also update the project's file so the next deployment preserves the change.
 
-If `varning.html` exists, the warning message is shown automatically.
+The file is fetched from the site's stable root, even when JavaScript is served
+from `releases/<release-id>/`. Changes appear when the page is reloaded. An empty,
+missing or unavailable file shows no warning, and the browser cache is bypassed.
 
 ## Temporarily disable transcription
 

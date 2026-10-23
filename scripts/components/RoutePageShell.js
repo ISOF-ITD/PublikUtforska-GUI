@@ -10,6 +10,7 @@ import headerBack from '../../img/header-back.gif';
 import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
 import { l } from '../lang/Lang';
 import { createResultLocation } from '../utils/routeHelper';
+import ServiceWarning from './ServiceWarning';
 
 export default function RoutePageShell({ children }) {
   const location = useLocation();
@@ -97,6 +98,7 @@ export default function RoutePageShell({ children }) {
           </Link>
         </div>
       </header>
+      <ServiceWarning />
       <main
         ref={contentRef}
         id="route-page-content"

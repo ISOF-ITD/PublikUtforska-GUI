@@ -108,8 +108,8 @@ if [[ -f "$RELEASE_DIR/favicon.ico" ]]; then
   cp "$RELEASE_DIR/favicon.ico" "$WWW_DIR/favicon.ico"
 fi
 
-# Keep verification and warning template files available at the stable root.
-for file in "$RELEASE_DIR"/google*.html "$RELEASE_DIR"/varning.template*; do
+# Keep verification files, warnings and warning templates at the stable root.
+for file in "$RELEASE_DIR"/google*.html "$RELEASE_DIR"/varning*.html; do
   if [[ -e "$file" ]]; then
     cp "$file" "$WWW_DIR/"
   fi

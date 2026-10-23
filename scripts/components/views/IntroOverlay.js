@@ -19,6 +19,7 @@ import { getFocusableElements } from '../../utils/focusHelper';
 import folkeWhiteLogo from '../../../img/folke-white.svg';
 import IsofLogoWhite from '../../../img/logotyp-isof-vit.svg';
 import SpråkbankenLogo from '../../../img/logotyp_sprakbanken.svg';
+import ServiceWarning from '../ServiceWarning';
 
 function IntroOverlay({ show = false, onClose }) {
   const location = useLocation();
@@ -336,6 +337,7 @@ function IntroOverlay({ show = false, onClose }) {
           </div>
         </div>
 
+        {show && <ServiceWarning />}
         <div className="content">
           <iframe
             ref={iframeRef}

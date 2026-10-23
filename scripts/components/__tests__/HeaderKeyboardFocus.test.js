@@ -56,6 +56,24 @@ afterEach(() => {
   document.body.classList.remove('tab-navigation');
 });
 
+test.each(['sökvyn', 'materialsidan', 'introduktionen'])('%s visar driftvarningen', async (surface) => {
+  global.fetch.mockResolvedValue({
+    ok: true,
+    text: () => Promise.resolve('<strong>Tekniska problem i Folke</strong> Försök igen senare.'),
+  });
+  let content = <SearchControls loading={false} />;
+  if (surface === 'materialsidan') {
+    content = <RoutePageShell><p>Arkivmaterial</p></RoutePageShell>;
+  } else if (surface === 'introduktionen') {
+    content = <IntroOverlay show onClose={jest.fn()} />;
+  }
+
+  render(<MemoryRouter>{content}</MemoryRouter>);
+
+  expect(await screen.findByRole('alert', { name: 'Driftinformation' }))
+    .toHaveTextContent('Tekniska problem i Folke');
+});
+
 test('sökheaderns kontroller använder tangentbordsstyrd fokusmarkering', async () => {
   const user = userEvent.setup();
   render(
