@@ -36,7 +36,7 @@ const getLastThreeMonthsRange = () => {
 };
 
 const apiUrlObject = {
-  dev: 'https://ull.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
+  dev: 'https://ull-test.isof.se/folkeservice/api/es/', // feel free to change according to your local environment
   // 'dev': 'http://localhost:5001/api/es/', //feel free to change according to your local environment
   test: 'https://ull-test.isof.se/folkeservice/api/es/',
   prod: 'https://ull.isof.se/folkeservice/api/es/',
