@@ -7,6 +7,8 @@ const common = require('./webpack.common');
 module.exports = merge(common, {
 
   mode: 'production',
+  // Limit concurrent module builds to reduce peak memory usage on the deploy server.
+  parallelism: 10,
   // activate source-map for debugging, but disable for production to get the best performance
   // devtool: 'source-map', // external source maps for production
   devtool: false,

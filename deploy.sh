@@ -10,7 +10,7 @@ set -euo pipefail
 PUBLIC_PATH=""
 KEEP_RELEASE_DAYS="${KEEP_RELEASE_DAYS:-7}"
 RELEASE_ID="${RELEASE_ID:-$(date +%Y%m%d%H%M%S)}"
-BUILD_NODE_OPTIONS="${NODE_OPTIONS:-}"
+BUILD_NODE_OPTIONS="${BUILD_NODE_OPTIONS:-${NODE_OPTIONS:---max-old-space-size=1536 --max-semi-space-size=16}}"
 BUILD_DIR="www-deploy"
 WWW_DIR="www"
 RELEASES_DIR="$WWW_DIR/releases"
@@ -81,11 +81,9 @@ fi
 
 echo "Bygger release $RELEASE_ID med PUBLIC_PATH=$ASSET_PUBLIC_PATH..."
 
-# Node.js memory limits are tuned separately for install and build.
-# The build also limits V8 semi-space to avoid unstable memory allocation
-# with the current Node.js runtime on this server.
-INSTALL_NODE_OPTIONS="--max-old-space-size=1024"
-BUILD_NODE_OPTIONS="--max-old-space-size=1536 --max-semi-space-size=16"
+# Keep installation memory separate from the build. Allow server-specific
+# overrides; BUILD_NODE_OPTIONS takes precedence over NODE_OPTIONS above.
+INSTALL_NODE_OPTIONS="${INSTALL_NODE_OPTIONS:---max-old-space-size=1024}"
 
 NODE_OPTIONS="$INSTALL_NODE_OPTIONS" npm install
 
