@@ -391,6 +391,12 @@ export default function MapView({
       : 1
   ), []);
 
+  // Find the largest hit count in the current selection, with a minimum of one.
+  const maxDocumentCount = useMemo(() => points.reduce(
+    (maximum, point) => Math.max(maximum, getDocumentCount(point)),
+    1,
+  ), [getDocumentCount, points]);
+
   const getSockenName = useCallback((obj) => (
     (obj.name?.replace?.(/ sn$/, ' socken') || '')
     // add landskap if available and is not "ingen"
@@ -510,14 +516,20 @@ export default function MapView({
     const currentZoom = (mapView.current?.map?.getZoom() ?? 0) + 4;
     const circleTooltip = `${getSockenName(obj)}: ${formatHitCount(count)}`;
 
-    // Adjust circle radius based on document count and zoom level:
-    // The radius increases with the number of documents and the zoom level
-    // but is capped to avoid overly large circles at high zoom levels.
-    // and has a minimum size to ensure visibility at low zoom levels and low document counts.
-    // == fler träffar ger större cirklar, men cirklarna får aldrig bli mindre än den zoomanpassade minimistorleken. ==
-    const circleRadius = Math.max(
-      (count / 14) * (currentZoom / 5),
-      currentZoom / 1.5,
+    // Use a scale of 1 at map zoom 1, and grow circles as the user zooms in.
+    const zoomFactor = currentZoom / 5;
+    // Keep single hits visible with a minimum radius of about 3.3 pixels at map zoom 1.
+    const minimumRadius = currentZoom / 1.5;
+    // Set the maximum radius to 12 pixels at map zoom 1.
+    const maximumRadius = 12 * zoomFactor;
+    // Scale one hit to 0 and the selection's maximum to 1; use 0 when the maximum is 1.
+    const relativeCount = maxDocumentCount > 1
+      ? (Math.max(count, 1) - 1) / (maxDocumentCount - 1)
+      : 0;
+
+    // Scale the area with the hit count, then take the square root to get the radius.
+    const circleRadius = Math.sqrt(
+      minimumRadius ** 2 + (maximumRadius ** 2 - minimumRadius ** 2) * relativeCount,
     );
 
     const sockenCircle = circleMarker([obj.location[0], obj.location[1]], {
@@ -554,7 +566,7 @@ export default function MapView({
     }
 
     return sockenCircle;
-  }, [getDocumentCount, getSockenName, onMarkerClick]);
+  }, [getDocumentCount, getSockenName, maxDocumentCount, onMarkerClick]);
 
   /* Inaktiva förhandsvisningar för kluster- och landskapsvyn.
   const showClusterPreview = useCallback((cluster) => {

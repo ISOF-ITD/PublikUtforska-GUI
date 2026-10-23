@@ -190,6 +190,98 @@ test('detail maps keep WGS84 marker positions', () => {
   expect(map.options.crs.code).toBe('EPSG:3006');
 });
 
+function getCircleRadii(map) {
+  const radii = [];
+  map.eachLayer((layer) => {
+    if (layer instanceof L.CircleMarker) radii.push(layer.getRadius());
+  });
+  return radii;
+}
+
+test.each([
+  [0, 2.6667, 3.0917, 4.4333, 9.6],
+  [1, 3.3333, 3.8646, 5.5416, 12],
+  [3, 4.6667, 5.4105, 7.7583, 16.8],
+  [6, 6.6667, 7.7292, 11.0833, 24],
+])('search circles scale against the selection maximum at zoom %s', (zoom, singleRadius, nineRadius, fortyTwoRadius, maximumRadius) => {
+  const counts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 42, 43, 100, 279];
+  const data = counts.map((count) => ({
+    id: String(count),
+    name: `Ort med ${count} träffar`,
+    location: [59.3293, 18.0686],
+    doc_count: count,
+  }));
+  render(<MapView mapData={{ data }} />);
+  const map = mapSpy.mock.results[0].value;
+  act(() => {
+    map.setZoom(0, { animate: false });
+    map.setZoom(zoom, { animate: false });
+  });
+  const radii = getCircleRadii(map);
+
+  expect(radii).toHaveLength(counts.length);
+  expect(radii[0]).toBeCloseTo(singleRadius, 3);
+  radii.slice(1).forEach((radius, index) => {
+    expect(radius).toBeGreaterThan(radii[index]);
+  });
+  expect(radii[8]).toBeCloseTo(nineRadius, 3);
+  expect(radii[9]).toBeCloseTo(fortyTwoRadius, 3);
+  expect(radii[12]).toBeCloseTo(maximumRadius, 3);
+  expect(radii[9]).toBeLessThan(radii[12] / 2);
+});
+
+test('rescales existing circles when the selection maximum changes', () => {
+  const data = [1, 9, 43].map((count) => ({
+    id: String(count), name: String(count), location: [59.3293, 18.0686], doc_count: count,
+  }));
+  const { rerender } = render(<MapView mapData={{ data }} />);
+  const map = mapSpy.mock.results[0].value;
+  act(() => map.setZoom(1, { animate: false }));
+  const smallSelectionRadii = getCircleRadii(map);
+  expect(smallSelectionRadii[0]).toBeCloseTo(3.3333, 3);
+  expect(smallSelectionRadii[1]).toBeCloseTo(6.0352, 3);
+  expect(smallSelectionRadii[2]).toBeCloseTo(12, 3);
+
+  const largerSelection = [...data, {
+    id: '279', name: '279', location: [59.3293, 18.0686], doc_count: 279,
+  }];
+  rerender(<MapView mapData={{ data: largerSelection }} />);
+  act(() => map.setZoom(1, { animate: false }));
+  const largeSelectionRadii = getCircleRadii(map);
+  expect(largeSelectionRadii[0]).toBeCloseTo(smallSelectionRadii[0]);
+  expect(largeSelectionRadii[1]).toBeLessThan(smallSelectionRadii[1]);
+  expect(largeSelectionRadii[2]).toBeLessThan(smallSelectionRadii[2]);
+  expect(largeSelectionRadii[3]).toBeCloseTo(12, 3);
+});
+
+test('keeps single-hit, zero and missing counts at a visible minimum size', () => {
+  const data = [1, 0, undefined].map((count, index) => ({
+    id: String(index), name: String(index), location: [59.3293, 18.0686], doc_count: count,
+  }));
+  render(<MapView mapData={{ data }} />);
+  const map = mapSpy.mock.results[0].value;
+  act(() => map.setZoom(1, { animate: false }));
+  const radii = getCircleRadii(map);
+  expect(radii).toHaveLength(3);
+  radii.forEach((radius) => expect(radius).toBeCloseTo(3.3333, 3));
+});
+
+test('ignores places without valid coordinates when finding the selection maximum', () => {
+  const data = [
+    {
+      id: 'mapped', name: 'Mapped', location: [59.3293, 18.0686], doc_count: 9,
+    },
+    { id: 'unmapped', name: 'Unmapped', doc_count: 279 },
+    {
+      id: 'placeholder', name: 'Placeholder', location: [0, 0], doc_count: 1000,
+    },
+  ];
+  render(<MapView mapData={{ data }} />);
+  const map = mapSpy.mock.results[0].value;
+  act(() => map.setZoom(1, { animate: false }));
+  expect(getCircleRadii(map)).toEqual([12]);
+});
+
 test('search circles preserve clicks, keyboard navigation and zoom-dependent appearance', async () => {
   const onMarkerClick = jest.fn();
   const data = [{
