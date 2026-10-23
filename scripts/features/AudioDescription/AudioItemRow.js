@@ -19,7 +19,7 @@ import config from "../../config";
 import ConfirmationModal from "./ConfirmationModal";
 import useAudioDuration from "./hooks/useAudioDuration";
 import { secondsToMMSS } from "../../utils/timeHelper";
-import { transcriptFragment } from './transcriptUtils';
+import { getTranscriptMetadata, hasTranscriptText, transcriptFragment } from './transcriptUtils';
 import { AudioContext } from '../../contexts/AudioContext';
 import { buildAudioQueue } from '../AudioPlayer/audioQueue';
 
@@ -99,17 +99,10 @@ function AudioItemRow({
     );
   }
 
-  const hasUtterances = useMemo(() => {
-    if (Array.isArray(item?.utterances?.utterances)) {
-      return item.utterances.utterances.length > 0;
-    }
-    if (Array.isArray(item?.utterances)) {
-      return item.utterances.length > 0;
-    }
-    return false;
-  }, [item]);
+  const hasUtterances = useMemo(() => hasTranscriptText(item), [item]);
 
   const descriptionsCount = item.description?.length || 0;
+  const { label: transcriptLabel } = getTranscriptMetadata(item);
   const hasStartValue = (value) => value !== undefined && value !== null && value !== '';
   const transcriptHits = (Array.isArray(highlightData) ? highlightData : []).filter(
     ({ _source: source, highlight }) => (
@@ -225,7 +218,7 @@ function AudioItemRow({
                         key={`utterance-${id}-${source.start}`}
                       >
                         <span className="font-mono ml-2 text-xs text-muted">
-                          Automatisk ljudavskrift
+                          {transcriptLabel}
                           {' ('}
                           <button
                             type="button"

@@ -10,9 +10,10 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { AudioContext } from '../../contexts/AudioContext';
 import { buildAudioQueue } from '../AudioPlayer/audioQueue';
 import { getAudioTitle } from '../../utils/helpers';
+import { PageContributor } from '../RecordTextPanel/ui/ContributorInfo';
 import {
-  normalizeTranscript, selectedTranscript, transcriptExport, transcriptFragment,
-  transcriptTimestamp,
+  getTranscriptMetadata, hasTranscriptText, normalizeTranscript, selectedTranscript,
+  transcriptExport, transcriptFragment, transcriptTimestamp,
 } from './transcriptUtils';
 
 const controlClass = '!m-0 !h-auto min-h-11 max-w-full whitespace-normal rounded !border !border-solid !border-border bg-surface px-3 py-2 text-sm leading-snug text-body hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
@@ -90,8 +91,7 @@ export function TranscriptReader({
   const matches = segments.filter((segment) => terms.length
     && terms.every((term) => segment.text.toLocaleLowerCase('sv').normalize('NFC').includes(term)));
   const searchSegment = matches[searchIndex]?.id;
-  const metadata = audio.utterances?.metadata;
-  const isOcr = metadata?.process?.some((process) => process.type?.includes('ocr'));
+  const { type, contributor, method } = getTranscriptMetadata(audio);
   const hasMore = segments.length > previewLength;
   const filtered = onlyMatches && terms.length > 0;
   const visibleSegments = filtered ? matches : segments;
@@ -166,9 +166,20 @@ export function TranscriptReader({
       <h3 ref={headingRef} id={transcriptFragment(audio.id)} tabIndex={-1} className="!m-0 scroll-mt-4 break-words px-4 pt-4 text-lg font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
         {`Avskrift: ${title}`}
       </h3>
-      {!segments.length ? <p className="px-4 py-3">Det finns ingen avskrift för den här inspelningen.</p> : (
+      {!hasTranscriptText(audio) ? <p className="px-4 py-3">Det finns ingen avskrift för den här inspelningen.</p> : (
         <>
-          {record.id !== 'bd10106_253556' && !isOcr && (
+          {contributor && (
+            <div className="break-words px-4 [&_dd]:max-w-full">
+              <PageContributor transcribedby={contributor} />
+            </div>
+          )}
+          {method && !contributor && (
+            <p className="!mb-0 break-words px-4 text-sm text-muted">
+              {'Avskriftsmetod: '}
+              {method}
+            </p>
+          )}
+          {type === 'asr' && (
             <p className="!mb-0 px-4 text-sm text-muted">Avskriften är automatiskt genererad och kan innehålla fel.</p>
           )}
           <div className="sticky top-0 z-10 rounded-t-lg border-0 border-b border-solid border-border bg-surface px-4 py-3">

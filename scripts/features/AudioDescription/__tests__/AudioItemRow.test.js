@@ -186,5 +186,51 @@ test('blandade sökträffar håller isär innehållsbeskrivningar och avskrifter
   const row = screen.getByRole('heading', { name: first.title }).closest('tr');
   expect(within(row).getAllByRole('button', { name: /Spela .* från/ })).toHaveLength(1);
   expect(within(row).getByText(/Innehållsbeskrivning: 02:10/)).toBeVisible();
-  expect(within(row).getAllByText(/Automatisk ljudavskrift/)).toHaveLength(1);
+  expect(within(row).getAllByText(/^Ljudavskrift/)).toHaveLength(1);
+});
+
+test.each([
+  ['manuell', [{ type: 'Manual' }], 'Manuell ljudavskrift'],
+  ['ASR', [{ type: 'asr' }], 'Automatisk ljudavskrift'],
+  ['ASR med versaler', [{ type: 'ASR' }], 'Automatisk ljudavskrift'],
+  ['OCR', [{ type: 'ocr+align' }], 'Ljudavskrift'],
+  ['okänd typ', [{ type: 'other' }], 'Ljudavskrift'],
+  ['saknad metadata', undefined, 'Ljudavskrift'],
+  ['manuell och ASR', [{ type: 'asr' }, { type: 'manual' }], 'Manuell ljudavskrift'],
+])('sökträff i ljudfil med %s process får rätt etikett', (label, process, expected) => {
+  const item = { ...first, utterances: { metadata: { process } } };
+  render(
+    <MemoryRouter>
+      <AudioProvider>
+        <table><tbody>{audioRow(item, [hit(0)])}</tbody></table>
+      </AudioProvider>
+    </MemoryRouter>,
+  );
+
+  expect(screen.getByText(new RegExp(`^${expected}`))).toBeVisible();
+  if (expected !== 'Automatisk ljudavskrift') {
+    expect(screen.queryByText(/Automatisk ljudavskrift/)).not.toBeInTheDocument();
+  }
+});
+
+test('sökträffarnas etiketter använder respektive ljudfils process', () => {
+  const manual = { ...first, utterances: { metadata: { process: [{ type: 'manual' }] } } };
+  const asr = { ...second, utterances: { metadata: { process: [{ type: 'asr' }] } } };
+  render(
+    <MemoryRouter>
+      <AudioProvider>
+        <table>
+          <tbody>
+            {audioRow(manual, [hit(0)])}
+            {audioRow(asr, [hit(10)])}
+          </tbody>
+        </table>
+      </AudioProvider>
+    </MemoryRouter>,
+  );
+
+  const manualRow = screen.getByRole('heading', { name: first.title }).closest('tr');
+  const asrRow = screen.getByRole('heading', { name: second.title }).closest('tr');
+  expect(within(manualRow).getByText(/^Manuell ljudavskrift/)).toBeVisible();
+  expect(within(asrRow).getByText(/^Automatisk ljudavskrift/)).toBeVisible();
 });
