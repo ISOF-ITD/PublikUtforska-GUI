@@ -30,9 +30,6 @@ function OverlayHeader({
             {archiveLabel}
           </small>
         )}
-        {recordDetails.transcriptionType === 'sida' && (
-          <small className="ml-2">(sida för sida)</small>
-        )}
       </h1>
       {progressTotal > 1 && (
         <div className="mt-2 lg:w-1/2 w-full flex flex-col gap-1" aria-live="polite">
