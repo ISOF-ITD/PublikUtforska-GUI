@@ -13,6 +13,7 @@ import {
   pageFromTo,
 } from '../../../utils/helpers';
 import { pickPrimaryMediaType } from '../../../utils/mediaTypes';
+import { getAudioTranscriptLabel } from '../../AudioDescription/transcriptUtils';
 import {
   createDetailLocation,
   createResultSearch,
@@ -117,13 +118,7 @@ export default function RecordCardItem({
     search: createResultSearch(searchParams, detailSearch),
   });
 
-  const hasTranscription = mediaItems.some((mediaItem) => (
-    mediaItem?.type === 'audio'
-    && (
-      mediaItem?.has_transcription
-      || mediaItem?.utterances?.utterances?.length > 0
-    )
-  ));
+  const transcriptLabel = getAudioTranscriptLabel(mediaItems);
   const isAudioRecording = transcriptiontype === 'audio'
     || recordtype === 'one_audio_record'
     || mediaItems.some((mediaItem) => (
@@ -262,9 +257,9 @@ export default function RecordCardItem({
           </dl>
 
           <div className="mt-3 flex items-center md:min-h-[1.75rem]">
-            {hasTranscription && (
+            {transcriptLabel && (
               <span className="inline-flex items-center rounded-full border border-border bg-yellow-50 dark:bg-surface-muted px-2 py-1 text-xs font-medium leading-none text-body">
-                {l('Automatisk ljudavskrift')}
+                {l(transcriptLabel)}
               </span>
             )}
             {showTranscriptionProgress && (

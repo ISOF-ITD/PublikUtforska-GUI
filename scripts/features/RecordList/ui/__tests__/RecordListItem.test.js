@@ -12,6 +12,128 @@ jest.mock('../../../../config', () => ({
 }));
 jest.mock('../../../../lang/Lang', () => ({ l: (text) => text }));
 
+function renderAudioRecord(media, innerHits) {
+  const data = {
+    id: '04416:3_253674',
+    title: 'Inspelning',
+    archive: { archive_id_display_search: ['ULMA 4416:3'] },
+    recordtype: 'one_audio_record',
+    media,
+    metadata: [],
+    persons: [],
+    places: [],
+  };
+  return render(
+    <MemoryRouter>
+      <table>
+        <tbody>
+          <RecordListItem
+            id={data.id}
+            item={{ _source: data, inner_hits: innerHits }}
+            searchParams={{}}
+            columns={['title']}
+            shouldRenderColumn={(column) => column === 'title'}
+          />
+        </tbody>
+      </table>
+    </MemoryRouter>,
+  );
+}
+
+test.each([
+  [undefined, 'Ljudavskrift'],
+  ['asr', 'Automatisk ljudavskrift'],
+  ['manual', 'Manuell ljudavskrift'],
+  ['ocr+align', 'Ljudavskrift'],
+])('listprofilens etikett och sökträff använder processtypen %s', (type, expected) => {
+  const data = {
+    id: 'bd10106_253556',
+    title: 'Inspelning med Mats Börs Ersson',
+    archive: { archive_id_display_search: ['ULMA BD 10106'] },
+    recordtype: 'one_audio_record',
+    media: [{
+      id: 1571201,
+      type: 'audio',
+      source: 'bd10106.mp3',
+      has_transcription: true,
+      utterances: { metadata: { process: [{ type }] } },
+    }],
+    metadata: [],
+    persons: [],
+    places: [],
+  };
+  const innerHits = {
+    'media.utterances.utterances': {
+      hits: {
+        hits: [{
+          _id: data.id,
+          _nested: { field: 'media', offset: 0 },
+          _source: { start: 0 },
+          highlight: { 'media.utterances.utterances.text': ['En <em>berättelse</em>.'] },
+        }],
+      },
+    },
+  };
+  render(
+    <MemoryRouter>
+      <table>
+        <tbody>
+          <RecordListItem
+            id={data.id}
+            item={{ _source: data, inner_hits: innerHits }}
+            searchParams={{}}
+            columns={['title']}
+            shouldRenderColumn={(column) => column === 'title'}
+          />
+        </tbody>
+      </table>
+    </MemoryRouter>,
+  );
+
+  expect(screen.getByText(expected)).toBeVisible();
+  expect(screen.getByText(`${expected} (00:00):`)).toBeVisible();
+  expect(screen.getByText('berättelse')).toBeVisible();
+});
+
+test.each([
+  ['ASR-metadata utan text', false, undefined],
+  ['tom avskrift trots gammal indikator', true, []],
+  ['tomma textsegment', true, [{ text: ' \n ' }]],
+])('%s ger ingen avskriftsetikett i tabellen', (label, hasTranscription, segments) => {
+  const utterances = { metadata: { process: [{ type: 'asr' }] } };
+  if (segments !== undefined) utterances.utterances = segments;
+  renderAudioRecord([{
+    type: 'audio', source: '4416_3.mp3', has_transcription: hasTranscription, utterances,
+  }]);
+
+  expect(screen.queryByText(/ljudavskrift/i)).not.toBeInTheDocument();
+});
+
+test('blandade avskrifter sammanfattas neutralt men sökträffen använder rätt ljudfil', () => {
+  const media = ['manual', 'asr'].map((type, index) => ({
+    id: index,
+    type: 'audio',
+    source: `${index}.mp3`,
+    has_transcription: true,
+    utterances: { metadata: { process: [{ type }] } },
+  }));
+  renderAudioRecord(media, {
+    'media.utterances.utterances': {
+      hits: {
+        hits: [{
+          _id: 'hit',
+          _nested: { field: 'media', offset: 1 },
+          _source: { start: 0 },
+          highlight: { 'media.utterances.utterances.text': ['En <em>berättelse</em>.'] },
+        }],
+      },
+    },
+  });
+
+  expect(screen.getByText('Ljudavskrift')).toBeVisible();
+  expect(screen.getByText('Automatisk ljudavskrift (00:00):')).toBeVisible();
+});
+
 test.each([
   ['needsimprovement', 'Sidor 7-8 Tjänare.'],
   ['readytotranscribe', 'Sidor 7-8 Tjänare kan skrivas av.'],

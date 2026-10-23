@@ -22,6 +22,7 @@ import {
 } from '../../../utils/routeHelper';
 import useSubrecords from "../hooks/useSubrecords";
 import { secondsToMMSS } from "../../../utils/timeHelper";
+import { getAudioTranscriptLabel, getTranscriptMetadata } from '../../AudioDescription/transcriptUtils';
 import {
   getTitle,
   getPlaceString,
@@ -105,13 +106,7 @@ export default function RecordListItem(props) {
   const audioItem = config.siteOptions.recordList?.displayPlayButton
     && media.find((m) => m.type === 'audio');
 
-  // does any audio file contain utterances?
-  const hasTranscription = media.some(
-    (m) => m.type === "audio" && (
-      m.has_transcription
-      || m.utterances?.utterances?.length > 0
-    )
-  );
+  const transcriptLabel = getAudioTranscriptLabel(media);
   const transcriptionBadgeClass = [
     'ml-1 inline-flex items-center gap-1 rounded border border-border',
     'bg-white/80 px-1.5 py-0.5 align-middle text-[10px] font-semibold',
@@ -225,7 +220,7 @@ export default function RecordListItem(props) {
                   ),
                 }}
               />
-              {hasTranscription && (
+              {transcriptLabel && (
                 <span
                   className={transcriptionBadgeClass}
                   title={l('Har avskrift')}
@@ -236,7 +231,7 @@ export default function RecordListItem(props) {
                     className="text-[11px]"
                     aria-hidden="true"
                   />
-                  <span>{l('Automatisk ljudavskrift')}</span>
+                  <span>{l(transcriptLabel)}</span>
                 </span>
               )}
             </span>
@@ -286,6 +281,10 @@ export default function RecordListItem(props) {
               const startLabel = descHit._source?.start !== undefined
                 ? ` (${secondsToMMSS(descHit._source.start)})`
                 : '';
+              const { _nested: nested } = descHit;
+              const mediaOffset = nested?.field === 'media' ? nested.offset : null;
+              const hitLabel = Number.isInteger(mediaOffset)
+                ? getTranscriptMetadata(media[mediaOffset]).label : transcriptLabel || 'Ljudavskrift';
 
               return (
                 <div
@@ -295,7 +294,7 @@ export default function RecordListItem(props) {
                   }-${descHit?.['_source']?.start ?? startLabel}`}
                 >
                   <span className="mr-1">
-                    Automatisk ljudavskrift
+                    {l(hitLabel)}
                     {startLabel}
                     :
                   </span>

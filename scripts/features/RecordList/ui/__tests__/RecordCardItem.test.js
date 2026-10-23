@@ -17,6 +17,14 @@ jest.mock('../RecordCardSnippet', () => ({
   toSemanticHighlightHtml: (text) => text,
 }));
 
+function renderCard(item) {
+  return render(
+    <MemoryRouter>
+      <RecordCardItem item={item} searchParams={{}} />
+    </MemoryRouter>,
+  );
+}
+
 test('ljudavskriftens etikett behåller gul bakgrund i ljust läge och följer mörkt tema', () => {
   render(
     <MemoryRouter>
@@ -26,7 +34,11 @@ test('ljudavskriftens etikett behåller gul bakgrund i ljust läge och följer m
             id: 'audio-1',
             title: 'Inspelning med avskrift',
             recordtype: 'one_audio_record',
-            media: [{ type: 'audio', has_transcription: true }],
+            media: [{
+              type: 'audio',
+              has_transcription: true,
+              utterances: { metadata: { process: [{ type: 'asr' }] } },
+            }],
           },
         }}
         searchParams={{}}
@@ -39,6 +51,44 @@ test('ljudavskriftens etikett behåller gul bakgrund i ljust läge och följer m
     'dark:bg-surface-muted',
     'text-body',
   );
+});
+
+test.each([
+  ['ASR-metadata utan text', 'asr', false, undefined, null],
+  ['tom avskrift trots gammal indikator', 'asr', true, [], null],
+  ['tomma textsegment', 'asr', true, [{ text: '  \n ' }], null],
+  ['fullständig ASR-avskrift', 'asr', undefined, [{ text: 'Avskrift' }], 'Automatisk ljudavskrift'],
+  ['kompakt manuell avskrift', 'Manual', true, undefined, 'Manuell ljudavskrift'],
+  ['OCR-avskrift', 'ocr+align', true, undefined, 'Ljudavskrift'],
+  ['saknad processtyp', undefined, true, undefined, 'Ljudavskrift'],
+])('kortets etikett stämmer för %s', (label, type, hasTranscription, segments, expected) => {
+  const utterances = { metadata: { process: [{ type }] } };
+  if (segments !== undefined) utterances.utterances = segments;
+  renderCard({
+    _source: {
+      id: '04416:3_253674',
+      title: 'Inspelning',
+      media: [{ type: 'audio', has_transcription: hasTranscription, utterances }],
+    },
+  });
+
+  if (expected) expect(screen.getByText(expected)).toBeVisible();
+  else expect(screen.queryByText(/ljudavskrift/i)).not.toBeInTheDocument();
+});
+
+test('kort med både manuell avskrift och ASR får en neutral sammanfattande etikett', () => {
+  renderCard({
+    _source: {
+      id: 'mixed',
+      media: ['asr', 'manual'].map((type) => ({
+        type: 'audio',
+        has_transcription: true,
+        utterances: { metadata: { process: [{ type }] } },
+      })),
+    },
+  });
+  expect(screen.getByText('Ljudavskrift')).toBeVisible();
+  expect(screen.queryByText('Automatisk ljudavskrift')).not.toBeInTheDocument();
 });
 
 // IFGH 3461 has four published page images, but stale accession counters.
@@ -65,14 +115,6 @@ function createPageRecord(overrides = {}) {
       ...overrides,
     },
   };
-}
-
-function renderCard(item) {
-  return render(
-    <MemoryRouter>
-      <RecordCardItem item={item} searchParams={{}} />
-    </MemoryRouter>,
-  );
 }
 
 test('IFGH 3461 visar fyra av fyra sidor trots gamla räknare och inkluderad PDF', () => {
