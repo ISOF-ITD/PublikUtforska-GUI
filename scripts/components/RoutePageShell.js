@@ -14,7 +14,7 @@ import ServiceWarning from './ServiceWarning';
 import MatkultContextBar from '../features/Matkult/MatkultContextBar';
 import { isMatkultLocation } from '../utils/collectionHelper';
 
-export default function RoutePageShell({ children }) {
+export default function RoutePageShell({ children, sidePanel = null }) {
   const location = useLocation();
   const { focusOnNavigation = false } = useOutletContext() || {};
   const pageRef = useRef(null);
@@ -51,12 +51,8 @@ export default function RoutePageShell({ children }) {
     return () => document.removeEventListener('keydown', scrollFromDocument);
   }, []);
 
-  return (
-    <div
-      ref={pageRef}
-      tabIndex={-1}
-      className="route-page fixed inset-0 z-[1600] overflow-y-auto overflow-x-hidden bg-surface pb-24 text-body print:static print:overflow-visible"
-    >
+  const pageContent = (
+    <>
       <header
         className="z-[1700] bg-primary text-[var(--color-text-inverted)]"
         style={{
@@ -112,10 +108,28 @@ export default function RoutePageShell({ children }) {
       >
         {children}
       </main>
+    </>
+  );
+
+  return (
+    <div
+      ref={pageRef}
+      tabIndex={-1}
+      className={`route-page fixed inset-0 z-[1600] overflow-y-auto overflow-x-hidden bg-surface pb-24 text-body print:static print:overflow-visible ${sidePanel ? 'min-[1440px]:grid min-[1440px]:grid-cols-[minmax(0,1fr)_clamp(340px,28vw,480px)] min-[1440px]:pb-0 print:!block' : ''}`}
+    >
+      {sidePanel ? (
+        <>
+          <div className="min-w-0">{pageContent}</div>
+          <aside aria-label="Matkult på karta" className="relative hidden border-l border-border bg-surface min-[1440px]:sticky min-[1440px]:top-0 min-[1440px]:block min-[1440px]:h-dvh min-[1440px]:self-start print:!hidden">
+            {sidePanel}
+          </aside>
+        </>
+      ) : pageContent}
     </div>
   );
 }
 
 RoutePageShell.propTypes = {
   children: PropTypes.node.isRequired,
+  sidePanel: PropTypes.node,
 };

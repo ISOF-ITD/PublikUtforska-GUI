@@ -52,4 +52,6 @@ test('redaktionella källänkar accepterar bara Matkults HTTPS-adresser', () => 
     .toBe('https://www.matkult.se/kokboken.html');
   expect(getMatkultSourceUrl(record(['javascript', 'alert(1)'].join(':')))).toBeNull();
   expect(getMatkultSourceUrl(record('https://www.matkult.se.evil.test/'))).toBeNull();
+  expect(getMatkultSourceUrl(record('https://example:sample@www.matkult.se/'))).toBeNull();
+  expect(getMatkultSourceUrl(record('https://www.matkult.se:8443/'))).toBeNull();
 });

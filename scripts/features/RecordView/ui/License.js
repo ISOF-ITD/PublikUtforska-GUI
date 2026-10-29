@@ -8,6 +8,7 @@ import {
   faCreativeCommonsSa,
 } from '@fortawesome/free-brands-svg-icons';
 import { resolveLicense } from '../utils/licenseUtils';
+import { getMatkultSourceUrl } from '../../Matkult/matkult';
 
 const CC_BADGE_ICONS = {
   cc: faCreativeCommons,
@@ -19,6 +20,20 @@ const CC_BADGE_ICONS = {
 
 export default function License({ data, className = "" }) {
   const license = resolveLicense(data);
+
+  if (license.type === 'unspecified') {
+    const sourceUrl = getMatkultSourceUrl(data);
+    return (
+      <div className={`rounded border border-border bg-surface-muted p-3 text-sm text-body ${className}`}>
+        <p className="!mt-0">Uppgift om licens saknas för den här posten.</p>
+        {sourceUrl && (
+          <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-link underline">
+            Se originalsidan på Matkult.se (nytt fönster)
+          </a>
+        )}
+      </div>
+    );
+  }
 
   if (license.type === "html") {
     return (
@@ -83,6 +98,8 @@ export default function License({ data, className = "" }) {
 License.propTypes = {
   data: PropTypes.shape({
     copyrightlicense: PropTypes.string,
+    materialtype: PropTypes.string,
+    metadata: PropTypes.arrayOf(PropTypes.object),
   }).isRequired,
   className: PropTypes.string,
 };

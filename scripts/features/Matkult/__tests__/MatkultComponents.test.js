@@ -1,5 +1,7 @@
 /* global afterEach, beforeEach, expect, jest, test */
-import { fireEvent, render, screen } from '@testing-library/react';
+import {
+  act, fireEvent, render, screen,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import MatkultPage from '../MatkultPage';
@@ -111,4 +113,61 @@ test('alla kategorier öppnas utan att lämna startsidan', async () => {
   await screen.findByRole('link', { name: 'Läs receptet' });
   fireEvent.click(screen.getByRole('button', { name: 'Alla kategorier' }));
   expect(screen.getByRole('link', { name: 'Honung' })).toBeVisible();
+});
+
+const sourceRecord = (slug) => ({
+  ...record,
+  metadata: [...record.metadata, { type: 'sitevision_url', value: `https://www.matkult.se/${slug}` }],
+});
+const articleResponse = (text) => ({
+  ok: true, text: async () => `<div class="pagecontent"><h2>Ingredienser</h2><p>${text}</p></div>`,
+});
+
+test('läsvyn hämtar formaterad artikel och ersätter reservtexten utan att ta över fokus', async () => {
+  global.fetch.mockResolvedValue(articleResponse('Fem ägg'));
+  render(<MemoryRouter><MatkultReading data={sourceRecord('recept')} /></MemoryRouter>);
+  expect(await screen.findByRole('heading', { name: 'Ingredienser', level: 3 })).toBeVisible();
+  expect(screen.getByText('Fem ägg')).toBeVisible();
+  expect(screen.queryByText(/Grädde och lever/)).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Text och bilder från Matkult.se/ })).toBeVisible();
+  expect(document.body).toHaveFocus();
+});
+
+test('misslyckad hämtning visar reservtext och tillåter nytt försök', async () => {
+  global.fetch.mockResolvedValueOnce({ ok: false }).mockResolvedValueOnce(articleResponse('Fem ägg'));
+  render(<MemoryRouter><MatkultReading data={sourceRecord('recept')} /></MemoryRouter>);
+  expect(await screen.findByText(/Den formaterade presentationen kunde inte hämtas/)).toBeVisible();
+  expect(screen.getByText(/Grädde och lever/)).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: 'Försök igen' }));
+  expect(await screen.findByText('Fem ägg')).toBeVisible();
+  expect(global.fetch).toHaveBeenCalledTimes(2);
+});
+
+test('byte av post avbryter hämtningen och ignorerar sena svar från föregående artikel', async () => {
+  const pending = [];
+  global.fetch.mockImplementation((url, { signal }) => new Promise((resolve) => {
+    pending.push({ url, signal, resolve });
+  }));
+  const { rerender } = render(<MemoryRouter><MatkultReading data={sourceRecord('forsta')} /></MemoryRouter>);
+  rerender(<MemoryRouter><MatkultReading data={sourceRecord('andra')} /></MemoryRouter>);
+  expect(pending[0].signal.aborted).toBe(true);
+  await act(async () => pending[0].resolve(articleResponse('Första artikeln')));
+  expect(screen.queryByText('Första artikeln')).not.toBeInTheDocument();
+  await act(async () => pending[1].resolve(articleResponse('Andra artikeln')));
+  expect(await screen.findByText('Andra artikeln')).toBeVisible();
+});
+
+test('långsam hämtning avbryts efter tio sekunder och lämnar lästexten tillgänglig', async () => {
+  jest.useFakeTimers();
+  try {
+    global.fetch.mockImplementation((url, { signal }) => new Promise((resolve, reject) => {
+      signal.addEventListener('abort', () => reject(new Error('Avbruten')));
+    }));
+    render(<MemoryRouter><MatkultReading data={sourceRecord('langsam')} /></MemoryRouter>);
+    await act(async () => jest.advanceTimersByTime(10000));
+    expect(screen.getByText(/Den formaterade presentationen kunde inte hämtas/)).toBeVisible();
+    expect(screen.getByText(/Grädde och lever/)).toBeVisible();
+  } finally {
+    jest.useRealTimers();
+  }
 });

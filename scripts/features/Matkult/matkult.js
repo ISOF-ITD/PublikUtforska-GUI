@@ -63,16 +63,20 @@ export function getMatkultText(data) {
   return String(indexed || data.text || data.contents || '').trim();
 }
 
-export function getMatkultSourceUrl(data) {
-  const value = data.metadata?.find((item) => item.type === 'sitevision_url')?.value;
+export function getMatkultPageUrl(value) {
   if (!value) return null;
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && ['www.matkult.se', 'matkult.se'].includes(url.hostname)
+    return url.protocol === 'https:' && !url.username && !url.password && !url.port
+      && ['www.matkult.se', 'matkult.se'].includes(url.hostname)
       ? url.href : null;
   } catch {
     return null;
   }
+}
+
+export function getMatkultSourceUrl(data) {
+  return getMatkultPageUrl(data.metadata?.find((item) => item.type === 'sitevision_url')?.value);
 }
 
 export function isMatkultRecord(data) {

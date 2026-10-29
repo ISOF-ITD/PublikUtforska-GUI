@@ -37,6 +37,7 @@ const TranscriptionPage = lazy(
 );
 const StatisticsPage = lazy(() => import('./features/Statistics/StatisticsPage'));
 const MatkultPage = lazy(() => import('./features/Matkult/MatkultPage'));
+const MatkultStartMap = lazy(() => import('./features/Matkult/MatkultStartMap'));
 
 const container = document.getElementById('app');
 const root = createRoot(container);
@@ -108,7 +109,7 @@ function createPageRoutes() {
       id: 'matkult',
       handle: { surface: 'page' },
       element: (
-        <RoutePageShell>
+        <RoutePageShell sidePanel={<Suspense fallback={null}><MatkultStartMap /></Suspense>}>
           <Suspense fallback={<RouteViewLoadingPlaceholder />}>
             <MatkultPage />
           </Suspense>

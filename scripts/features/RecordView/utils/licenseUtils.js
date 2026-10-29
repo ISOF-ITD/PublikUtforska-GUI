@@ -69,6 +69,9 @@ export function parseCcUrl(url) {
  *   - { type: "cc", licenseUrl, label, badgeIconKeys, badgeText }
  */
 export function resolveLicense(data) {
+  if (data?.materialtype === 'matkarta' && !data?.copyrightlicense) {
+    return { type: 'unspecified' };
+  }
   const licenseUrl = data?.copyrightlicense || DEFAULT_LICENSE;
   const cfg = getLicenseConfig(licenseUrl);
 
