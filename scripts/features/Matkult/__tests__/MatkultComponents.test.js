@@ -7,6 +7,8 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import MatkultPage from '../MatkultPage';
 import MatkultReading from '../MatkultReading';
 import MatkultContextBar from '../MatkultContextBar';
+import { MATKULT_CATEGORIES } from '../matkult';
+import categoryImages from '../categoryImages';
 
 jest.mock('../../../utils/helpers', () => ({
   getRecordFetchLocation: (id) => `https://api.test/document/${id}/`,
@@ -108,11 +110,21 @@ test('recept utan media får en öppen lästext och arkivreferens', () => {
   expect(screen.getByText('29403:14')).toBeVisible();
 });
 
-test('alla kategorier öppnas utan att lämna startsidan', async () => {
+test('alla kategorier öppnas på startsidan med lokala bilder och oförändrade länknamn', async () => {
   render(<MemoryRouter><MatkultPage /></MemoryRouter>);
   await screen.findByRole('link', { name: 'Läs receptet' });
   fireEvent.click(screen.getByRole('button', { name: 'Alla kategorier' }));
-  expect(screen.getByRole('link', { name: 'Honung' })).toBeVisible();
+  expect(Object.keys(categoryImages).sort()).toEqual(MATKULT_CATEGORIES.map(({ id }) => id).sort());
+  MATKULT_CATEGORIES.filter(({ id }) => id !== 'MK-10').forEach(({ id, name }) => {
+    const link = screen.getByRole('link', { name, exact: true });
+    expect(link).toBeVisible();
+    expect(new URL(link.href).searchParams.get('category')).toBe(id);
+    const image = link.querySelector('img');
+    expect(image).toHaveAttribute('src', categoryImages[id]);
+    expect(image.getAttribute('src')).not.toMatch(/^https?:/);
+    expect(image).toHaveAttribute('alt', '');
+    expect(image).toHaveAttribute('loading', 'lazy');
+  });
 });
 
 const sourceRecord = (slug) => ({

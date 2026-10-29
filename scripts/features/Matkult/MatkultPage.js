@@ -5,13 +5,9 @@ import { createDetailLocation } from '../../utils/routeHelper';
 import {
   MATKULT_CATEGORIES, createMatkultSearch, getDailyRecipeId, matkultDetailSearch,
 } from './matkult';
+import categoryImages from './categoryImages';
 
 const FEATURED_IDS = ['mk34715', 'matkarta26629', 'mk-kb888'];
-const categoryImages = {
-  'MK-3': 'https://www.matkult.se/images/18.6736d8cd18d8738c53c6547/1707467447077/brod.jpg',
-  'MK-1': 'https://www.matkult.se/images/18.6736d8cd18d8738c53c6565/1707467684285/mjolk.jpg',
-  'MK-12': 'https://www.matkult.se/images/18.463ffe2f17978f40c25c565e/1611218558425/kottkategori.jpg',
-};
 const buttonClass = 'inline-flex min-h-11 items-center justify-center rounded bg-primary px-4 py-2 !text-white no-underline hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2';
 
 async function fetchPublishedRecord(id, signal) {
@@ -133,7 +129,7 @@ export default function MatkultPage() {
           {categories.map((item) => (
             <li key={item.id} className="!m-0">
               <Link to={createMatkultSearch({ category: item.id })} className="block overflow-hidden rounded-lg border border-border bg-surface text-link no-underline hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2">
-                {categoryImages[item.id] && <img src={categoryImages[item.id]} alt="" loading="lazy" className="h-32 w-full object-cover" />}
+                <img src={categoryImages[item.id]} alt="" loading="lazy" className="h-32 w-full object-cover" />
                 <span className="block p-4 text-lg font-semibold">{item.name}</span>
               </Link>
             </li>

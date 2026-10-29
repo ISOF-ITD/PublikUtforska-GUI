@@ -1,0 +1,100 @@
+[
+  {
+    "id": "MK-10",
+    "name": "Kokboken",
+    "file": "matkult-kategori-mk-10.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6541/1707467374144/kokbok.jpg",
+    "bytes": 36568
+  },
+  {
+    "id": "MK-6",
+    "name": "Baljväxter",
+    "file": "matkult-kategori-mk-6.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6545/1707467420028/baljvaxter.jpg",
+    "bytes": 19020
+  },
+  {
+    "id": "MK-3",
+    "name": "Bröd",
+    "file": "matkult-kategori-mk-3.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6547/1707467447077/brod.jpg",
+    "bytes": 35296
+  },
+  {
+    "id": "MK-2",
+    "name": "Bär och frukt",
+    "file": "matkult-kategori-mk-2.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6549/1707467505831/barochfrukt.jpg",
+    "bytes": 42390
+  },
+  {
+    "id": "MK-14",
+    "name": "Fisk",
+    "file": "matkult-kategori-mk-14.jpg",
+    "source": "https://www.matkult.se/images/18.463ffe2f17978f40c25c50fa/1607688211799/43790761-river-fish-with-red-fins-and-silver-scales-lies-on.jpg",
+    "bytes": 1283203
+  },
+  {
+    "id": "MK-9",
+    "name": "Grödor och spannmål",
+    "file": "matkult-kategori-mk-9.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6552/1707467569765/grodorochspannmal.jpg",
+    "bytes": 14602
+  },
+  {
+    "id": "MK-5",
+    "name": "Honung",
+    "file": "matkult-kategori-mk-5.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6554/1707467614035/honung.jpg",
+    "bytes": 18410
+  },
+  {
+    "id": "MK-7",
+    "name": "Kål",
+    "file": "matkult-kategori-mk-7.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6560/1707467644468/kal.jpg",
+    "bytes": 30979
+  },
+  {
+    "id": "MK-12",
+    "name": "Kött",
+    "file": "matkult-kategori-mk-12.jpg",
+    "source": "https://www.matkult.se/images/18.463ffe2f17978f40c25c565e/1611218558374/kottkategori.jpg",
+    "bytes": 347260
+  },
+  {
+    "id": "MK-1",
+    "name": "Mjölk",
+    "file": "matkult-kategori-mk-1.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c6565/1707467684285/mjolk.jpg",
+    "bytes": 40804
+  },
+  {
+    "id": "MK-11",
+    "name": "Mjölrätter",
+    "file": "matkult-kategori-mk-11.jpg",
+    "source": "https://www.matkult.se/images/18.463ffe2f17978f40c25b83e5/1529494383288/12807-ragaker.jpg",
+    "bytes": 59614
+  },
+  {
+    "id": "MK-8",
+    "name": "Potatis",
+    "file": "matkult-kategori-mk-8.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c65bb/1707467709020/potatis.jpg",
+    "bytes": 38498
+  },
+  {
+    "id": "MK-4",
+    "name": "Öl och svagdricka",
+    "file": "matkult-kategori-mk-4.jpg",
+    "source": "https://www.matkult.se/images/18.6736d8cd18d8738c53c65be/1707467734876/olochsvagdricka.jpg",
+    "bytes": 14654
+  },
+  {
+    "id": "MK-13",
+    "name": "Maten som kulturarv",
+    "file": "matkult-kategori-mk-13.jpg",
+    "source": "https://www.matkult.se/images/18.463ffe2f17978f40c25c565c/1611218558485/kulturarv-kategori.jpg",
+    "bytes": 190594
+  }
+]
