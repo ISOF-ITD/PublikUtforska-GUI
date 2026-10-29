@@ -4,7 +4,7 @@ Den andra etappen är redo för lokal utvärdering: redaktionellt innehåll frå
 
 ## Senaste ändring: Matkult i sidhuvudet
 
-- Gemensam `MatkultHeaderLink` med besticksikon och synlig Matkult-text i sök-/kartvyn, detaljsidornas header och introduktionen. Den ersätter raden "Upptäck Matkult – recept och berättelser om mat".
+- Gemensam `MatkultHeaderLink` med `matkult-logga.png` och synlig Matkult-text i sök-/kartvyn, detaljsidornas header och introduktionen. Den ersätter raden "Upptäck Matkult – recept och berättelser om mat". Loggan är dekorativ och visas i 24 × 24 px med bibehållna proportioner.
 - Ingången är 44 px hög, har en diskret ram och använder befintlig tangentbordsmarkering. Aktivt tema följer Matkults färgtokens; `aria-current=page` används bara på `/matkult`.
 - Kontrollgruppen kan radbrytas under logotyperna. Texten behålls på mobil. Kategorinavigationen finns kvar, och länken i introduktionen stänger introduktionen.
 - Den överflödiga "Utforska Matkult"-länken i temastartens header har tagits bort enligt användarens återkoppling. Detaljsidornas återgång till sökresultaten finns kvar.
