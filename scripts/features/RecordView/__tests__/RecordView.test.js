@@ -113,7 +113,10 @@ function imageRecord() {
   };
 }
 
-test('Matkult-recept utan media eller Folkes accessionsfält visar lästext och källhänvisning', async () => {
+test.each([
+  ['recept', [{ category: 'MK-10' }, { category: 'MK-12' }], 'Receptets lästext'],
+  ['berättelse', [{ category: 'MK-13' }], 'Lästext'],
+])('Matkult-%s utan media visar lästext efter metadata i den gemensamma läsarkolumnen', async (kind, taxonomy, readingTitle) => {
   const data = {
     ...record(),
     materialtype: 'matkarta',
@@ -121,11 +124,20 @@ test('Matkult-recept utan media eller Folkes accessionsfält visar lästext och 
     archive: { archive_id: '29403:14', archive_org: null, archive: 'Uppsala' },
     contents: null,
     text: null,
-    taxonomy: [{ category: 'MK-10' }, { category: 'MK-12' }],
+    taxonomy,
     metadata: [{ type: 'matkarta_content', value: 'Grädde och lever. Gräddas i ugnen.' }],
   };
   await renderRecord(data, '?theme=matkult&category=MK-10,MK-12');
-  expect(screen.getByRole('heading', { name: 'Receptets lästext' })).toBeVisible();
+  const reading = screen.getByRole('region', { name: readingTitle });
+  expect(within(reading).getByRole('heading', { name: readingTitle })).toBeVisible();
+  const layout = screen.getByRole('article').querySelector('.record-view-layout');
+  const details = layout.querySelector('.record-view-details');
+  const reader = layout.querySelector('.record-view-media');
+  expect(details).toContainElement(screen.getByRole('region', { name: 'Metadata' }));
+  expect(details.nextElementSibling).toBe(reader);
+  expect(reader).toContainElement(reading);
+  expect(layout).toHaveClass('grid-cols-1', 'min-[1440px]:grid-cols-[400px,minmax(0,1fr)]');
+  expect(layout.nextElementSibling).toBe(screen.getByRole('region', { name: 'Personer' }));
   expect(screen.getByText('Grädde och lever. Gräddas i ugnen.')).toBeVisible();
   expect(screen.getByDisplayValue('Uppsala, 29403:14')).toBeVisible();
   expect(screen.getByDisplayValue('https://example.test/records/record-a?theme=matkult')).toBeVisible();
