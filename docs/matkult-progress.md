@@ -1,6 +1,16 @@
-# Matkult i Folke – andra kodetappen, 2026-10-29
+# Matkult i Folke – lägesanteckning, 2026-10-29
 
 Den andra etappen är redo för lokal utvärdering: redaktionellt innehåll från Sitevision och en karta bredvid temastarten. Arbetet sparas på samma frontendbranch som första etappen. Ingen driftsättning eller push har gjorts.
+
+## Senaste ändring: Matkult i sidhuvudet
+
+- Gemensam `MatkultHeaderLink` med besticksikon och synlig Matkult-text i sök-/kartvyn, detaljsidornas header och introduktionen. Den ersätter raden "Upptäck Matkult – recept och berättelser om mat".
+- Ingången är 44 px hög, har en diskret ram och använder befintlig tangentbordsmarkering. Aktivt tema följer Matkults färgtokens; `aria-current=page` används bara på `/matkult`.
+- Kontrollgruppen kan radbrytas under logotyperna. Texten behålls på mobil. Kategorinavigationen finns kvar, och länken i introduktionen stänger introduktionen.
+- Den överflödiga "Utforska Matkult"-länken i temastartens header har tagits bort enligt användarens återkoppling. Detaljsidornas återgång till sökresultaten finns kvar.
+- Verifierat med 32 tester i fyra relevanta Jest-sviter. Lintjämförelse mot föregående commit visar inga tillkommande fel; ett äldre oanvänt importnamn i IntroOverlay är lämnat orört.
+- Webbläsarkontroll i ljust läge vid 320, 390 och 1 440 px: synlig text, mobil radbrytning, 44 px klickyta samt aktiv temamarkering. Beräknad textkontrast är 8,59:1 normalt/ljust, 5,89:1 normalt/mörkt, 10,65:1 aktivt/ljust och 10,75:1 aktivt/mörkt.
+- Visuell kontroll i mörkt läge kunde inte slutföras: datorverktyget stoppade Firefox-kontrollen eftersom URL-policyhantering inte stöds där. Ingen ändring av systemets färgtema har gjorts.
 
 ## Brancher
 

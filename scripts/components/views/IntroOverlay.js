@@ -7,7 +7,7 @@ import {
   useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
@@ -20,6 +20,7 @@ import folkeWhiteLogo from '../../../img/folke-white.svg';
 import IsofLogoWhite from '../../../img/logotyp-isof-vit.svg';
 import SpråkbankenLogo from '../../../img/logotyp_sprakbanken.svg';
 import ServiceWarning from '../ServiceWarning';
+import MatkultHeaderLink from '../../features/Matkult/MatkultHeaderLink';
 
 function IntroOverlay({ show = false, onClose }) {
   const location = useLocation();
@@ -299,7 +300,7 @@ function IntroOverlay({ show = false, onClose }) {
     >
       <div className="intro focus:outline-none" ref={introRef} tabIndex={-1}>
         <div className="overlay-header flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-[15px]">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="flex min-w-0 flex-[1_0_auto] items-center gap-2">
             <div className="shrink-0">
               <img
                 src={folkeWhiteLogo}
@@ -323,8 +324,8 @@ function IntroOverlay({ show = false, onClose }) {
               />
             </a>
           </div>
-          <div className="controls ml-auto flex w-auto shrink-0 items-center justify-end gap-2">
-            <Link to="/matkult" onClick={handleClose} className="header-keyboard-focus mr-3 rounded-sm !text-white underline">Matkult</Link>
+          <div className="controls ml-auto flex w-auto max-w-full shrink-0 flex-wrap items-center justify-end gap-2">
+            <MatkultHeaderLink onClick={handleClose} />
             <button
               type="button"
               onClick={handleClose}

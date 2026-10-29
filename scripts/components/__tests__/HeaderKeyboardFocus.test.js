@@ -5,7 +5,7 @@ import {
   fireEvent, render, screen, waitFor, within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import SearchControls from '../SearchControls';
 import RoutePageShell from '../RoutePageShell';
 import MapWrapper from '../MapWrapper';
@@ -37,6 +37,11 @@ jest.mock('../../features/Search/hooks/useSearchSuggestions', () => () => ({
   visibleSuggestionGroups: [],
   loading: false,
 }));
+
+function LocationProbe() {
+  const location = useLocation();
+  return <output aria-label="Aktuell adress">{location.pathname}</output>;
+}
 
 beforeEach(() => {
   global.fetch = jest.fn(() => new Promise(() => {}));
@@ -88,6 +93,7 @@ test('sökheaderns kontroller använder tangentbordsstyrd fokusmarkering', async
     searchHeader.getByRole('link', {
       name: 'Öppna Institutet för språk och folkminnens webbplats i nytt fönster',
     }),
+    searchHeader.getByRole('link', { name: 'Matkult', exact: true }),
     searchHeader.getByRole('button', { name: 'Visa 1 sparat arkivmaterial' }),
     searchHeader.getByRole('link', { name: 'Statistik' }),
     searchHeader.getByRole('button', { name: 'Hjälp och nyheter' }),
@@ -95,9 +101,13 @@ test('sökheaderns kontroller använder tangentbordsstyrd fokusmarkering', async
 
   controls.forEach((control) => expect(control).toHaveClass('header-keyboard-focus'));
 
-  await user.tab();
+  await controls.reduce(async (previous, control) => {
+    await previous;
+    await user.tab();
+    expect(control).toHaveFocus();
+  }, Promise.resolve());
   expect(document.body).toHaveClass('tab-navigation');
-  expect(controls[0]).toHaveFocus();
+  expect(screen.queryByText('Upptäck Matkult – recept och berättelser om mat')).not.toBeInTheDocument();
 
   fireEvent.pointerDown(document.body);
   expect(document.body).not.toHaveClass('tab-navigation');
@@ -109,6 +119,18 @@ test.each(['/matkult', '/search?theme=matkult'])('Matkult på %s monterar ingen 
   expect(screen.queryByRole('button', { name: 'Hjälp och nyheter' })).not.toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Statistik' })).not.toBeInTheDocument();
   expect(screen.getByRole('navigation', { name: 'Matkult' })).toBeVisible();
+});
+
+test('temastartens header visar Matkult-ingången utan den överflödiga Utforska-länken', () => {
+  render(
+    <MemoryRouter initialEntries={['/matkult']}>
+      <RoutePageShell><h1>Matkult-start</h1></RoutePageShell>
+    </MemoryRouter>,
+  );
+  const header = within(screen.getByRole('banner'));
+  expect(header.getByRole('link', { name: 'Matkult', exact: true })).toHaveAttribute('aria-current', 'page');
+  expect(header.queryByRole('link', { name: 'Utforska Matkult' })).not.toBeInTheDocument();
+  expect(header.queryByRole('link', { name: 'Till sökresultaten' })).not.toBeInTheDocument();
 });
 
 test('post- och avskriftsheaderns länkar använder samma fokusmarkering', () => {
@@ -125,6 +147,7 @@ test('post- och avskriftsheaderns länkar använder samma fokusmarkering', () =>
     screen.getByRole('link', {
       name: 'Öppna Institutet för språk och folkminnens webbplats i nytt fönster',
     }),
+    screen.getByRole('link', { name: 'Matkult', exact: true }),
     screen.getByRole('link', { name: 'Till sökresultaten' }),
   ].forEach((control) => expect(control).toHaveClass('header-keyboard-focus'));
 });
@@ -174,14 +197,33 @@ test('IntroOverlay-headern markerar kontroller vid tangentbordsnavigering', asyn
     name: 'Öppna Institutet för språk och folkminnens webbplats i nytt fönster',
   });
   const continueButton = screen.getByRole('button', { name: 'Gå vidare' });
+  const matkultLink = screen.getByRole('link', { name: 'Matkult', exact: true });
   expect(isofLink).toHaveClass('header-keyboard-focus');
   expect(continueButton).toHaveClass('header-keyboard-focus');
+  expect(matkultLink).toHaveClass('header-keyboard-focus');
 
   await waitFor(() => expect(document.querySelector('.intro')).toHaveFocus());
   fireEvent.keyDown(document, { key: 'Tab' });
   isofLink.focus();
   expect(isofLink).toHaveFocus();
   expect(document.body).toHaveClass('tab-navigation');
+});
+
+test('Matkult-länken i introduktionen stänger den och öppnar temastarten', async () => {
+  const user = userEvent.setup();
+  localStorage.removeItem('folke:introSeen:v1');
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <SearchControls loading={false} />
+      <LocationProbe />
+    </MemoryRouter>,
+  );
+  await waitFor(() => expect(document.querySelector('.intro')).toHaveFocus());
+  const intro = within(document.querySelector('.intro-overlay'));
+  await user.click(intro.getByRole('link', { name: 'Matkult', exact: true }));
+  expect(screen.getByLabelText('Aktuell adress')).toHaveTextContent('/matkult');
+  expect(screen.queryByTitle('Introduktion och hjälp')).not.toBeInTheDocument();
+  expect(localStorage.getItem('folke:introSeen:v1')).toBe('1');
 });
 
 test.each(['click', '{Enter}', ' '])('Gå vidare stänger välkomstsidan med %s', async (activation) => {

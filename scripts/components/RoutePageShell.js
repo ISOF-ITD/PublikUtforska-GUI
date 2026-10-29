@@ -13,6 +13,7 @@ import { createResultLocation } from '../utils/routeHelper';
 import ServiceWarning from './ServiceWarning';
 import MatkultContextBar from '../features/Matkult/MatkultContextBar';
 import { isMatkultLocation } from '../utils/collectionHelper';
+import MatkultHeaderLink from '../features/Matkult/MatkultHeaderLink';
 
 export default function RoutePageShell({ children, sidePanel = null }) {
   const location = useLocation();
@@ -22,8 +23,7 @@ export default function RoutePageShell({ children, sidePanel = null }) {
   const focusOnNavigationRef = useRef(focusOnNavigation);
   focusOnNavigationRef.current = focusOnNavigation;
   const isMatkult = isMatkultLocation(location);
-  const resultLocation = createResultLocation(location.pathname === '/matkult'
-    ? '?theme=matkult&view=cards' : location.search);
+  const resultLocation = createResultLocation(location.search);
 
   useEffect(() => {
     const animationFrameId = window.requestAnimationFrame(() => {
@@ -60,8 +60,8 @@ export default function RoutePageShell({ children, sidePanel = null }) {
           backgroundPosition: 'center top',
         }}
       >
-        <div className="mx-auto box-border flex min-h-16 w-full items-center gap-4 px-4 py-2 md:px-8">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+        <div className="mx-auto box-border flex min-h-16 w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 md:px-8">
+          <div className="flex min-w-0 flex-[1_0_auto] items-center gap-2">
             <Link
               to="/"
               aria-label={l('Till Folkes startsida')}
@@ -88,14 +88,19 @@ export default function RoutePageShell({ children, sidePanel = null }) {
               />
             </a>
           </div>
-          <Link
-            to={resultLocation}
-            replace
-            className="header-keyboard-focus inline-flex min-h-10 shrink-0 items-center gap-2 rounded-sm px-2 py-2 !text-white underline underline-offset-4 hover:no-underline focus:no-underline print:hidden"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} aria-hidden="true" />
-            <span>{location.pathname === '/matkult' ? 'Utforska Matkult' : l('Till sökresultaten')}</span>
-          </Link>
+          <div className="ml-auto flex max-w-full shrink-0 flex-wrap items-center justify-end gap-2">
+            <MatkultHeaderLink />
+            {location.pathname !== '/matkult' && (
+              <Link
+                to={resultLocation}
+                replace
+                className="header-keyboard-focus inline-flex min-h-10 shrink-0 items-center gap-2 rounded-sm px-2 py-2 !text-white underline underline-offset-4 hover:no-underline focus:no-underline print:hidden"
+              >
+                <FontAwesomeIcon icon={faArrowLeft} aria-hidden="true" />
+                <span>{l('Till sökresultaten')}</span>
+              </Link>
+            )}
+          </div>
         </div>
       </header>
       <ServiceWarning />

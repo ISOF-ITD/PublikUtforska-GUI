@@ -88,6 +88,8 @@ test('vanlig tabbning hoppar över sidans scrollbehållare', async () => {
   await user.tab();
   expect(screen.getByRole('link', { name: 'Öppna Institutet för språk och folkminnens webbplats i nytt fönster' })).toHaveFocus();
   await user.tab();
+  expect(screen.getByRole('link', { name: 'Matkult', exact: true })).toHaveFocus();
+  await user.tab();
   expect(screen.getByRole('link', { name: 'Till sökresultaten' })).toHaveFocus();
   await user.tab();
   expect(screen.getByRole('button', { name: 'Spara' })).toHaveFocus();

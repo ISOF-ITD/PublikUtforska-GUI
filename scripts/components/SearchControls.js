@@ -29,6 +29,7 @@ import ServiceWarning from './ServiceWarning';
 import config from '../config';
 import MatkultContextBar from '../features/Matkult/MatkultContextBar';
 import { isMatkultLocation } from '../utils/collectionHelper';
+import MatkultHeaderLink from '../features/Matkult/MatkultHeaderLink';
 
 export default function SearchControls({
   active = true,
@@ -165,8 +166,8 @@ export default function SearchControls({
       >
         <ServiceWarning />
         <HeaderElement className="max-w-full border-b border-white/20">
-          <div className="flex min-h-[4rem] max-w-full items-center justify-between gap-2 px-3 py-2 min-[1440px]:px-5">
-            <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="flex min-h-[4rem] max-w-full flex-wrap items-center justify-between gap-2 px-3 py-2 min-[1440px]:px-5">
+            <div className="flex min-w-0 flex-[1_0_auto] items-center gap-2">
               <h1 className="!m-0">
                 <Link
                   to="/"
@@ -196,7 +197,8 @@ export default function SearchControls({
                 />
               </a>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="ml-auto flex max-w-full shrink-0 flex-wrap items-center justify-end gap-2">
+              <MatkultHeaderLink />
               <button
                 type="button"
                 onClick={showBookmarkedRecords}
@@ -250,11 +252,7 @@ export default function SearchControls({
           </div>
         </HeaderElement>
 
-        {isMatkult ? <MatkultContextBar /> : (
-          <div className="px-4 py-2">
-            <Link to="/matkult" className="inline-flex min-h-9 items-center rounded-sm text-sm !text-white underline underline-offset-4">Upptäck Matkult – recept och berättelser om mat</Link>
-          </div>
-        )}
+        {isMatkult && <MatkultContextBar />}
 
         <section
           aria-label={l('Sök och filter')}
