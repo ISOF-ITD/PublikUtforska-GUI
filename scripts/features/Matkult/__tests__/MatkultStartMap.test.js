@@ -90,7 +90,11 @@ test('bred start visar samma Matkult-platser som root-loadern utan ett nytt data
     mapData, active: true, layout: 'desktop-split', isMobileViewport: false,
   }), undefined);
   expect(global.fetch.mock.calls.every(([url]) => !url.includes('socken/'))).toBe(true);
-  const fullMap = new URL(screen.getByRole('link', { name: 'Öppna helkartan' }).href);
+  const fullMapLink = screen.getByRole('link', { name: 'Öppna helkartan' });
+  expect(fullMapLink).toHaveClass('button', 'absolute', 'left-3', 'top-3', 'min-h-11', 'bg-surface', 'shadow-md');
+  expect(fullMapLink.querySelector('svg')).toHaveAttribute('data-icon', 'expand');
+  expect(fullMapLink.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  const fullMap = new URL(fullMapLink.href);
   expect(fullMap.searchParams.get('theme')).toBe('matkult');
   expect(fullMap.searchParams.get('showmap')).toBe('1');
 });

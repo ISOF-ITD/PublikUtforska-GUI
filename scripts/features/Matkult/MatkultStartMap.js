@@ -5,6 +5,8 @@ import {
   Await, Link, useLocation, useNavigate, useRouteLoaderData,
 } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { faExpand } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import MapLoadingPlaceholder from '../../components/MapLoadingPlaceholder';
 import { createDetailLocation } from '../../utils/routeHelper';
 import { createMatkultSearch, matkultDetailSearch } from './matkult';
@@ -31,11 +33,17 @@ function ResolvedMap({ data }) {
         <p className="!mb-2 !mt-1 text-sm text-muted">
           {Number.isFinite(count) ? `${count.toLocaleString('sv-SE')} platser i Matkult` : 'Utforska materialets platser'}
         </p>
-        <Link to={createMatkultSearch({}, detailSearch)} className="text-sm text-link underline underline-offset-2">Öppna helkartan</Link>
       </div>
       <div className="relative min-h-0 flex-1">
+        <Link
+          to={createMatkultSearch({}, detailSearch)}
+          className="button absolute left-3 top-3 z-[1101] !m-0 inline-flex !h-auto min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-surface px-3 py-2 !text-sm font-semibold !text-body shadow-md hover:bg-surface-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+        >
+          <FontAwesomeIcon icon={faExpand} aria-hidden="true" />
+          Öppna helkartan
+        </Link>
         {error || !Array.isArray(mapData?.data) ? (
-          <p role="alert" className="p-4 text-sm text-body">{error || 'Kartan kunde inte hämtas. Prova att öppna helkartan.'}</p>
+          <p role="alert" className="p-4 pt-20 text-sm text-body">{error || 'Kartan kunde inte hämtas. Prova att öppna helkartan.'}</p>
         ) : (
           <Suspense fallback={<MapLoadingPlaceholder />}>
             <MapView
