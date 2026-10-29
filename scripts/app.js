@@ -24,6 +24,7 @@ import {
 import canonicalizeLegacyLocation from './utils/legacyRouteHelper';
 import { audioTranscriptLoader } from './features/AudioDescription/transcriptUtils';
 import { buildResultApiParams } from './utils/resultFilterHelper';
+import { isMatkultLocation, validateCollectionResponse } from './utils/collectionHelper';
 
 import '../less/style-basic.less';
 import '../tw.css';
@@ -35,6 +36,7 @@ const TranscriptionPage = lazy(
   () => import('./features/TranscriptionPageByPageOverlay/TranscriptionPageByPageOverlay'),
 );
 const StatisticsPage = lazy(() => import('./features/Statistics/StatisticsPage'));
+const MatkultPage = lazy(() => import('./features/Matkult/MatkultPage'));
 
 const container = document.getElementById('app');
 const root = createRoot(container);
@@ -43,10 +45,15 @@ window.eventBus = EventBus;
 
 function fetchMapAndCountRecords(params, signal) {
   const mapPromise = fetch(getMapFetchLocation(params), { signal })
-    .then((response) => response.json());
+    .then((response) => response.json()).then((json) => validateCollectionResponse(json, params));
   const recordsPromise = fetch(getRecordsCountLocation(params), { signal })
-    .then((response) => response.json());
-  return Promise.all([mapPromise, recordsPromise]);
+    .then((response) => response.json()).then((json) => validateCollectionResponse(json, params));
+  return Promise.all([mapPromise, recordsPromise]).catch((error) => {
+    if (error.code !== 'CATEGORY_MATCH_UNSUPPORTED') throw error;
+    return [null, {
+      data: [], metadata: { collection_error: error.message },
+    }];
+  });
 }
 
 function countRecords(params, signal) {
@@ -57,10 +64,10 @@ function fetchPlace(placeId, signal) {
   return fetch(getPlaceFetchLocation(placeId), { signal }).then((r) => r.json());
 }
 
-function fetchRecordAndCountSubrecords(recordId, searchValue, signal) {
+function fetchRecordAndCountSubrecords(recordId, searchValue, signal, theme) {
   // if there was a search, also get the highlighted version
   const searchPromise = searchValue
-    ? fetch(getRecordsFetchLocation({ search: searchValue, id: recordId }), { signal })
+    ? fetch(getRecordsFetchLocation({ search: searchValue, id: recordId, theme }), { signal })
       .then((response) => response.json())
     : Promise.resolve(null);
 
@@ -96,6 +103,18 @@ function normalizeRecordId(recordId) {
 }
 function createPageRoutes() {
   return [
+    {
+      path: 'matkult',
+      id: 'matkult',
+      handle: { surface: 'page' },
+      element: (
+        <RoutePageShell>
+          <Suspense fallback={<RouteViewLoadingPlaceholder />}>
+            <MatkultPage />
+          </Suspense>
+        </RoutePageShell>
+      ),
+    },
     {
       path: 'statistik/*?',
       id: 'statistics',
@@ -152,6 +171,7 @@ function createPageRoutes() {
             normalizedId,
             search,
             request.signal,
+            parseResultSearch(new URL(request.url).search).theme,
           ),
         };
       },
@@ -161,7 +181,8 @@ function createPageRoutes() {
         if (currentParams.recordId !== nextParams.recordId) return true;
         const currentSearch = parseResultSearch(currentUrl.search).search;
         const nextSearch = parseResultSearch(nextUrl.search).search;
-        return currentSearch !== nextSearch;
+        return currentSearch !== nextSearch
+          || parseResultSearch(currentUrl.search).theme !== parseResultSearch(nextUrl.search).theme;
       },
       element: (
         <RoutePageShell>
@@ -223,7 +244,10 @@ function createRootRoute() {
       if (canonicalLocation) return replace(canonicalLocation);
 
       const queryParams = buildResultApiParams(
-        parseResultSearch(url.search),
+        {
+          ...parseResultSearch(url.search),
+          ...(isMatkultLocation(url) ? { theme: 'matkult' } : {}),
+        },
         { materialRecordtype: 'one_accession_row' },
       );
 
@@ -241,6 +265,7 @@ function createRootRoute() {
     },
     shouldRevalidate: ({ currentUrl, nextUrl }) => {
       if (canonicalizeLegacyLocation(nextUrl.pathname, nextUrl.search)) return true;
+      if (isMatkultLocation(currentUrl) !== isMatkultLocation(nextUrl)) return true;
       return getResultSearchSignature(currentUrl.search)
         !== getResultSearchSignature(nextUrl.search);
     },

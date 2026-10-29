@@ -20,6 +20,7 @@ export function buildResultApiParams(
   } = {},
 ) {
   const { transcribe, ...apiParams } = params;
+  if (apiParams.theme === 'matkult') return apiParams;
   const isTranscribeFilter = transcribe === true;
 
   if (!apiParams.transcriptionstatus) {

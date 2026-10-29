@@ -1,4 +1,5 @@
 import config from "../config";
+import { buildCollectionApiParams } from './collectionHelper';
 import { l } from "../lang/Lang";
 import archiveLogoIsof from "../../img/logotyp-isof.svg";
 import archiveLogoIkos from "../../img/archive-logo-ikos.png";
@@ -439,7 +440,7 @@ export function getRecordsFetchLocation(params = {}) {
   if (params.record_ids) { // Hämtar bara vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
-    const queryParams = { ...config.requiredParams, ...params };
+    const queryParams = buildCollectionApiParams(params);
 
     // Anpassa params till ES Djangi api
     if (queryParams.search) {
@@ -474,7 +475,7 @@ export function getRecordsCountLocation(params = {}) {
     const filteredParams = Object.fromEntries(
       Object.entries(params).filter(([, value]) => value !== null && value !== undefined),
     );
-    const queryParams = { ...config.requiredParams, ...filteredParams };
+    const queryParams = buildCollectionApiParams(filteredParams);
 
     // Anpassa params till ES Djangi api
     if (queryParams.search) {
@@ -524,7 +525,7 @@ export function getMapFetchLocation(params = {}) {
   if (params.record_ids) { // Hämtar bara platser för vissa sägner
     paramStrings.push(`documents=${params.record_ids}`);
   } else {
-    const newParams = { ...config.requiredParams, ...cleanParams(params) };
+    const newParams = buildCollectionApiParams(cleanParams(params));
 
     // Anpassa params till ES Djangi api
     if (newParams.search) {

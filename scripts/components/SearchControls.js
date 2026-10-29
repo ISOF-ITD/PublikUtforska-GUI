@@ -27,6 +27,8 @@ import {
 import IntroOverlay from './views/IntroOverlay';
 import ServiceWarning from './ServiceWarning';
 import config from '../config';
+import MatkultContextBar from '../features/Matkult/MatkultContextBar';
+import { isMatkultLocation } from '../utils/collectionHelper';
 
 export default function SearchControls({
   active = true,
@@ -42,6 +44,7 @@ export default function SearchControls({
   const location = useLocation();
   const navigate = useNavigate();
   const resultParams = parseResultSearch(location.search);
+  const isMatkult = isMatkultLocation(location);
   const isTranscribeFilter = resultParams.transcribe === true;
   const {
     ids: bookmarkedRecordIds,
@@ -51,7 +54,7 @@ export default function SearchControls({
   const initialLoadRef = useRef(true);
   const [justSwitched, setJustSwitched] = useState(false);
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
-  const activateIntroOverlay = Boolean(config?.activateIntroOverlay);
+  const activateIntroOverlay = Boolean(config?.activateIntroOverlay) && !isMatkult;
   const lastGoodRef = useRef({
     recordsData,
     audioRecordsData,
@@ -221,6 +224,7 @@ export default function SearchControls({
                   </span>
                 )}
               </button>
+              {!isMatkult && (
               <Link
                 to={statisticsLocation}
                 aria-label={l('Statistik')}
@@ -229,6 +233,7 @@ export default function SearchControls({
               >
                 <FontAwesomeIcon icon={faChartColumn} aria-hidden="true" className="text-lg" />
               </Link>
+              )}
               {activateIntroOverlay && (
                 <button
                   type="button"
@@ -244,6 +249,12 @@ export default function SearchControls({
             </div>
           </div>
         </HeaderElement>
+
+        {isMatkult ? <MatkultContextBar /> : (
+          <div className="px-4 py-2">
+            <Link to="/matkult" className="inline-flex min-h-9 items-center rounded-sm text-sm !text-white underline underline-offset-4">Upptäck Matkult – recept och berättelser om mat</Link>
+          </div>
+        )}
 
         <section
           aria-label={l('Sök och filter')}

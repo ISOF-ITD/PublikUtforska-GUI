@@ -7,7 +7,7 @@ import {
   useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
@@ -324,6 +324,7 @@ function IntroOverlay({ show = false, onClose }) {
             </a>
           </div>
           <div className="controls ml-auto flex w-auto shrink-0 items-center justify-end gap-2">
+            <Link to="/matkult" onClick={handleClose} className="header-keyboard-focus mr-3 rounded-sm !text-white underline">Matkult</Link>
             <button
               type="button"
               onClick={handleClose}

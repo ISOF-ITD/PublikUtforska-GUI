@@ -31,6 +31,8 @@ import AudioItems from "../AudioDescription/AudioItems";
 import RouteViewLoadingPlaceholder from "../../components/RouteViewLoadingPlaceholder";
 import ContributeInfoSection from '../../components/views/ContributeInfoSection';
 import { isImageMedia, isPdfMedia } from '../../utils/mediaTypes';
+import MatkultReading from '../Matkult/MatkultReading';
+import { isMatkultRecord } from '../Matkult/matkult';
 
 function RecordView() {
   const { results: resultsPromise } = useLoaderData();
@@ -166,6 +168,7 @@ function ResolvedRecord({
         data={data}
         headingId={titleId}
       />
+      {isMatkultRecord(data) && <MatkultReading data={data} />}
       <div className={hasReadingMedia ? 'mx-auto w-full max-w-[1760px]' : undefined}>
         <div className={hasReadingMedia
           ? 'record-view-layout grid grid-cols-1 items-start min-[1440px]:grid-cols-[400px,minmax(0,1fr)] min-[1440px]:gap-x-8 print:!grid-cols-1'
@@ -227,7 +230,7 @@ function ResolvedRecord({
           headingLevel="h2"
         />
         <hr />
-        <SimilarRecords data={data} />
+        {!isMatkultRecord(data) && <SimilarRecords data={data} />}
         <hr />
         <RecordViewFooter data={data} />
       </div>

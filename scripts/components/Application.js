@@ -179,9 +179,10 @@ export default function Application() {
         setMapData(map);
         setRecordsData(recs);
         setLoading(false);
+        if (recs?.metadata?.collection_error) toastError(recs.metadata.collection_error);
       })
       .catch((err) => {
-        if (err?.name === 'AbortError') return;
+        if (!alive || err?.name === 'AbortError') return;
         setLoading(false);
         toastError('Kunde inte läsa in sökresultat. Försök igen.');
       });

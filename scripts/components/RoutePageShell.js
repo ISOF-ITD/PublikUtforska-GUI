@@ -11,6 +11,8 @@ import IsofLogoWhite from '../../img/logotyp-isof-vit.svg';
 import { l } from '../lang/Lang';
 import { createResultLocation } from '../utils/routeHelper';
 import ServiceWarning from './ServiceWarning';
+import MatkultContextBar from '../features/Matkult/MatkultContextBar';
+import { isMatkultLocation } from '../utils/collectionHelper';
 
 export default function RoutePageShell({ children }) {
   const location = useLocation();
@@ -19,7 +21,9 @@ export default function RoutePageShell({ children }) {
   const contentRef = useRef(null);
   const focusOnNavigationRef = useRef(focusOnNavigation);
   focusOnNavigationRef.current = focusOnNavigation;
-  const resultLocation = createResultLocation(location.search);
+  const isMatkult = isMatkultLocation(location);
+  const resultLocation = createResultLocation(location.pathname === '/matkult'
+    ? '?theme=matkult&view=cards' : location.search);
 
   useEffect(() => {
     const animationFrameId = window.requestAnimationFrame(() => {
@@ -94,11 +98,12 @@ export default function RoutePageShell({ children }) {
             className="header-keyboard-focus inline-flex min-h-10 shrink-0 items-center gap-2 rounded-sm px-2 py-2 !text-white underline underline-offset-4 hover:no-underline focus:no-underline print:hidden"
           >
             <FontAwesomeIcon icon={faArrowLeft} aria-hidden="true" />
-            <span>{l('Till sökresultaten')}</span>
+            <span>{location.pathname === '/matkult' ? 'Utforska Matkult' : l('Till sökresultaten')}</span>
           </Link>
         </div>
       </header>
       <ServiceWarning />
+      {isMatkult && <MatkultContextBar />}
       <main
         ref={contentRef}
         id="route-page-content"

@@ -103,6 +103,14 @@ test('sökheaderns kontroller använder tangentbordsstyrd fokusmarkering', async
   expect(document.body).not.toHaveClass('tab-navigation');
 });
 
+test.each(['/matkult', '/search?theme=matkult'])('Matkult på %s monterar ingen dold introduktionsiframe', (entry) => {
+  render(<MemoryRouter initialEntries={[entry]}><SearchControls loading={false} /></MemoryRouter>);
+  expect(screen.queryByTitle('Introduktion och hjälp')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Hjälp och nyheter' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Statistik' })).not.toBeInTheDocument();
+  expect(screen.getByRole('navigation', { name: 'Matkult' })).toBeVisible();
+});
+
 test('post- och avskriftsheaderns länkar använder samma fokusmarkering', () => {
   render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

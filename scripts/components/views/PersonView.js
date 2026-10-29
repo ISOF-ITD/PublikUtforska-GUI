@@ -21,7 +21,7 @@ export default function PersonView() {
   } = useLoaderData() || {};
 
   const location = useLocation();
-  const searchParams = parseResultSearch(location.search);
+  const searchParams = useMemo(() => parseResultSearch(location.search), [location.search]);
 
   // Keep document title friendly & restore on unmount
   useEffect(() => {
@@ -64,10 +64,11 @@ export default function PersonView() {
 
   const recordListParams = useMemo(
     () => ({
+      ...(searchParams.theme === 'matkult' ? searchParams : {}),
       person_id: id,
       transcribe: searchParams.transcribe || undefined,
     }),
-    [id, searchParams.transcribe],
+    [id, searchParams],
   );
 
   return (

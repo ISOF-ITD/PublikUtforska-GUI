@@ -24,6 +24,7 @@ import RecordCardSnippet, {
   selectBestCardSnippet,
   toSemanticHighlightHtml,
 } from './RecordCardSnippet';
+import { getMatkultText, isMatkultRecord } from '../../Matkult/matkult';
 
 const COLLECTOR_RELATIONS = ['c', 'collector', 'interviewer', 'recorder'];
 
@@ -153,7 +154,9 @@ export default function RecordCardItem({
     ))
     && typeof itemText === 'string';
   const summary = hasHighlightedSummary ? itemText : '';
-  const snippet = selectBestCardSnippet({ summary, highlight, innerHits });
+  const isMatkult = isMatkultRecord(source);
+  const snippet = selectBestCardSnippet({ summary, highlight, innerHits })
+    || (isMatkult ? getMatkultText(source).slice(0, 300) : '');
 
   const { total: pageTotal, done: pageDone } = countPageProgressFromMedia(mediaItems);
   const safePageTotal = Math.max(pageTotal, 1);
@@ -172,7 +175,8 @@ export default function RecordCardItem({
 
   const cardClasses = [
     'group box-border block h-auto min-w-0 rounded-md !border p-4 no-underline shadow-sm',
-    'bg-[var(--color-result-card-bg)] !text-body md:h-[22rem]',
+    'bg-[var(--color-result-card-bg)] !text-body',
+    isMatkult ? 'md:min-h-[14rem]' : 'md:h-[22rem]',
     'transition-[background-color,border-color,box-shadow] duration-150',
     'hover:!border-primary hover:bg-surface-hover hover:no-underline hover:shadow',
     'focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-focus',

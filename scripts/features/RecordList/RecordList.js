@@ -134,6 +134,7 @@ export default function RecordList(props) {
     records,
     total,
     fetching,
+    error,
     maxPage,
     currentPage,
     setCurrentPage,
@@ -389,7 +390,8 @@ export default function RecordList(props) {
         </Suspense>
       )} */}
 
-      {!loading && (
+      {!loading && error && <p role="alert" className="p-4 text-body">{error}</p>}
+      {!loading && !error && (
         <div
           className={classNames(
             "mb-10 md:mb-2 rounded",
@@ -515,7 +517,7 @@ export default function RecordList(props) {
       {loading && (
         <RecordListLoadingPlaceholder embedded announce={false} />
       )}
-      {!loading && !fetching && records.length === 0 && (
+      {!loading && !fetching && !error && records.length === 0 && (
         <div className="block h-64 text-center py-10">
           <h3>{l("Inga sökträffar.")}</h3>
         </div>

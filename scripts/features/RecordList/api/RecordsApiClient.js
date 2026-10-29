@@ -1,5 +1,6 @@
 import "whatwg-fetch";
 import config from "../../../config";
+import { buildCollectionApiParams, validateCollectionResponse } from '../../../utils/collectionHelper';
 
 /**
  * Small wrapper around the documents endpoint.
@@ -31,7 +32,7 @@ export default class RecordsApiClient {
     const requestId = ++this._requestId;
     this._controller = new AbortController();
 
-    const qs = buildQueryString(params, config.requiredParams);
+    const qs = buildQueryString(buildCollectionApiParams(params), {});
     const url = qs ? `${this.url}?${qs}` : this.url;
 
     try {
@@ -43,7 +44,7 @@ export default class RecordsApiClient {
         throw err;
       }
 
-      const json = await res.json();
+      const json = validateCollectionResponse(await res.json(), params);
 
       // Only commit if this is still the newest request
       if (
@@ -58,7 +59,7 @@ export default class RecordsApiClient {
       // Swallow aborts, report real errors
       if (err?.name === "AbortError") return;
 
-      console.error("RecordsApiClient.fetch failed", err);
+      if (err.code !== 'CATEGORY_MATCH_UNSUPPORTED') console.error("RecordsApiClient.fetch failed", err);
       if (typeof this.onError === "function") {
         this.onError(err);
       }
@@ -95,6 +96,7 @@ function buildQueryString(inputParams = {}, requiredParams = {}) {
       : params.record_ids;
 
     searchParams.set("documents", String(ids));
+    searchParams.set('publishstatus', 'published');
     return searchParams.toString();
   }
 

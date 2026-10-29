@@ -1,4 +1,5 @@
 const RESULT_PARAM_SCHEMA = [
+  { key: 'theme' },
   { key: 'record_ids', type: 'csv' },
   { key: 'search', urlKey: 'q' },
   { key: 'search_field' },

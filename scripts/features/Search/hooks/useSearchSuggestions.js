@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import useAutocomplete from './useAutocomplete';
 import usePopularQueries from './usePopularQueries';
 import useSuggestionGroups from './useSuggestionGroups';
@@ -9,6 +10,8 @@ export default function useSearchSuggestions({
   selectFilter,
   includeSearchSuggestions = true,
 }) {
+  const location = useLocation();
+  const isMatkult = new URLSearchParams(location.search).get('theme') === 'matkult';
   const {
     people,
     places,
@@ -16,11 +19,11 @@ export default function useSearchSuggestions({
     archiveIds,
     loading,
   } = useAutocomplete(query);
-  const popularQueries = usePopularQueries(suggestionsVisible);
+  const popularQueries = usePopularQueries(suggestionsVisible && !isMatkult);
 
   const suggestionGroups = useSuggestionGroups({
     query,
-    popularQueries,
+    popularQueries: isMatkult ? [] : popularQueries,
     people,
     places,
     provinces,

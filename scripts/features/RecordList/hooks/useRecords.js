@@ -17,6 +17,7 @@ const RELEVANCE_SORTING = {
   field: '_score',
   order: 'desc',
 };
+const MATKULT_SORTING = { field: 'year', order: 'asc' };
 const ENTITY_SEARCH_FIELDS = new Set(['person', 'place', 'archive_id']);
 const recordsCache = new Map();
 
@@ -25,7 +26,7 @@ function createSearchContext(params = {}) {
   const searchField = params.search_field || '';
 
   return {
-    key: JSON.stringify([search, searchField]),
+    key: JSON.stringify([search, searchField, params.theme]),
     relevanceSortingAvailable: Boolean(search)
       && !ENTITY_SEARCH_FIELDS.has(searchField),
   };
@@ -83,11 +84,11 @@ function writeCached(cacheKey, records, total) {
 export default function useRecords(params, interval) {
   const searchContext = useMemo(
     () => createSearchContext(params),
-    [params.search, params.search_field],
+    [params.search, params.search_field, params.theme],
   );
+  const collectionSorting = params.theme === 'matkult' ? MATKULT_SORTING : LATEST_TRANSCRIBED_SORTING;
   const defaultSorting = searchContext.relevanceSortingAvailable
-    ? RELEVANCE_SORTING
-    : LATEST_TRANSCRIBED_SORTING;
+    ? RELEVANCE_SORTING : collectionSorting;
 
   /* ---------------- state ---------------- */
   const [records, setRecords] = useState([]);
@@ -101,6 +102,7 @@ export default function useRecords(params, interval) {
     ...defaultSorting,
   }));
   const [fetching, setFetching] = useState(false);
+  const [error, setError] = useState(null);
   const activeCacheKeyRef = useRef(null);
 
   const sortingMatchesSearchContext = sorting.contextKey === searchContext.key;
@@ -132,6 +134,7 @@ export default function useRecords(params, interval) {
       new RecordsApiClient(
         (json) => {
           setRecords(json.data);
+          setError(null);
           setTotal(json.metadata.total.value);
           setFetching(false);
           writeCached(
@@ -149,7 +152,10 @@ export default function useRecords(params, interval) {
         },
         (err) => {
           // Optional: log, show toast, etc.
-          console.error("Failed to fetch records", err);
+          if (err.code !== 'CATEGORY_MATCH_UNSUPPORTED') console.error("Failed to fetch records", err);
+          setRecords([]);
+          setTotal(0);
+          setError(err.message || 'Kunde inte läsa in sökresultat. Försök igen.');
           setFetching(false);
           activeCacheKeyRef.current = null;
           window.eventBus?.dispatch("recordList.fetchingPage", false);
@@ -193,17 +199,19 @@ export default function useRecords(params, interval) {
   const resultApiParams = useMemo(
     () => buildResultApiParams(
       {
+        theme: params.theme,
         recordtype: params.recordtype,
         transcriptionstatus: params.transcriptionstatus,
         transcribe: params.transcribe,
       },
       { materialRecordtype: filter || null },
     ),
-    [filter, params.recordtype, params.transcribe, params.transcriptionstatus],
+    [filter, params.recordtype, params.transcribe, params.transcriptionstatus, params.theme],
   );
 
   const getFetchParams = useCallback(
     () => ({
+      theme: params.theme,
       from: Math.max(
         0,
         Math.min(
@@ -268,6 +276,7 @@ export default function useRecords(params, interval) {
       activeCacheKeyRef.current = null;
 
       const fetchParams = getFetchParams();
+      setError(null);
       const cached = force ? null : readCached(fetchParams);
       if (cached) {
         setRecords(cached.records);
@@ -307,6 +316,7 @@ export default function useRecords(params, interval) {
     records,
     total,
     fetching,
+    error,
     maxPage,
     uniqueId,
 

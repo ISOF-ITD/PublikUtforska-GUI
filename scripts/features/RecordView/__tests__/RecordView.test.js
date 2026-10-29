@@ -113,6 +113,26 @@ function imageRecord() {
   };
 }
 
+test('Matkult-recept utan media eller Folkes accessionsfält visar lästext och källhänvisning', async () => {
+  const data = {
+    ...record(),
+    materialtype: 'matkarta',
+    recordtype: 'one_record',
+    archive: { archive_id: '29403:14', archive_org: null, archive: 'Uppsala' },
+    contents: null,
+    text: null,
+    taxonomy: [{ category: 'MK-10' }, { category: 'MK-12' }],
+    metadata: [{ type: 'matkarta_content', value: 'Grädde och lever. Gräddas i ugnen.' }],
+  };
+  await renderRecord(data, '?theme=matkult&category=MK-10,MK-12');
+  expect(screen.getByRole('heading', { name: 'Receptets lästext' })).toBeVisible();
+  expect(screen.getByText('Grädde och lever. Gräddas i ugnen.')).toBeVisible();
+  expect(screen.getByDisplayValue('Uppsala, 29403:14')).toBeVisible();
+  expect(screen.getByDisplayValue('https://example.test/records/record-a?theme=matkult')).toBeVisible();
+  expect(new URL(screen.getByRole('link', { name: 'Till sökresultaten' }).href).searchParams.get('category'))
+    .toBe('MK-10,MK-12');
+});
+
 test.each([0, 1, 2])('direktlänken media=%s fokuserar rätt bild efter sidramens återställning', async (index) => {
   await renderRecord(imageRecord(), `?q=räv&media=${index}`);
   const target = screen.getByRole('heading', { name: `Sida ${index + 1}`, level: 4 });

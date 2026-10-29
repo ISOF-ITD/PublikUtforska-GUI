@@ -1,95 +1,64 @@
-import { useEffect, useState } from "react";
-import config from "../../../config";
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import config from '../../../config';
+import { buildCollectionApiParams } from '../../../utils/collectionHelper';
 
 const EMPTY_SUGGESTIONS = {
-  people: [],
-  places: [],
-  provinces: [],
-  archiveIds: [],
+  people: [], places: [], provinces: [], archiveIds: [],
 };
 
-export default function useAutocomplete(query) {
-  const [suggestions, setSuggestions] = useState({
-    ...EMPTY_SUGGESTIONS,
-    sourceQuery: '',
-  });
+async function fetchSuggestions(endpoint, map, signal) {
+  const response = await fetch(endpoint, { mode: 'cors', signal });
+  if (!response.ok) throw new Error('Kunde inte hämta sökförslag.');
+  const { data } = await response.json();
+  return map(data);
+}
 
-  const fetchJson = (endpoint, mapFn, signal) =>
-    fetch(endpoint, { mode: "cors", signal })
-      .then((r) => r.json())
-      .then(({ data }) => mapFn(data));
+export default function useAutocomplete(query) {
+  const location = useLocation();
+  const theme = new URLSearchParams(location.search).get('theme') || '';
+  const [suggestions, setSuggestions] = useState({
+    ...EMPTY_SUGGESTIONS, sourceQuery: '', sourceTheme: '',
+  });
 
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
-    if (query.length < 2) {
-      controller.abort();
-      return setSuggestions({
-        ...EMPTY_SUGGESTIONS,
-        sourceQuery: query,
-      });
-    }
+    if (query.length < 2) return () => controller.abort();
 
+    const queryParams = new URLSearchParams(buildCollectionApiParams({
+      theme, search: query,
+    })).toString();
     const { apiUrl } = config;
-
-    const requiredParams = new URLSearchParams(config.requiredParams).toString();
-    const queryParams = `search=${query}&${requiredParams}`;
-
     Promise.allSettled([
-      fetchJson(
-        `${apiUrl}autocomplete/persons/?${queryParams}&count=${config.numberOfPersonSuggestions}`, (data) => data
-          .filter((p) => !/^p\d+$/.test(p.id))
-          .map((p) => ({
-            value: p.id,
-            label: `${p.name}${p.birth_year ? ` (född ${p.birth_year})` : ""}`,
-          }))
-      ),
-      fetchJson(`${apiUrl}autocomplete/socken/?${queryParams}`, (data) =>
-        data.map((p) => ({
-          value: p.name,
-          label: `${p.name}${p.landskap ? ` (${p.landskap})` : ""}`,
-        }))
-      ),
-      fetchJson(`${apiUrl}autocomplete/landskap/?${queryParams}`, (data) =>
-        data.map((p) => ({
-          value: p.name,
-          label: p.name,
-        }))
-      ),
-      fetchJson(`${apiUrl}autocomplete/archive_ids/?${queryParams}`, (data) =>
-        data.map((r) => ({
-          value: r.id,
-          label: r.id,
-          // secondarylabel behövs inte längre?
-          // secondaryLabel: `(${r.id})`,
-        }))
-      ),
-    ])
-      .then((results) => {
-        if (signal.aborted) return;
-        const [pe, pl, pr, ar] = results.map((r) =>
-          r.status === "fulfilled" ? r.value : []
-        );
-        setSuggestions({
-          people: pe,
-          places: pl,
-          provinces: pr,
-          archiveIds: ar,
-          sourceQuery: query,
-        });
-      })
-      .catch((err) => {
-        if (err?.name !== "AbortError") console.error(err);
+      fetchSuggestions(`${apiUrl}autocomplete/persons/?${queryParams}&count=${config.numberOfPersonSuggestions}`, (data) => data
+        .filter((person) => !/^p\d+$/.test(person.id))
+        .map((person) => ({
+          value: person.id,
+          label: `${person.name}${person.birth_year ? ` (född ${person.birth_year})` : ''}`,
+        })), signal),
+      fetchSuggestions(`${apiUrl}autocomplete/socken/?${queryParams}`, (data) => data.map((place) => ({
+        value: place.name, label: `${place.name}${place.landskap ? ` (${place.landskap})` : ''}`,
+      })), signal),
+      fetchSuggestions(`${apiUrl}autocomplete/landskap/?${queryParams}`, (data) => data.map((province) => ({
+        value: province.name, label: province.name,
+      })), signal),
+      fetchSuggestions(`${apiUrl}autocomplete/archive_ids/?${queryParams}`, (data) => data.map((record) => ({
+        value: record.id, label: record.id,
+      })), signal),
+    ]).then((results) => {
+      if (signal.aborted) return;
+      const [people, places, provinces, archiveIds] = results.map((result) => (
+        result.status === 'fulfilled' ? result.value : []
+      ));
+      setSuggestions({
+        people, places, provinces, archiveIds, sourceQuery: query, sourceTheme: theme,
       });
+    });
     return () => controller.abort();
-  }, [query]);
+  }, [query, theme]);
 
-  const currentSuggestions = suggestions.sourceQuery === query
-    ? suggestions
-    : EMPTY_SUGGESTIONS;
-
-  return {
-    ...currentSuggestions,
-    loading: query.length >= 2 && suggestions.sourceQuery !== query,
-  };
+  const current = query.length >= 2
+    && suggestions.sourceQuery === query && suggestions.sourceTheme === theme;
+  return { ...(current ? suggestions : EMPTY_SUGGESTIONS), loading: query.length >= 2 && !current };
 }

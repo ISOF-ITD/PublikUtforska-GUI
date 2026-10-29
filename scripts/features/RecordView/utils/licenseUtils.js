@@ -4,13 +4,12 @@ import { getArchiveName, getPages } from '../../../utils/helpers';
 const ISOF_NAME = 'Institutet för språk och folkminnen';
 
 export function buildCitation(data) {
-  const {
-    archive: { archive_id_display_search: archiveIdDisplaySearch, archive_org: archiveOrg },
-  } = data;
+  const { archive = {} } = data;
 
   const pages = getPages(data);
-  const idHuman = archiveIdDisplaySearch.join(', ');
-  const orgName = getArchiveName(archiveOrg);
+  const idHuman = archive.archive_id_display_search?.join(', ') || archive.archive_id || data.id;
+  const orgName = archive.archive_org
+    ? getArchiveName(archive.archive_org) : archive.archive || ISOF_NAME;
   const citationOrgName = orgName.startsWith(ISOF_NAME) ? ISOF_NAME : orgName;
 
   // Example: "Arkivnamn, A123:45, s. 12–14"

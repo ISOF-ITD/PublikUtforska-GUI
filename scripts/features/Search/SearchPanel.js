@@ -61,7 +61,8 @@ export default function SearchPanel({
     archive_id: archiveIdParam,
     category,
   } = resultParams;
-  const isTranscribeFilter = resultParams.transcribe === true;
+  const isMatkult = resultParams.theme === 'matkult';
+  const isTranscribeFilter = resultParams.transcribe === true && !isMatkult;
 
   // state
   const inputRef = useRef(null);
@@ -381,7 +382,7 @@ export default function SearchPanel({
     lineHeight: '1',
     boxSizing: 'border-box',
   };
-  const searchPlaceholder = l('Sök i arkivmaterial');
+  const searchPlaceholder = isMatkult ? 'Sök i Matkult' : l('Sök i arkivmaterial');
   const submitSearch = (event) => {
     event.preventDefault();
     navigateToSearch(inputValue);
@@ -518,13 +519,13 @@ export default function SearchPanel({
         <SearchFilters
           loading={loading}
           filters={[
-            isTranscriptionAvailable && {
+            !isMatkult && isTranscriptionAvailable && {
               id: 'transcription',
               label: 'Kan skrivas av',
               checked: isTranscribeFilter,
               onChange: onTranscriptionFilterChange,
             },
-            {
+            !isMatkult && {
               id: 'contentG5',
               label: 'Ljud',
               checked: categories.includes('contentG5'),
@@ -532,7 +533,7 @@ export default function SearchPanel({
               count: audioTotal.value,
               disabled: loading,
             },
-            {
+            !isMatkult && {
               id: 'contentG2',
               label: 'Bild',
               checked: categories.includes('contentG2'),

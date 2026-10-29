@@ -30,9 +30,10 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null }) 
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = parseResultSearch(location.search);
+  const isMatkult = searchParams.theme === 'matkult';
   // only show the contextual place record lists if we're in a search context
-  const shouldShowPlaceRecordLists = hasResultSearchContext(location.search)
-    && !searchParams.place;
+  const shouldShowPlaceRecordLists = isMatkult || (hasResultSearchContext(location.search)
+    && !searchParams.place);
 
   function validateResults(data) {
     if (!data) {
@@ -118,7 +119,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null }) 
                 <div className="row search-results-container">
                   <div className="twelve columns">
 
-                    <h3>{l('Sökträffar')}</h3>
+                    <h3>{isMatkult ? 'Matkult från orten – aktuellt urval' : l('Sökträffar')}</h3>
 
                     <RecordList
                       key={`PlaceView-RecordList-${data.id}`}
@@ -140,6 +141,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null }) 
       </Suspense>
 
       {/* Samtliga accessioner från orten */}
+      {!isMatkult && (
       <Suspense>
         <Await resolve={results}>
           {(data) => (
@@ -178,6 +180,7 @@ export default function PlaceView({ highlightRecordsWithMetadataField = null }) 
 
         </Await>
       </Suspense>
+      )}
 
     </div>
   );

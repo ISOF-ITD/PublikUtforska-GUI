@@ -100,3 +100,32 @@ test('manuellt val av Senast avskrivna hämtar första sidan med rätt sortering
     sort: 'latest_transcription', order: 'desc', from: 0,
   }));
 });
+
+test('Matkult behåller recepturvalet och tömmer tidigare träffar när API:t inte kan avgränsa det', () => {
+  let complete;
+  let fail;
+  RecordsApiClient.mockImplementation((onComplete, onError) => {
+    complete = onComplete;
+    fail = onError;
+    return { abort: jest.fn(), fetch: fetchRecords };
+  });
+  const { result, rerender } = renderHook((params) => useRecords(params), {
+    initialProps: { theme: 'matkult', category: 'MK-10' },
+  });
+  expect(result.current.sort).toBe('year');
+  act(() => complete({ data: [{ id: 'recipe' }], metadata: { total: { value: 1112 } } }));
+  expect(result.current.records).toHaveLength(1);
+  rerender({ theme: 'matkult', category: 'MK-10,MK-12' });
+  expect(fetchRecords).toHaveBeenLastCalledWith(expect.objectContaining({
+    theme: 'matkult',
+    category: 'MK-10,MK-12',
+    recordtype: undefined,
+    transcriptionstatus: undefined,
+  }));
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+  act(() => fail(new Error('Välj Alla recept')));
+  expect(result.current.records).toEqual([]);
+  expect(result.current.total).toBe(0);
+  expect(result.current.error).toBe('Välj Alla recept');
+  consoleError.mockRestore();
+});
