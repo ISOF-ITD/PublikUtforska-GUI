@@ -71,7 +71,7 @@ export default function MatkultPage() {
           <h1 className="!m-0 !text-4xl !leading-tight md:!text-5xl">
             Matkult.
             <br />
-            Maten berättar.
+            Traditionell matkultur i Sverige.
           </h1>
           <p className="!m-0 max-w-lg text-lg leading-relaxed">Recept, råvaror och berättelser ur arkiven. Upptäck människorna och platserna bakom vår matkultur.</p>
           <div className="flex flex-wrap gap-4">
@@ -122,7 +122,7 @@ export default function MatkultPage() {
 
       <section aria-labelledby="matkult-categories-heading">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 id="matkult-categories-heading" className="!m-0">Börja i en råvara</h2>
+          <h2 id="matkult-categories-heading" className="!m-0">Kategorier</h2>
           <button type="button" className="!m-0 !h-auto border-0 bg-transparent !p-2 text-link underline" aria-expanded={showAllCategories} aria-controls="matkult-categories" onClick={() => setShowAllCategories((value) => !value)}>{showAllCategories ? 'Visa färre kategorier' : 'Alla kategorier'}</button>
         </div>
         <ul id="matkult-categories" className="!m-0 grid !list-none gap-4 !p-0 sm:grid-cols-2 lg:grid-cols-3">
