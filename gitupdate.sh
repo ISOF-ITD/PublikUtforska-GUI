@@ -11,4 +11,4 @@ fi
 git log --oneline | head -n1 | tee -a gitupdate.log
 date | tee -a gitupdate.log
 whoami | tee -a gitupdate.log
-
+chmod g+w *
