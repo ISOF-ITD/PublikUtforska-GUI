@@ -11,4 +11,5 @@ fi
 git log --oneline | head -n1 | tee -a gitupdate.log
 date | tee -a gitupdate.log
 whoami | tee -a gitupdate.log
-chmod g+w *
+# chmod rekursively to group write permissions for all files in the repository
+chmod g+w -R . > /dev/null 2>&1
